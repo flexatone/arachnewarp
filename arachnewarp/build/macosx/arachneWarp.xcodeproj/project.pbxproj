@@ -1,0 +1,479 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8DD76F650486A84900D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
+		8E1EB01811F72CA0003B2EC2 /* aw_Add_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB01511F72CA0003B2EC2 /* aw_Add_unittest.cpp */; };
+		8E1EB01911F72CA0003B2EC2 /* aw_Add.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB01611F72CA0003B2EC2 /* aw_Add.cpp */; };
+		8E1EB02E11F8DA9A003B2EC2 /* aw_GeneratorFactory_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB02D11F8DA9A003B2EC2 /* aw_GeneratorFactory_unittest.cpp */; };
+		8E1EB03011F8DAA1003B2EC2 /* aw_GeneratorFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB02F11F8DAA1003B2EC2 /* aw_GeneratorFactory.cpp */; };
+		8E1EB0B311FDF953003B2EC2 /* aw_FilterLowPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB0B211FDF953003B2EC2 /* aw_FilterLowPass.cpp */; };
+		8E1EB0B611FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB0B511FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp */; };
+		8E2682B0123040A20079455E /* aw_PanStereo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E2682AF123040A20079455E /* aw_PanStereo.cpp */; };
+		8E2682B6123040EC0079455E /* aw_PanStereo_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */; };
+		8E312EF511FFC921002FAF75 /* aw_Click.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E312EF211FFC921002FAF75 /* aw_Click.cpp */; };
+		8E312EF611FFC921002FAF75 /* aw_Click_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E312EF411FFC921002FAF75 /* aw_Click_unittest.cpp */; };
+		8E3BA68A11EE3C6800258FE1 /* libsndfile.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E3BA68911EE3C6800258FE1 /* libsndfile.dylib */; };
+		8E3BA8C411F10B1C00258FE1 /* aw_Output_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E3BA8C111F10B1C00258FE1 /* aw_Output_unittest.cpp */; };
+		8E3BA8C511F10B1C00258FE1 /* aw_Output.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E3BA8C211F10B1C00258FE1 /* aw_Output.cpp */; };
+		8E3BAA9911F4DA7D00258FE1 /* aw_WaveSine_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E3BAA9811F4DA7D00258FE1 /* aw_WaveSine_unittest.cpp */; };
+		8E3BAA9B11F4DA8A00258FE1 /* aw_WaveSine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E3BAA9A11F4DA8A00258FE1 /* aw_WaveSine.cpp */; };
+		8E3BAB2011F67B2100258FE1 /* aw_Multiply_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E3BAB1F11F67B2100258FE1 /* aw_Multiply_unittest.cpp */; };
+		8E3BAB2211F67B3100258FE1 /* aw_Multiply.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E3BAB2111F67B3100258FE1 /* aw_Multiply.cpp */; };
+		8E5A2D2111EDE08500421C55 /* aw_Common_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D0911EDE08500421C55 /* aw_Common_unittest.cpp */; };
+		8E5A2D2211EDE08500421C55 /* aw_Common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D0A11EDE08500421C55 /* aw_Common.cpp */; };
+		8E5A2D2311EDE08500421C55 /* aw_Constant_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D0C11EDE08500421C55 /* aw_Constant_unittest.cpp */; };
+		8E5A2D2411EDE08500421C55 /* aw_Constant.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D0D11EDE08500421C55 /* aw_Constant.cpp */; };
+		8E5A2D2511EDE08500421C55 /* aw_Generator_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D0F11EDE08500421C55 /* aw_Generator_unittest.cpp */; };
+		8E5A2D2611EDE08500421C55 /* aw_Generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1011EDE08500421C55 /* aw_Generator.cpp */; };
+		8E5A2D2711EDE08500421C55 /* aw_System_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1211EDE08500421C55 /* aw_System_unittest.cpp */; };
+		8E5A2D2811EDE08500421C55 /* aw_System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1311EDE08500421C55 /* aw_System.cpp */; };
+		8E5A2D2911EDE08500421C55 /* aw_RandomUniform_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1511EDE08500421C55 /* aw_RandomUniform_unittest.cpp */; };
+		8E5A2D2A11EDE08500421C55 /* aw_RandomUniform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1611EDE08500421C55 /* aw_RandomUniform.cpp */; };
+		8E5A2D2B11EDE08500421C55 /* aw_ResidualClass_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1811EDE08500421C55 /* aw_ResidualClass_unittest.cpp */; };
+		8E5A2D2C11EDE08500421C55 /* aw_ResidualClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1911EDE08500421C55 /* aw_ResidualClass.cpp */; };
+		8E5A2D2D11EDE08500421C55 /* aw_Sieve_unitttest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1B11EDE08500421C55 /* aw_Sieve_unitttest.cpp */; };
+		8E5A2D2E11EDE08500421C55 /* aw_Sieve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1C11EDE08500421C55 /* aw_Sieve.cpp */; };
+		8E5A2D2F11EDE08500421C55 /* aw_WaveSquare_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1E11EDE08500421C55 /* aw_WaveSquare_unittest.cpp */; };
+		8E5A2D3011EDE08500421C55 /* aw_WaveSquare.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5A2D1F11EDE08500421C55 /* aw_WaveSquare.cpp */; };
+		8E8BC2D111FEF6C400835F98 /* aw_FilterHighPass_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E8BC2D011FEF6C400835F98 /* aw_FilterHighPass_unittest.cpp */; };
+		8E8BC30011FEFAD400835F98 /* aw_FilterHighPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E8BC2FF11FEFAD400835F98 /* aw_FilterHighPass.cpp */; };
+		8EC603491222E26200CB28B2 /* aw_PolyGenerator_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC603481222E26200CB28B2 /* aw_PolyGenerator_unittest.cpp */; };
+		8EC6034B1222E26D00CB28B2 /* aw_PolyGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6034A1222E26D00CB28B2 /* aw_PolyGenerator.cpp */; };
+		8EC6036A122486BE00CB28B2 /* aw_PolyConstant.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC60369122486BE00CB28B2 /* aw_PolyConstant.cpp */; };
+		8EC6036D122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6036C122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp */; };
+		8EC603CE122A3FF000CB28B2 /* aw_Selector_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */; };
+		8EC603D2122A400E00CB28B2 /* aw_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */; };
+		8EF33CF711DAA0F200B2EEE8 /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EF33CF611DAA0F200B2EEE8 /* gtest.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DD76F690486A84900D96B5E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../../src/projects/arachneWarpTest/main.cpp; sourceTree = SOURCE_ROOT; };
+		8E1EB01511F72CA0003B2EC2 /* aw_Add_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Add_unittest.cpp; path = ../../src/test/aw_Add_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E1EB01611F72CA0003B2EC2 /* aw_Add.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Add.cpp; path = ../../src/core/aw_Add.cpp; sourceTree = SOURCE_ROOT; };
+		8E1EB01711F72CA0003B2EC2 /* aw_Add.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Add.h; path = ../../src/core/aw_Add.h; sourceTree = SOURCE_ROOT; };
+		8E1EB02D11F8DA9A003B2EC2 /* aw_GeneratorFactory_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_GeneratorFactory_unittest.cpp; path = ../../src/test/aw_GeneratorFactory_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E1EB02F11F8DAA1003B2EC2 /* aw_GeneratorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_GeneratorFactory.cpp; path = ../../src/core/aw_GeneratorFactory.cpp; sourceTree = SOURCE_ROOT; };
+		8E1EB03111F8DAA8003B2EC2 /* aw_GeneratorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_GeneratorFactory.h; path = ../../src/core/aw_GeneratorFactory.h; sourceTree = SOURCE_ROOT; };
+		8E1EB0B211FDF953003B2EC2 /* aw_FilterLowPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_FilterLowPass.cpp; path = ../../src/core/aw_FilterLowPass.cpp; sourceTree = SOURCE_ROOT; };
+		8E1EB0B411FDF957003B2EC2 /* aw_FilterLowPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_FilterLowPass.h; path = ../../src/core/aw_FilterLowPass.h; sourceTree = SOURCE_ROOT; };
+		8E1EB0B511FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_FilterLowPass_unittest.cpp; path = ../../src/test/aw_FilterLowPass_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E2682AF123040A20079455E /* aw_PanStereo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PanStereo.cpp; path = ../../src/core/aw_PanStereo.cpp; sourceTree = SOURCE_ROOT; };
+		8E2682B1123040AC0079455E /* aw_PanStereo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PanStereo.h; path = ../../src/core/aw_PanStereo.h; sourceTree = SOURCE_ROOT; };
+		8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PanStereo_unittest.cpp; path = ../../src/test/aw_PanStereo_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E312EF211FFC921002FAF75 /* aw_Click.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Click.cpp; path = ../../src/core/aw_Click.cpp; sourceTree = SOURCE_ROOT; };
+		8E312EF311FFC921002FAF75 /* aw_Click.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Click.h; path = ../../src/core/aw_Click.h; sourceTree = SOURCE_ROOT; };
+		8E312EF411FFC921002FAF75 /* aw_Click_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Click_unittest.cpp; path = ../../src/test/aw_Click_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E3BA68911EE3C6800258FE1 /* libsndfile.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsndfile.dylib; path = /usr/local/lib/libsndfile.dylib; sourceTree = "<absolute>"; };
+		8E3BA6A111EE3F4900258FE1 /* notes.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = notes.txt; path = ../../../buildDoc/notes.txt; sourceTree = SOURCE_ROOT; };
+		8E3BA8C111F10B1C00258FE1 /* aw_Output_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Output_unittest.cpp; path = ../../src/test/aw_Output_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E3BA8C211F10B1C00258FE1 /* aw_Output.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Output.cpp; path = ../../src/core/aw_Output.cpp; sourceTree = SOURCE_ROOT; };
+		8E3BA8C311F10B1C00258FE1 /* aw_Output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Output.h; path = ../../src/core/aw_Output.h; sourceTree = SOURCE_ROOT; };
+		8E3BAA9811F4DA7D00258FE1 /* aw_WaveSine_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_WaveSine_unittest.cpp; path = ../../src/test/aw_WaveSine_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E3BAA9A11F4DA8A00258FE1 /* aw_WaveSine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_WaveSine.cpp; path = ../../src/core/aw_WaveSine.cpp; sourceTree = SOURCE_ROOT; };
+		8E3BAA9C11F4DA9300258FE1 /* aw_WaveSine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_WaveSine.h; path = ../../src/core/aw_WaveSine.h; sourceTree = SOURCE_ROOT; };
+		8E3BAB1F11F67B2100258FE1 /* aw_Multiply_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Multiply_unittest.cpp; path = ../../src/test/aw_Multiply_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E3BAB2111F67B3100258FE1 /* aw_Multiply.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Multiply.cpp; path = ../../src/core/aw_Multiply.cpp; sourceTree = SOURCE_ROOT; };
+		8E3BAB2311F67B3A00258FE1 /* aw_Multiply.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Multiply.h; path = ../../src/core/aw_Multiply.h; sourceTree = SOURCE_ROOT; };
+		8E3E54EE122E8C8C001AAAE7 /* arachneWarpTest */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = arachneWarpTest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E5A2D0911EDE08500421C55 /* aw_Common_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Common_unittest.cpp; path = ../../src/test/aw_Common_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D0A11EDE08500421C55 /* aw_Common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Common.cpp; path = ../../src/core/aw_Common.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D0B11EDE08500421C55 /* aw_Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Common.h; path = ../../src/core/aw_Common.h; sourceTree = SOURCE_ROOT; };
+		8E5A2D0C11EDE08500421C55 /* aw_Constant_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Constant_unittest.cpp; path = ../../src/test/aw_Constant_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D0D11EDE08500421C55 /* aw_Constant.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Constant.cpp; path = ../../src/core/aw_Constant.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D0E11EDE08500421C55 /* aw_Constant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Constant.h; path = ../../src/core/aw_Constant.h; sourceTree = SOURCE_ROOT; };
+		8E5A2D0F11EDE08500421C55 /* aw_Generator_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Generator_unittest.cpp; path = ../../src/test/aw_Generator_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1011EDE08500421C55 /* aw_Generator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Generator.cpp; path = ../../src/core/aw_Generator.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1111EDE08500421C55 /* aw_Generator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Generator.h; path = ../../src/core/aw_Generator.h; sourceTree = SOURCE_ROOT; };
+		8E5A2D1211EDE08500421C55 /* aw_System_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_System_unittest.cpp; path = ../../src/test/aw_System_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1311EDE08500421C55 /* aw_System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_System.cpp; path = ../../src/core/aw_System.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1411EDE08500421C55 /* aw_System.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_System.h; path = ../../src/core/aw_System.h; sourceTree = SOURCE_ROOT; };
+		8E5A2D1511EDE08500421C55 /* aw_RandomUniform_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_RandomUniform_unittest.cpp; path = ../../src/test/aw_RandomUniform_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1611EDE08500421C55 /* aw_RandomUniform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_RandomUniform.cpp; path = ../../src/core/aw_RandomUniform.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1711EDE08500421C55 /* aw_RandomUniform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_RandomUniform.h; path = ../../src/core/aw_RandomUniform.h; sourceTree = SOURCE_ROOT; };
+		8E5A2D1811EDE08500421C55 /* aw_ResidualClass_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_ResidualClass_unittest.cpp; path = ../../src/test/aw_ResidualClass_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1911EDE08500421C55 /* aw_ResidualClass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_ResidualClass.cpp; path = ../../src/core/aw_ResidualClass.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1A11EDE08500421C55 /* aw_ResidualClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_ResidualClass.h; path = ../../src/core/aw_ResidualClass.h; sourceTree = SOURCE_ROOT; };
+		8E5A2D1B11EDE08500421C55 /* aw_Sieve_unitttest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Sieve_unitttest.cpp; path = ../../src/test/aw_Sieve_unitttest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1C11EDE08500421C55 /* aw_Sieve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Sieve.cpp; path = ../../src/core/aw_Sieve.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1D11EDE08500421C55 /* aw_Sieve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Sieve.h; path = ../../src/core/aw_Sieve.h; sourceTree = SOURCE_ROOT; };
+		8E5A2D1E11EDE08500421C55 /* aw_WaveSquare_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_WaveSquare_unittest.cpp; path = ../../src/test/aw_WaveSquare_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D1F11EDE08500421C55 /* aw_WaveSquare.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_WaveSquare.cpp; path = ../../src/core/aw_WaveSquare.cpp; sourceTree = SOURCE_ROOT; };
+		8E5A2D2011EDE08500421C55 /* aw_WaveSquare.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_WaveSquare.h; path = ../../src/core/aw_WaveSquare.h; sourceTree = SOURCE_ROOT; };
+		8E8BC2D011FEF6C400835F98 /* aw_FilterHighPass_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_FilterHighPass_unittest.cpp; path = ../../src/test/aw_FilterHighPass_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E8BC2D211FEF6CC00835F98 /* aw_FilterHighPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_FilterHighPass.h; path = ../../src/core/aw_FilterHighPass.h; sourceTree = SOURCE_ROOT; };
+		8E8BC2FF11FEFAD400835F98 /* aw_FilterHighPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_FilterHighPass.cpp; path = ../../src/core/aw_FilterHighPass.cpp; sourceTree = SOURCE_ROOT; };
+		8EC603481222E26200CB28B2 /* aw_PolyGenerator_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyGenerator_unittest.cpp; path = ../../src/test/aw_PolyGenerator_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8EC6034A1222E26D00CB28B2 /* aw_PolyGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyGenerator.cpp; path = ../../src/core/aw_PolyGenerator.cpp; sourceTree = SOURCE_ROOT; };
+		8EC6034C1222E27900CB28B2 /* aw_PolyGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyGenerator.h; path = ../../src/core/aw_PolyGenerator.h; sourceTree = SOURCE_ROOT; };
+		8EC60369122486BE00CB28B2 /* aw_PolyConstant.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyConstant.cpp; path = ../../src/core/aw_PolyConstant.cpp; sourceTree = SOURCE_ROOT; };
+		8EC6036B122486CB00CB28B2 /* aw_PolyConstant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyConstant.h; path = ../../src/core/aw_PolyConstant.h; sourceTree = SOURCE_ROOT; };
+		8EC6036C122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyConstant_unittest.cpp; path = ../../src/test/aw_PolyConstant_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8EC603CC122A3FE400CB28B2 /* aw_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Selector.h; path = ../../src/core/aw_Selector.h; sourceTree = SOURCE_ROOT; };
+		8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Selector_unittest.cpp; path = ../../src/test/aw_Selector_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = aw_Selector.cpp; path = ../../src/core/aw_Selector.cpp; sourceTree = SOURCE_ROOT; };
+		8EF33CF611DAA0F200B2EEE8 /* gtest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gtest.framework; path = "/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/xcode/build/Release/gtest.framework"; sourceTree = "<absolute>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8EF33CF711DAA0F200B2EEE8 /* gtest.framework in Frameworks */,
+				8E3BA68A11EE3C6800258FE1 /* libsndfile.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* arachneWarpTest */ = {
+			isa = PBXGroup;
+			children = (
+				C6859E8C029090F304C91782 /* Documentation */,
+				8EF33D0E11DAA10A00B2EEE8 /* Libraries */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+				08FB7795FE84155DC02AAC07 /* Source */,
+			);
+			name = arachneWarpTest;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				8E3E5486122E864C001AAAE7 /* arachneWarpTest */,
+				8E3BA6A811EE413000258FE1 /* core-cpp */,
+				8E3BA6BA11EE463B00258FE1 /* core-h */,
+				8E3BA6AD11EE41C100258FE1 /* test */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8E3E54EE122E8C8C001AAAE7 /* arachneWarpTest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8E3BA6A811EE413000258FE1 /* core-cpp */ = {
+			isa = PBXGroup;
+			children = (
+				8E2682AF123040A20079455E /* aw_PanStereo.cpp */,
+				8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */,
+				8EC60369122486BE00CB28B2 /* aw_PolyConstant.cpp */,
+				8EC6034A1222E26D00CB28B2 /* aw_PolyGenerator.cpp */,
+				8E312EF211FFC921002FAF75 /* aw_Click.cpp */,
+				8E1EB01611F72CA0003B2EC2 /* aw_Add.cpp */,
+				8E5A2D0A11EDE08500421C55 /* aw_Common.cpp */,
+				8E5A2D0D11EDE08500421C55 /* aw_Constant.cpp */,
+				8E8BC2FF11FEFAD400835F98 /* aw_FilterHighPass.cpp */,
+				8E1EB0B211FDF953003B2EC2 /* aw_FilterLowPass.cpp */,
+				8E5A2D1011EDE08500421C55 /* aw_Generator.cpp */,
+				8E1EB02F11F8DAA1003B2EC2 /* aw_GeneratorFactory.cpp */,
+				8E3BAB2111F67B3100258FE1 /* aw_Multiply.cpp */,
+				8E3BA8C211F10B1C00258FE1 /* aw_Output.cpp */,
+				8E5A2D1611EDE08500421C55 /* aw_RandomUniform.cpp */,
+				8E5A2D1911EDE08500421C55 /* aw_ResidualClass.cpp */,
+				8E5A2D1C11EDE08500421C55 /* aw_Sieve.cpp */,
+				8E5A2D1311EDE08500421C55 /* aw_System.cpp */,
+				8E3BAA9A11F4DA8A00258FE1 /* aw_WaveSine.cpp */,
+				8E5A2D1F11EDE08500421C55 /* aw_WaveSquare.cpp */,
+			);
+			name = "core-cpp";
+			sourceTree = "<group>";
+		};
+		8E3BA6AD11EE41C100258FE1 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */,
+				8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */,
+				8EC6036C122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp */,
+				8EC603481222E26200CB28B2 /* aw_PolyGenerator_unittest.cpp */,
+				8E312EF411FFC921002FAF75 /* aw_Click_unittest.cpp */,
+				8E1EB01511F72CA0003B2EC2 /* aw_Add_unittest.cpp */,
+				8E5A2D0911EDE08500421C55 /* aw_Common_unittest.cpp */,
+				8E5A2D0C11EDE08500421C55 /* aw_Constant_unittest.cpp */,
+				8E8BC2D011FEF6C400835F98 /* aw_FilterHighPass_unittest.cpp */,
+				8E1EB0B511FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp */,
+				8E5A2D0F11EDE08500421C55 /* aw_Generator_unittest.cpp */,
+				8E1EB02D11F8DA9A003B2EC2 /* aw_GeneratorFactory_unittest.cpp */,
+				8E3BAB1F11F67B2100258FE1 /* aw_Multiply_unittest.cpp */,
+				8E3BA8C111F10B1C00258FE1 /* aw_Output_unittest.cpp */,
+				8E5A2D1511EDE08500421C55 /* aw_RandomUniform_unittest.cpp */,
+				8E5A2D1811EDE08500421C55 /* aw_ResidualClass_unittest.cpp */,
+				8E5A2D1B11EDE08500421C55 /* aw_Sieve_unitttest.cpp */,
+				8E5A2D1211EDE08500421C55 /* aw_System_unittest.cpp */,
+				8E3BAA9811F4DA7D00258FE1 /* aw_WaveSine_unittest.cpp */,
+				8E5A2D1E11EDE08500421C55 /* aw_WaveSquare_unittest.cpp */,
+			);
+			name = test;
+			sourceTree = "<group>";
+		};
+		8E3BA6BA11EE463B00258FE1 /* core-h */ = {
+			isa = PBXGroup;
+			children = (
+				8E2682B1123040AC0079455E /* aw_PanStereo.h */,
+				8EC603CC122A3FE400CB28B2 /* aw_Selector.h */,
+				8EC6036B122486CB00CB28B2 /* aw_PolyConstant.h */,
+				8EC6034C1222E27900CB28B2 /* aw_PolyGenerator.h */,
+				8E312EF311FFC921002FAF75 /* aw_Click.h */,
+				8E1EB01711F72CA0003B2EC2 /* aw_Add.h */,
+				8E5A2D0B11EDE08500421C55 /* aw_Common.h */,
+				8E5A2D0E11EDE08500421C55 /* aw_Constant.h */,
+				8E8BC2D211FEF6CC00835F98 /* aw_FilterHighPass.h */,
+				8E1EB0B411FDF957003B2EC2 /* aw_FilterLowPass.h */,
+				8E5A2D1111EDE08500421C55 /* aw_Generator.h */,
+				8E1EB03111F8DAA8003B2EC2 /* aw_GeneratorFactory.h */,
+				8E3BAB2311F67B3A00258FE1 /* aw_Multiply.h */,
+				8E3BA8C311F10B1C00258FE1 /* aw_Output.h */,
+				8E5A2D1711EDE08500421C55 /* aw_RandomUniform.h */,
+				8E5A2D1A11EDE08500421C55 /* aw_ResidualClass.h */,
+				8E5A2D1D11EDE08500421C55 /* aw_Sieve.h */,
+				8E5A2D1411EDE08500421C55 /* aw_System.h */,
+				8E3BAA9C11F4DA9300258FE1 /* aw_WaveSine.h */,
+				8E5A2D2011EDE08500421C55 /* aw_WaveSquare.h */,
+			);
+			name = "core-h";
+			sourceTree = "<group>";
+		};
+		8E3E5486122E864C001AAAE7 /* arachneWarpTest */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7796FE84155DC02AAC07 /* main.cpp */,
+			);
+			name = arachneWarpTest;
+			sourceTree = "<group>";
+		};
+		8EF33D0E11DAA10A00B2EEE8 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				8EF33CF611DAA0F200B2EEE8 /* gtest.framework */,
+				8E3BA68911EE3C6800258FE1 /* libsndfile.dylib */,
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+		C6859E8C029090F304C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				8E3BA6A111EE3F4900258FE1 /* notes.txt */,
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76F620486A84900D96B5E /* arachneWarpTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "arachneWarpTest" */;
+			buildPhases = (
+				8DD76F640486A84900D96B5E /* Sources */,
+				8DD76F660486A84900D96B5E /* Frameworks */,
+				8DD76F690486A84900D96B5E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = arachneWarpTest;
+			productInstallPath = "$(HOME)/bin";
+			productName = arachneWarpTest;
+			productReference = 8E3E54EE122E8C8C001AAAE7 /* arachneWarpTest */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "arachneWarp" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = 08FB7794FE84155DC02AAC07 /* arachneWarpTest */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DD76F620486A84900D96B5E /* arachneWarpTest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76F640486A84900D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DD76F650486A84900D96B5E /* main.cpp in Sources */,
+				8E5A2D2111EDE08500421C55 /* aw_Common_unittest.cpp in Sources */,
+				8E5A2D2211EDE08500421C55 /* aw_Common.cpp in Sources */,
+				8E5A2D2311EDE08500421C55 /* aw_Constant_unittest.cpp in Sources */,
+				8E5A2D2411EDE08500421C55 /* aw_Constant.cpp in Sources */,
+				8E5A2D2511EDE08500421C55 /* aw_Generator_unittest.cpp in Sources */,
+				8E5A2D2611EDE08500421C55 /* aw_Generator.cpp in Sources */,
+				8E5A2D2711EDE08500421C55 /* aw_System_unittest.cpp in Sources */,
+				8E5A2D2811EDE08500421C55 /* aw_System.cpp in Sources */,
+				8E5A2D2911EDE08500421C55 /* aw_RandomUniform_unittest.cpp in Sources */,
+				8E5A2D2A11EDE08500421C55 /* aw_RandomUniform.cpp in Sources */,
+				8E5A2D2B11EDE08500421C55 /* aw_ResidualClass_unittest.cpp in Sources */,
+				8E5A2D2C11EDE08500421C55 /* aw_ResidualClass.cpp in Sources */,
+				8E5A2D2D11EDE08500421C55 /* aw_Sieve_unitttest.cpp in Sources */,
+				8E5A2D2E11EDE08500421C55 /* aw_Sieve.cpp in Sources */,
+				8E5A2D2F11EDE08500421C55 /* aw_WaveSquare_unittest.cpp in Sources */,
+				8E5A2D3011EDE08500421C55 /* aw_WaveSquare.cpp in Sources */,
+				8E3BA8C411F10B1C00258FE1 /* aw_Output_unittest.cpp in Sources */,
+				8E3BA8C511F10B1C00258FE1 /* aw_Output.cpp in Sources */,
+				8E3BAA9911F4DA7D00258FE1 /* aw_WaveSine_unittest.cpp in Sources */,
+				8E3BAA9B11F4DA8A00258FE1 /* aw_WaveSine.cpp in Sources */,
+				8E3BAB2011F67B2100258FE1 /* aw_Multiply_unittest.cpp in Sources */,
+				8E3BAB2211F67B3100258FE1 /* aw_Multiply.cpp in Sources */,
+				8E1EB01811F72CA0003B2EC2 /* aw_Add_unittest.cpp in Sources */,
+				8E1EB01911F72CA0003B2EC2 /* aw_Add.cpp in Sources */,
+				8E1EB02E11F8DA9A003B2EC2 /* aw_GeneratorFactory_unittest.cpp in Sources */,
+				8E1EB03011F8DAA1003B2EC2 /* aw_GeneratorFactory.cpp in Sources */,
+				8E1EB0B311FDF953003B2EC2 /* aw_FilterLowPass.cpp in Sources */,
+				8E1EB0B611FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp in Sources */,
+				8E8BC2D111FEF6C400835F98 /* aw_FilterHighPass_unittest.cpp in Sources */,
+				8E8BC30011FEFAD400835F98 /* aw_FilterHighPass.cpp in Sources */,
+				8E312EF511FFC921002FAF75 /* aw_Click.cpp in Sources */,
+				8E312EF611FFC921002FAF75 /* aw_Click_unittest.cpp in Sources */,
+				8EC603491222E26200CB28B2 /* aw_PolyGenerator_unittest.cpp in Sources */,
+				8EC6034B1222E26D00CB28B2 /* aw_PolyGenerator.cpp in Sources */,
+				8EC6036A122486BE00CB28B2 /* aw_PolyConstant.cpp in Sources */,
+				8EC6036D122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp in Sources */,
+				8EC603CE122A3FF000CB28B2 /* aw_Selector_unittest.cpp in Sources */,
+				8EC603D2122A400E00CB28B2 /* aw_Selector.cpp in Sources */,
+				8E2682B0123040A20079455E /* aw_PanStereo.cpp in Sources */,
+				8E2682B6123040EC0079455E /* aw_PanStereo_unittest.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB923208733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../../cpp/gtest-1.5.0/xcode/build/Release\"",
+				);
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_GLIBCXX_DEBUG=1",
+					"_GLIBCXX_DEBUG_PEDANTIC=1",
+				);
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/Volumes/xdisc/_sync/_x/src/cpp/boost_1_43_0,
+					"/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/include",
+				);
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = arachneWarpTest;
+			};
+			name = Debug;
+		};
+		1DEB923308733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../../cpp/gtest-1.5.0/xcode/build/Release\"",
+				);
+				GCC_MODEL_TUNING = G5;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					/Volumes/xdisc/_sync/_x/src/cpp/boost_1_43_0,
+					"/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/include",
+				);
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = arachneWarpTest;
+			};
+			name = Release;
+		};
+		1DEB923608733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"/Volumes/xdisc/_sync/_x/src/cpp/boost_1_43_0/**",
+					"/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/include",
+				);
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Debug;
+		};
+		1DEB923708733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"/Volumes/xdisc/_sync/_x/src/cpp/boost_1_43_0/**",
+					"/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/include",
+				);
+				PREBINDING = NO;
+				SDKROOT = macosx10.5;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "arachneWarpTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923208733DC60010E9CD /* Debug */,
+				1DEB923308733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "arachneWarp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923608733DC60010E9CD /* Debug */,
+				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
