@@ -303,6 +303,116 @@ TEST(BasicTests, Output007) {
 
 
 
+// september 18 2010
+TEST(BasicTests, Output008) {
+
+    SystemPtr sys(new System(44100)); // smart pointer
+    GeneratorFactory gf(sys); // one instance
+    Output out(sys); 
+    
+
+//     "click{rate{220}{bpm}amp{wavesine{rate{.5}{sec}min{.01}max{.8}}}}");
+        
+
+    GeneratorPtr gen1 = gf.create(
+    "filterLowPass { \
+        op1{click{ \
+            rate{selector{\
+                    valueList{60, 120, 240, 480} \
+                    selectionMethod{3} \
+                    refresh{1}{sec} \
+                    }\
+                }{bpm}  \
+            amp{wavesine{ \
+                rate{3}{sec}  \
+                min{.5} \
+                max{.9} \
+                    } \
+                } \
+            } \
+        }\
+        rate{wavesine{ \
+                rate{4.5}{sec} \
+                min{100} \
+                max{6000} \
+            } \
+        }{frequency} \
+    }");
+
+
+    GeneratorPtr gen2 = gf.create(
+    "click{ \
+        rate{selector{\
+                valueList{240, 480, 960} \
+                selectionMethod{3} \
+                refresh{2}{sec} \
+                }\
+            }{bpm}  \
+        amp{wavesine{ \
+            rate{2}{sec}  \
+            min{.1} \
+            max{.6} \
+            } \
+        } \
+     }");
+
+
+    GeneratorPtr gen3 = gf.create(
+    "multiply{\
+        op1{ \
+            filterLowPass{ \
+                op1{randomUniform{  \
+                    refresh{1}{samples} \
+                    min{-.1}    \
+                    max{.1}    \
+                    } \
+                }\
+                rate{wavesine{ \
+                        rate{7.5}{sec} \
+                        min{10} \
+                        max{80} \
+                    } \
+                }{pitch} \
+            } \
+        } \
+        op2{ \
+            wavesine{ \
+                rate{480}{bpm} \
+                min{0} \
+                max{.25} \
+            } \
+        } \
+    }");
+
+        
+    GeneratorPtr gen4 = gf.create("add");
+    gen4->setParameter("op1", gen1);
+    gen4->setParameter("op2", gen2);
+    gen4->setParameter("op3", gen3);
+
+    GeneratorPtr gen5 = gf.create(" \
+        panstereo{ \
+            panleftright{ \
+                wavesine{rate{2 \
+                    }{sec} \
+                min{0} \
+                max{1} \
+                } \
+            } \
+        }");
+    gen5->setParameter("op1", gen4);
+    
+    EXPECT_EQ(gen5->getParameterString(true), "PanStereo{operand1{Add{operand1{FilterLowPass{operand1{Click{rate{Selector{valueList{60,120,240,480}selectionMethod{3}refresh{1}{seconds}}}{bpm}amplitude{WaveSine{rate{3}{seconds}minimum{0.5}maximum{0.9}}}}}rate{WaveSine{rate{4.5}{seconds}minimum{100}maximum{6000}}}{frequency}}}operand2{Click{rate{Selector{valueList{240,480,960}selectionMethod{3}refresh{2}{seconds}}}{bpm}amplitude{WaveSine{rate{2}{seconds}minimum{0.1}maximum{0.6}}}}}operand3{Multiply{operand1{FilterLowPass{operand1{RandomUniform{refresh{1}{samples}minimum{-0.1}maximum{0.1}}}rate{WaveSine{rate{7.5}{seconds}minimum{10}maximum{80}}}{pitch}}}operand2{WaveSine{rate{480}{bpm}minimum{0}maximum{0.25}}}operand3{1}operand4{1}}}operand4{0}}}panLeftRight{WaveSine{rate{2}{seconds}minimum{0}maximum{1}}}}");
+
+    // over 20 here causes an bug
+    //out.write(gen5, 20);
+
+}
+
+
+
+
+
 // =============================================================================
 
 // scratch bed

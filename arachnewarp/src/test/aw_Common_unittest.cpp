@@ -271,6 +271,23 @@ TEST(BasicTests, StringConversions) {
     aw::scrubString(str2);
     EXPECT_EQ(str2, "test");
 
+    std::string str3 = "   t  E    s    T    ";
+    // process in place
+    aw::scrubString(str3);
+    EXPECT_EQ(str3, "test");
+
+
+    std::string str4 = "   t \nE    s\n   T    ";
+    // process in place
+    aw::scrubString(str4);
+    EXPECT_EQ(str4, "test");
+
+    std::string str5 = "   t \nE\t\t    s\n   T    ";
+    // process in place
+    aw::scrubString(str5);
+    EXPECT_EQ(str5, "test");
+
+
 
     // test counting substrings
     EXPECT_EQ(aw::countSubStrings("tomato tomato", "to"), 4);
