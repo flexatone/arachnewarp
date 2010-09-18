@@ -96,12 +96,15 @@ GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
 //! String version of create(). All other string-like entries use this
 GeneratorPtr GeneratorFactory :: create(std::string& gn)
 {
+    // remove all spaces and returns
+    aw::scrubString(gn);
 
     if (aw::stringWellFormed(gn, &aw::charPmtrOpen, &aw::charPmtrClose) == 
         false) {
         throw std::invalid_argument("malformed parameter string cannot be used to create a generator: " + gn);
     }
-    // std::cout << "GeneratorFactory: string invocation: " << gn << std::endl;
+    
+    //std::cout << "GeneratorFactory::create(std::string& gn): " << gn << std::endl;
 
     // convert string to a GeneratorName, pass to create
     std::string name; 
@@ -110,6 +113,9 @@ GeneratorPtr GeneratorFactory :: create(std::string& gn)
     std::string working;
 
     aw::getFirstParameterTrio(gn, name, arguments, context, working);
+
+    //std::cout << "GeneratorFactory::create(std::string& gn)::arguments: " << arguments << std::endl;
+
 
     // converter string to enum name
     GeneratorPtr g = create(aw::stringToGeneratorName(name));

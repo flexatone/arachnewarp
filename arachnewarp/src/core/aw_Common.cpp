@@ -397,7 +397,10 @@ aw::Int32Signed aw::doubleToIntProabilistic(double n)
 void aw::scrubString(std::string& str)
 {
     boost::to_lower(str);
-    boost::trim(str);
+    boost::erase_all(str, " ");
+    boost::erase_all(str, "\n");
+    boost::erase_all(str, "\t");
+    //boost::trim(str);
 }
 
 // -----------------------------------------------------------------------------
