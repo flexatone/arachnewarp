@@ -203,6 +203,8 @@
 		};
 		sourceDirectories = (
 		);
+		variableFormatDictionary = {
+		};
 	};
 	8E5A2D0A11EDE08500421C55 /* aw_Common.cpp */ = {
 		uiCtxt = {
