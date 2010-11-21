@@ -416,12 +416,12 @@ TEST(BasicTests, Output008) {
 
 // november 14 2010
 TEST(BasicTests, Output009) {
-
+    
     SystemPtr sys(new System(44100)); // smart pointer
     GeneratorFactory gf(sys); // one instance
     Output out(sys); 
-
-
+    
+    
     GeneratorPtr gen1 = gf.create(
     "click{ \
         rate{selector{\
@@ -437,7 +437,7 @@ TEST(BasicTests, Output009) {
                 } \
         } \
      }");
-
+    
     GeneratorPtr gen1a = gf.create(
     "filterLowPass{ \
         rate{wavesine{ \
@@ -448,8 +448,8 @@ TEST(BasicTests, Output009) {
         }{pitch} \
     }");
     gen1a->setParameter("op1", gen1);
-
-
+    
+    
     GeneratorPtr gen2 = gf.create(
     "click{ \
         rate{selector{\
@@ -465,7 +465,7 @@ TEST(BasicTests, Output009) {
                 } \
         } \
      }");
-
+    
     GeneratorPtr gen2a = gf.create(
     "filterLowPass{ \
         rate{wavesine{ \
@@ -476,15 +476,14 @@ TEST(BasicTests, Output009) {
         }{pitch} \
     }");
     gen2a->setParameter("op1", gen2);
-
-
+    
+    
     GeneratorPtr gen3 = gf.create("add");
     gen3->setParameter("op1", gen1a);
     gen3->setParameter("op2", gen2a);
-
-
-    //out.write(gen3, 20, 
-    //"/Volumes/xdisc/_sync/_x/src/arachneWarp/out/aw2010-11-14.wav");
+    
+    
+    //out.write(gen3, 20, "/Volumes/xdisc/_sync/_x/src/arachneWarp/out/aw2010-11-14.wav");
 
 }
 
