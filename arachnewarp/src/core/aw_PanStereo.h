@@ -20,7 +20,8 @@ class PanStereo; // forward declarator
 
 typedef boost::shared_ptr<PanStereo> PanStereoPtr;
 
-//! PolyGenerator that returns two values, one for each channel.
+//! PolyGenerator that returns two values, one for each channel. Pan values, as defined by aw::pNamePanLeftRight, are always between 0 and 1. 
+
 class PanStereo: public PolyGenerator 
 {
 public:
@@ -35,7 +36,7 @@ public:
 
     std::string getName();
 
-    double* getPolyAtSample(aw::SampleTimeType);
+    aw::WorkingArrayPtr getPolyAtSample(aw::SampleTimeType);
 
 
 private:

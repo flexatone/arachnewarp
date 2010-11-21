@@ -15,8 +15,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 // =============================================================================
 //! Constructor
 Constant :: Constant(SystemPtr o)
-    : Generator :: Generator(o), // call base class Constructor
-    value_(0)
+    : Generator :: Generator(o) // call base class Constructor
 {      
     init();
 }
@@ -33,6 +32,8 @@ void Constant :: init()
 {    
     pValid_.push_back(aw::pNameValue);
     pTypeMap_[aw::pNameValue] = aw::gTypeNone;
+
+    value_ = 0;
 }
 
 // =============================================================================

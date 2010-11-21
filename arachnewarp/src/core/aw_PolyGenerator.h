@@ -11,7 +11,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 #include <string>
 #include <boost/shared_ptr.hpp>
-
+#include <boost/array.hpp>
 #include "aw_Generator.h"
 
 
@@ -20,7 +20,7 @@ class PolyGenerator; // forward declarator
 typedef boost::shared_ptr<PolyGenerator> PolyGeneratorPtr;
 
 
-//! Base class of PolyGenerators, objects that are specialized to return/provide multiple values. These values are passed as  a pointer to an array, where array values are refreshed with each call. 
+//! Base class of PolyGenerators, objects that are specialized to return/provide multiple values. These values are passed as a pointer to an array, where array values are refreshed with each call. 
 
 class PolyGenerator: public Generator 
 {
@@ -38,18 +38,25 @@ public:
 
     virtual void reset();
 
+    //! Initialize all working array values to zero.
+    virtual void clearWorkingArray();
+
 
     //! Return a sinlge value, as a double, from the PolyGenerator representation, simulating a Generator. This overrides the normal behavior or Generator. 
     virtual double getValueAtSample(aw::SampleTimeType st);
 
     //! Main method for getting values from a PolyGenerator, customized in subclass. Returns a pointer to workingArray_; active size is found on polySize_
-    virtual double* getPolyAtSample(aw::SampleTimeType);
+    virtual aw::WorkingArrayPtr getPolyAtSample(aw::SampleTimeType);
 
 
 protected:
 
     //! Working array of double values for passing by pointer from 
     double workingArray_[aw::maximumPolySize];
+
+    // TODO: might use this instead in the future
+    // BoostWorkingArray workingArray_;
+
 
     //! Store a default fold-down method for moving from a poly representation to a single value. 
     aw::FoldDownMethod defaultFoldDownMethod_;

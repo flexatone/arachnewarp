@@ -41,7 +41,7 @@ void Selector :: init()
     pTypeMap_[aw::pNameValueList] = aw::gTypePoly;
 
     // selection method is a number, translated to a string
-    // 1 (ordered cyclic forward), 2 (ordered cyclic reverse), 3 (ordered oscillate), 4 (random choice), 5 (random permutate), 6 (random walk)
+    // 0 (ordered cyclic forward), 1 (ordered cyclic reverse), 2 (ordered oscillate), 3 (random choice), 4 (random permutate), 5 (random walk)
 
     pValid_.push_back(aw::pNameSelectionMethod);   
     pTypeMap_[aw::pNameSelectionMethod] = aw::gTypeMono;
@@ -50,6 +50,8 @@ void Selector :: init()
     pTypeMap_[aw::pNameRefresh] = aw::gTypeMono;
 
     // set some defaults
+    // note: missing default for aw::pNameValueList
+
     // default selection method of 1
     Generator::setParameter(aw::pNameSelectionMethod, 1,
                     aw::pContextNameNone);
@@ -71,7 +73,9 @@ void Selector :: reset()
     // set init value to negative one to force initial refresh at sample 0
     sampleTimeLastRefresh_ = 0;
     // used for ordered oscillate; flip between -1 and 1
-    stride_ = 1; 
+    oscillateSwitch_ = 1; 
+    // used 
+    walkSwitch_ = 1; 
 }
 
 // =============================================================================
@@ -140,6 +144,21 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
             i_ = aw::randomIntegerRange(0, srcSize_-1);
         }
 
+        // if 5, random walk, take a random step size and perform modulo
+        else if (selectionMethod_ == 5) {
+            walkSwitch_ = aw::randomUnit();
+            // range is inclusive of last value
+            // TODO: this is not tested: needs to go to be adjusted with mod of 
+            // srcSize!
+            if (walkSwitch_ > 0.5) {
+                i_ -= aw::randomIntegerRange(1, strideMagnitude_);
+            } else {
+                i_ += aw::randomIntegerRange(1, strideMagnitude_);
+            }
+            i_ = i_ % srcSize_;
+        }
+
+
         // set new value; return after iteration
         // using aw::mod of size keeps all values within appropriate index
         // negative values (-1, -2, etc), will count down through valid indices
@@ -153,16 +172,16 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
         // if ordered oscillate
         else if (selectionMethod_ == 2) {
             // stride_ flips b/n -1, 1, modify i_ after usage
-            i_ += stride_;
+            i_ += oscillateSwitch_;
             if (i_ >= srcSize_) {
                 // flip direction; get negative of magnitude
-                stride_ = -strideMagnitude_;
+                oscillateSwitch_ = -strideMagnitude_;
                 // last index was top of array; next need second to top
                 i_ = srcSize_ - 2;
             }
             else if (i_ < 0) { // if at zero or less
                 // flip direction
-                stride_ = strideMagnitude_;
+                oscillateSwitch_ = strideMagnitude_;
                 // last index was 0; next need 1
                 i_ = 1;
             }

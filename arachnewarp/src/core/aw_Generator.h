@@ -170,9 +170,9 @@ public:
 
 
     //! Return a pointer to either a double (when a Generator) or a double array (when a PolyGenerator). PolyGenerator overrides this in subclass
-    virtual double* getPolyAtSample(aw::SampleTimeType st);
+    virtual aw::WorkingArrayPtr getPolyAtSample(aw::SampleTimeType st);
 
-    double* getPolyAtSecond(double st);
+    aw::WorkingArrayPtr getPolyAtSecond(double st);
 
 
     // -------------------------------------------------------------------------
@@ -229,10 +229,10 @@ protected:
     // -------------------------------------------------------------------------
 
     //! Double storage of a value resulting from a processing called. Used to simulate PolyGenerator functionality in a Generator. Not relevant for PolyGenerators.
-    double workingValue_; // current sampling rate
+    double workingValue_; // current working value
 
     //! Pointer to workingValue_; provided to simulate functionality of PolyGenerators. Not relevant for PolyGenerators.
-    double* workingValuePtr_;
+    aw::WorkingArrayPtr workingValuePtr_;
 
 
 

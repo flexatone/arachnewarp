@@ -21,7 +21,7 @@ class Selector; // forward declarator
 
 typedef boost::shared_ptr<Selector> SelectorPtr;
 
-//! Generator that selects values from a PolyGenerator providing a value list. 
+//! A Generator that selects values from a PolyGenerator providing a value list. 
 class Selector: public Generator 
 {
 public:
@@ -55,8 +55,10 @@ private:
     //! Store the selection method
     double selectionMethod_; 
     
-    // store direction shift
-    int stride_;
+    //! Used for oscillate selection
+    int oscillateSwitch_;
+    //! Used for random walk selection
+    int walkSwitch_;
     // get as a double; will need to round to an int
     int strideMagnitude_;
 
@@ -72,7 +74,7 @@ private:
     int srcSizeLast_; 
 
     // pointer to working array is obtained from stored PolyConstant
-    double* workingArray_;
+    aw::WorkingArrayPtr workingArray_;
         
    
 } ;

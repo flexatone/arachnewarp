@@ -73,7 +73,7 @@ std::string PanStereo :: getName()
 
 // =============================================================================
 // return a pointer to a working array
-double* PanStereo :: getPolyAtSample(aw::SampleTimeType st)
+aw::WorkingArrayPtr PanStereo :: getPolyAtSample(aw::SampleTimeType st)
 {
 
     // need to deal with values outside of range; probably limit

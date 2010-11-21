@@ -17,6 +17,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/random/uniform_int.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/array.hpp>
 
 #include "aw_System.h"
 
@@ -58,9 +59,19 @@ typedef uint64_t unsigned Int64Unsigned;
 typedef uint32_t unsigned SampleTimeType;
 // 0	4,294,967,295
 
+
+//! Used for all seconds values. 
 typedef double SecondsTimeType;
 
+//! Used for all sample rate values. 
 typedef int unsigned SampleRateType;
+
+//! This type is used for all amplitude values, or other values calculated in processing. 
+typedef double MagnitudeType;
+
+
+typedef double* WorkingArrayPtr;
+
 
 // =============================================================================
 // http://www.brainbell.com/tutorials/C++/Generating_Random_Numbers.htm
@@ -68,12 +79,16 @@ typedef boost::mt19937 BoostRandomEngine;
 
 typedef boost::uniform_real<double> DistributionUniformReal;
 // note the & following; needs to bass by reference
+
 typedef boost::variate_generator<BoostRandomEngine&, DistributionUniformReal> GeneratorUniformReal;
 
 typedef boost::uniform_int<Int32Signed> DistributionUniformInt;
 // note the & following; needs to bass by reference
 typedef boost::variate_generator<BoostRandomEngine&, DistributionUniformInt> GeneratorUniformInt;
 
+
+// boost arrays: this one is not yet used
+typedef boost::array<MagnitudeType, aw::maximumPolySize> BoostWorkingArray;
 
 // string processing
 typedef boost::find_iterator<std::string::iterator> StringFindIterator;
@@ -142,7 +157,8 @@ enum ParameterName {
     pNameValueList = 11,
     pNameSelectionMethod = 12,
 
-    // a unit interval control; possible rename position
+    // a unit interval control; possible rename position, horizontalPosition
+    // xPosition
     pNamePanLeftRight = 13,
 
     };
@@ -160,6 +176,7 @@ enum GeneratorType {
     gTypeMono = 0,
     gTypePoly = 1,
     gTypeNone = 2, // for Constant and PolyConstant: 
+    gTypeAny = 3, // any form : 
 };
 
 
@@ -177,6 +194,7 @@ enum GeneratorName {
     gNamePolyConstant = 9,
     gNameSelector = 10,
     gNamePanStereo = 11,
+    gNamePolyAdd = 12,
     };
 
 

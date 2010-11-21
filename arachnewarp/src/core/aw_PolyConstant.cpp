@@ -33,6 +33,9 @@ PolyConstant :: PolyConstant(SystemPtr o)
 //! Destroyer, virtual
 PolyConstant :: ~PolyConstant()
 {
+    // assume do not need to delete value_ b/c its size 
+    // is declared at compile time; this also raises errors
+    // delete[] value_; 
 }
 
 // =============================================================================
@@ -42,6 +45,15 @@ void PolyConstant :: init()
     // this might be better as pNameList
     pValid_.push_back(aw::pNameValue);
     pTypeMap_[aw::pNameValue] = aw::gTypeNone;
+
+
+    // setup some default values; this must be done directly here to the
+    // value parameter; do not try to set a contstant, as that will create
+    // recursive object creation
+    value_[0] = 0.0; 
+    polySize_ = 1; // update size
+
+
 }
 
 // =============================================================================
@@ -99,7 +111,7 @@ void PolyConstant :: setParameter(const aw::ParameterName p,
         case aw::pNameValue:     
             if (isValidContext(p, pc)) {
             // note: this Generator does not use the pMap_ map
-                // transfer values to local vector
+                // transfer/copy values to local vector
                 for (int i=0; i<v.size(); i++) {
                     value_[i] = v[i]; 
                 };
@@ -186,10 +198,11 @@ void PolyConstant :: readParameterString(std::string& parameterString) {
 
 // =============================================================================
 // return a pointer to a working array
-double* PolyConstant :: getPolyAtSample(aw::SampleTimeType)
+aw::WorkingArrayPtr PolyConstant :: getPolyAtSample(aw::SampleTimeType)
 {
     // update values in working vector; the values may be changed
-    // in later processing
+    // in later processing; thus, at the top of the call chain
+    // muse refresh
 
     for (int i=0; i<polySize_; i++) {
         workingArray_[i] = value_[i]; 

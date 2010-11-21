@@ -74,7 +74,7 @@ aw::ParameterContext aw::stringToParameterContext(std::string str)
 
     if (str == "none" || str == "") // an empty string is none
         pc = aw::pContextNameNone;
-    else if (str == "frequency")
+    else if (str == "frequency" || str == "fq" || str == "hz")
         pc = aw::pContextNameFrequency;
     else if (str == "periodseconds" || str == "seconds" || str == "sec")
         pc = aw::pContextNamePeriodSeconds;
@@ -167,7 +167,7 @@ aw::ParameterName aw::stringToParameterName(std::string str)
         pn = aw::pNameValue;
     else if (str == "dutycycle")
         pn = aw::pNameDutyCycle;
-    else if (str == "operand1" || str == "op1")
+    else if (str == "operand1" || str == "op1" || str == "op")
         pn = aw::pNameOperand1;
     else if (str == "operand2" || str == "op2")
         pn = aw::pNameOperand2;
@@ -225,6 +225,8 @@ aw::GeneratorName aw::stringToGeneratorName(std::string str)
         gn = aw::gNameSelector;
     else if (str == "panstereo")
         gn = aw::gNamePanStereo;
+    else if (str == "polyadd")
+        gn = aw::gNamePolyAdd;
     else
         throw std::out_of_range("stringToGeneratorName(): the given string (" + str + ") matches no known GeneratorName"); 
     return gn;

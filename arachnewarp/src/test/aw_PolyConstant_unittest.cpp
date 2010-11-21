@@ -23,6 +23,13 @@ TEST(BasicTests, PolyConstantBasic) {
     //System sys;
     // set sampling rate to 1 for testing
     SystemPtr sys(new System(44100, 8));
+    GeneratorFactory gf(sys); // one instance
+
+
+    GeneratorPtr gen0 = gf.create("polyconstant");
+    EXPECT_EQ(gen0->getParameterString(), "PolyConstant{0}");
+
+
 
     PolyConstant gen1(sys); 
     // default is 1
@@ -77,7 +84,7 @@ TEST(BasicTests, PolyConstantBasic) {
 
     // get the pointer to the working array
     // double value_[aw::maximumPolySize]
-    double* workingArray1 = gen1.getPolyAtSample(0);
+    aw::WorkingArrayPtr workingArray1 = gen1.getPolyAtSample(0);
     EXPECT_EQ(workingArray1[0], 1);
     EXPECT_EQ(workingArray1[1], 2);
     EXPECT_EQ(workingArray1[3], 5);
@@ -87,13 +94,13 @@ TEST(BasicTests, PolyConstantBasic) {
     EXPECT_EQ(workingArray1[3], 1.25);
 
     // calling get poly at sample re-fills all values
-    double* workingArray2 = gen1.getPolyAtSample(0);
+    aw::WorkingArrayPtr workingArray2 = gen1.getPolyAtSample(0);
     EXPECT_EQ(workingArray2[3], 5);
 
     gen1.setParameter(aw::pNameValue, "6,5");
     // after setting new values, working array has not been updated    
     EXPECT_EQ(workingArray2[0], 1);
-    double* workingArray3 = gen1.getPolyAtSample(0);
+    aw::WorkingArrayPtr workingArray3 = gen1.getPolyAtSample(0);
     EXPECT_EQ(workingArray2[0], 6);
     EXPECT_EQ(workingArray3[0], 6);
     EXPECT_EQ(workingArray2[1], 5);
@@ -123,8 +130,8 @@ TEST(BasicTests, PolyConstantGetValue) {
     int listSize2 = gen2->getPolySize();
     EXPECT_EQ(listSize2, 3);
 
-    double* workingArray1 = gen1->getPolyAtSample(0);
-    double* workingArray2 = gen2->getPolyAtSample(0);
+    aw::WorkingArrayPtr workingArray1 = gen1->getPolyAtSample(0);
+    aw::WorkingArrayPtr workingArray2 = gen2->getPolyAtSample(0);
 
     EXPECT_EQ(workingArray1[0], 8);
     EXPECT_EQ(workingArray2[0], 30);

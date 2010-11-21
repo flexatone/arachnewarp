@@ -101,12 +101,12 @@ TEST(BasicTests, RandomUniformBasic) {
 
     // display output incremented in seconds
     a.reset();
-    a.printSample(10, 0, 1, aw::timeContextNameSecond); 
+    a.printSample(10, 0, 1); 
 
     // try in increments of 1 second
     gen3->setParameter(aw::pNameValue, 2);
     a.reset();
-    a.printSample(10, 0, 1, aw::timeContextNameSecond); 
+    a.printSample(10, 0, 1); 
 
 
 }
