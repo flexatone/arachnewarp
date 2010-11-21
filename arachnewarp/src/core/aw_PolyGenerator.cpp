@@ -28,6 +28,8 @@ PolyGenerator :: PolyGenerator(SystemPtr o)
 // =============================================================================
 PolyGenerator :: ~PolyGenerator()
 {
+    // assume i do not need to delete workingArray b/c its size is static
+    // and it is created at compile time
 }
 
 // =============================================================================
@@ -35,12 +37,23 @@ void PolyGenerator :: init()
 {   
     gt_ = aw::gTypePoly;
     defaultFoldDownMethod_ = aw::fdMethodFirst;
+    clearWorkingArray();
 }
 
 // =============================================================================
 void PolyGenerator :: reset()
 {
 }
+
+// =============================================================================
+void PolyGenerator :: clearWorkingArray()
+{
+    // need to initialize working array
+    for (int i=0; i<aw::maximumPolySize; i++) {
+        workingArray_[i] = 0; 
+    };
+}
+
 
 // =============================================================================
 std::string PolyGenerator :: getName()
@@ -64,7 +77,7 @@ double PolyGenerator :: getValueAtSample(aw::SampleTimeType st)
 
 
 // =============================================================================
-double* PolyGenerator :: getPolyAtSample(aw::SampleTimeType st)
+aw::WorkingArrayPtr PolyGenerator :: getPolyAtSample(aw::SampleTimeType st)
 {
     // basic behavior is to return pointer to double array
     return workingArray_;

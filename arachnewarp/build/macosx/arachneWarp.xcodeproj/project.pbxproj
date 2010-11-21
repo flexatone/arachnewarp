@@ -49,6 +49,8 @@
 		8EC6036D122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6036C122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp */; };
 		8EC603CE122A3FF000CB28B2 /* aw_Selector_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */; };
 		8EC603D2122A400E00CB28B2 /* aw_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */; };
+		8EC6819E12995C0D0088F66D /* aw_PolyAdd_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */; };
+		8EC681A012995C1B0088F66D /* aw_PolyAdd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */; };
 		8EF33CF711DAA0F200B2EEE8 /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EF33CF611DAA0F200B2EEE8 /* gtest.framework */; };
 /* End PBXBuildFile section */
 
@@ -129,6 +131,9 @@
 		8EC603CC122A3FE400CB28B2 /* aw_Selector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Selector.h; path = ../../src/core/aw_Selector.h; sourceTree = SOURCE_ROOT; };
 		8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Selector_unittest.cpp; path = ../../src/test/aw_Selector_unittest.cpp; sourceTree = SOURCE_ROOT; };
 		8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = aw_Selector.cpp; path = ../../src/core/aw_Selector.cpp; sourceTree = SOURCE_ROOT; };
+		8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyAdd_unittest.cpp; path = ../../src/test/aw_PolyAdd_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyAdd.cpp; path = ../../src/core/aw_PolyAdd.cpp; sourceTree = SOURCE_ROOT; };
+		8EC681A112995C280088F66D /* aw_PolyAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyAdd.h; path = ../../src/core/aw_PolyAdd.h; sourceTree = SOURCE_ROOT; };
 		8EF33CF611DAA0F200B2EEE8 /* gtest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gtest.framework; path = "/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/xcode/build/Release/gtest.framework"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -178,6 +183,7 @@
 		8E3BA6A811EE413000258FE1 /* core-cpp */ = {
 			isa = PBXGroup;
 			children = (
+				8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */,
 				8E2682AF123040A20079455E /* aw_PanStereo.cpp */,
 				8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */,
 				8EC60369122486BE00CB28B2 /* aw_PolyConstant.cpp */,
@@ -205,6 +211,7 @@
 		8E3BA6AD11EE41C100258FE1 /* test */ = {
 			isa = PBXGroup;
 			children = (
+				8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */,
 				8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */,
 				8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */,
 				8EC6036C122486DB00CB28B2 /* aw_PolyConstant_unittest.cpp */,
@@ -232,6 +239,7 @@
 		8E3BA6BA11EE463B00258FE1 /* core-h */ = {
 			isa = PBXGroup;
 			children = (
+				8EC681A112995C280088F66D /* aw_PolyAdd.h */,
 				8E2682B1123040AC0079455E /* aw_PanStereo.h */,
 				8EC603CC122A3FE400CB28B2 /* aw_Selector.h */,
 				8EC6036B122486CB00CB28B2 /* aw_PolyConstant.h */,
@@ -365,6 +373,8 @@
 				8EC603D2122A400E00CB28B2 /* aw_Selector.cpp in Sources */,
 				8E2682B0123040A20079455E /* aw_PanStereo.cpp in Sources */,
 				8E2682B6123040EC0079455E /* aw_PanStereo_unittest.cpp in Sources */,
+				8EC6819E12995C0D0088F66D /* aw_PolyAdd_unittest.cpp in Sources */,
+				8EC681A012995C1B0088F66D /* aw_PolyAdd.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -394,7 +404,9 @@
 					"/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/include",
 				);
 				INSTALL_PATH = /usr/local/bin;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = arachneWarpTest;
+				VALID_ARCHS = i386;
 			};
 			name = Debug;
 		};
@@ -414,7 +426,9 @@
 					"/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/include",
 				);
 				INSTALL_PATH = /usr/local/bin;
+				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = arachneWarpTest;
+				VALID_ARCHS = i386;
 			};
 			name = Release;
 		};

@@ -38,6 +38,8 @@ public:
 
     int write(GeneratorPtr gen, double dur, char* fp, int fileFormat);
 
+    int write(GeneratorPtr gen, double dur, char* fp);
+
     int write(GeneratorPtr gen, double dur);
 
 

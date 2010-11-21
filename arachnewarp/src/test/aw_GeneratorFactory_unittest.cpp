@@ -18,6 +18,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Multiply.h"
 #include "aw_Generator.h"
 #include "aw_GeneratorFactory.h"
+#include "aw_PolyAdd.h"
 
 
 // provide testCase, name
@@ -68,6 +69,10 @@ TEST(BasicTests, GeneratorFactoryBasic) {
     EXPECT_EQ(gen7->getName(), "Constant");
     gen7->setParameter(aw::pNameValue, 33);
     EXPECT_EQ(gen7->getValueAtSecond(0), 33);
+
+
+    GeneratorPtr gen8 = gf.create(aw::gNamePolyAdd);
+    EXPECT_EQ(gen8->getName(), "PolyAdd");
 
 
 }

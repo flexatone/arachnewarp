@@ -137,7 +137,10 @@ bool Generator :: isValidParameter(const aw::ParameterName p)
 bool Generator :: isValidGenerator(const aw::ParameterName p, 
                                    aw::GeneratorType gt)
 {
-    if (pTypeMap_[p] == gt) return true;
+    if (pTypeMap_[p] == aw::gTypeAny)
+        return true;
+    else if (pTypeMap_[p] == gt) 
+        return true;
     return false;
 }
 
@@ -603,16 +606,17 @@ double Generator :: getValueAtSecond(double secondTime)
 
 
 // =============================================================================
-double* Generator :: getPolyAtSample(aw::SampleTimeType st)
+aw::WorkingArrayPtr Generator :: getPolyAtSample(aw::SampleTimeType st)
 {
     // call get value to set working value ptr
     workingValue_ = getValueAtSample(st);
+    // working value pointer is already linked to workingValue_
     return workingValuePtr_;
 }
 
 // =============================================================================
 //! Convert second to sample, call getPolyAtSample
-double* Generator :: getPolyAtSecond(double secondTime)
+aw::WorkingArrayPtr Generator :: getPolyAtSecond(double secondTime)
 {
     return getPolyAtSample(aw::secondTimeToSampleTime(secondTime, 
                             sys_->getSamplingRate()));
@@ -661,7 +665,8 @@ void Generator :: printSample(int n, double t, int scalar, aw::TimeContext tc)
                 break;              
             case aw::timeContextNameSecond:                         
                 v = getValueAtSecond(t+i); // adds to stream
-                break;              
+                break;     
+            // TODO: need default case here         
         }; // end case    
         if (i % scalar == 0) values.push_back(v); 
     };

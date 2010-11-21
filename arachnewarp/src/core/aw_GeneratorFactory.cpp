@@ -20,8 +20,10 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_FilterHighPass.h"
 #include "aw_Click.h"
 #include "aw_PolyConstant.h"
+#include "aw_PolyAdd.h"
 #include "aw_Selector.h"
 #include "aw_PanStereo.h"
+#include "aw_PolyAdd.h"
 
 // =============================================================================
 GeneratorFactory :: GeneratorFactory(SystemPtr o)
@@ -34,6 +36,7 @@ GeneratorFactory :: GeneratorFactory(SystemPtr o)
 
 
 // =============================================================================
+// note: this are in the order presented in the GeneratorName enumerator
 GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
 {
     switch (gn) {     
@@ -83,6 +86,10 @@ GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
             }
         case aw::gNamePanStereo: {
             PanStereoPtr g(new PanStereo(sys_));
+            return g;
+            }
+        case aw::gNamePolyAdd: {
+            PolyAddPtr g(new PolyAdd(sys_));
             return g;
             }
 

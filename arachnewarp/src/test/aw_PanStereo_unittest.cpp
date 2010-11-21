@@ -49,7 +49,7 @@ TEST(BasicTests, PanStereoGetValue) {
     EXPECT_EQ(gen0->getPolySize(), 2);
 
     // get pointer to output array
-    double* out = gen0->getPolyAtSample(0);
+    aw::WorkingArrayPtr out = gen0->getPolyAtSample(0);
 
     // at pan .5, we get this (not .5 b/c using sqrt panning)
     EXPECT_EQ(out[0], 0.70710678118654757);

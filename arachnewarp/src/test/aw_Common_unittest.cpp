@@ -213,6 +213,7 @@ TEST(BasicTests, StringToEnumerated) {
     EXPECT_EQ(aw::stringToGeneratorName(" wavesine "), aw::gNameWaveSine);
     EXPECT_EQ(aw::stringToGeneratorName(" CLICK "), aw::gNameClick);
 
+    EXPECT_EQ(aw::stringToGeneratorName(" polyADD "), aw::gNamePolyAdd);
 
 
     EXPECT_EQ(aw::stringToParameterContext(" frequency "), aw::pContextNameFrequency);

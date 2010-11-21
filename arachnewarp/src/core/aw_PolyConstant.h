@@ -63,7 +63,7 @@ public:
     void readParameterString(std::string& ps);
 
 
-    double* getPolyAtSample(aw::SampleTimeType);
+    aw::WorkingArrayPtr getPolyAtSample(aw::SampleTimeType);
 
 
 private:

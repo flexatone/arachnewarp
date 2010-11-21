@@ -405,7 +405,250 @@ TEST(BasicTests, Output008) {
     EXPECT_EQ(gen5->getParameterString(true), "PanStereo{operand1{Add{operand1{FilterLowPass{operand1{Click{rate{Selector{valueList{60,120,240,480}selectionMethod{3}refresh{1}{seconds}}}{bpm}amplitude{WaveSine{rate{3}{seconds}minimum{0.5}maximum{0.9}}}}}rate{WaveSine{rate{4.5}{seconds}minimum{100}maximum{6000}}}{frequency}}}operand2{Click{rate{Selector{valueList{240,480,960}selectionMethod{3}refresh{2}{seconds}}}{bpm}amplitude{WaveSine{rate{2}{seconds}minimum{0.1}maximum{0.6}}}}}operand3{Multiply{operand1{FilterLowPass{operand1{RandomUniform{refresh{1}{samples}minimum{-0.1}maximum{0.1}}}rate{WaveSine{rate{7.5}{seconds}minimum{10}maximum{80}}}{pitch}}}operand2{WaveSine{rate{480}{bpm}minimum{0}maximum{0.25}}}operand3{1}operand4{1}}}operand4{0}}}panLeftRight{WaveSine{rate{2}{seconds}minimum{0}maximum{1}}}}");
 
     // over 20 here causes an bug
-    //out.write(gen5, 20);
+    // out.write(gen5, 20);
+    //out.write(gen5, 20, 
+    //"/Volumes/xdisc/_sync/_x/src/arachneWarp/out/aw2010-09-18.wav");
+
+}
+
+
+    // 0 (ordered cyclic forward), 1 (ordered cyclic reverse), 2 (ordered oscillate), 3 (random choice), 4 (random permutate), 5 (random walk)
+
+// november 14 2010
+TEST(BasicTests, Output009) {
+
+    SystemPtr sys(new System(44100)); // smart pointer
+    GeneratorFactory gf(sys); // one instance
+    Output out(sys); 
+
+
+    GeneratorPtr gen1 = gf.create(
+    "click{ \
+        rate{selector{\
+                valueList{160, 80, 320, 640,  80, 640, 640} \
+                selectionMethod{3} \
+                refresh{12}{sec} \
+                }\
+            }{bpm}  \
+        amp{selector{\
+                valueList{.6, .1, .2, .8, .7, .1, .7, .1, .9, .1} \
+                selectionMethod{5} \
+                refresh{1}{samples} \
+                } \
+        } \
+     }");
+
+    GeneratorPtr gen1a = gf.create(
+    "filterLowPass{ \
+        rate{wavesine{ \
+                rate{7.5}{sec} \
+                min{80} \
+                max{120} \
+            } \
+        }{pitch} \
+    }");
+    gen1a->setParameter("op1", gen1);
+
+
+    GeneratorPtr gen2 = gf.create(
+    "click{ \
+        rate{selector{\
+                valueList{160, 80, 320, 640, 80, 40, 640} \
+                selectionMethod{2} \
+                refresh{6}{sec} \
+                }\
+            }{bpm}  \
+        amp{selector{\
+                valueList{.6, .1, .2, 0, 0, .6, .3, .1, .5, 0, 0, .2, .3, .5} \
+                selectionMethod{5} \
+                refresh{1}{samples} \
+                } \
+        } \
+     }");
+
+    GeneratorPtr gen2a = gf.create(
+    "filterLowPass{ \
+        rate{wavesine{ \
+                rate{3.2}{sec} \
+                min{120} \
+                max{140} \
+            } \
+        }{pitch} \
+    }");
+    gen2a->setParameter("op1", gen2);
+
+
+    GeneratorPtr gen3 = gf.create("add");
+    gen3->setParameter("op1", gen1a);
+    gen3->setParameter("op2", gen2a);
+
+
+    //out.write(gen3, 20, 
+    //"/Volumes/xdisc/_sync/_x/src/arachneWarp/out/aw2010-11-14.wav");
+
+}
+
+
+
+// november 21 2010
+TEST(BasicTests, Output010) {
+
+    SystemPtr sys(new System(44100)); // smart pointer
+    GeneratorFactory gf(sys); // one instance
+    Output out(sys); 
+
+
+    GeneratorPtr gen1 = gf.create(
+    "click{ \
+        rate{selector{\
+                valueList{160, 80} \
+                selectionMethod{3} \
+                refresh{12}{sec} \
+                }\
+            }{bpm}  \
+        amp{selector{\
+                valueList{.6, .1, .2, .8, .7, .1, .7, .1, .9, .1} \
+                selectionMethod{5} \
+                refresh{1}{samples} \
+                } \
+        } \
+     }");
+    GeneratorPtr gen1b = gf.create(
+    "filterLowPass{ \
+        rate{selector{valueList{40,4000,20,20,19000} \
+                refresh{2.0}{sec} \
+                selectionMethod{3} \
+            } \
+        }{fq} \
+    }");
+    gen1b->setParameter("op1", gen1);
+    GeneratorPtr gen1a = gf.create(" \
+        panstereo{ \
+            panleftright{0} \
+        }");
+    gen1a->setParameter("op1", gen1b);
+    
+
+//     EXPECT_EQ(gen1a->getParameterString(true), "PanStereo{operand1{Click{rate{Selector{valueList{160,80}selectionMethod{3}refresh{12}{seconds}}}{bpm}amplitude{Selector{valueList{0.6,0.1,0.2,0.8,0.7,0.1,0.7,0.1,0.9,0.1}selectionMethod{5}refresh{1}{samples}}}}}panLeftRight{0}}");
+
+
+    GeneratorPtr gen2 = gf.create(
+    "click{ \
+        rate{selector{\
+                valueList{360, 220, 2300} \
+                selectionMethod{3} \
+                refresh{12}{sec} \
+                }\
+            }{bpm}  \
+        amp{selector{\
+                valueList{.6, .1, .2, .8, .7, .1, .7, .1, .6, .1} \
+                selectionMethod{5} \
+                refresh{1}{samples} \
+                } \
+        } \
+     }");
+    GeneratorPtr gen2b = gf.create(
+    "filterLowPass{ \
+        rate{selector{valueList{40,400,20,20,12000} \
+                refresh{3.5}{sec} \
+                selectionMethod{3} \
+            } \
+        }{fq} \
+    }");
+    gen2b->setParameter("op1", gen2);
+    GeneratorPtr gen2a = gf.create(" \
+        panstereo{ \
+            panleftright{1} \
+        }");
+    gen2a->setParameter("op1", gen2b);
+
+
+
+    GeneratorPtr gen3 = gf.create(
+    "click{ \
+        rate{selector{\
+                valueList{1200, 4800, 9600, 9600, 16000} \
+                selectionMethod{3} \
+                refresh{4}{sec} \
+                }\
+            }{bpm}  \
+        amp{selector{\
+                valueList{0, .1, .2, .8, .3, .4, .5, .6, .7, .8, .8, .8, .7, .6, .5, .4, .3, .2, .1, 0} \
+                selectionMethod{3} \
+                refresh{1.5}{sec} \
+                } \
+        } \
+     }");
+    GeneratorPtr gen3b = gf.create(
+    "filterLowPass{ \
+        rate{wavesine{ \
+                rate{12}{sec} \
+                min{20} \
+                max{140} \
+            } \
+        }{pitch} \
+    }");
+    gen3b->setParameter("op1", gen3);
+    GeneratorPtr gen3a = gf.create(" \
+        panstereo{ \
+            panleftright{ \
+                wavesine{rate{4 \
+                    }{sec} \
+                min{.3} \
+                max{.7} \
+                } \
+            } \
+        }");
+    gen3a->setParameter("op1", gen3b);
+
+
+    GeneratorPtr gen4 = gf.create(
+    "multiply{\
+        op1{ \
+            filterLowPass{ \
+                op1{randomUniform{  \
+                    refresh{1}{samples} \
+                    min{-.8}    \
+                    max{.8}    \
+                    } \
+                }\
+                rate{wavesine{ \
+                        rate{11}{sec} \
+                        min{5} \
+                        max{50} \
+                    } \
+                }{pitch} \
+            } \
+        } \
+        op2{ \
+            wavesine{ \
+                rate{8}{sec} \
+                min{0} \
+                max{.3} \
+            } \
+        } \
+    }");
+
+    GeneratorPtr gen4a = gf.create(" \
+        panstereo{ \
+            panleftright{ \
+                wavesine{rate{8 \
+                    }{sec} \
+                min{.15} \
+                max{.85} \
+                } \
+            } \
+        }");
+    gen4a->setParameter("op1", gen4);
+
+    GeneratorPtr gen5 = gf.create("polyAdd");
+    gen5->setParameter("op1", gen1a);
+    gen5->setParameter("op2", gen2a);
+    gen5->setParameter("op3", gen3a);
+    gen5->setParameter("op4", gen4a);
+
+
+    //out.write(gen5, 20, "/Volumes/xdisc/_sync/_x/src/arachneWarp/out/aw2010-11-21.wav");
 
 }
 
