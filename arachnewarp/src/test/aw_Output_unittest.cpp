@@ -402,7 +402,7 @@ TEST(BasicTests, Output008) {
         }");
     gen5->setParameter("op1", gen4);
     
-    EXPECT_EQ(gen5->getParameterString(true), "PanStereo{operand1{Add{operand1{FilterLowPass{operand1{Click{rate{Selector{valueList{60,120,240,480}selectionMethod{3}refresh{1}{seconds}}}{bpm}amplitude{WaveSine{rate{3}{seconds}minimum{0.5}maximum{0.9}}}}}rate{WaveSine{rate{4.5}{seconds}minimum{100}maximum{6000}}}{frequency}}}operand2{Click{rate{Selector{valueList{240,480,960}selectionMethod{3}refresh{2}{seconds}}}{bpm}amplitude{WaveSine{rate{2}{seconds}minimum{0.1}maximum{0.6}}}}}operand3{Multiply{operand1{FilterLowPass{operand1{RandomUniform{refresh{1}{samples}minimum{-0.1}maximum{0.1}}}rate{WaveSine{rate{7.5}{seconds}minimum{10}maximum{80}}}{pitch}}}operand2{WaveSine{rate{480}{bpm}minimum{0}maximum{0.25}}}operand3{1}operand4{1}}}operand4{0}}}panLeftRight{WaveSine{rate{2}{seconds}minimum{0}maximum{1}}}}");
+    EXPECT_EQ(gen5->getParameterString(true), "PanStereo{operand1{Add{operand1{FilterLowPass{operand1{Click{rate{Selector{valueList{60,120,240,480}selectionMethod{3}refresh{1}{seconds}stride{1}}}{bpm}amplitude{WaveSine{rate{3}{seconds}minimum{0.5}maximum{0.9}}}}}rate{WaveSine{rate{4.5}{seconds}minimum{100}maximum{6000}}}{frequency}}}operand2{Click{rate{Selector{valueList{240,480,960}selectionMethod{3}refresh{2}{seconds}stride{1}}}{bpm}amplitude{WaveSine{rate{2}{seconds}minimum{0.1}maximum{0.6}}}}}operand3{Multiply{operand1{FilterLowPass{operand1{RandomUniform{refresh{1}{samples}minimum{-0.1}maximum{0.1}}}rate{WaveSine{rate{7.5}{seconds}minimum{10}maximum{80}}}{pitch}}}operand2{WaveSine{rate{480}{bpm}minimum{0}maximum{0.25}}}operand3{1}operand4{1}}}operand4{0}}}panLeftRight{WaveSine{rate{2}{seconds}minimum{0}maximum{1}}}}");
 
     // over 20 here causes an bug
     // out.write(gen5, 20);
@@ -646,10 +646,64 @@ TEST(BasicTests, Output010) {
     gen5->setParameter("op3", gen3a);
     gen5->setParameter("op4", gen4a);
 
-
     //out.write(gen5, 20, "/Volumes/xdisc/_sync/_x/src/arachneWarp/out/aw2010-11-21.wav");
-
 }
+
+
+
+
+
+
+
+
+
+// december 19 2010
+TEST(BasicTests, Output011) {
+
+    SystemPtr sys(new System(44100)); // smart pointer
+    GeneratorFactory gf(sys); // one instance
+    Output out(sys); 
+
+//     GeneratorPtr gen1 = gf.create(
+//     "wavesine{ \
+//         rate{220}{hertz}  \
+//         min{-0.8} \
+//         max{0.8} \
+//     }");
+
+
+    // refresh here determines how long until new pitch selection  time 
+    // values are drawn; if longer than minimum, results in repeated values
+    // floating point stride values result in probabilistic rounding
+    GeneratorPtr gen1 = gf.create(
+    "wavesine{ \
+        rate{selector{\
+                valueList{460, 400, 360, 300, 260, 200} \
+                selectionMethod{5} \
+                stride{1.5} \
+                refresh{selector{   \
+                    valueList{.125, .5, 1, .25} \
+                    selectionMethod{0} \
+                    refresh{1.5}{sec} \
+                    } \
+                }{sec} \
+                }\
+            }{hertz}  \
+    }");
+
+ 
+    //EXPECT_EQ(gen1->getParameterString(true), "WaveSine{rate{Selector{valueList{360,220,3000}selectionMethod{3}refresh{10}{seconds}}}{frequency}minimum{-0.8}maximum{0.8}}");
+
+
+    GeneratorPtr gen5 = gf.create("polyAdd");
+    gen5->setParameter("op1", gen1);
+//     gen5->setParameter("op2", gen2a);
+//     gen5->setParameter("op3", gen3a);
+//     gen5->setParameter("op4", gen4a);
+
+    out.write(gen5, 10, "/Volumes/xdisc/_sync/_x/src/arachneWarp/out/test.wav");
+}
+
 
 
 

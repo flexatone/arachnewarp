@@ -161,6 +161,9 @@ enum ParameterName {
     // xPosition
     pNamePanLeftRight = 13,
 
+    // step size for selecting from lists
+    pNameStride = 14,
+
     };
 
 //! Converter from enumeration to string

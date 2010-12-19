@@ -92,12 +92,6 @@ double WaveSine :: getValueAtSample(aw::SampleTimeType st)
     sr_ = sys_->getSamplingRate();
 
     periodSamples_ = pMap_[aw::pNameRate]->getValueAtSample(st);
-
-//     if ((aw::SampleTimeType) st % 4410 == 0) {
-//         std::cout << "sample time: " << (aw::SampleTimeType) sampleTime_ << " raw rate value: " << periodSamples_ << std::endl;
-//         };
-
-
     periodSamples_ = getValueWithContextToPeriodSamples(periodSamples_,
                      aw::pNameRate, sr_);
 
@@ -118,4 +112,8 @@ double WaveSine :: getValueAtSample(aw::SampleTimeType st)
 
 
 
+
+//     if ((aw::SampleTimeType) st % 4410 == 0) {
+//         std::cout << "sample time: " << (aw::SampleTimeType) sampleTime_ << " raw rate value: " << periodSamples_ << std::endl;
+//         };
 

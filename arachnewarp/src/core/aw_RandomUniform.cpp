@@ -91,12 +91,11 @@ double RandomUniform :: getValueAtSample(aw::SampleTimeType st)
 {
 
     sampleTime_ = st;
-    periodSamples_ = pMap_[aw::pNameRefresh]->getValueAtSample(st);
     sr_ = sys_->getSamplingRate();
 
-
+    periodSamples_ = pMap_[aw::pNameRefresh]->getValueAtSample(st);
     periodSamples_ = getValueWithContextToPeriodSamples(periodSamples_,
-                     aw::pNameRate, sr_);
+                     aw::pNameRefresh, sr_);
 
     // need to look for and deal with values over
     // % LONG_MAX

@@ -21,7 +21,7 @@ class Selector; // forward declarator
 
 typedef boost::shared_ptr<Selector> SelectorPtr;
 
-//! A Generator that selects values from a PolyGenerator providing a value list. 
+//! A Generator that selects values from a PolyGenerator providing a value list. Selection method control values are 0 (ordered cyclic), 1 (ordered cyclic reverse), 2 (ordered oscillate), 3 (random choice), 4 (random permutation), 5 (random walk)
 class Selector: public Generator 
 {
 public:
@@ -58,7 +58,7 @@ private:
     //! Used for oscillate selection
     int oscillateSwitch_;
     //! Used for random walk selection
-    int walkSwitch_;
+    double walkSwitch_;
     // get as a double; will need to round to an int
     int strideMagnitude_;
 
