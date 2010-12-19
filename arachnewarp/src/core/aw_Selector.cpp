@@ -49,15 +49,21 @@ void Selector :: init()
     pValid_.push_back(aw::pNameRefresh);
     pTypeMap_[aw::pNameRefresh] = aw::gTypeMono;
 
+    pValid_.push_back(aw::pNameStride);
+    pTypeMap_[aw::pNameStride] = aw::gTypeMono;
+
     // set some defaults
     // note: missing default for aw::pNameValueList
 
     // default selection method of 1
-    Generator::setParameter(aw::pNameSelectionMethod, 1,
+    Generator::setParameter(aw::pNameSelectionMethod, 0,
                     aw::pContextNameNone);
 
     Generator::setParameter(aw::pNameRefresh, 1,
                     aw::pContextNameTrigger);
+
+    Generator::setParameter(aw::pNameStride, 1,
+                           aw::pContextNameNone);
 
 
     // init should always call reset
@@ -74,7 +80,7 @@ void Selector :: reset()
     sampleTimeLastRefresh_ = 0;
     // used for ordered oscillate; flip between -1 and 1
     oscillateSwitch_ = 1; 
-    // used 
+    // used for random walk storage of random value
     walkSwitch_ = 1; 
 }
 
@@ -101,13 +107,13 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
     // get period from rate generator, then convert 
     periodSamples_ = pMap_[aw::pNameRefresh]->getValueAtSample(st);
     periodSamples_ = getValueWithContextToPeriodSamples(periodSamples_,
-                     aw::pNameRate, sr_);
+                     aw::pNameRefresh, sr_);
 
     // get the last selection method
     selectionMethod_ = pMap_[aw::pNameSelectionMethod]->getValueAtSample(st);
-    // this might be controlled by another generator
-    // TODO: get a double and return an int, w/ probabilistic rounding
-    strideMagnitude_ = 1;
+    // stride form another generator, w/ probabilistic rounding
+    strideMagnitude_ = aw::doubleToIntProabilistic(
+                       pMap_[aw::pNameStride]->getValueAtSample(st));
 
 
     // get current size; need to identify when size changes
@@ -121,8 +127,6 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
     // get a pointer to working array
     workingArray_ = pMap_[aw::pNameValueList]->getPolyAtSample(st);
 
-
-
     // if source size is 1, nothing to do, always return the same value
     if (srcSize_ == 1) {
         value_ = workingArray_[0];
@@ -132,6 +136,9 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
         sampleTime_ == 0) {
 
         sampleTimeLastRefresh_ = sampleTime_; // update to this time
+
+        //std::cout << "sampleTimeLastRefresh " << sampleTimeLastRefresh_ << " sampleTime_ " << sampleTime_ << " periodSamples_ " << periodSamples_ << std::endl;
+
 
         // if 1, ordered cyclic reverse, increment before, so that when starting
         // at 0, first value is -1
@@ -144,18 +151,26 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
             i_ = aw::randomIntegerRange(0, srcSize_-1);
         }
 
+        // if 4, random permutation
+
+
         // if 5, random walk, take a random step size and perform modulo
         else if (selectionMethod_ == 5) {
             walkSwitch_ = aw::randomUnit();
             // range is inclusive of last value
-            // TODO: this is not tested: needs to go to be adjusted with mod of 
-            // srcSize!
+            std::cout << "Selector: random walk " << walkSwitch_ << " pre i_ " << i_  << std::endl;
+
             if (walkSwitch_ > 0.5) {
                 i_ -= aw::randomIntegerRange(1, strideMagnitude_);
             } else {
                 i_ += aw::randomIntegerRange(1, strideMagnitude_);
             }
-            i_ = i_ % srcSize_;
+            std::cout << "Selector: random walk " << walkSwitch_ << " post i_ " << i_  << std::endl;
+
+            i_ = aw::mod(i_, srcSize_);
+
+            std::cout << "Selector: random walk " << walkSwitch_ << " post mod i_ " << i_ << std::endl;
+
         }
 
 

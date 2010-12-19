@@ -99,10 +99,10 @@ TEST(BasicTests, SelectorGetParameterString) {
     gen1->setParameter("refresh", gen4, "trigger");
 
 
-    EXPECT_EQ(gen1->getParameterString(), "Selector{valueList{PolyConstant{8,4,2}}selectionMethod{Constant{0}}refresh{Constant{1}}{trigger}}");
+    EXPECT_EQ(gen1->getParameterString(), "Selector{valueList{PolyConstant{8,4,2}}selectionMethod{Constant{0}}refresh{Constant{1}}{trigger}stride{Constant{1}}}");
 
     // compact version
-    EXPECT_EQ(gen1->getParameterString(true), "Selector{valueList{8,4,2}selectionMethod{0}refresh{1}{trigger}}");
+    EXPECT_EQ(gen1->getParameterString(true), "Selector{valueList{8,4,2}selectionMethod{0}refresh{1}{trigger}stride{1}}");
 
 
 }
@@ -115,10 +115,10 @@ TEST(BasicTests, SelectorReadParameterString) {
     GeneratorFactory gf(sys); // one instance
 
     // long form works
-    GeneratorPtr gen1 = gf.create("Selector{valueList{PolyConstant{value{8,4,2}}}selectionMethod{Constant{0}}refresh{Constant{1}}{trigger}}");
+    GeneratorPtr gen1 = gf.create("Selector{valueList{PolyConstant{value{8,4,2}}}selectionMethod{Constant{0}}refresh{Constant{1}}{trigger}stride{Constant{1}}}");
 
 
-    GeneratorPtr gen2 = gf.create("Selector{valueList{8,4,2}selectionMethod{1}refresh{1}{trigger}}");
+    GeneratorPtr gen2 = gf.create("Selector{valueList{8,4,2}selectionMethod{1}refresh{1}{trigger}stride{1}}");
 
     EXPECT_EQ(gen1->getParameter("valueList")->getParameterString(), "PolyConstant{8,4,2}");
 
@@ -219,3 +219,125 @@ TEST(BasicTests, SelectorRandomChoice) {
 
 
 }
+
+
+
+
+TEST(BasicTests, SelectorRefresh) {
+
+
+    SystemPtr sys(new System(44100)); // smart pointer
+    GeneratorFactory gf(sys); // one instance
+
+    // ordered cyclic
+    GeneratorPtr gen1 = gf.create("Selector{ \
+        valueList{1,2,3,4,5,6,7,8,9,10} \
+        selectionMethod{0}  \
+        refresh{1}{sec}  \
+    }");
+
+    EXPECT_EQ(gen1->getValueAtSample(0), 1);
+    EXPECT_EQ(gen1->getValueAtSample(44100*.5), 1);
+
+    EXPECT_EQ(gen1->getValueAtSample(44100*2+1), 2);
+    EXPECT_EQ(gen1->getValueAtSample(44100*2.6), 2);
+
+    EXPECT_EQ(gen1->getValueAtSample(44100*3+1), 3);
+    EXPECT_EQ(gen1->getValueAtSample(44100*3.2), 3);
+
+    EXPECT_EQ(gen1->getValueAtSample(44100*4+1), 4);
+    EXPECT_EQ(gen1->getValueAtSample(44100*4.2), 4);
+
+    EXPECT_EQ(gen1->getValueAtSample(44100*5+1), 5);
+    EXPECT_EQ(gen1->getValueAtSample(44100*5.2), 5);
+
+    EXPECT_EQ(gen1->getValueAtSample(44100*6+1), 6);
+    EXPECT_EQ(gen1->getValueAtSample(44100*6.2), 6);
+
+    // the next time shift past boundary gets the next value;
+    // this is consistent 
+    EXPECT_EQ(gen1->getValueAtSample(44100*10+1), 7);
+    EXPECT_EQ(gen1->getValueAtSample(44100*10.2), 7);
+
+
+    // ordered cyclic
+    GeneratorPtr gen2 = gf.create("Selector{ \
+        valueList{6,7,8,9} \
+        selectionMethod{0}  \
+        refresh{1}{samples}  \
+    }");
+    EXPECT_EQ(gen2->getValueAtSample(0), 6);
+    EXPECT_EQ(gen2->getValueAtSample(1), 7);
+    EXPECT_EQ(gen2->getValueAtSample(2), 8);
+    EXPECT_EQ(gen2->getValueAtSample(3), 9);
+    EXPECT_EQ(gen2->getValueAtSample(8), 6);
+    EXPECT_EQ(gen2->getValueAtSample(9), 7);
+
+
+
+
+    // ordered cyclic reverse
+    gen2 = gf.create("Selector{ \
+        valueList{4,5,6} \
+        selectionMethod{1}  \
+        refresh{1}{sec}  \
+    }");
+
+    EXPECT_EQ(gen2->getValueAtSample(0), 6);
+    EXPECT_EQ(gen2->getValueAtSample(44100*2+1), 5);
+    EXPECT_EQ(gen2->getValueAtSample(44100*2.3), 5);
+    EXPECT_EQ(gen2->getValueAtSample(44100*2.8), 5);
+    EXPECT_EQ(gen2->getValueAtSample(44100*3.2), 4);
+    EXPECT_EQ(gen2->getValueAtSample(44100*3.9), 4);
+    EXPECT_EQ(gen2->getValueAtSample(44100*4.2), 6);
+    EXPECT_EQ(gen2->getValueAtSample(44100*5.2), 5);
+
+    // ordered cyclic reverse
+    gen2 = gf.create("Selector{ \
+        valueList{4,5,6} \
+        selectionMethod{1}  \
+        refresh{1}{samples}  \
+    }");
+    EXPECT_EQ(gen2->getValueAtSample(0), 6);
+    EXPECT_EQ(gen2->getValueAtSample(1), 5);
+    EXPECT_EQ(gen2->getValueAtSample(2), 4);
+    EXPECT_EQ(gen2->getValueAtSample(3), 6);
+    EXPECT_EQ(gen2->getValueAtSample(8), 5);
+    EXPECT_EQ(gen2->getValueAtSample(9), 4);
+
+
+
+    // ordered oscillate
+    gen2 = gf.create("Selector{ \
+        valueList{4,5,6} \
+        selectionMethod{2}  \
+        refresh{1}{sec}  \
+    }");
+
+    EXPECT_EQ(gen2->getValueAtSample(0), 4);
+    EXPECT_EQ(gen2->getValueAtSample(44100*2+1), 5);
+    EXPECT_EQ(gen2->getValueAtSample(44100*2.3), 5);
+    EXPECT_EQ(gen2->getValueAtSample(44100*2.8), 5);
+    EXPECT_EQ(gen2->getValueAtSample(44100*3.2), 6);
+    EXPECT_EQ(gen2->getValueAtSample(44100*3.9), 6);
+    EXPECT_EQ(gen2->getValueAtSample(44100*4.2), 5);
+    EXPECT_EQ(gen2->getValueAtSample(44100*5.2), 4);
+
+    // ordered cyclic reverse
+    gen2 = gf.create("Selector{ \
+        valueList{4,5,6} \
+        selectionMethod{2}  \
+        refresh{1}{samples}  \
+    }");
+    EXPECT_EQ(gen2->getValueAtSample(0), 4);
+    EXPECT_EQ(gen2->getValueAtSample(1), 5);
+    EXPECT_EQ(gen2->getValueAtSample(2), 6);
+    EXPECT_EQ(gen2->getValueAtSample(3), 5);
+    EXPECT_EQ(gen2->getValueAtSample(8), 4);
+    EXPECT_EQ(gen2->getValueAtSample(9), 5);
+
+
+
+
+}
+

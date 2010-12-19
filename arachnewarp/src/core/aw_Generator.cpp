@@ -156,6 +156,7 @@ bool Generator :: isValidGenerator(const aw::ParameterName p, GeneratorPtr g)
 // =============================================================================
 // a result is given whether or not this Generator or Generator subclass supports this particular parameter. 
 // this could be moved into Common?
+// note: every time a new parameter type is added, it must be updated here
 bool Generator :: isValidContext(const aw::ParameterName p,
                                            aw::ParameterContext pc)
 {
@@ -238,6 +239,10 @@ bool Generator :: isValidContext(const aw::ParameterName p,
         // contexts might be unitInterval (0-1), mirrorUnitInterval()
         // mirror percent (-100 to 100)?
         case aw::pNamePanLeftRight:                         
+            if (pc == aw::pContextNameNone) return true;
+            else return false;
+
+        case aw::pNameStride:                         
             if (pc == aw::pContextNameNone) return true;
             else return false;
 
@@ -564,10 +569,11 @@ double Generator :: getValueWithContextToPeriodSamples(double v,
             break; // nothing to do!
         case aw::pContextNameTrigger:
             if (v != 0) {
-                v = 1;
+                v = 1; // if not 0 return a period of 1
                 }
             else {
                 // not sure if this is the best approach
+                // if 0, return the longest period possible
                 v = LONG_MAX;
             }
             break;
@@ -583,6 +589,10 @@ double Generator :: getValueWithContextToPeriodSamples(double v,
 
 
     };
+
+    //std::cout << "getValueWithContextToPeriodSamples() " << " pContextMap_[pn] " << pContextMap_[pn] << " pn " << pn <<  " v " << v << std::endl;
+
+
     return v;
 }    
 

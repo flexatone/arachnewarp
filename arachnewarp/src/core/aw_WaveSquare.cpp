@@ -93,10 +93,9 @@ std::string WaveSquare :: getName()
 double WaveSquare :: getValueAtSample(aw::SampleTimeType st)
 {
     sampleTime_ = st;
-    periodSamples_ = pMap_[aw::pNameRate]->getValueAtSample(st);
     sr_ = sys_->getSamplingRate();
 
-
+    periodSamples_ = pMap_[aw::pNameRate]->getValueAtSample(st);
     periodSamples_ = getValueWithContextToPeriodSamples(periodSamples_,
                      aw::pNameRate, sr_);
 

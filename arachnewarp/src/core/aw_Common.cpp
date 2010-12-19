@@ -74,7 +74,7 @@ aw::ParameterContext aw::stringToParameterContext(std::string str)
 
     if (str == "none" || str == "") // an empty string is none
         pc = aw::pContextNameNone;
-    else if (str == "frequency" || str == "fq" || str == "hz")
+    else if (str == "frequency" || str == "fq" || str == "hertz" || str == "hz")
         pc = aw::pContextNameFrequency;
     else if (str == "periodseconds" || str == "seconds" || str == "sec")
         pc = aw::pContextNamePeriodSeconds;
@@ -106,7 +106,7 @@ std::string aw::parameterNameToString(aw::ParameterName pn)
         case aw::pNameRefresh:
             pName += "refresh";
             break;
-        case aw::pNameRate:
+        case aw::pNameRate: // used for frequency values
             pName += "rate";
             break;
         case aw::pNameValue:
@@ -138,6 +138,9 @@ std::string aw::parameterNameToString(aw::ParameterName pn)
             break;
         case aw::pNamePanLeftRight:
             pName += "panLeftRight";
+            break;
+        case aw::pNameStride: // stride magnitude; integer step size
+            pName += "stride";
             break;
 
         default:
@@ -183,6 +186,8 @@ aw::ParameterName aw::stringToParameterName(std::string str)
         pn = aw::pNameSelectionMethod;
     else if (str == "panleftright" || str == "pan")
         pn = aw::pNamePanLeftRight;
+    else if (str == "stride")
+        pn = aw::pNameStride;
 
     else
         throw std::out_of_range("stringToParameterName(): the given string (" + str + ") matches no known ParameterName"); 
