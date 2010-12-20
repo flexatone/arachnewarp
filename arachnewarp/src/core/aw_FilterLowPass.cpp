@@ -7,8 +7,6 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 #include <math.h>
-
-
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
@@ -18,11 +16,14 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+namespace aw {
+
+
 // =============================================================================
 // constructor
 // :: defines a member of a class from outside the class definition itself
-FilterLowPass :: FilterLowPass(SystemPtr o)
-    : Generator :: Generator(o) // call base class constructor
+FilterLowPass :: FilterLowPass(aw::SystemPtr o)
+    : aw::Generator::Generator(o) // call base class constructor
 {
     init();
 }
@@ -131,3 +132,7 @@ double FilterLowPass :: getValueAtSample(aw::SampleTimeType st)
 //       a3 = a1;
 //       b1 = 2.0 * ( 1.0 - c*c) * a1;
 //       b2 = ( 1.0 - r * c + c * c) * a1;
+
+
+} // end namespace aw
+

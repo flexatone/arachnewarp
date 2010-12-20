@@ -12,6 +12,10 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <vector>
 
 
+using namespace aw;
+
+
+
 // provide testCase, name
 TEST(BasicTests, DenormBasic) {
 
@@ -867,4 +871,56 @@ TEST(BasicTests, DoubleToIntProbabilistic) {
 
 
 
+
+TEST(BasicTests, RandomInteger) {
+
+    for (int i=0; i<30; i++) {
+        EXPECT_EQ(aw::randomInteger(3) < 3, true);
+        //std::cout << "aw::randomInteger(3): " << aw::randomInteger(3) << std::endl; 
+    }
+
+    for (int i=0; i<30; i++) {
+        EXPECT_EQ(aw::randomInteger(11) < 11, true);
+        //std::cout << "aw::randomInteger(11): " << aw::randomInteger(11) << std::endl; 
+    }
+
+
+}
+
+
+
+
+
+TEST(BasicTests, ShuffleVector) {
+
+    double sum(0);
+    int count(0);
+    double avg(0);
+
+    std::vector<int> v;
+
+    for (int i=0; i<30; i++) {
+        v.push_back(i);
+        // std::cout << "aw::randomInteger(3): " << aw::randomInteger(3) << std::endl; 
+    }
+
+    for (int i=0; i<30; i++) {
+        // try to shuffle in place
+        aw::shuffleIntegerVector(v);
+        sum = 0;
+        count = 0;
+        for (int i=0; i<v.size(); i++) {
+            sum += v[i];
+            count += 1;
+        }
+        avg = sum / count;
+        //aw::printVector(b, "aw::doubleToIntProabilistic 40.85");
+        EXPECT_EQ(avg, 14.5);
+        EXPECT_EQ(sum, 435);
+
+        //aw::printVector(v, "shuffle (post)");
+    }
+
+
+}
 

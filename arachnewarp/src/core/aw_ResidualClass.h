@@ -10,6 +10,12 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #define AW_RESIDUAL_CLASS_H
 
 #include <vector>
+#include "aw_Common.h"
+
+
+
+
+namespace aw {
 
 
 //! Model of a Xenakis residual class.
@@ -42,7 +48,10 @@ private:
     int modulus;
     int shift;
 
-} ;
+} ; // end class ResidualClass
+
+
+} // end namespace aw
 
 
 #endif

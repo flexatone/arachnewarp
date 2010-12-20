@@ -21,6 +21,9 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_PolyAdd.h"
 
 
+using namespace aw;
+
+
 // provide testCase, name
 TEST(BasicTests, GeneratorFactoryBasic) {
 

@@ -15,18 +15,24 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 #include "aw_Generator.h"
 #include "aw_PolyGenerator.h"
+#include "aw_Common.h"
+
+
+
+
+
+namespace aw {
 
 
 class Selector; // forward declarator
-
 typedef boost::shared_ptr<Selector> SelectorPtr;
 
 //! A Generator that selects values from a PolyGenerator providing a value list. Selection method control values are 0 (ordered cyclic), 1 (ordered cyclic reverse), 2 (ordered oscillate), 3 (random choice), 4 (random permutation), 5 (random walk)
-class Selector: public Generator 
+class Selector: public aw::Generator 
 {
 public:
 
-    Selector(SystemPtr sys); 
+    Selector(aw::SystemPtr sys); 
 
     ~Selector();
 
@@ -62,6 +68,11 @@ private:
     // get as a double; will need to round to an int
     int strideMagnitude_;
 
+    //! Used for storing indices for random permutation processing
+    std::vector<int> permutationIndices_;
+    //! Store how many permutated values have been counted. 
+    int permutationIndex_;
+
     // need to store index values used
     // know that the max number of value to be selected from is 
     // std::vector<double> stockpile_;
@@ -77,8 +88,10 @@ private:
     aw::WorkingArrayPtr workingArray_;
         
    
-} ;
+} ; // end class Selector
 
+
+} // end namespace aw
 
 
 #endif

@@ -16,11 +16,14 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+namespace aw {
+
+
 // =============================================================================
 // constructor
 // :: defines a member of a class from outside the class definition itself
-WaveSine :: WaveSine(SystemPtr o)
-    : Generator :: Generator(o) // call base class constructor
+WaveSine :: WaveSine(aw::SystemPtr o)
+    : aw::Generator::Generator(o) // call base class constructor
 {
     init();
 }
@@ -117,3 +120,6 @@ double WaveSine :: getValueAtSample(aw::SampleTimeType st)
 //         std::cout << "sample time: " << (aw::SampleTimeType) sampleTime_ << " raw rate value: " << periodSamples_ << std::endl;
 //         };
 
+
+
+} // end namespace aw

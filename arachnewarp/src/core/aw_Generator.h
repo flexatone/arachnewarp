@@ -20,6 +20,10 @@
 #include "aw_Common.h"
 
 
+
+
+namespace aw {
+
 class Generator; // forward declarator
 
 typedef boost::shared_ptr<Generator> GeneratorPtr;
@@ -38,7 +42,7 @@ class Generator
 public:
 
     //! Constructor; sets PolySize to 1. PolySize will be altered in PolyGenerator subclases. 
-    Generator(SystemPtr o); 
+    Generator(aw::SystemPtr o); 
 
     //! Destructor. All destructors need to be virtual, even if not specialized.
     virtual ~Generator();
@@ -243,6 +247,8 @@ private:
 } ;
 
 
+
+} // end namespace aw
 
 
 

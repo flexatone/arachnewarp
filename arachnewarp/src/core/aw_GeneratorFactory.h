@@ -13,12 +13,19 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Common.h"
 #include "aw_Generator.h"
 
+
+
+
+
+namespace aw {
+
+
 //! Object to create Generators
 class GeneratorFactory
 {
 public:
 
-    GeneratorFactory(SystemPtr o); 
+    GeneratorFactory(aw::SystemPtr o); 
 
     GeneratorPtr create(aw::GeneratorName gn);
 
@@ -31,9 +38,10 @@ private:
 
     SystemPtr sys_;
 
-} ;
+} ; // end class GeneratorFactory
 
 
+} // end namespace aw
 
 #endif
 

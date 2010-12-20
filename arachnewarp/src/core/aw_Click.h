@@ -13,48 +13,55 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/shared_ptr.hpp>
 
 #include "aw_Generator.h"
+#include "aw_Common.h"
 
 
-class Click; // forward declarator
-
-typedef boost::shared_ptr<Click> ClickPtr;
 
 
-//! Generator of a square wave
-class Click: public Generator 
-{
-public:
-
-    // constructor; args passed to base class
-    Click(SystemPtr sys); 
-
-    virtual ~Click();
-
-    virtual std::string getName();
-
-    void init();
-
-    void reset();
-
-    virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+namespace aw {
 
 
-private:
+    class Click; // forward declarator
+    typedef boost::shared_ptr<Click> ClickPtr;
+    
+    
+    //! Generator of a square wave
+    class Click: public aw::Generator 
+    {
+    public:
+    
+        // constructor; args passed to base class
+        Click(aw::SystemPtr sys); 
+    
+        virtual ~Click();
+    
+        virtual std::string getName();
+    
+        void init();
+    
+        void reset();
+    
+        virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+    
+    
+    private:
+    
+        double value_;
+        double sampleTime_;
+        double periodSamples_;
+    
+    
+    //     double valueLast_;
+    //     double sampleTimeLast_;
+    
+    //     double direction_;
+    //     double phaseShiftSamples_;
+    
+            
+    } ; // end class Click
 
-    double value_;
-    double sampleTime_;
-    double periodSamples_;
 
-
-//     double valueLast_;
-//     double sampleTimeLast_;
-
-//     double direction_;
-//     double phaseShiftSamples_;
-
-        
-} ;
-
+} // end namespace aw
 
 
 #endif

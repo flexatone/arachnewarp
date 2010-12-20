@@ -16,6 +16,14 @@
 #include "aw_Sieve.h"
 // #include "ResidualClass.h" // in Sieve.h
 
+
+
+
+
+namespace aw {
+
+
+
 // =============================================================================
 // constructor
 Sieve::Sieve(std::string s)
@@ -112,3 +120,4 @@ std::vector<int> Sieve::segment(int n, std::vector<int> &z)
 
 
 
+} // end namespace aw

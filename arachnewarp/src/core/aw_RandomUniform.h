@@ -23,36 +23,44 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Common.h"
 
 
-class RandomUniform; // forward declarator
-typedef boost::shared_ptr<RandomUniform> RandomUniformPtr;
 
 
-//! Generator of random uniformity.
-class RandomUniform: public Generator 
-{
-public:    
-    // constructor
-    RandomUniform(SystemPtr sys); 
-
-    virtual ~RandomUniform();
-
-    virtual std::string getName();
-
-    void init();
-
-    void reset();
-
-    virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+namespace aw {
 
 
-private:
+    class RandomUniform; // forward declarator
+    typedef boost::shared_ptr<RandomUniform> RandomUniformPtr;
+    
+    
+    //! Generator of random uniformity.
+    class RandomUniform: public aw::Generator 
+    {
+    public:    
+        // constructor
+        RandomUniform(aw::SystemPtr sys); 
+    
+        virtual ~RandomUniform();
+    
+        virtual std::string getName();
+    
+        void init();
+    
+        void reset();
+    
+        virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+    
+    
+    private:
+    
+        aw::SampleTimeType sampleTimeLastRefresh_;
+        double sampleTime_;
+        double periodSamples_;
+        double value_; 
+    
+    } ; // end class RandomUniform
 
-    aw::SampleTimeType sampleTimeLastRefresh_;
-    double sampleTime_;
-    double periodSamples_;
-    double value_; 
 
-} ;
+} // end namespace aw
 
 
 

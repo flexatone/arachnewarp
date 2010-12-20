@@ -17,13 +17,15 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Common.h"
 
 
-// TODO: consider adding a step-size parameter, or stride, that is used to 
-// to set how far each step is taken for oscillation, cyclic, and random walk
-// do not use sign of value, just take abs/magnitude
+using namespace aw;
+
+
+namespace aw {
+
 
 // =============================================================================
-Selector :: Selector(SystemPtr o)
-    : PolyGenerator :: Generator(o) // call base class constructor
+Selector :: Selector(aw::SystemPtr o)
+    : aw::PolyGenerator::Generator(o) // call base class constructor
 {
     init();
 }
@@ -119,7 +121,16 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
     // get current size; need to identify when size changes
     srcSize_ = pMap_[aw::pNameValueList]->getPolySize();
     if (srcSize_ != srcSizeLast_) {
+        // only when size changes
         srcSizeLast_ = srcSize_;
+        // initialize vector
+        permutationIndices_.clear(); // remove any contents
+        for (int i=0; i<srcSize_; i++) {
+            permutationIndices_.push_back(i);
+        }
+        // setting to source size will force shuffling and init below
+        permutationIndex_ = srcSize_;
+
     }
 
     // 0 (ordered cyclic forward), 1 (ordered cyclic reverse), 2 (ordered oscillate), 3 (random choice), 4 (random permutate), 5 (random walk)
@@ -152,24 +163,37 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
         }
 
         // if 4, random permutation
+        else if (selectionMethod_ == 4) {
+            // range is inclusive of last value
+            // need to store a list of index values; step through this list
+            // and refresh after each complete usage
 
+            // always shuffle when all indices have been used
+            if (permutationIndex_ > srcSize_ - 1) {
+                aw::shuffleIntegerVector(permutationIndices_);
+                permutationIndex_ = 0;
+            }
+            // set to value from permutation
+            i_ = permutationIndices_[permutationIndex_];
+            // increment for each usage
+            permutationIndex_ += 1;
+
+            //std::cout << "created  permutationIndices_" << std::endl;
+            //aw::printVector(permutationIndices_);
+
+        }
 
         // if 5, random walk, take a random step size and perform modulo
         else if (selectionMethod_ == 5) {
             walkSwitch_ = aw::randomUnit();
             // range is inclusive of last value
-            std::cout << "Selector: random walk " << walkSwitch_ << " pre i_ " << i_  << std::endl;
-
+            //std::cout << "Selector: random walk " << walkSwitch_ << " pre i_ " << i_  << std::endl;
             if (walkSwitch_ > 0.5) {
                 i_ -= aw::randomIntegerRange(1, strideMagnitude_);
             } else {
                 i_ += aw::randomIntegerRange(1, strideMagnitude_);
             }
-            std::cout << "Selector: random walk " << walkSwitch_ << " post i_ " << i_  << std::endl;
-
             i_ = aw::mod(i_, srcSize_);
-
-            std::cout << "Selector: random walk " << walkSwitch_ << " post mod i_ " << i_ << std::endl;
 
         }
 
@@ -207,6 +231,10 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
     return value_;
 }
 
+
+
+
+} // end namespace aw
 
 
         // std::clog << "pre aw::denormalize: " << "refreshed!" << std::endl;

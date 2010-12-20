@@ -10,6 +10,11 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_System.h"
 
 
+
+
+namespace aw {
+
+
 // =============================================================================
 System :: System(int sr, int bs)
     : samplingRate_(sr),
@@ -32,3 +37,4 @@ int System :: getBlockSize() const
 
 
 
+} // end namespace aw

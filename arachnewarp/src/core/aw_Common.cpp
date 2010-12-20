@@ -23,14 +23,16 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
 
-
 #include "aw_Common.h"
 #include "aw_System.h"
 
 
+
+namespace aw {
+
 // =============================================================================
 //! Convert a aw::ParameterContext enum integer to a string representation. 
-std::string aw::parameterContextToString(aw::ParameterContext pc)
+std::string parameterContextToString(aw::ParameterContext pc)
 {
     std::string pcName;
     switch (pc) {     
@@ -65,7 +67,7 @@ std::string aw::parameterContextToString(aw::ParameterContext pc)
 // -----------------------------------------------------------------------------
 //! Convert a string representation to an aw::ParameterContext enumeration. 
 // pass a copy of the string, not a reference
-aw::ParameterContext aw::stringToParameterContext(std::string str)
+aw::ParameterContext stringToParameterContext(std::string str)
 {
     // copy of a string is pased, not a reference, so can edit in place
     // remove extra space, lower case
@@ -93,7 +95,7 @@ aw::ParameterContext aw::stringToParameterContext(std::string str)
 
 // -----------------------------------------------------------------------------
 //! Convert a aw::ParameterName enum integer to a string representation. 
-std::string aw::parameterNameToString(aw::ParameterName pn)
+std::string parameterNameToString(aw::ParameterName pn)
 {
     std::string pName;
     switch (pn) {     
@@ -150,7 +152,7 @@ std::string aw::parameterNameToString(aw::ParameterName pn)
 }
 
 // -----------------------------------------------------------------------------
-aw::ParameterName aw::stringToParameterName(std::string str)
+aw::ParameterName stringToParameterName(std::string str)
 {
     // copy of a string is pased, not a reference, so can edit in place
     // remove extra space, lower case
@@ -199,7 +201,7 @@ aw::ParameterName aw::stringToParameterName(std::string str)
 // -----------------------------------------------------------------------------
 //! Convert a string representation to an aw::GeneratorName enumeration. 
 // move this to generator factory?
-aw::GeneratorName aw::stringToGeneratorName(std::string str)
+aw::GeneratorName stringToGeneratorName(std::string str)
 {
     // copy of a string is pased, not a reference, so can edit in place
     // remove extra space, lower case
@@ -242,7 +244,7 @@ aw::GeneratorName aw::stringToGeneratorName(std::string str)
 
 // =============================================================================
 // unit interval transformations and value mapping
-double aw::denormalize(double value, double a, double b)
+double denormalize(double value, double a, double b)
 {
     // need to handle value beyond 0 and 1
     if (value < 0 || value > 1) 
@@ -261,7 +263,7 @@ double aw::denormalize(double value, double a, double b)
 // -----------------------------------------------------------------------------
 // modulus that is always positive; mod of negative values keeps sign
 //http://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
-int aw::mod(int x, int m) {
+int mod(int x, int m) {
     return (x % m + m) % m;
 }
 
@@ -275,7 +277,7 @@ int aw::mod(int x, int m) {
 
 
 // =============================================================================
-double aw::sampleTimeToSecondTime(aw::SampleTimeType sampleTime, int sr)
+double sampleTimeToSecondTime(aw::SampleTimeType sampleTime, int sr)
 {
     // given a number of samples into the future, determine how manuy 
     // seconds this takes
@@ -293,13 +295,13 @@ double aw::sampleTimeToSecondTime(aw::SampleTimeType sampleTime, int sr)
 
 
 // -----------------------------------------------------------------------------
-double aw::bpmToSecondTime(double bpm)
+double bpmToSecondTime(double bpm)
 {
     return (60.0 / bpm);
 }
 
 // -----------------------------------------------------------------------------
-double aw::secondTimeToSampleTime(double secondTime, int sr)
+double secondTimeToSampleTime(double secondTime, int sr)
 {
     // as this takes double second values, this must return doubles
     return secondTime * static_cast<double>(sr);
@@ -310,10 +312,10 @@ double aw::secondTimeToSampleTime(double secondTime, int sr)
 
 // =============================================================================
 // need global-level instance of BoostRandomEngine
-static aw::BoostRandomEngine randomEngine(std::time(0));                 
+static BoostRandomEngine randomEngine(std::time(0));                 
 
 // random double uniform values within the unit interval. 
-double aw::randomUnit()
+double randomUnit()
 {
     // assuming static here makes this more efficient
     static double const min = 0;
@@ -322,10 +324,22 @@ double aw::randomUnit()
     static aw::DistributionUniformReal dist(min, max);
     static aw::GeneratorUniformReal rng(randomEngine, dist);
     return rng();
-
 }
 
-aw::Int32Signed aw::randomIntegerRange(int a, int b)
+// get within range [0, n)
+aw::Int32Signed randomInteger(int a)
+{    
+    // create the distribution with the supplied args
+    // as inclusive, need to reduce upper boundary by 1
+    // no error check for negative values
+    DistributionUniformInt dist(0, a-1);
+    aw::GeneratorUniformInt rng(randomEngine, dist);    
+    return rng();
+}
+
+
+
+aw::Int32Signed randomIntegerRange(int a, int b)
 {    
     // create the distribution with the supplied args
     DistributionUniformInt dist(a, b);
@@ -336,6 +350,13 @@ aw::Int32Signed aw::randomIntegerRange(int a, int b)
 // see  for shuffle
 // http://stackoverflow.com/questions/147391/using-boostrandom-as-the-rng-for-stdrandom-shuffle
 // for ranges: std::swap()
+
+// Shuffle a vector of integers.
+void shuffleIntegerVector(std::vector<aw::Int32Signed>& v)
+{    
+    // shuffle in place, as passing by reference
+    std::random_shuffle(v.begin(), v.end(), aw::randomInteger); 
+}
 
 
 // -----------------------------------------------------------------------------
@@ -366,7 +387,7 @@ aw::Int32Signed aw::randomIntegerRange(int a, int b)
 // number conversions
 
 
-aw::Int32Signed aw::doubleToIntProabilistic(double n)
+aw::Int32Signed doubleToIntProabilistic(double n)
 {
     double up = std::ceil(n);
     double down = std::floor(n);
@@ -401,7 +422,7 @@ aw::Int32Signed aw::doubleToIntProabilistic(double n)
 
 // remove leading and trailing spaces and make lower case
 // pass by reference; used as a proc routine before string comparisons
-void aw::scrubString(std::string& str)
+void scrubString(std::string& str)
 {
     boost::to_lower(str);
     boost::erase_all(str, " ");
@@ -412,7 +433,7 @@ void aw::scrubString(std::string& str)
 
 // -----------------------------------------------------------------------------
 // http://notfaq.wordpress.com/2006/08/30/c-convert-int-to-string/
-std::string aw::numberToString(double n) 
+std::string numberToString(double n) 
 {
     std::stringstream out;
     out << n;
@@ -420,7 +441,7 @@ std::string aw::numberToString(double n)
 }
 
 // -----------------------------------------------------------------------------
-std::string aw::arrayDoubleToString(double* a, int size)
+std::string arrayDoubleToString(double* a, int size)
 {
     // first, convert array to vector string
     std::vector<std::string> tokens; // for storage of string conversion
@@ -442,7 +463,7 @@ std::string aw::arrayDoubleToString(double* a, int size)
 }
 
 // -----------------------------------------------------------------------------
-double aw::stringToDouble(const std::string& str) 
+double stringToDouble(const std::string& str) 
 {
     std::istringstream i(str);
     double x;
@@ -452,7 +473,7 @@ double aw::stringToDouble(const std::string& str)
 }
 
 // -----------------------------------------------------------------------------
-std::vector<double> aw::stringToVectorDouble(const std::string& str) 
+std::vector<double> stringToVectorDouble(const std::string& str) 
 {
     // split string by commas, do post scrubbing
     std::vector<std::string> pre = aw::splitString(str, ",", true);
@@ -475,7 +496,7 @@ std::vector<double> aw::stringToVectorDouble(const std::string& str)
 // -----------------------------------------------------------------------------
 // need to check that all chars are either numbers or point values
 // TODO: this method is not complete: need better condition checking
-bool aw::canConvertFromStringToDouble(const std::string& str) {
+bool canConvertFromStringToDouble(const std::string& str) {
     bool post; // if the are in the form value{3}
     double test;
 
@@ -496,7 +517,7 @@ bool aw::canConvertFromStringToDouble(const std::string& str) {
 // -----------------------------------------------------------------------------
 // TODO: this method is not complete: need better conditions
 // need to make sure that only characters are numerals or ,
-bool aw::canConvertFromStringToVectorDouble(const std::string& str) {
+bool canConvertFromStringToVectorDouble(const std::string& str) {
     bool post; // if the are in the form value{3}
     std::vector<double> test;
 
@@ -521,7 +542,7 @@ bool aw::canConvertFromStringToVectorDouble(const std::string& str) {
 
 
 // -----------------------------------------------------------------------------
-std::vector<std::string> aw::splitString(const std::string& srcRaw, 
+std::vector<std::string> splitString(const std::string& srcRaw, 
                                          const std::string& find, 
                                          bool postScrub) 
 {
@@ -546,7 +567,7 @@ std::vector<std::string> aw::splitString(const std::string& srcRaw,
 
 
 // -----------------------------------------------------------------------------
-int aw::countSubStrings(const std::string& srcRaw, const std::string& find)
+int countSubStrings(const std::string& srcRaw, const std::string& find)
 {
     int count(0); 
 
@@ -566,7 +587,7 @@ int aw::countSubStrings(const std::string& srcRaw, const std::string& find)
 
 
 // -----------------------------------------------------------------------------
-bool aw::stringWellFormed(const std::string& str, const std::string& open, const std::string& close) 
+bool stringWellFormed(const std::string& str, const std::string& open, const std::string& close) 
 {
     int countOpen(0); 
     int countClose(0); 
@@ -585,7 +606,7 @@ bool aw::stringWellFormed(const std::string& str, const std::string& open, const
 // =============================================================================
 
 //! Get the first parameter name
-void aw::getFirstParameterName(std::string& src, 
+void getFirstParameterName(std::string& src, 
                                std::string& out,
                                std::string& working) {
     int openCount(0);
@@ -631,7 +652,7 @@ void aw::getFirstParameterName(std::string& src,
 
 // -----------------------------------------------------------------------------
 //! Get the first delimited range of a parameter statements.
-void aw::getFirstParameterArguments(std::string& src, 
+void getFirstParameterArguments(std::string& src, 
                                     std::string& out, 
                                     std::string& working) {
     int openCount(0);
@@ -679,7 +700,7 @@ void aw::getFirstParameterArguments(std::string& src,
 // -----------------------------------------------------------------------------
 //! Get the first parameter context string.
 // TODO: this may rely on there being no spaces between braces; need to scrub
-void aw::getFirstParameterContext(std::string& src, 
+void getFirstParameterContext(std::string& src, 
                                   std::string& out, 
                                   std::string& working) {
     int openCount(0);
@@ -743,7 +764,7 @@ void aw::getFirstParameterContext(std::string& src,
 
 // -----------------------------------------------------------------------------
 //! Get the first group of three parameter components. The working string returns the remaining string. 
-void aw::getFirstParameterTrio(std::string& src, // input
+void getFirstParameterTrio(std::string& src, // input
                                std::string& name, // output to write to
                                std::string& arguments,
                                std::string& context,
@@ -781,18 +802,18 @@ void aw::getFirstParameterTrio(std::string& src, // input
 
 // =============================================================================
 
-void aw::printDebug(const char* c)
+void printDebug(const char* c)
 {
     std::cout << "aw_Common::printDebug(): " << c << std::endl;
 }
 
 
-void aw::printDebug(std::string& str)
+void printDebug(std::string& str)
 {
     std::cout << "aw_Common::printDebug(): " << str << std::endl;
 }
 
-void aw::printDebug(double v)
+void printDebug(double v)
 {
     std::cout << "aw_Common::printDebug(): " << numberToString(v) << std::endl;
 }
@@ -803,7 +824,7 @@ void aw::printDebug(double v)
 // =============================================================================
 //! Given an array, print to standard output.
 // we must provide a length argument
-void aw::printArray (double arg[], aw::Int32Signed length, const std::string& header) 
+void printArray (double arg[], aw::Int32Signed length, const std::string& header) 
 {
     std::vector<std::string> tokens; // for storage of string conversion
 
@@ -822,7 +843,7 @@ void aw::printArray (double arg[], aw::Int32Signed length, const std::string& he
 
 //! Given a vector, print to standard out. A `header` argyment can be included. 
 template <typename T>
-void aw::printVector (const std::vector<T>& src, const std::string& header) 
+void printVector (const std::vector<T>& src, const std::string& header) 
 {
     std::vector<std::string> tokens; // for storage of string conversion
     typedef typename std::vector<T>::const_iterator IterType;
@@ -844,9 +865,9 @@ void aw::printVector (const std::vector<T>& src, const std::string& header)
 // these are required for each class of the tempalte
 // necessary b/c of template definition in header: http://www.parashift.com/c++-faq-lite/templates.html#faq-35.13
 // solve linking errors by providing samples
-template void aw::printVector<int> (const std::vector<int>& src, const std::string& header);
+template void printVector<int> (const std::vector<int>& src, const std::string& header);
 //template void aw::printVector<aw::Int32Signed> (const std::vector<aw::Int32Signed>& src, const std::string& header);
-template void aw::printVector<double> (const std::vector<double>& src, const std::string& header);
+template void printVector<double> (const std::vector<double>& src, const std::string& header);
 
 
 
@@ -887,3 +908,10 @@ template void aw::printVector<double> (const std::vector<double>& src, const std
 //     };
 //     std::cout << header << ": " << boost::join(tokens, " | ") << std::endl;
 // }
+
+
+
+} // end namespace aw
+
+
+

@@ -19,10 +19,14 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+namespace aw {
+
+
+
 // =============================================================================
 // constructor
-PanStereo :: PanStereo(SystemPtr o)
-    : PolyGenerator :: PolyGenerator(o) // call base class constructor
+PanStereo :: PanStereo(aw::SystemPtr o)
+    : aw::PolyGenerator::PolyGenerator(o) // call base class constructor
 {
     init();
 }
@@ -87,3 +91,7 @@ aw::WorkingArrayPtr PanStereo :: getPolyAtSample(aw::SampleTimeType st)
 
     return workingArray_;
 }
+
+
+
+} // end namespace aw

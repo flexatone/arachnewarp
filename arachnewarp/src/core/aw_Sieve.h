@@ -15,6 +15,13 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/shared_ptr.hpp>
 
 #include "aw_ResidualClass.h"
+#include "aw_Common.h"
+
+
+
+
+
+namespace aw {
 
 
 //! Model of a Xenakis sieve.
@@ -42,7 +49,11 @@ private:
 
     // cannot create just a floating instance
     // ResidualClass q("3@2");
-} ;
+} ; // end class Sieve
+
+
+
+} // end namespace aw
 
 
 #endif

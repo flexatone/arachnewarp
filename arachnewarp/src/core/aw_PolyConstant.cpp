@@ -18,13 +18,17 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+
+namespace aw {
+
+
 // =============================================================================
 // constructor
 // :: defines a member of a class from outside the class definition itself
 //! Doc in cpp
 /// longer doc in cpp
-PolyConstant :: PolyConstant(SystemPtr o)
-    : PolyGenerator :: PolyGenerator(o) // call base class constructor
+PolyConstant :: PolyConstant(aw::SystemPtr o)
+    : aw::PolyGenerator::PolyGenerator(o) // call base class constructor
 {
     init();
 }
@@ -210,3 +214,8 @@ aw::WorkingArrayPtr PolyConstant :: getPolyAtSample(aw::SampleTimeType)
     // returning the pointer to the vector
     return workingArray_;
 }
+
+
+
+} // end namespace aw
+

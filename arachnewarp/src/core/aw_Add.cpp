@@ -16,10 +16,13 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+namespace aw {
+
+
 // =============================================================================
 // constructor
-Add :: Add(SystemPtr o)
-    : Generator :: Generator(o) // call base class constructor
+Add :: Add(aw::SystemPtr o)
+    : aw::Generator::Generator(o) // call base class constructor
 {
     init();
 }
@@ -90,3 +93,6 @@ double Add :: getValueAtSample(aw::SampleTimeType st)
 };    
 
 
+
+
+} // end namespace aw

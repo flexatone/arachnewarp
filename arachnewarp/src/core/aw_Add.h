@@ -13,40 +13,47 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/shared_ptr.hpp>
 
 #include "aw_Generator.h"
+#include "aw_Common.h"
 
 
-class Add; // forward declarator
-typedef boost::shared_ptr<Add> AddPtr;
+
+namespace aw {
 
 
-//! Generator that adds up to four input Generators
-class Add: public Generator 
-{
-public:
+    class Add; // forward declarator
+    typedef boost::shared_ptr<Add> AddPtr;
+    
+    
+    //! Generator that adds up to four input Generators
+    class Add: public aw::Generator 
+    {
+    public:
+    
+        // constructor; args passed to base class
+        Add(aw::SystemPtr sys); 
+    
+        virtual ~Add();
+    
+        virtual std::string getName();
+    
+        void init();
+    
+        void reset();
+    
+        virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+    
+    
+    private:
+    
+        double value1_;
+        double value2_;
+        double value3_;
+        double value4_;
+            
+    } ; // end class Add
 
-    // constructor; args passed to base class
-    Add(SystemPtr sys); 
 
-    virtual ~Add();
-
-    virtual std::string getName();
-
-    void init();
-
-    void reset();
-
-    virtual double getValueAtSample(aw::SampleTimeType sampleTime);
-
-
-private:
-
-    double value1_;
-    double value2_;
-    double value3_;
-    double value4_;
-        
-} ;
-
+} // end namespace aw
 
 
 #endif

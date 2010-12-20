@@ -18,9 +18,14 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+
+namespace aw {
+
+
+
 // =============================================================================
-PolyGenerator :: PolyGenerator(SystemPtr o)
-    : Generator :: Generator(o) // call base class constructor
+PolyGenerator :: PolyGenerator(aw::SystemPtr o)
+    : aw::Generator::Generator(o) // call base class constructor
 {
     init();
 }
@@ -82,3 +87,8 @@ aw::WorkingArrayPtr PolyGenerator :: getPolyAtSample(aw::SampleTimeType st)
     // basic behavior is to return pointer to double array
     return workingArray_;
 };    
+
+
+
+} // end namespace aw
+

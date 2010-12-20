@@ -16,13 +16,17 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Common.h"
 #include "aw_Constant.h"
 #include "aw_PolyConstant.h"
-
 #include "aw_GeneratorFactory.h"
+
+
+
+
+namespace aw {
 
 
 // =============================================================================
 // constructor
-Generator :: Generator(SystemPtr o)
+Generator :: Generator(aw::SystemPtr o)
     // references cannot be assigned implicitly; must initialize
     : sys_(o), // initialize
     // default polySize is one
@@ -300,7 +304,7 @@ void Generator :: setParameter(const aw::ParameterName p,
         throw std::invalid_argument("invalid parameter for this generator: " + getName());
     }
     if (!isValidContext(p, pc)) {
-        throw std::invalid_argument("invalid context for this generator");
+        throw std::invalid_argument("invalid context for this parameter: " + aw::parameterNameToString(p) + " context:" + aw::parameterContextToString(pc));
     }
     // check that a valid generator type is being provided
     if (!isValidGenerator(p, g->getGeneratorType())) {
@@ -715,6 +719,10 @@ void Generator :: printParameterDiagnostic()
         std::clog << " // sample value: " << (*s)->getValueAtSample(0) << std::endl;
     }
 }
+
+
+
+} // end namespace aw
 
 
 

@@ -16,6 +16,9 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <gtest/gtest.h>
 
 
+using namespace aw;
+
+
 
 // provide testCase, name
 TEST(BasicTests, SelectorBasic) {
@@ -337,7 +340,83 @@ TEST(BasicTests, SelectorRefresh) {
     EXPECT_EQ(gen2->getValueAtSample(9), 5);
 
 
+}
+
+
+
+
+
+
+TEST(BasicTests, SelectorPermutations) {
+
+
+    SystemPtr sys(new System(44100)); // smart pointer
+    GeneratorFactory gf(sys); // one instance
+
+
+//     EXPECT_EQ(gen2->getValueAtSample(0), 6);
+//     EXPECT_EQ(gen2->getValueAtSample(1), 7);
+//     EXPECT_EQ(gen2->getValueAtSample(2), 8);
+//     EXPECT_EQ(gen2->getValueAtSample(3), 9);
+//     EXPECT_EQ(gen2->getValueAtSample(8), 6);
+//     EXPECT_EQ(gen2->getValueAtSample(9), 7);
+
+    double sum(0);
+    int count(0);
+    double avg(0);
+    double x(0);
+
+    
+
+    GeneratorPtr gen1 = gf.create("Selector{ \
+        valueList{1,2,3,4} \
+        selectionMethod{4}  \
+        refresh{1}{samples}  \
+    }");
+    for (int i=0; i < 20; i++) {    
+        // reset for each call
+        sum = 0;
+        count = 0;
+        // 4 here is the number of unique values
+        for (int i=0; i<4; i++) {
+            // try to shuffle in place
+            x = gen1->getValueAtSample(i);
+            //std::cout << "x " << x << std::endl;
+            sum += x;
+            count += 1;
+            }
+        avg = sum / count;
+        EXPECT_EQ(avg, 2.5);
+        EXPECT_EQ(sum, 10);
+        }
+
+
+
+    gen1 = gf.create("Selector{ \
+        valueList{1,2,3,4,5,6,7,8,9,10,11,12} \
+        selectionMethod{4}  \
+        refresh{1}{samples}  \
+    }");
+    for (int i=0; i < 20; i++) {    
+        // reset for each call
+        sum = 0;
+        count = 0;
+        // 4 here is the number of unique values
+        for (int i=0; i<12; i++) {
+            // try to shuffle in place
+            x = gen1->getValueAtSample(i);
+            //std::cout << "y " << x << std::endl;
+            sum += x;
+            count += 1;
+            }
+        avg = sum / count;
+        EXPECT_EQ(avg, 6.5);
+        EXPECT_EQ(sum, 78);
+        }
+
+
 
 
 }
+
 

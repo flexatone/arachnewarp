@@ -13,38 +13,49 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/shared_ptr.hpp>
 
 #include "aw_Generator.h"
+#include "aw_Common.h"
 
 
-class Multiply; // forward declarator
-typedef boost::shared_ptr<Multiply> MultiplyPtr;
 
 
-//! Generator of multiplied inputs
-class Multiply: public Generator 
-{
-public:
 
-    // constructor; args passed to base class
-    Multiply(SystemPtr sys); 
-    virtual ~Multiply();
-
-    virtual std::string getName();
-
-    void init();
-
-    void reset();
-
-    virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+namespace aw {
 
 
-private:
+    class Multiply; // forward declarator
+    typedef boost::shared_ptr<Multiply> MultiplyPtr;
+    
+    
+    //! Generator of multiplied inputs
+    class Multiply: public aw::Generator 
+    {
+    public:
+    
+        // constructor; args passed to base class
+        Multiply(aw::SystemPtr sys); 
+        virtual ~Multiply();
+    
+        virtual std::string getName();
+    
+        void init();
+    
+        void reset();
+    
+        virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+    
+    
+    private:
+    
+        double value1_;
+        double value2_;
+        double value3_;
+        double value4_;
+            
+    } ; // end class Multiply
 
-    double value1_;
-    double value2_;
-    double value3_;
-    double value4_;
-        
-} ;
+
+
+} // end namespace aw
 
 
 

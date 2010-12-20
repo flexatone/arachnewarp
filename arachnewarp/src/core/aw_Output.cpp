@@ -7,9 +7,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 #include <sndfile.hh>
-
 #include <boost/scoped_array.hpp>
-
 
 #include "aw_Output.h"
 #include "aw_Generator.h"
@@ -17,8 +15,11 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+namespace aw {
+
+
 // =============================================================================
-Output :: Output(SystemPtr o)
+Output :: Output(aw::SystemPtr o)
     : sys_(o) // initialize
 {
 }
@@ -26,7 +27,7 @@ Output :: Output(SystemPtr o)
 
 
 // =============================================================================
-int Output :: write(GeneratorPtr gen, double dur, char* fp, int fileFormat)
+int Output :: write(aw::GeneratorPtr gen, double dur, char* fp, int fileFormat)
 {
 
 	// char* outfilename="/Volumes/xdisc/_sync/_x/src/arachneWarp/out/foo.wav";
@@ -64,6 +65,7 @@ int Output :: write(GeneratorPtr gen, double dur, char* fp, int fileFormat)
         // other methods of creating storage array, pre file writing, led 
         // to problems over a certain size; thus, a dynamic array must be used
         // the boost scoped array manages deletion
+        // other approaches that work
         //float *sample = new float [sampleCount];
         //float sample[sampleCount]; // this fails over a certain size
         boost::scoped_array<float> sample(new float[sampleCount]);
@@ -100,7 +102,7 @@ int Output :: write(GeneratorPtr gen, double dur, char* fp, int fileFormat)
 }
 
 
-int Output :: write(GeneratorPtr gen, double dur, char* fp)
+int Output :: write(aw::GeneratorPtr gen, double dur, char* fp)
 {
 
 	int format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
@@ -109,7 +111,7 @@ int Output :: write(GeneratorPtr gen, double dur, char* fp)
 }
 
 
-int Output :: write(GeneratorPtr gen, double dur)
+int Output :: write(aw::GeneratorPtr gen, double dur)
 {
 
 	char* fp="/Volumes/xdisc/_sync/_x/src/arachneWarp/out/foo.wav";
@@ -117,3 +119,6 @@ int Output :: write(GeneratorPtr gen, double dur)
     return write(gen, dur, fp, format);
 
 }
+
+
+} // end namespace aw

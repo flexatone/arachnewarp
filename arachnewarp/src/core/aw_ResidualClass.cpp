@@ -18,6 +18,13 @@
 #include "aw_ResidualClass.h"
 
 
+
+
+namespace aw {
+
+
+
+
 // =============================================================================
 // constructor
 ResidualClass::ResidualClass(int m, int s)
@@ -118,3 +125,4 @@ std::vector<int> ResidualClass::segment(int n, std::vector<int> &z)
 
 
 
+} // end namespace aw

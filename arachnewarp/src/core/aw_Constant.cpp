@@ -4,18 +4,24 @@
 Copyright 2010 Flexatone HFP. All rights reserved.
 */
 
-#include "aw_Constant.h"
 
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
-
 #include <iostream>
 #include <sstream>
 
+#include "aw_Constant.h"
+
+
+
+
+namespace aw {
+
+
 // =============================================================================
 //! Constructor
-Constant :: Constant(SystemPtr o)
-    : Generator :: Generator(o) // call base class Constructor
+Constant :: Constant(aw::SystemPtr o)
+    : aw::Generator::Generator(o) // call base class Constructor
 {      
     init();
 }
@@ -163,3 +169,8 @@ double Constant :: getValueAtSample(aw::SampleTimeType sampleTime)
     // std::cout << "Constant.getValueAtSample: current value of value: " << value << std::endl;
     return value_;
 }    
+
+
+
+} // end namespace aw
+

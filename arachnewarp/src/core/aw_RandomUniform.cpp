@@ -24,10 +24,15 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_System.h"
 
 
+
+
+namespace aw {
+
+
 // =============================================================================
 // constructor
-RandomUniform :: RandomUniform(SystemPtr o)
-        : Generator :: Generator(o), // call base class Constructor
+RandomUniform :: RandomUniform(aw::SystemPtr o)
+        : aw::Generator::Generator(o), // call base class Constructor
         sampleTimeLastRefresh_(0),
         value_(0)
 {      
@@ -114,5 +119,8 @@ double RandomUniform :: getValueAtSample(aw::SampleTimeType st)
         pMap_[aw::pNameMaximum]->getValueAtSample(st)
         );
 }    
+
+
+} // end namespace aw
 
 
