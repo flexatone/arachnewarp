@@ -17,6 +17,8 @@
 
 #include "aw_ResidualClass.h"
 
+using namespace aw;
+
 
 // provide testCase, name
 TEST(BasicTests, ResidualClassBasic) {

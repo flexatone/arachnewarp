@@ -6,21 +6,24 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 */
 
 
-
-#include "aw_Click.h"
-#include "aw_Common.h"
-
 #include <cmath>
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
+#include "aw_Click.h"
+#include "aw_Common.h"
+
+
+
+
+namespace aw {
 
 
 // =============================================================================
 // constructor
 // :: defines a member of a class from outside the class definition itself
 Click :: Click(SystemPtr o)
-    : Generator :: Generator(o) // call base class constructor
+    : aw::Generator::Generator(o) // call base class constructor
 {
     init();
 }
@@ -107,5 +110,5 @@ double Click :: getValueAtSample(aw::SampleTimeType st)
 };    
 
 
-
+} // end namespace aw
 

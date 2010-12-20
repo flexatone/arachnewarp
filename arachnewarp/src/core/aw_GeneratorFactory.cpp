@@ -25,8 +25,14 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_PanStereo.h"
 #include "aw_PolyAdd.h"
 
+
+
+
+namespace aw {
+
+
 // =============================================================================
-GeneratorFactory :: GeneratorFactory(SystemPtr o)
+GeneratorFactory :: GeneratorFactory(aw::SystemPtr o)
     : sys_(o) // initialize
 {
 }
@@ -41,55 +47,55 @@ GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
 {
     switch (gn) {     
         case aw::gNameAdd: {
-            AddPtr g(new Add(sys_));
+            aw::AddPtr g(new aw::Add(sys_));
             return g;
             }
         case aw::gNameMultiply: {
-            MultiplyPtr g(new Multiply(sys_));
+            aw::MultiplyPtr g(new aw::Multiply(sys_));
             return g;
             }
         case aw::gNameConstant: {
-            ConstantPtr g(new Constant(sys_));
+            aw::ConstantPtr g(new aw::Constant(sys_));
             return g;
             }
         case aw::gNameRandomUniform: {
-            RandomUniformPtr g(new RandomUniform(sys_));
+            aw::RandomUniformPtr g(new aw::RandomUniform(sys_));
             return g;
             }
         case aw::gNameWaveSine: {
-            WaveSinePtr g(new WaveSine(sys_));
+            aw::WaveSinePtr g(new aw::WaveSine(sys_));
             return g;
             }
         case aw::gNameWaveSquare: {
-            WaveSquarePtr g(new WaveSquare(sys_));
+            aw::WaveSquarePtr g(new aw::WaveSquare(sys_));
             return g;
             }
         case aw::gNameFilterLowPass: {
-            FilterLowPassPtr g(new FilterLowPass(sys_));
+            aw::FilterLowPassPtr g(new aw::FilterLowPass(sys_));
             return g;
             }
         case aw::gNameFilterHighPass: {
-            FilterHighPassPtr g(new FilterHighPass(sys_));
+            aw::FilterHighPassPtr g(new aw::FilterHighPass(sys_));
             return g;
             }
         case aw::gNameClick: {
-            ClickPtr g(new Click(sys_));
+            aw::ClickPtr g(new aw::Click(sys_));
             return g;
             }
         case aw::gNamePolyConstant: {
-            PolyConstantPtr g(new PolyConstant(sys_));
+            aw::PolyConstantPtr g(new aw::PolyConstant(sys_));
             return g;
             }
         case aw::gNameSelector: {
-            SelectorPtr g(new Selector(sys_));
+            aw::SelectorPtr g(new aw::Selector(sys_));
             return g;
             }
         case aw::gNamePanStereo: {
-            PanStereoPtr g(new PanStereo(sys_));
+            aw::PanStereoPtr g(new aw::PanStereo(sys_));
             return g;
             }
         case aw::gNamePolyAdd: {
-            PolyAddPtr g(new PolyAdd(sys_));
+            aw::PolyAddPtr g(new aw::PolyAdd(sys_));
             return g;
             }
 
@@ -145,3 +151,6 @@ GeneratorPtr GeneratorFactory :: create(char* const charArray)
     GeneratorPtr g = create(gn); // pass to string version
     return g;
 }
+
+
+} // end namespace aw

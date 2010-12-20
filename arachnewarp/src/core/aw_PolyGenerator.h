@@ -12,22 +12,30 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <boost/array.hpp>
+
 #include "aw_Generator.h"
+#include "aw_Common.h"
+
+
+
+
+
+namespace aw {
+
 
 
 class PolyGenerator; // forward declarator
-
 typedef boost::shared_ptr<PolyGenerator> PolyGeneratorPtr;
 
 
-//! Base class of PolyGenerators, objects that are specialized to return/provide multiple values. These values are passed as a pointer to an array, where array values are refreshed with each call. 
+//! Base class of PolyGenerators, objects that are specialized to return/provide multiple values from an array of static size. These values are passed as a pointer to an array, where array values are refreshed from the source (usually a PolyConstant) with each call. 
 
-class PolyGenerator: public Generator 
+class PolyGenerator: public aw::Generator 
 {
 public:
 
     // constructor
-    PolyGenerator(SystemPtr sys); 
+    PolyGenerator(aw::SystemPtr sys); 
 
     virtual ~PolyGenerator();
 
@@ -51,7 +59,7 @@ public:
 
 protected:
 
-    //! Working array of double values for passing by pointer from 
+    //! Working array of double values for passing by pointer to callers. Note that this array does not have to be used; instead, a working array pointer received from an embedded parameter object can be used. Default working array size is 128. 
     double workingArray_[aw::maximumPolySize];
 
     // TODO: might use this instead in the future
@@ -61,7 +69,12 @@ protected:
     //! Store a default fold-down method for moving from a poly representation to a single value. 
     aw::FoldDownMethod defaultFoldDownMethod_;
     
-} ;
+} ; // end class PolyGenerator
+
+
+
+
+} // end namespace aw
 
 
 

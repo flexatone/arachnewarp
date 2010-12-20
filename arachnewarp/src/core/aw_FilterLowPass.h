@@ -13,43 +13,51 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/shared_ptr.hpp>
 
 #include "aw_Generator.h"
+#include "aw_Common.h"
 
 
-class FilterLowPass; // forward declarator
-typedef boost::shared_ptr<FilterLowPass> FilterLowPassPtr;
 
 
-//! Generator of multiplied inputs
-class FilterLowPass: public Generator 
-{
-public:
-
-    // constructor; args passed to base class
-    FilterLowPass(SystemPtr sys); 
-    virtual ~FilterLowPass();
-
-    virtual std::string getName();
-
-    void init();
-
-    void reset();
-
-    virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+namespace aw {
 
 
-private:
+    class FilterLowPass; // forward declarator
+    typedef boost::shared_ptr<FilterLowPass> FilterLowPassPtr;
+    
+    
+    //! Generator of multiplied inputs
+    class FilterLowPass: public aw::Generator 
+    {
+    public:
+    
+        // constructor; args passed to base class
+        FilterLowPass(aw::SystemPtr sys); 
+        virtual ~FilterLowPass();
+    
+        virtual std::string getName();
+    
+        void init();
+    
+        void reset();
+    
+        virtual double getValueAtSample(aw::SampleTimeType sampleTime);
+    
+    
+    private:
+    
+        double fqCutoff_;
+        double w_;
+        double norm_;
+        double zNeg1_;
+        double value_;
+        double a0_;
+        double a1_;
+        double b1_;
+            
+    } ; // end class FilterLowPass
 
-    double fqCutoff_;
-    double w_;
-    double norm_;
-    double zNeg1_;
-    double value_;
-    double a0_;
-    double a1_;
-    double b1_;
-        
-} ;
 
+} // end namespace aw
 
 
 #endif

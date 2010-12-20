@@ -17,11 +17,15 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
+
+namespace aw {
+
+
 // =============================================================================
 // constructor
 // :: defines a member of a class from outside the class definition itself
-WaveSquare :: WaveSquare(SystemPtr o)
-    : Generator :: Generator(o) // call base class constructor
+WaveSquare :: WaveSquare(aw::SystemPtr o)
+    : aw::Generator::Generator(o) // call base class constructor
 {
     init();
 }
@@ -126,4 +130,6 @@ double WaveSquare :: getValueAtSample(aw::SampleTimeType st)
 
 
 
+
+} // end namespace aw
 

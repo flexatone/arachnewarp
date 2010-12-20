@@ -5,14 +5,17 @@ Created by Christopher Ariza on 6/30/10.
 Copyright 2010 Flexatone HFP. All rights reserved.
 */
 
-
-
-
 #ifndef AW_SYSTEM_H    
 #define AW_SYSTEM_H
 
-
 #include <boost/shared_ptr.hpp>
+
+#include "aw_Common.h"
+
+
+
+
+namespace aw {
 
 class System; // forward declaration
 typedef boost::shared_ptr<System> SystemPtr;
@@ -41,8 +44,10 @@ private:
     int blockSize_;
 
 
-} ;
+} ; // end class System
 
+
+} // end namespace aw
 
 
 

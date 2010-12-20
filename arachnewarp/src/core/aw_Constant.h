@@ -12,6 +12,12 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 #include "aw_System.h"
 #include "aw_Generator.h"
+#include "aw_Common.h"
+
+
+
+
+namespace aw {
 
 
 class Constant; // forward declaration
@@ -19,12 +25,12 @@ typedef boost::shared_ptr<Constant> ConstantPtr;
 
 
 //! Base class of all generators
-class Constant: public Generator
+class Constant: public aw::Generator
 {
 public:
 
     // constructors
-    Constant(SystemPtr o); 
+    Constant(aw::SystemPtr o); 
 
     virtual ~Constant();
 
@@ -59,7 +65,12 @@ public:
 private:
     double value_;
         
-} ;
+} ; // end class Constant
+
+
+
+} // end namespace aw
+
 
 
 #endif

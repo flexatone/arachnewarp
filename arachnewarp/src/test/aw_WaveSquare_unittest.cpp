@@ -17,6 +17,9 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <stdexcept>
 
 
+using namespace aw;
+
+
 
 // provide testCase, name
 TEST(BasicTests, WaveSquareBasic) {

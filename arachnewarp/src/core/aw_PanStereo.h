@@ -14,19 +14,23 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 #include "aw_Generator.h"
 #include "aw_PolyGenerator.h"
+#include "aw_Common.h"
+
+
+
+namespace aw {
 
 
 class PanStereo; // forward declarator
-
 typedef boost::shared_ptr<PanStereo> PanStereoPtr;
 
 //! PolyGenerator that returns two values, one for each channel. Pan values, as defined by aw::pNamePanLeftRight, are always between 0 and 1. 
 
-class PanStereo: public PolyGenerator 
+class PanStereo: public aw::PolyGenerator 
 {
 public:
 
-    PanStereo(SystemPtr sys); 
+    PanStereo(aw::SystemPtr sys); 
 
     ~PanStereo();
 
@@ -46,7 +50,9 @@ private:
     //! Store amp derive from operator
     double amp_;
    
-} ;
+} ; // end class PanStereo
+
+} // end namespace aw
 
 
 

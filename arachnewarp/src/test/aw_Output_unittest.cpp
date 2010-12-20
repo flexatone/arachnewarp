@@ -19,6 +19,9 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_GeneratorFactory.h"
 
 
+using namespace aw;
+
+
 // provide testCase, name
 TEST(BasicTests, Output001) {
 
@@ -675,33 +678,117 @@ TEST(BasicTests, Output011) {
     // refresh here determines how long until new pitch selection  time 
     // values are drawn; if longer than minimum, results in repeated values
     // floating point stride values result in probabilistic rounding
-    GeneratorPtr gen1 = gf.create(
-    "wavesine{ \
-        rate{selector{\
-                valueList{460, 400, 360, 300, 260, 200} \
-                selectionMethod{5} \
-                stride{1.5} \
-                refresh{selector{   \
-                    valueList{.125, .5, 1, .25} \
-                    selectionMethod{0} \
-                    refresh{1.5}{sec} \
-                    } \
-                }{sec} \
-                }\
-            }{hertz}  \
-    }");
+    //                 valueList{460, 400, 360, 300, 260, 200} \
+    //                 valueList{50, 51, 52.25, 55, 58, 61} \
+    //                 valueList{60, 61, 62.25, 65, 68, 71} \
 
- 
+
+
+//     GeneratorPtr gen1 = gf.create(
+//     "wavesine{ \
+//         rate{selector{\
+//                 valueList{40, 65, 80} \
+//                 selectionMethod{4} \
+//                 stride{1.5} \
+//                 refresh{selector{   \
+//                     valueList{.125, .5, 1, .25} \
+//                     selectionMethod{0} \
+//                     refresh{1.5}{sec} \
+//                     } \
+//                 }{sec} \
+//                 }\
+//             }{pitch}  \
+//     }");
+// 
+//  
+
+
+    // voice 1
+    GeneratorPtr gen1a = gf.create(
+    "selector{\
+        valueList{40, 65, 68} \
+        selectionMethod{4} \
+        stride{1} \
+        refresh{ \
+            selector{   \
+                valueList{.125, .5, 1, .25, 4} \
+                selectionMethod{0} \
+                refresh{1.5}{sec} \
+            } \
+        }{sec} \
+    }"); 
+
+    GeneratorPtr gen1b = gf.create("filterLowPass{rate{240}{hertz}}");
+    gen1b->setParameter("op1", gen1a);
+
+    GeneratorPtr gen1c = gf.create("wavesine{min{-1}max{1}}");
+    gen1c->setParameter("rate", gen1b, "pitch");
+
+    GeneratorPtr gen1e = gf.create("multiply{op1{.2}}");
+    gen1e->setParameter("op2", gen1c);
+
+
+    GeneratorPtr gen1d = gf.create(" \
+        panstereo{ \
+            panleftright{ \
+                wavesine{rate{4 \
+                    }{sec} \
+                min{0} \
+                max{.4} \
+                } \
+            } \
+        }");
+    gen1d->setParameter("op1", gen1e);
+
+
+    // voice 2
+    GeneratorPtr gen2a = gf.create(
+    "selector{\
+        valueList{50, 20, 51, 55, 58, 61} \
+        selectionMethod{5} \
+        stride{1.5} \
+        refresh{ \
+            selector{   \
+                valueList{.125, 2, .25, .125, .5} \
+                selectionMethod{0} \
+                refresh{2}{sec} \
+            } \
+        }{sec} \
+    }"); 
+
+    GeneratorPtr gen2b = gf.create("filterLowPass{rate{240}{hertz}}");
+    gen2b->setParameter("op1", gen2a);
+
+    GeneratorPtr gen2c = gf.create("wavesine{min{-1}max{1}}");
+    gen2c->setParameter("rate", gen2b, "pitch");
+
+    GeneratorPtr gen2e = gf.create("multiply{op1{.2}}");
+    gen2e->setParameter("op2", gen2c);
+
+    GeneratorPtr gen2d = gf.create(" \
+        panstereo{ \
+            panleftright{ \
+                wavesine{rate{4 \
+                    }{sec} \
+                min{.7} \
+                max{1} \
+                } \
+            } \
+        }");
+    gen2d->setParameter("op1", gen2e);
+
+
+
     //EXPECT_EQ(gen1->getParameterString(true), "WaveSine{rate{Selector{valueList{360,220,3000}selectionMethod{3}refresh{10}{seconds}}}{frequency}minimum{-0.8}maximum{0.8}}");
 
 
     GeneratorPtr gen5 = gf.create("polyAdd");
-    gen5->setParameter("op1", gen1);
-//     gen5->setParameter("op2", gen2a);
+    gen5->setParameter("op1", gen1d);
+    gen5->setParameter("op2", gen2d);
 //     gen5->setParameter("op3", gen3a);
 //     gen5->setParameter("op4", gen4a);
 
-    out.write(gen5, 10, "/Volumes/xdisc/_sync/_x/src/arachneWarp/out/test.wav");
+    //out.write(gen5, 10, "/Volumes/xdisc/_sync/_x/src/arachneWarp/out/test.wav");
 }
 
 

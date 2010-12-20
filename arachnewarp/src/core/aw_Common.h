@@ -242,6 +242,11 @@ double randomUnit();
 //! Random integers within a range, inclusive.
 aw::Int32Signed randomIntegerRange(int a, int b);
 
+//! Random integers within the range [0, n)
+aw::Int32Signed randomInteger(int a);
+
+void shuffleIntegerVector(std::vector<aw::Int32Signed>& v);
+
 
 // aw::Int32Signed randomRange(aw::Int32Signed a, aw::Int32Signed b);
 
