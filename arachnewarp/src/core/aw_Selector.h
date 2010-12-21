@@ -68,7 +68,7 @@ private:
     // get as a double; will need to round to an int
     int strideMagnitude_;
 
-    //! Used for storing indices for random permutation processing
+    //! Used for storing indices for random permutation processing. As a vector, this will grow as needed.
     std::vector<int> permutationIndices_;
     //! Store how many permutated values have been counted. 
     int permutationIndex_;

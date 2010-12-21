@@ -61,8 +61,20 @@ public:
     //! Return the Generator type, either aw::gTypeMono or aw::gTypePoly
     aw::GeneratorType getGeneratorType();
 
+    // -------------------------------------------------------------------------
+    // These methods provide compatibility with PolyGenerator, but are not implemented for normal Generators.
+
     //! Return active polySize. For Generators this is always 1; for PolyGenerators this may be 1 or greater.
-    int getPolySize();
+    virtual int getPolyDepth();
+
+    //! Initialize all working array values to zero.
+    virtual void clearWorkingArray();
+
+    // Only applicable to PolyGenerators
+    virtual void resizeWorkingArray(int size);
+
+
+
 
 
     // -------------------------------------------------------------------------
@@ -194,10 +206,6 @@ public:
 
 
 
-    // -------------------------------------------------------------------------
-    // attributes; probably should be protected
-
-
 protected:
 
     //! Reference to System object contained within this Generator.
@@ -210,8 +218,10 @@ protected:
     // this parameter be not be necessary with a unification of mono/poly types
     aw::GeneratorType gt_;
 
-    //! The active size used (active data) on the poly array. For all Generators this is 1. 
-    int unsigned polySize_;
+    //! The active depth used (active data) on the poly array. For all Generators this is 1. For PolyGenerators this is 1 or larger
+    int unsigned polyDepth_;
+    //! Store current size of workingArray as actually allocated, not just what is used as defined by polyDepth_.
+    int unsigned polyDepthAllocated_;
 
     // -------------------------------------------------------------------------
 
@@ -232,7 +242,7 @@ protected:
 
     // -------------------------------------------------------------------------
 
-    //! Double storage of a value resulting from a processing called. Used to simulate PolyGenerator functionality in a Generator. Not relevant for PolyGenerators.
+    //! Double type storage of a value resulting from a processing called. Used to simulate PolyGenerator functionality in a Generator. Not relevant for PolyGenerators.
     double workingValue_; // current working value
 
     //! Pointer to workingValue_; provided to simulate functionality of PolyGenerators. Not relevant for PolyGenerators.

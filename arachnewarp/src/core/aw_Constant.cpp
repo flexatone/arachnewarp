@@ -38,7 +38,6 @@ void Constant :: init()
 {    
     pValid_.push_back(aw::pNameValue);
     pTypeMap_[aw::pNameValue] = aw::gTypeNone;
-
     value_ = 0;
 }
 

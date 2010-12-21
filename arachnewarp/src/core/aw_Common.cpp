@@ -443,7 +443,6 @@ std::string numberToString(double n)
 // -----------------------------------------------------------------------------
 std::string arrayDoubleToString(double* a, int size)
 {
-    // first, convert array to vector string
     std::vector<std::string> tokens; // for storage of string conversion
 
 //     for (std::vector<double>::const_iterator iter = v.begin(); 
@@ -455,12 +454,24 @@ std::string arrayDoubleToString(double* a, int size)
         out << a[i]; 
         tokens.push_back(out.str()); 
     }
-
     std::string out = boost::join(tokens, ",");
-
     return out;
-    
 }
+
+// -----------------------------------------------------------------------------
+std::string vectorDoubleToString(std::vector<double> v)
+{
+    // first, convert array to vector string
+    std::vector<std::string> tokens; // for storage of string conversion
+    for (int i=0; i<v.size(); i++) {
+        std::stringstream out;
+        out << v[i]; // counverts to a string
+        tokens.push_back(out.str()); 
+    }
+    std::string out = boost::join(tokens, ",");
+    return out;
+}
+
 
 // -----------------------------------------------------------------------------
 double stringToDouble(const std::string& str) 

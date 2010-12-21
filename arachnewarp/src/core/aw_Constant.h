@@ -63,6 +63,8 @@ public:
     // just get a sample value as a double
 
 private:
+
+    //! Convention to use this variable as the destination of generated values; this value is not in base-class, but only last-inherited 
     double value_;
         
 } ; // end class Constant

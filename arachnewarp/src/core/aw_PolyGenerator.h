@@ -39,31 +39,39 @@ public:
 
     virtual ~PolyGenerator();
 
-    virtual std::string getName();
-
     //! Set Generator type as aw::gTypePoly; set default fold-down method. 
     virtual void init();
 
     virtual void reset();
 
+    virtual std::string getName();
+
+
     //! Initialize all working array values to zero.
     virtual void clearWorkingArray();
+
+    //! Delete and create again the working array to a new size on the heap. This also initializes all values to zero and sets both polyDepthAllocated_ and polyDepth to size. Will not make a change if size is already sufficient
+    virtual void resizeWorkingArray(int size);
 
 
     //! Return a sinlge value, as a double, from the PolyGenerator representation, simulating a Generator. This overrides the normal behavior or Generator. 
     virtual double getValueAtSample(aw::SampleTimeType st);
 
-    //! Main method for getting values from a PolyGenerator, customized in subclass. Returns a pointer to workingArray_; active size is found on polySize_
+    //! Main method for getting values from a PolyGenerator, customized in subclass. Returns a pointer to workingArray_; active size is found on polyDepth_
     virtual aw::WorkingArrayPtr getPolyAtSample(aw::SampleTimeType);
 
 
 protected:
 
     //! Working array of double values for passing by pointer to callers. Note that this array does not have to be used; instead, a working array pointer received from an embedded parameter object can be used. Default working array size is 128. 
-    double workingArray_[aw::maximumPolySize];
+    //double workingArray_[aw::defaultPolyDepthAllocated];
 
-    // TODO: might use this instead in the future
-    // BoostWorkingArray workingArray_;
+    // in this form working array is on the heap with a default size
+    // can thus be deleted and recreated at run time; resized
+    // cannot do this:
+    //WorkingArrayPtr workingArray_ = new double[aw::defaultPolyDepthAllocated];
+
+    aw::WorkingArrayPtr workingArray_;
 
 
     //! Store a default fold-down method for moving from a poly representation to a single value. 

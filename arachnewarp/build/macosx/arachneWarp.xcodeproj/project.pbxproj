@@ -51,6 +51,8 @@
 		8EC603D2122A400E00CB28B2 /* aw_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */; };
 		8EC6819E12995C0D0088F66D /* aw_PolyAdd_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */; };
 		8EC681A012995C1B0088F66D /* aw_PolyAdd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */; };
+		8ED88AC612C10C28004F5D85 /* aw_PolyTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88AC512C10C28004F5D85 /* aw_PolyTable.cpp */; };
+		8ED88AC912C10C4A004F5D85 /* aw_PolyTable_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88AC812C10C4A004F5D85 /* aw_PolyTable_unittest.cpp */; };
 		8EF33CF711DAA0F200B2EEE8 /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EF33CF611DAA0F200B2EEE8 /* gtest.framework */; };
 /* End PBXBuildFile section */
 
@@ -134,6 +136,9 @@
 		8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyAdd_unittest.cpp; path = ../../src/test/aw_PolyAdd_unittest.cpp; sourceTree = SOURCE_ROOT; };
 		8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyAdd.cpp; path = ../../src/core/aw_PolyAdd.cpp; sourceTree = SOURCE_ROOT; };
 		8EC681A112995C280088F66D /* aw_PolyAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyAdd.h; path = ../../src/core/aw_PolyAdd.h; sourceTree = SOURCE_ROOT; };
+		8ED88AC512C10C28004F5D85 /* aw_PolyTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyTable.cpp; path = ../../src/core/aw_PolyTable.cpp; sourceTree = SOURCE_ROOT; };
+		8ED88AC712C10C30004F5D85 /* aw_PolyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyTable.h; path = ../../src/core/aw_PolyTable.h; sourceTree = SOURCE_ROOT; };
+		8ED88AC812C10C4A004F5D85 /* aw_PolyTable_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyTable_unittest.cpp; path = ../../src/test/aw_PolyTable_unittest.cpp; sourceTree = SOURCE_ROOT; };
 		8EF33CF611DAA0F200B2EEE8 /* gtest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gtest.framework; path = "/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/xcode/build/Release/gtest.framework"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -183,6 +188,7 @@
 		8E3BA6A811EE413000258FE1 /* core-cpp */ = {
 			isa = PBXGroup;
 			children = (
+				8ED88AC512C10C28004F5D85 /* aw_PolyTable.cpp */,
 				8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */,
 				8E2682AF123040A20079455E /* aw_PanStereo.cpp */,
 				8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */,
@@ -211,6 +217,7 @@
 		8E3BA6AD11EE41C100258FE1 /* test */ = {
 			isa = PBXGroup;
 			children = (
+				8ED88AC812C10C4A004F5D85 /* aw_PolyTable_unittest.cpp */,
 				8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */,
 				8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */,
 				8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */,
@@ -239,6 +246,7 @@
 		8E3BA6BA11EE463B00258FE1 /* core-h */ = {
 			isa = PBXGroup;
 			children = (
+				8ED88AC712C10C30004F5D85 /* aw_PolyTable.h */,
 				8EC681A112995C280088F66D /* aw_PolyAdd.h */,
 				8E2682B1123040AC0079455E /* aw_PanStereo.h */,
 				8EC603CC122A3FE400CB28B2 /* aw_Selector.h */,
@@ -375,6 +383,8 @@
 				8E2682B6123040EC0079455E /* aw_PanStereo_unittest.cpp in Sources */,
 				8EC6819E12995C0D0088F66D /* aw_PolyAdd_unittest.cpp in Sources */,
 				8EC681A012995C1B0088F66D /* aw_PolyAdd.cpp in Sources */,
+				8ED88AC612C10C28004F5D85 /* aw_PolyTable.cpp in Sources */,
+				8ED88AC912C10C4A004F5D85 /* aw_PolyTable_unittest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -57,7 +57,7 @@ void PanStereo :: init()
 
 
     // poly size is always 2 for stereo panner
-    polySize_ = 2;
+    polyDepth_ = 2;
 }
 
 // =============================================================================
