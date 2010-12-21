@@ -36,8 +36,8 @@ double const pi2(3.14159265358979323846264338*2.0);
 //! Turn debug information print on or off.
 double const PRINT_LOG(false);
 
-//! The maximum size of PolyGenerator arrays. This determines the initial size of all poly arrays.
-int const maximumPolySize(128);
+//! The maximum size of PolyGenerator arrays. This determines the initial size of all poly arrays. These arrays will reallocate to larger sizes if necessary. This size is similar to bit depth
+int const defaultPolyDepthAllocated(32);
 
 // characters
 char const charListDelimit = ',';
@@ -88,7 +88,7 @@ typedef boost::variate_generator<BoostRandomEngine&, DistributionUniformInt> Gen
 
 
 // boost arrays: this one is not yet used
-typedef boost::array<MagnitudeType, aw::maximumPolySize> BoostWorkingArray;
+// typedef boost::array<MagnitudeType, aw::defaultPolyDepthAllocated> BoostWorkingArray;
 
 // string processing
 typedef boost::find_iterator<std::string::iterator> StringFindIterator;
@@ -268,6 +268,9 @@ std::string numberToString(double n);
 
 //! Convert a double array to a string representation.
 std::string arrayDoubleToString(double* a, int size);
+
+//! Convert a vector array to a string representation.
+std::string vectorDoubleToString(std::vector<double>);
 
 //! Convert a string to a double.
 double stringToDouble(const std::string& str);

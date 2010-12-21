@@ -36,7 +36,7 @@ TEST(BasicTests, PolyConstantBasic) {
 
     PolyConstant gen1(sys); 
     // default is 1
-    EXPECT_EQ(gen1.getPolySize(), 1);
+    EXPECT_EQ(gen1.getPolyDepth(), 1);
 
     EXPECT_EQ(gen1.getName(), "PolyConstant");
 
@@ -47,7 +47,7 @@ TEST(BasicTests, PolyConstantBasic) {
     gen1.setParameter(aw::pNameValue, inputVector1);
 
     // poly size is set to size of input
-    EXPECT_EQ(gen1.getPolySize(), 2);
+    EXPECT_EQ(gen1.getPolyDepth(), 2);
 
 
     std::vector<double> inputVector2;
@@ -58,7 +58,7 @@ TEST(BasicTests, PolyConstantBasic) {
     gen1.setParameter(aw::pNameValue, inputVector2);
 
     // poly size is set to size of input
-    EXPECT_EQ(gen1.getPolySize(), 3);
+    EXPECT_EQ(gen1.getPolyDepth(), 3);
 
 
     // can set with a string
@@ -66,27 +66,27 @@ TEST(BasicTests, PolyConstantBasic) {
     gen1.setParameter(aw::pNameValue, inputString1);
 
     // poly size is set to size of input
-    EXPECT_EQ(gen1.getPolySize(), 4);
+    EXPECT_EQ(gen1.getPolyDepth(), 4);
 
     std::string inputString2("53,24,15,20,1230,60234");
     gen1.setParameter(aw::pNameValue, inputString2);
     // poly size is set to size of input
-    EXPECT_EQ(gen1.getPolySize(), 6);
+    EXPECT_EQ(gen1.getPolyDepth(), 6);
 
 
     // setting with a character array
     gen1.setParameter(aw::pNameValue, "6,5");
     // poly size is set to size of input
-    EXPECT_EQ(gen1.getPolySize(), 2);
+    EXPECT_EQ(gen1.getPolyDepth(), 2);
 
 
     gen1.setParameter(aw::pNameValue, "1, 2, 3,   5,   7, 8");
     // poly size is set to size of input
-    EXPECT_EQ(gen1.getPolySize(), 6);
+    EXPECT_EQ(gen1.getPolyDepth(), 6);
 
 
     // get the pointer to the working array
-    // double value_[aw::maximumPolySize]
+    // double value_[aw::defaultPolyDepthAllocated]
     aw::WorkingArrayPtr workingArray1 = gen1.getPolyAtSample(0);
     EXPECT_EQ(workingArray1[0], 1);
     EXPECT_EQ(workingArray1[1], 2);
@@ -128,9 +128,9 @@ TEST(BasicTests, PolyConstantGetValue) {
     gen1->setParameter("value", "8,4,2,12");
     gen2->setParameter("value", "30, 15, 7.5");
 
-    int listSize1 = gen1->getPolySize();
+    int listSize1 = gen1->getPolyDepth();
     EXPECT_EQ(listSize1, 4);
-    int listSize2 = gen2->getPolySize();
+    int listSize2 = gen2->getPolyDepth();
     EXPECT_EQ(listSize2, 3);
 
     aw::WorkingArrayPtr workingArray1 = gen1->getPolyAtSample(0);
@@ -161,3 +161,30 @@ TEST(BasicTests, PolyConstantGetParameterString) {
     EXPECT_EQ(gen2->getParameterString(true), "30,15,7.5");
 
 }
+
+
+
+
+TEST(BasicTests, PolyConstantReziing) {
+
+    SystemPtr sys(new System(44100)); // smart pointer
+    GeneratorFactory gf(sys); // one instance
+
+    GeneratorPtr gen1 = gf.create(aw::gNamePolyConstant);
+
+    gen1->setParameter("value", "8,4");
+    EXPECT_EQ(gen1->getParameterString(), "PolyConstant{8,4}");
+    EXPECT_EQ(gen1->getPolyDepth(), 2);
+
+    gen1->setParameter("value", "8,4,1,2,3,4,5");
+    EXPECT_EQ(gen1->getParameterString(), "PolyConstant{8,4,1,2,3,4,5}");
+    EXPECT_EQ(gen1->getPolyDepth(), 7);
+
+    gen1->setParameter("value", "1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1");
+    EXPECT_EQ(gen1->getParameterString(), "PolyConstant{1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1,2,3,4,5,1}");
+    EXPECT_EQ(gen1->getPolyDepth(), 201);
+
+
+}
+
+

@@ -50,7 +50,7 @@ TEST(BasicTests, PanStereoGetValue) {
     gen0->setParameter("panleftright", gen2);
 
     // poly size is always 2
-    EXPECT_EQ(gen0->getPolySize(), 2);
+    EXPECT_EQ(gen0->getPolyDepth(), 2);
 
     // get pointer to output array
     aw::WorkingArrayPtr out = gen0->getPolyAtSample(0);

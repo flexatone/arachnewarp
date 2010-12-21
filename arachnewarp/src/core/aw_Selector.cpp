@@ -84,6 +84,9 @@ void Selector :: reset()
     oscillateSwitch_ = 1; 
     // used for random walk storage of random value
     walkSwitch_ = 1; 
+    // setting this to zero will force updating on first call and a refresh of 
+    // permutationIndices_
+    srcSizeLast_ = 0;
 }
 
 // =============================================================================
@@ -100,6 +103,7 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
 {
     // update values in working vector; the values may have been changed
     // in later processing
+    //std::cout << "=== Selector :: getValueAtSample:" << "about to get value form sample: " << st << std::endl;
 
     // sampleTime_ is defined as a double; this may be converting from the 
     // int sample time type
@@ -119,18 +123,22 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
 
 
     // get current size; need to identify when size changes
-    srcSize_ = pMap_[aw::pNameValueList]->getPolySize();
+    srcSize_ = pMap_[aw::pNameValueList]->getPolyDepth();
+
+    //std::cout << "=== Selector :: getValueAtSample:" << "srcSize_ obtained from value lists polyDepth: " << srcSize_ << std::endl;
+
+
     if (srcSize_ != srcSizeLast_) {
         // only when size changes
         srcSizeLast_ = srcSize_;
         // initialize vector
         permutationIndices_.clear(); // remove any contents
         for (int i=0; i<srcSize_; i++) {
+            // this is a vector, and will grow as needed
             permutationIndices_.push_back(i);
         }
         // setting to source size will force shuffling and init below
         permutationIndex_ = srcSize_;
-
     }
 
     // 0 (ordered cyclic forward), 1 (ordered cyclic reverse), 2 (ordered oscillate), 3 (random choice), 4 (random permutate), 5 (random walk)

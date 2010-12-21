@@ -10,6 +10,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #define AW_POLY_CONSTANT_H
 
 #include <string>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 #include "aw_Generator.h"
@@ -43,22 +44,22 @@ public:
 
     void reset();
 
-    // overridden from Generator
+    //! overridden from Generator
     void setParameter(const aw::ParameterName p, 
                       std::vector<double>& v, 
                       aw::ParameterContext pc=aw::pContextNameNone);
 
-    // not found in any base class:
+    //! not found in any base class:
     void setParameter(const aw::ParameterName p, 
                       std::string& vString, 
                       aw::ParameterContext pc=aw::pContextNameNone);
 
-    // not found in any base class:
+    //! not found in any base class:
     void setParameter(const aw::ParameterName p, 
                       char* const vCharArray, 
                       aw::ParameterContext pc=aw::pContextNameNone);
 
-    // overload Generator form
+    //! overload Generator form
     void setParameter(std::string& pString, 
                       std::string& vString, 
                       std::string& pcString);
@@ -73,9 +74,19 @@ public:
 
 private:
 
-    // Internal storage for values; loaded into workingArray_ for each call. This is necessary as values in the _workingArray may be manipulated by callers. 
-       
-    double value_[aw::maximumPolySize];
+
+
+    // Internal storage for values is a double array; these values are loaded into workingArray_ for each call. 
+
+    // if an array pointer
+    // aw::WorkingArrayPtr value_;
+
+    // old approach: statically defined size
+    //double value_[aw::defaultPolyDepthAllocated];
+
+    // as vector: safest
+    std::vector<double> value_;
+
    
 } ; // end class PolyConstant
 

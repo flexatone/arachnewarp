@@ -4,11 +4,7 @@
 Created by Christopher Ariza on 6/30/10.
 Copyright 2010 Flexatone HFP. All rights reserved.
 */
-
-
 #include <math.h>
-
-
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
@@ -17,11 +13,11 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Common.h"
 
 
-
-
 namespace aw {
 
 
+// note: all methods on poly generator must be overridden methods of a generator
+// otherwise, pointer usage does not work properly
 
 // =============================================================================
 PolyGenerator :: PolyGenerator(aw::SystemPtr o)
@@ -33,8 +29,11 @@ PolyGenerator :: PolyGenerator(aw::SystemPtr o)
 // =============================================================================
 PolyGenerator :: ~PolyGenerator()
 {
-    // assume i do not need to delete workingArray b/c its size is static
-    // and it is created at compile time
+
+    // now, using a heap-based array, need to delete workingArray
+    delete[] workingArray_;
+    //std::cout << "PolyGenerator deleted working array" <<  std::endl;
+
 }
 
 // =============================================================================
@@ -42,6 +41,12 @@ void PolyGenerator :: init()
 {   
     gt_ = aw::gTypePoly;
     defaultFoldDownMethod_ = aw::fdMethodFirst;
+    polyDepth_ = 1; // default init size
+
+    // assign WorkingArrayPtr 
+    workingArray_ = new double[aw::defaultPolyDepthAllocated];
+    // as we just reset array, its size is the default; store allocated
+    polyDepthAllocated_ = aw::defaultPolyDepthAllocated;
     clearWorkingArray();
 }
 
@@ -51,21 +56,47 @@ void PolyGenerator :: reset()
 }
 
 // =============================================================================
-void PolyGenerator :: clearWorkingArray()
-{
-    // need to initialize working array
-    for (int i=0; i<aw::maximumPolySize; i++) {
-        workingArray_[i] = 0; 
-    };
-}
-
-
-// =============================================================================
 std::string PolyGenerator :: getName()
 {
     static const std::string name("PolyGenerator");
     return name;
 }
+
+
+
+// =============================================================================
+void PolyGenerator :: clearWorkingArray()
+{
+    // need to initialize working array over all allocated values, not just
+    // those in use
+    for (int i=0; i<polyDepthAllocated_; i++) {
+        workingArray_[i] = 0; 
+    };
+}
+
+// =============================================================================
+// Resize the working array only if necessary.
+void PolyGenerator :: resizeWorkingArray(int size)
+{
+    // delete the old and create new size if larger than exisiting
+    // assume that the requested size is also the 
+
+    if (size > polyDepthAllocated_) {
+        // working array never stores anything we need; it is just used
+        // for passing as an output butter from each generator
+        polyDepthAllocated_ = size;
+        delete[] workingArray_;
+        workingArray_ = new double[size];
+        clearWorkingArray(); // not sure this is necessary
+
+        //std::cout << "=== PolyGenerator :: resizeWorkingArray: " << "new size " << size << " new polyDepthAllocated_ " << polyDepthAllocated_ << std::endl;
+
+    }
+
+}
+
+
+
 
 // =============================================================================
 // TODO: must deal with active array and combine/average data into on form
@@ -92,3 +123,8 @@ aw::WorkingArrayPtr PolyGenerator :: getPolyAtSample(aw::SampleTimeType st)
 
 } // end namespace aw
 
+
+
+
+// getPolyDepth is defined in Generator
+// int Generator :: getPolyDepth()

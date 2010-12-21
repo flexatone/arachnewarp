@@ -37,9 +37,9 @@ PolyConstant :: PolyConstant(aw::SystemPtr o)
 //! Destroyer, virtual
 PolyConstant :: ~PolyConstant()
 {
-    // assume do not need to delete value_ b/c its size 
-    // is declared at compile time; this also raises errors
-    // delete[] value_; 
+    // delete value_ b/c it is created on the heap
+    // delete[] value_;
+
 }
 
 // =============================================================================
@@ -50,12 +50,15 @@ void PolyConstant :: init()
     pValid_.push_back(aw::pNameValue);
     pTypeMap_[aw::pNameValue] = aw::gTypeNone;
 
+    // create on heap with default size
+    // value_ = new double[aw::defaultPolyDepthAllocated];
 
     // setup some default values; this must be done directly here to the
     // value parameter; do not try to set a contstant, as that will create
     // recursive object creation
-    value_[0] = 0.0; 
-    polySize_ = 1; // update size
+    value_.push_back(0.0); 
+    polyDepth_ = 1; // default init size
+    //clearValueArray();
 
 
 }
@@ -75,6 +78,7 @@ std::string PolyConstant :: getName()
 }
 
 
+
 // =============================================================================
 //! Return a string name
 // This method must override the behavior of other Generators as it is not made of Generators
@@ -82,14 +86,14 @@ std::string PolyConstant :: getParameterString(bool compact)
 {
     // just return list
     if (compact) {
-        return aw::arrayDoubleToString(value_, polySize_);
+        return aw::vectorDoubleToString(value_);
     }
     else {
         std::string str;
         str += getName();
         str += "{";   
         // abbreviated version; just have number alone
-        str += aw::arrayDoubleToString(value_, polySize_);    
+        str += aw::vectorDoubleToString(value_);    
         str += "}";
         return str;
     }
@@ -102,6 +106,7 @@ std::string PolyConstant :: getParameterString(bool compact)
 // As a PolyConstant, this method must override Generator behavior to set
 // value_ directly
 // value_ is defined as private in PolyConstant.h
+// this is the main method used to load values
 void PolyConstant :: setParameter(const aw::ParameterName p, 
                                   std::vector<double>& v, 
                                   aw::ParameterContext pc)
@@ -112,14 +117,22 @@ void PolyConstant :: setParameter(const aw::ParameterName p,
     }
     bool match(false);
     switch (p) {                       
-        case aw::pNameValue:     
+        case aw::pNameValue:  
+
+   
             if (isValidContext(p, pc)) {
-            // note: this Generator does not use the pMap_ map
+                // the workingArray_ may need to be adjusted 
+                resizeWorkingArray(v.size());
+                // the polyDepth_ value must be adjusted
+                polyDepth_ = v.size();
+
+                value_.clear();
+                // note: this Generator does not use the pMap_ map
                 // transfer/copy values to local vector
                 for (int i=0; i<v.size(); i++) {
-                    value_[i] = v[i]; 
+                    value_.push_back(v[i]); 
                 };
-                polySize_ = v.size(); // update size
+
             match = true;
             break;              
             }
@@ -127,6 +140,10 @@ void PolyConstant :: setParameter(const aw::ParameterName p,
     if (!match) {
         throw std::invalid_argument("invalid parameter name or parameter context");
     }    
+
+    //std::cout << "=== PolyConstant :: setParameter: " << "polyDepth_ " << polyDepth_ << " getPolyDepth(): " << getPolyDepth() << std::endl;
+
+
 }    
 
 // -----------------------------------------------------------------------------
@@ -208,7 +225,7 @@ aw::WorkingArrayPtr PolyConstant :: getPolyAtSample(aw::SampleTimeType)
     // in later processing; thus, at the top of the call chain
     // muse refresh
 
-    for (int i=0; i<polySize_; i++) {
+    for (int i=0; i<polyDepth_; i++) {
         workingArray_[i] = value_[i]; 
     };
     // returning the pointer to the vector

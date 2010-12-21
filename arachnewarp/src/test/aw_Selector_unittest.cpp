@@ -349,6 +349,8 @@ TEST(BasicTests, SelectorRefresh) {
 
 TEST(BasicTests, SelectorPermutations) {
 
+    
+    std::cout << "=== BasicTests, SelectorPermutations" << std::endl;
 
     SystemPtr sys(new System(44100)); // smart pointer
     GeneratorFactory gf(sys); // one instance
@@ -373,6 +375,15 @@ TEST(BasicTests, SelectorPermutations) {
         selectionMethod{4}  \
         refresh{1}{samples}  \
     }");
+
+    std::cout << "=== BasicTests, SelectorPermutations:" << "created generator valueList{1,2,3,4}" << std::endl;
+
+
+    // depth of selector is always 1; its the poly constant that has a higher
+    // depth
+    EXPECT_EQ(gen1->getPolyDepth(), 1);
+
+
     for (int i=0; i < 20; i++) {    
         // reset for each call
         sum = 0;
@@ -391,18 +402,26 @@ TEST(BasicTests, SelectorPermutations) {
         }
 
 
-
     gen1 = gf.create("Selector{ \
         valueList{1,2,3,4,5,6,7,8,9,10,11,12} \
         selectionMethod{4}  \
         refresh{1}{samples}  \
     }");
+
+    std::cout << "=== BasicTests, SelectorPermutations:" << "created generator valueList{1,2,3,4,5,6,7,8,9,10,11,12}" << std::endl;
+
+
+    // depth of selector is always 1; its the poly constant that has a higher
+    // depth
+    EXPECT_EQ(gen1->getPolyDepth(), 1);
+
     for (int i=0; i < 20; i++) {    
         // reset for each call
         sum = 0;
         count = 0;
         // 4 here is the number of unique values
         for (int i=0; i<12; i++) {
+
             // try to shuffle in place
             x = gen1->getValueAtSample(i);
             //std::cout << "y " << x << std::endl;

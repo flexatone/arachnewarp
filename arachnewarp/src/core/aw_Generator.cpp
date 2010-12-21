@@ -30,7 +30,7 @@ Generator :: Generator(aw::SystemPtr o)
     // references cannot be assigned implicitly; must initialize
     : sys_(o), // initialize
     // default polySize is one
-      polySize_(1)
+      polyDepth_(1)
 
 {
     Generator::init();
@@ -80,9 +80,22 @@ aw::GeneratorType Generator :: getGeneratorType()
 
 // =============================================================================
 //! Get the size of the active region of this Generator
-int Generator :: getPolySize()
+int Generator :: getPolyDepth()
 {
-    return polySize_;
+    return polyDepth_;
+}
+
+
+// =============================================================================
+// only relevant in PolyGenerator subclass
+void Generator :: clearWorkingArray()
+{
+}
+
+// =============================================================================
+// only relevant in PolyGenerator subclass
+void Generator :: resizeWorkingArray(int size)
+{
 }
 
 
