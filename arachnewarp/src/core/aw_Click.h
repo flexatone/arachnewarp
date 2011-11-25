@@ -33,7 +33,7 @@ namespace aw {
         // constructor; args passed to base class
         Click(aw::SystemPtr sys); 
     
-        virtual ~Click();
+        virtual ~Click(); // TODO: probably does not need to be virtual
     
         virtual std::string getName();
     

@@ -94,7 +94,7 @@ double FilterLowPass :: getValueAtSample(aw::SampleTimeType st)
     zNeg1_ = value_;
 
     return value_;
-};    
+}    
 
 
 

@@ -10,6 +10,8 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #define AW_RESIDUAL_CLASS_H
 
 #include <vector>
+#include <boost/shared_ptr.hpp>
+
 #include "aw_Common.h"
 
 
@@ -17,38 +19,45 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 namespace aw {
 
-
-//! Model of a Xenakis residual class.
-class ResidualClass
-{
-public:
-    ResidualClass(int m=1, int s=1); // constructor
-
-    void setModulusAndShift(int m=1, int s=1);
-    // set a string version
-    void setModulusAndShift(const std::string &s);
+class ResidualClass; // forward declaration
+typedef boost::shared_ptr<ResidualClass> ResidualClassPtr;
 
 
-    // get modulus and shift, const delivers read-only access
-    int getModulus() const;
-    int getShift() const;
-
-    // equality comparison
-    // note: this seems like it should be const ResidualClass
-    bool operator==(ResidualClass& that);
-
-    // get a string version
-    const std::string represent();
-
-
-    // return a vector
-    std::vector<int> segment(int n, std::vector<int> &z);
-
-private:
-    int modulus;
-    int shift;
-
-} ; // end class ResidualClass
+    //! Model of a Xenakis residual class.
+    class ResidualClass
+    {
+    public:
+    
+        //! Create a residual class with two integers for modulus and shift. Defaults are provided
+        ResidualClass(int m=1, int s=1); // constructor
+    
+        //! Set modulus and shift with two integer arguments
+        void setModulusAndShift(int m=1, int s=1);
+    
+        //! Read a modulus and shift from a string based by reference.
+        void setModulusAndShift(const std::string &s);
+    
+        //! Return the modulus.
+        int getModulus() const;
+    
+        //! Return the shift.
+        int getShift() const;
+    
+        //! Equality comparison
+        bool operator==(ResidualClass& that);
+    
+        //! Return a string representation
+        const std::string getString();
+    
+    
+        // return a vector
+        std::vector<int> getSegment(int n, std::vector<int>& z);
+    
+    private:
+        int modulus_;
+        int shift_;
+    
+    } ; // end class ResidualClass
 
 
 } // end namespace aw

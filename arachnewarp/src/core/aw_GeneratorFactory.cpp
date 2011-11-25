@@ -24,6 +24,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Selector.h"
 #include "aw_PanStereo.h"
 #include "aw_PolyAdd.h"
+#include "aw_PolyTableFile.h"
 
 
 
@@ -98,6 +99,10 @@ GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
             aw::PolyAddPtr g(new aw::PolyAdd(sys_));
             return g;
             }
+        case aw::gNamePolyTableFile: {
+            aw::PolyTableFilePtr g(new aw::PolyTableFile(sys_));
+            return g;
+            }
 
     };
     // compiler warning here for not having an output
@@ -109,7 +114,7 @@ GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
 //! String version of create(). All other string-like entries use this
 GeneratorPtr GeneratorFactory :: create(std::string& gn)
 {
-    // remove all spaces and returns
+    // remove all spaces and returns; keep case
     aw::scrubString(gn);
 
     if (aw::stringWellFormed(gn, &aw::charPmtrOpen, &aw::charPmtrClose) == 

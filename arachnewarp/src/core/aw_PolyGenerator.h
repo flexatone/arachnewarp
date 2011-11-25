@@ -63,7 +63,8 @@ public:
 
 protected:
 
-    //! Working array of double values for passing by pointer to callers. Note that this array does not have to be used; instead, a working array pointer received from an embedded parameter object can be used. Default working array size is 128. 
+    //! Working array of double values for passing by pointer to callers. Note that this array does not have to be used; instead, a working array pointer received from an embedded parameter object can be used. Default working array size is set in aw_Common.h. This array is created in PolyGenerator :: init(). 
+
     //double workingArray_[aw::defaultPolyDepthAllocated];
 
     // in this form working array is on the heap with a default size

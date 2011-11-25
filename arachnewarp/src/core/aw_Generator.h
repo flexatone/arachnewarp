@@ -33,6 +33,8 @@ typedef std::map<aw::ParameterName, aw::ParameterContext> ParameterContextMap;
 typedef std::map<aw::ParameterName, aw::GeneratorType> ParameterTypeMap;
 
 typedef std::vector<aw::ParameterName> ParameterNameVector;
+
+//! Used, as localGenerators_, to store Generators built automatically by this Generator. These may be constants or other values. References to these Generators are then passed to setParameter and go in a ParameterGeneratorMap. This permits being able to tell the difference between Generators created locally and those that were passed in as an argument and created somewhere else.
 typedef std::vector<GeneratorPtr> GeneratorVector;
 
 
@@ -67,6 +69,8 @@ public:
     //! Return active polySize. For Generators this is always 1; for PolyGenerators this may be 1 or greater.
     virtual int getPolyDepth();
 
+    int getFramesDefined();
+
     //! Initialize all working array values to zero.
     virtual void clearWorkingArray();
 
@@ -78,8 +82,7 @@ public:
 
 
     // -------------------------------------------------------------------------
-    //! Return a string representation of this Generator, including embeded parameter Generators.
-    // the Constant subclass of this method will need to override this method
+    //! Return a string representation of this Generator, including embeded parameter Generators. The Constant subclass of this method will need to override this method
     // as it needs to get a constant value. 
     virtual std::string getParameterString(bool compact=false);
 
@@ -123,32 +126,52 @@ public:
                               double v, 
                               aw::ParameterContext pc=aw::pContextNameNone);
 
+    //! Set any parameter with a int; explicitly convert to a double and call the setParameter(). This is necessary to avoid confusion with char* values. This is not a virtual function as no need to specialize. 
+    void setParameter(const aw::ParameterName p, 
+                      int v, 
+                      aw::ParameterContext pc=aw::pContextNameNone);
+
     //! Set a PolyGenerator parameter with a list; will create a local PolyConstant in this Generator
     virtual void setParameter(const aw::ParameterName p, 
                               std::vector<double>& v, 
                               aw::ParameterContext pc=aw::pContextNameNone);
 
 
+    //! Set a Generator with a string value; overridden by PolyTableFile
+    virtual void setParameter(const aw::ParameterName p, 
+                      std::string& s, 
+                      aw::ParameterContext pc=aw::pContextNameNone);
+    //! Set a Generator with a char* value; overridden by PolyTableFile
+    virtual void setParameter(const aw::ParameterName p, 
+                      const char* s, 
+                      aw::ParameterContext pc=aw::pContextNameNone);
+
+
+
+
+    // -------------------------------------------------------------------------
+    // secondary forms using different types
+
     //! Set any parameter with a Generator using string arguments for ParameterName and ParameterContext. 
     void setParameter(const std::string& pString, 
                        GeneratorPtr g, 
-                       std::string& pcString="none");
+                       const std::string& pcString="none");
 
     //! Set any parameter with a Generator using character array for ParameterName and ParameterContext
-    void setParameter(char* const pCharArray, 
+    void setParameter(const char* pCharArray, 
                        GeneratorPtr g, 
-                       char* const pcCharArray="none");
+                       const char* pcCharArray="none");
 
 
     //! Set any parameter with a double using string arguments for ParameterName and ParameterContext. Calls setParameter() with a double.
     void setParameter(const std::string& pString, 
                        double v, 
-                       std::string& pcString="none");
+                       const std::string& pcString="none");
 
     //! Set any parameter with a double using a character array for ParameterName and ParameterContext. Calls setParameter() with a double.
-    void setParameter(char* const pCharArray, 
+    void setParameter(const char* pCharArray, 
                        double v, 
-                       char* const pcCharArray="none");
+                       const char* pcCharArray="none");
 
     //! Set parameter based on std::string arguments for all values. Parameter value may be a string defining an embedded Generator. May need to be overridden.
     virtual void setParameter(std::string& pString, 
@@ -156,9 +179,9 @@ public:
                               std::string& pcString);
 
     //! Set parameter based on character array arguments for all values. Calls setParameter() with strings. 
-    virtual void setParameter(char* const pCharArray, 
-                              char* const generatorCharArray, 
-                              char* const pcCharArray="none");
+    virtual void setParameter(const char* pCharArray, 
+                              const char* generatorCharArray, 
+                              const char* pcCharArray="none");
 
 
     //! Read in a parameter string and set the parameters in this object to the specified Generators. This sets all parameters defined in the string; this will create any internal objects as necessary. Constant and PolyConstant must override. 
@@ -223,6 +246,11 @@ protected:
     //! Store current size of workingArray as actually allocated, not just what is used as defined by polyDepth_.
     int unsigned polyDepthAllocated_;
 
+
+    ///! All generators can optionally define a number of frames defined as samples; for dynamic generators, this will always be 1; for tables, this will be the number of frames
+
+    int unsigned framesDefined_;
+
     // -------------------------------------------------------------------------
 
     //! A vector of parameter names (aw::ParameterName) specific to this subclass.
@@ -237,7 +265,7 @@ protected:
     //! A map of aw::ParameterName to the active generator type (aw::GeneratorType)
     ParameterTypeMap pTypeMap_; 
 
-    //! A vector of GeneratorPtr created dynamically within this Generator to supply constant, default, or string inherited parameter values. 
+    //! A vector of GeneratorPtr created dynamically within this Generator to supply constant, default, or string-inherited parameter values. 
     GeneratorVector localGenerators_;
 
     // -------------------------------------------------------------------------
@@ -254,7 +282,7 @@ private:
 
 
         
-} ;
+};
 
 
 

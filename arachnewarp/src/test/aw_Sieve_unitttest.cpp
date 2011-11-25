@@ -21,12 +21,12 @@ TEST(BasicTests, SieveBasic) {
 
     //EXPECT_TRUE(a.getValue(0.0) > 0);
 
-    EXPECT_EQ(a.represent(), "5@3|6@3");
+    EXPECT_EQ(a.getString(), "5@3|6@3");
 
 
     Sieve b("3@1|8@2|13@4|6@5"); 
 
-    EXPECT_EQ(b.represent(), "3@1|8@2|13@4|6@5");
+    EXPECT_EQ(b.getString(), "3@1|8@2|13@4|6@5");
 
 
 }

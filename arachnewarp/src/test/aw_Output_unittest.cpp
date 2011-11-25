@@ -805,27 +805,50 @@ TEST(BasicTests, Scratch) {
     GeneratorFactory gf(sys); // one instance
     Output out(sys); 
 
-    GeneratorPtr gen3 = gf.create(aw::gNameRandomUniform);
-    gen3->setParameter(aw::pNameMinimum, .6);
-    gen3->setParameter(aw::pNameMaximum, .95);
-// 
-    GeneratorPtr gen1 = gf.create(aw::gNameWaveSine);
-    gen1->setParameter(aw::pNameRate, 4, aw::pContextNamePeriodSeconds);
-    gen1->setParameter(aw::pNameMinimum, .05);
-    gen1->setParameter(aw::pNameMaximum, .4);
-// 
-//     GeneratorPtr gen5 = gf.create(aw::gNameFilterHighPass);
-//     gen5->setParameter(aw::pNameOperand1, gen2); // noise
-//     gen5->setParameter(aw::pNameRate, 18000, aw::pContextNameFrequency);
-// 
+    // mono audio test file
+//     GeneratorPtr gen1a = gf.create(
+//     "selector{\
+//         valueList{-1, -.75, -.5, -.25, 0, .25, .5, .75, 1} \
+//         selectionMethod{0} \
+//         stride{1} \
+//         refresh{1}{samples} \
+//     }"); 
 
-    GeneratorPtr gen2 = gf.create(aw::gNameClick);
-    gen2->setParameter(aw::pNameRate, gen1, aw::pContextNamePeriodSeconds);
-    gen2->setParameter(aw::pNameAmplitude, gen3);
-
-
-    // out.write(gen2, 8);
+    //out.write(gen1a, .001);
     //gen1->printSample(4410, 0, 10);
+
+
+    // stereo audio test file
+    GeneratorPtr gen1a = gf.create(
+    "selector{\
+        valueList{-1, -.75, -.5, -.25} \
+        selectionMethod{0} \
+        stride{1} \
+        refresh{1}{samples} \
+    }"); 
+
+    GeneratorPtr gen1b = gf.create("panstereo{panleftright{0}}");
+    gen1b->setParameter("op1", gen1a);
+
+
+    GeneratorPtr gen2a = gf.create(
+    "selector{\
+        valueList{.25, .5, .75, 1} \
+        selectionMethod{0} \
+        stride{1} \
+        refresh{1}{samples} \
+    }"); 
+
+    GeneratorPtr gen2b = gf.create("panstereo{panleftright{1}}");
+    gen2b->setParameter("op1", gen2a);
+
+
+    GeneratorPtr gen3 = gf.create("polyAdd");
+    gen3->setParameter("op1", gen1b);
+    gen3->setParameter("op2", gen2b);
+
+    //out.write(gen3, .001);
+
 
 }
 
