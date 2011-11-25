@@ -14,6 +14,7 @@
 		8E1EB03011F8DAA1003B2EC2 /* aw_GeneratorFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB02F11F8DAA1003B2EC2 /* aw_GeneratorFactory.cpp */; };
 		8E1EB0B311FDF953003B2EC2 /* aw_FilterLowPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB0B211FDF953003B2EC2 /* aw_FilterLowPass.cpp */; };
 		8E1EB0B611FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E1EB0B511FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp */; };
+		8E203DD812D5130B00B900EA /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E203DD712D5130B00B900EA /* gtest.framework */; };
 		8E2682B0123040A20079455E /* aw_PanStereo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E2682AF123040A20079455E /* aw_PanStereo.cpp */; };
 		8E2682B6123040EC0079455E /* aw_PanStereo_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */; };
 		8E312EF511FFC921002FAF75 /* aw_Click.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E312EF211FFC921002FAF75 /* aw_Click.cpp */; };
@@ -51,9 +52,10 @@
 		8EC603D2122A400E00CB28B2 /* aw_Selector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */; };
 		8EC6819E12995C0D0088F66D /* aw_PolyAdd_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */; };
 		8EC681A012995C1B0088F66D /* aw_PolyAdd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */; };
-		8ED88AC612C10C28004F5D85 /* aw_PolyTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88AC512C10C28004F5D85 /* aw_PolyTable.cpp */; };
-		8ED88AC912C10C4A004F5D85 /* aw_PolyTable_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88AC812C10C4A004F5D85 /* aw_PolyTable_unittest.cpp */; };
-		8EF33CF711DAA0F200B2EEE8 /* gtest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8EF33CF611DAA0F200B2EEE8 /* gtest.framework */; };
+		8ED88B4C12C25D76004F5D85 /* aw_Input_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88B4B12C25D76004F5D85 /* aw_Input_unittest.cpp */; };
+		8ED88B4E12C25D98004F5D85 /* aw_Input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88B4D12C25D98004F5D85 /* aw_Input.cpp */; };
+		8ED88BD212C41739004F5D85 /* aw_PolyTableFile_unittest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88BD112C41739004F5D85 /* aw_PolyTableFile_unittest.cpp */; };
+		8ED88BD612C41768004F5D85 /* aw_PolyTableFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8ED88BD512C41768004F5D85 /* aw_PolyTableFile.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -79,6 +81,7 @@
 		8E1EB0B211FDF953003B2EC2 /* aw_FilterLowPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_FilterLowPass.cpp; path = ../../src/core/aw_FilterLowPass.cpp; sourceTree = SOURCE_ROOT; };
 		8E1EB0B411FDF957003B2EC2 /* aw_FilterLowPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_FilterLowPass.h; path = ../../src/core/aw_FilterLowPass.h; sourceTree = SOURCE_ROOT; };
 		8E1EB0B511FDF960003B2EC2 /* aw_FilterLowPass_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_FilterLowPass_unittest.cpp; path = ../../src/test/aw_FilterLowPass_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8E203DD712D5130B00B900EA /* gtest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gtest.framework; path = "../../../../cpp/gtest-1.5.0/xcode/build/Release/gtest.framework"; sourceTree = SOURCE_ROOT; };
 		8E2682AF123040A20079455E /* aw_PanStereo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PanStereo.cpp; path = ../../src/core/aw_PanStereo.cpp; sourceTree = SOURCE_ROOT; };
 		8E2682B1123040AC0079455E /* aw_PanStereo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PanStereo.h; path = ../../src/core/aw_PanStereo.h; sourceTree = SOURCE_ROOT; };
 		8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PanStereo_unittest.cpp; path = ../../src/test/aw_PanStereo_unittest.cpp; sourceTree = SOURCE_ROOT; };
@@ -136,10 +139,12 @@
 		8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyAdd_unittest.cpp; path = ../../src/test/aw_PolyAdd_unittest.cpp; sourceTree = SOURCE_ROOT; };
 		8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyAdd.cpp; path = ../../src/core/aw_PolyAdd.cpp; sourceTree = SOURCE_ROOT; };
 		8EC681A112995C280088F66D /* aw_PolyAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyAdd.h; path = ../../src/core/aw_PolyAdd.h; sourceTree = SOURCE_ROOT; };
-		8ED88AC512C10C28004F5D85 /* aw_PolyTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyTable.cpp; path = ../../src/core/aw_PolyTable.cpp; sourceTree = SOURCE_ROOT; };
-		8ED88AC712C10C30004F5D85 /* aw_PolyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyTable.h; path = ../../src/core/aw_PolyTable.h; sourceTree = SOURCE_ROOT; };
-		8ED88AC812C10C4A004F5D85 /* aw_PolyTable_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyTable_unittest.cpp; path = ../../src/test/aw_PolyTable_unittest.cpp; sourceTree = SOURCE_ROOT; };
-		8EF33CF611DAA0F200B2EEE8 /* gtest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = gtest.framework; path = "/Volumes/xdisc/_sync/_x/src/cpp/gtest-1.5.0/xcode/build/Release/gtest.framework"; sourceTree = "<absolute>"; };
+		8ED88B4B12C25D76004F5D85 /* aw_Input_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Input_unittest.cpp; path = ../../src/test/aw_Input_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8ED88B4D12C25D98004F5D85 /* aw_Input.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_Input.cpp; path = ../../src/core/aw_Input.cpp; sourceTree = SOURCE_ROOT; };
+		8ED88B4F12C25D9F004F5D85 /* aw_Input.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_Input.h; path = ../../src/core/aw_Input.h; sourceTree = SOURCE_ROOT; };
+		8ED88BD112C41739004F5D85 /* aw_PolyTableFile_unittest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyTableFile_unittest.cpp; path = ../../src/test/aw_PolyTableFile_unittest.cpp; sourceTree = SOURCE_ROOT; };
+		8ED88BD312C4174E004F5D85 /* aw_PolyTableFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aw_PolyTableFile.h; path = ../../src/core/aw_PolyTableFile.h; sourceTree = SOURCE_ROOT; };
+		8ED88BD512C41768004F5D85 /* aw_PolyTableFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aw_PolyTableFile.cpp; path = ../../src/core/aw_PolyTableFile.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,8 +152,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8EF33CF711DAA0F200B2EEE8 /* gtest.framework in Frameworks */,
 				8E3BA68A11EE3C6800258FE1 /* libsndfile.dylib in Frameworks */,
+				8E203DD812D5130B00B900EA /* gtest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,7 +193,8 @@
 		8E3BA6A811EE413000258FE1 /* core-cpp */ = {
 			isa = PBXGroup;
 			children = (
-				8ED88AC512C10C28004F5D85 /* aw_PolyTable.cpp */,
+				8ED88BD512C41768004F5D85 /* aw_PolyTableFile.cpp */,
+				8ED88B4D12C25D98004F5D85 /* aw_Input.cpp */,
 				8EC6819F12995C1B0088F66D /* aw_PolyAdd.cpp */,
 				8E2682AF123040A20079455E /* aw_PanStereo.cpp */,
 				8EC603D1122A400E00CB28B2 /* aw_Selector.cpp */,
@@ -217,7 +223,8 @@
 		8E3BA6AD11EE41C100258FE1 /* test */ = {
 			isa = PBXGroup;
 			children = (
-				8ED88AC812C10C4A004F5D85 /* aw_PolyTable_unittest.cpp */,
+				8ED88BD112C41739004F5D85 /* aw_PolyTableFile_unittest.cpp */,
+				8ED88B4B12C25D76004F5D85 /* aw_Input_unittest.cpp */,
 				8EC6819D12995C0D0088F66D /* aw_PolyAdd_unittest.cpp */,
 				8E2682B5123040EC0079455E /* aw_PanStereo_unittest.cpp */,
 				8EC603CD122A3FF000CB28B2 /* aw_Selector_unittest.cpp */,
@@ -246,7 +253,8 @@
 		8E3BA6BA11EE463B00258FE1 /* core-h */ = {
 			isa = PBXGroup;
 			children = (
-				8ED88AC712C10C30004F5D85 /* aw_PolyTable.h */,
+				8ED88BD312C4174E004F5D85 /* aw_PolyTableFile.h */,
+				8ED88B4F12C25D9F004F5D85 /* aw_Input.h */,
 				8EC681A112995C280088F66D /* aw_PolyAdd.h */,
 				8E2682B1123040AC0079455E /* aw_PanStereo.h */,
 				8EC603CC122A3FE400CB28B2 /* aw_Selector.h */,
@@ -283,7 +291,7 @@
 		8EF33D0E11DAA10A00B2EEE8 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				8EF33CF611DAA0F200B2EEE8 /* gtest.framework */,
+				8E203DD712D5130B00B900EA /* gtest.framework */,
 				8E3BA68911EE3C6800258FE1 /* libsndfile.dylib */,
 			);
 			name = Libraries;
@@ -325,7 +333,14 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "arachneWarp" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 08FB7794FE84155DC02AAC07 /* arachneWarpTest */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -383,8 +398,10 @@
 				8E2682B6123040EC0079455E /* aw_PanStereo_unittest.cpp in Sources */,
 				8EC6819E12995C0D0088F66D /* aw_PolyAdd_unittest.cpp in Sources */,
 				8EC681A012995C1B0088F66D /* aw_PolyAdd.cpp in Sources */,
-				8ED88AC612C10C28004F5D85 /* aw_PolyTable.cpp in Sources */,
-				8ED88AC912C10C4A004F5D85 /* aw_PolyTable_unittest.cpp in Sources */,
+				8ED88B4C12C25D76004F5D85 /* aw_Input_unittest.cpp in Sources */,
+				8ED88B4E12C25D98004F5D85 /* aw_Input.cpp in Sources */,
+				8ED88BD212C41739004F5D85 /* aw_PolyTableFile_unittest.cpp in Sources */,
+				8ED88BD612C41768004F5D85 /* aw_PolyTableFile.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +412,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -408,6 +426,20 @@
 					"_GLIBCXX_DEBUG=1",
 					"_GLIBCXX_DEBUG_PEDANTIC=1",
 				);
+				GCC_TREAT_NONCONFORMANT_CODE_ERRORS_AS_WARNINGS = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
+				GCC_WARN_PEDANTIC = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = NO;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				GCC_WARN_UNUSED_VALUE = YES;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					/Volumes/xdisc/_sync/_x/src/cpp/boost_1_43_0,
@@ -416,6 +448,7 @@
 				INSTALL_PATH = /usr/local/bin;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = arachneWarpTest;
+				SDKROOT = macosx10.6;
 				VALID_ARCHS = i386;
 			};
 			name = Debug;
@@ -424,12 +457,27 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../../cpp/gtest-1.5.0/xcode/build/Release\"",
 				);
 				GCC_MODEL_TUNING = G5;
+				GCC_TREAT_NONCONFORMANT_CODE_ERRORS_AS_WARNINGS = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
+				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
+				GCC_WARN_PEDANTIC = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = NO;
+				GCC_WARN_UNUSED_PARAMETER = YES;
+				GCC_WARN_UNUSED_VALUE = YES;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					/Volumes/xdisc/_sync/_x/src/cpp/boost_1_43_0,
@@ -438,6 +486,7 @@
 				INSTALL_PATH = /usr/local/bin;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = arachneWarpTest;
+				SDKROOT = macosx10.6;
 				VALID_ARCHS = i386;
 			};
 			name = Release;

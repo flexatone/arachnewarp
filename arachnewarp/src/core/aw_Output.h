@@ -30,9 +30,11 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 
-
 namespace aw {
 
+    class Output; // forward declaration
+    typedef boost::shared_ptr<Output> OutputPtr;
+    
 
     //! Object model of system and output data stream.
     class Output
@@ -47,7 +49,8 @@ namespace aw {
     
         int write(aw::GeneratorPtr gen, double dur);
     
-    
+        // could have a stream() method for streaming audio in    
+
     private:
     
         SystemPtr sys_;

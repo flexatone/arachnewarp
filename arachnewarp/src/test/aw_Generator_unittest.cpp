@@ -46,10 +46,8 @@ TEST(BasicTests, GeneratorBasic) {
     EXPECT_EQ(sys.use_count(), 3);
 
 
-//     EXPECT_EQ(a.getValue(0.0), 0);
-//     EXPECT_EQ(a.getValue(0.5), 1);
-//     EXPECT_EQ(a.getValue(0.55), 1);
-// 
+    EXPECT_EQ(gen1.getFramesDefined(), 1);
+
 
 }
 

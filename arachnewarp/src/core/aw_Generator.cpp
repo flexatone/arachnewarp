@@ -28,9 +28,9 @@ namespace aw {
 // constructor
 Generator :: Generator(aw::SystemPtr o)
     // references cannot be assigned implicitly; must initialize
-    : sys_(o), // initialize
+    // there, must pass system ptr to variable here
+    : sys_(o) // initialize
     // default polySize is one
-      polyDepth_(1)
 
 {
     Generator::init();
@@ -58,6 +58,10 @@ void Generator :: init()
     // for Generators, connect the working value to the pointer; this is only
     // present to simulate PolyGenerator behavior. 
     workingValuePtr_ = &workingValue_;
+
+    // defaults for both parameters
+    polyDepth_ = 1;
+    framesDefined_ = 1; 
 }
 
 // =============================================================================
@@ -85,6 +89,11 @@ int Generator :: getPolyDepth()
     return polyDepth_;
 }
 
+// =============================================================================
+int Generator :: getFramesDefined()
+{
+    return framesDefined_;
+}
 
 // =============================================================================
 // only relevant in PolyGenerator subclass
@@ -120,9 +129,7 @@ std::string Generator :: getParameterString(bool compact)
         str += "{";
         // provide value set to this Parmeter
         //GeneratorPtr subParameter = getParameter(*it);
-
         str += getParameter(*it)->getParameterString(compact);
-        // str += pMap_[*it]->getName();
         str += "}";
 
         // might only show context if it is not none
@@ -144,7 +151,7 @@ std::string Generator :: getParameterString(bool compact)
 bool Generator :: isValidParameter(const aw::ParameterName p)
 {
     ParameterNameVector::iterator result;
-    // find the parameter in the vector of parameters
+    // find the parameter in the vector of parameters to determine validity
     result = std::find(pValid_.begin(), pValid_.end(), p);
     if(result == pValid_.end()) return false;
     return true;
@@ -263,6 +270,11 @@ bool Generator :: isValidContext(const aw::ParameterName p,
             if (pc == aw::pContextNameNone) return true;
             else return false;
 
+        case aw::pNameFilePath:                         
+            if (pc == aw::pContextNameNone) return true;
+            else return false;
+
+
     } // end case   
     return false;   
 }
@@ -307,7 +319,7 @@ SystemPtr Generator :: getSystem()
 
 
 // =============================================================================
-
+// the primary setParameter methods are here: each use a true type
 void Generator :: setParameter(const aw::ParameterName p, 
                                GeneratorPtr g, 
                                aw::ParameterContext pc)
@@ -348,6 +360,18 @@ void Generator :: setParameter(const aw::ParameterName p,
 
     setParameter(p, g, pc);
 }
+
+// case of providing a plain int: need to explicitly cast to a double and call the right form; this is important for disintinguishing from a char*. 
+void Generator :: setParameter(const aw::ParameterName p, 
+                               int v, 
+                               aw::ParameterContext pc)
+{
+    double vDouble(v);
+    setParameter(p, vDouble, pc);
+
+}
+
+
 // -----------------------------------------------------------------------------
 // vector loading version
 void Generator :: setParameter(const aw::ParameterName p, 
@@ -371,15 +395,40 @@ void Generator :: setParameter(const aw::ParameterName p,
 
 
 
+// forms where the generator parameter is provided as a string
+// to be overloaded in subclasses that need string arguments
+// -----------------------------------------------------------------------------
+void Generator :: setParameter(const aw::ParameterName p, 
+                               std::string& s, 
+                               aw::ParameterContext pc)
+{
+    // here, convert values to numbers; will create a constant generator
+    double v = aw::stringToDouble(s);
+    setParameter(p, v, pc);
+} 
+// -----------------------------------------------------------------------------
+void Generator :: setParameter(const aw::ParameterName p, 
+                               const char* s, 
+                               aw::ParameterContext pc)
+{
+    // here, convert values to numbers; will create a constant generator
+    // TODO: not tested
+    double v = aw::stringToDouble(s);
+    setParameter(p, v, pc);
+} 
 
 
 
 
 
+
+
+
+// alternative setParameter methods 
 // -----------------------------------------------------------------------------
 void Generator :: setParameter(const std::string& pString, 
                                GeneratorPtr g, 
-                               std::string& pcString)
+                               const std::string& pcString)
 {
     // pass on to whichever method is appropriate
     // if this is Constant, may call a overridten method
@@ -388,9 +437,9 @@ void Generator :: setParameter(const std::string& pString,
                 aw::stringToParameterContext(pcString));
 } 
 // -----------------------------------------------------------------------------
-void Generator :: setParameter(char* const pCharArray, 
+void Generator :: setParameter(const char* pCharArray, 
                                GeneratorPtr g, 
-                               char* const pcCharArray)
+                               const char* pcCharArray)
 {
     // character arrays are converted to strings
     setParameter(aw::stringToParameterName(pCharArray), 
@@ -402,10 +451,12 @@ void Generator :: setParameter(char* const pCharArray,
 
 
 
+
+
 // -----------------------------------------------------------------------------
 void Generator :: setParameter(const std::string& pString, 
                                double v, 
-                               std::string& pcString)
+                               const std::string& pcString)
 {
     // pass on to whichever method is appropriate
     // if this is Constant, may call a overridden method
@@ -414,9 +465,9 @@ void Generator :: setParameter(const std::string& pString,
                 aw::stringToParameterContext(pcString));
 } 
 // -----------------------------------------------------------------------------
-void Generator :: setParameter(char* const pCharArray, 
+void Generator :: setParameter(const char* pCharArray, 
                                double v, 
-                               char* const pcCharArray)
+                               const char* pcCharArray)
 {
     // character arrays are converted to strings
     setParameter(aw::stringToParameterName(pCharArray), 
@@ -464,9 +515,9 @@ void Generator :: setParameter(std::string& pString,
 // -----------------------------------------------------------------------------
 // all char array version
 // PolyConstant overload this form
-void Generator :: setParameter(char* const pCharArray, 
-                               char* const generatorCharArray, 
-                               char* const pcCharArray)
+void Generator :: setParameter(const char* pCharArray, 
+                               const char* generatorCharArray, 
+                               const char* pcCharArray)
 {
     std::string pString(pCharArray);
     std::string generatorString(generatorCharArray);
@@ -476,6 +527,8 @@ void Generator :: setParameter(char* const pCharArray,
                  generatorString, 
                  pcString);
 } 
+
+
 
 
 

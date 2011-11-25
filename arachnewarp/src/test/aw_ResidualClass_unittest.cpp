@@ -47,7 +47,7 @@ TEST(BasicTests, ResidualClassBasic) {
 
     // pass z1 by reference; this should process z1
     // returns the same vector
-    std::vector<int> post = a.segment(0, z1);
+    std::vector<int> post = a.getSegment(0, z1);
 
     // display output
     // std::cout << "post vector: ";
@@ -88,16 +88,16 @@ TEST(BasicTests, ResidualClassString) {
     // create a residual class
     ResidualClass a; 
     // default constructor values
-    EXPECT_EQ(a.represent(), "1@1");
+    EXPECT_EQ(a.getString(), "1@1");
 
     std::string arg1("4@1"); // create the argument
     a.setModulusAndShift(arg1);
-    EXPECT_EQ(a.represent(), "4@1");
+    EXPECT_EQ(a.getString(), "4@1");
 
 
     std::string arg2("12@3"); // create the argument
     a.setModulusAndShift(arg2);
-    EXPECT_EQ(a.represent(), "12@3");
+    EXPECT_EQ(a.getString(), "12@3");
 
 
 }

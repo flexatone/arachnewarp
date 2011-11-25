@@ -28,17 +28,17 @@ namespace aw {
 // =============================================================================
 // constructor
 ResidualClass::ResidualClass(int m, int s)
-    : modulus(m), shift(s)
 {
-    // setModulusAndShift(m, s);
+    setModulusAndShift(m, s);
 }
 
 // =============================================================================
 // set modulus and shift with integers
 void ResidualClass::setModulusAndShift(int m, int s)
 {
-    modulus = m;
-    shift = s;
+    // TODO: add range checking and raise an exception
+    modulus_ = m;
+    shift_ = s;
 }    
 
 // =============================================================================
@@ -46,12 +46,12 @@ void ResidualClass::setModulusAndShift(int m, int s)
 // read-only access
 int ResidualClass::getModulus() const
 {
-    return modulus;
+    return modulus_;
 }    
 
 int ResidualClass::getShift() const
 {
-    return shift;
+    return shift_;
 }   
 
 // =============================================================================
@@ -66,22 +66,28 @@ void ResidualClass::setModulusAndShift(const std::string& s)
     // TODO: need to check that there are only two elements
     // in tokens; need to be sure that they are numbers
 
+    int mTemp; // temporary storage
+    int sTemp; 
+
     // see: http://www.parashift.com/c++-faq-lite/misc-technical-issues.html#faq-39.2
     // here we use the >> operator to extract i into x
+
     std::istringstream i(tokens[0]);
-    i >> modulus;
+    i >> mTemp; // convert to number
 
     std::istringstream j(tokens[1]);
-    j >> shift;
+    j >> sTemp;
 
+    // call method that does boundary checking
+    setModulusAndShift(mTemp, sTemp);
 }    
 
 // =============================================================================
 // get modulus and shift as string representation
-const std::string ResidualClass::represent()
+const std::string ResidualClass::getString()
 {
     std::stringstream out;
-    out << modulus << "@" << shift; // adds to stream
+    out << modulus_ << "@" << shift_; // adds to stream
     return out.str(); // returns as a string
 }
 
@@ -99,26 +105,30 @@ bool ResidualClass::operator==(ResidualClass& that)
 
 // =============================================================================
 // second arg is passing an integer vector z by reference
-
-std::vector<int> ResidualClass::segment(int n, std::vector<int> &z)
+// alternatively, could pass in a vector by reference and update values
+// in that vector
+std::vector<int> ResidualClass::getSegment(int n, std::vector<int>& z)
 {
     // create a variable named post that is a vector; init w/ array
     // initialize with zeros
     std::vector<int> post;
     post.reserve(z.size());
 
+    // for temporary storage of value
+    int nLocal = 0;
+
+    // iterate over values in the input z vector
     for (int i=0; i<z.size(); i++)
     {
-        int nLocal = 0;
         // check that n+shift is w/n modulus
-        // not sure why i have to do (int) type casting here
-        nLocal = (n + shift) % modulus;
-        if (z[i] % modulus == nLocal)
-            // should have enough room to append b/c allocated based on 
-            // size of z
+        // N is the start value 
+        nLocal = (n + shift_) % modulus_;
+
+        // if the current z value taken to the mod is == to nLocal, keep
+        if (z[i] % modulus_ == nLocal)
             post.push_back(z[i]); 
     };
-    // we return the vector
+    // return the newly created vector
     // see http://www.velocityreviews.com/forums/t285675-a-function-which-returns-a-vector.html
     return post;
 }    

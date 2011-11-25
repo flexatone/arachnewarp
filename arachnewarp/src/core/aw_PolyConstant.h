@@ -26,7 +26,7 @@ namespace aw {
 class PolyConstant; // forward declarator
 typedef boost::shared_ptr<PolyConstant> PolyConstantPtr;
 
-//! PolyGenerator of a constant list of values. Values are stored within this object in the static value_ array. When called on by other Generators, all values in the value_ array are copied into the workingArray_, and a reference to this array is passed to the caller. The workingArray_ is defined and stored in PolyGenerator; all PolyGenerators have a fixed, stack-based workingArray. 
+//! PolyGenerator of a constant list of values, where the list is returned as a whole for each sample call. Values are stored within this object in the static value_ array. When called on by other Generators, all values in the value_ array are copied into the workingArray_, and a reference to this array is passed to the caller. The workingArray_ is defined and stored in PolyGenerator; all PolyGenerators have a fixed, stack-based workingArray. 
 class PolyConstant: public aw::PolyGenerator 
 {
 public:

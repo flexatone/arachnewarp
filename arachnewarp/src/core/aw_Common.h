@@ -46,17 +46,17 @@ char const charPmtrClose = '}';
 
 // =============================================================================
 // used for sample time
-typedef uint32_t unsigned Int32Unsigned;
+typedef uint32_t Int32Unsigned;
 // 0	4,294,967,295
 
-typedef int32_t signed Int32Signed;
+typedef int32_t Int32Signed;
 // -2,147,483,648	2,147,483,647
 
-typedef uint64_t unsigned Int64Unsigned;
+typedef uint64_t Int64Unsigned;
 // 0	18,446,744,073,709,551,615
 
 //! All sample times units are passed in this type. Presently, this is a 32 bit int, but could be increased if needed.
-typedef uint32_t unsigned SampleTimeType;
+typedef uint32_t SampleTimeType;
 // 0	4,294,967,295
 
 
@@ -69,8 +69,11 @@ typedef int unsigned SampleRateType;
 //! This type is used for all amplitude values, or other values calculated in processing. 
 typedef double MagnitudeType;
 
-
 typedef double* WorkingArrayPtr;
+
+//! This type is used for storing n-dimensional table data, such as audio and possible the output of Generators.
+typedef std::vector<double> DynamicTable;
+// typedef std::vector<std::vector<double> > DynamicDoubleTable;
 
 
 // =============================================================================
@@ -102,7 +105,7 @@ typedef boost::split_iterator<std::string::iterator> StringSplitIterator;
 //! aw::TimeContext are used in cases where we need to specify if values/presentation is by sample or seconds.
 enum TimeContext {
     timeContextNameSample = 0, 
-    timeContextNameSecond = 1,
+    timeContextNameSecond = 1
 };
 
 
@@ -122,7 +125,7 @@ enum ParameterContext {
     // alternate pitch representation: midi pitch values
     pContextNamePitch = 5, 
     // beats per minute
-    pContextNameBeatsPerMinute = 6, 
+    pContextNameBeatsPerMinute = 6 
 
 };
 
@@ -152,17 +155,18 @@ enum ParameterName {
     pNameOperand2 = 7,
     pNameOperand3 = 8,
     pNameOperand4 = 9,
-
+    // TODO: need to add db/linear amp contexts
     pNameAmplitude = 10,
     pNameValueList = 11,
+    // Selector selection method
     pNameSelectionMethod = 12,
-
-    // a unit interval control; possible rename position, horizontalPosition
+    // a unit interval control; possibly rename position, horizontalPosition
     // xPosition
     pNamePanLeftRight = 13,
-
     // step size for selecting from lists
     pNameStride = 14,
+    // converted to strings for loading an audio file
+    pNameFilePath = 15
 
     };
 
@@ -179,7 +183,7 @@ enum GeneratorType {
     gTypeMono = 0,
     gTypePoly = 1,
     gTypeNone = 2, // for Constant and PolyConstant: 
-    gTypeAny = 3, // any form : 
+    gTypeAny = 3 // any form : 
 };
 
 
@@ -198,6 +202,7 @@ enum GeneratorName {
     gNameSelector = 10,
     gNamePanStereo = 11,
     gNamePolyAdd = 12,
+    gNamePolyTableFile = 13
     };
 
 
@@ -209,7 +214,7 @@ GeneratorName stringToGeneratorName(std::string str);
 enum FoldDownMethod {
     fdMethodFirst = 0, 
     fdMethodLast = 1, 
-    fdMethodAverage = 2, 
+    fdMethodAverage = 2
 };
 
 
@@ -260,8 +265,11 @@ aw::Int32Signed doubleToIntProabilistic(double n);
 // =============================================================================
 // string conversions and printing
 
-//! Remove leading and trailing white spaces, and make all lower case. Modifies the supplied string in place.
+//! Remove leading and trailing white spaces. Modifies the supplied string in place.
 void scrubString(std::string& str);
+
+//! Remove leading and trailing white spaces, and make all lower case. Modifies the supplied string in place.
+void scrubStringAndLowerCase(std::string& str);
 
 //! Convert a number to a string.
 std::string numberToString(double n);
@@ -344,3 +352,4 @@ void printVector (const std::vector<T>& src, const std::string& header="aw::prin
 } // end namespace aw
 
 #endif
+

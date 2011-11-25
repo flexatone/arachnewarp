@@ -219,6 +219,8 @@ TEST(BasicTests, StringToEnumerated) {
 
     EXPECT_EQ(aw::stringToGeneratorName(" polyADD "), aw::gNamePolyAdd);
 
+    EXPECT_EQ(aw::stringToGeneratorName(" polytablefile "),
+             aw::gNamePolyTableFile);
 
     EXPECT_EQ(aw::stringToParameterContext(" frequency "), aw::pContextNameFrequency);
     EXPECT_EQ(aw::stringToParameterContext("periodseconds"), aw::pContextNamePeriodSeconds);
@@ -253,6 +255,13 @@ TEST(BasicTests, StringToEnumerated) {
     EXPECT_EQ(aw::stringToParameterName("amp"), aw::pNameAmplitude);
     EXPECT_EQ(aw::stringToParameterName("amplitude"), aw::pNameAmplitude);
 
+    EXPECT_EQ(aw::stringToParameterName("valuelist"), aw::pNameValueList);
+    EXPECT_EQ(aw::stringToParameterName("selectionmethod"),
+               aw::pNameSelectionMethod);
+    EXPECT_EQ(aw::stringToParameterName("pan"), aw::pNamePanLeftRight);
+    EXPECT_EQ(aw::stringToParameterName("stride"), aw::pNameStride);    EXPECT_EQ(aw::stringToParameterName("filepath"), aw::pNameFilePath);
+
+
 }
 
 
@@ -267,29 +276,29 @@ TEST(BasicTests, StringConversions) {
 
     std::string str1 = "TEST";
     // process in place
-    aw::scrubString(str1);
+    aw::scrubStringAndLowerCase(str1);
     EXPECT_EQ(str1, "test");
 
 
     std::string str2 = "     tEsT    ";
     // process in place
-    aw::scrubString(str2);
+    aw::scrubStringAndLowerCase(str2);
     EXPECT_EQ(str2, "test");
 
     std::string str3 = "   t  E    s    T    ";
     // process in place
-    aw::scrubString(str3);
+    aw::scrubStringAndLowerCase(str3);
     EXPECT_EQ(str3, "test");
 
 
     std::string str4 = "   t \nE    s\n   T    ";
     // process in place
-    aw::scrubString(str4);
+    aw::scrubStringAndLowerCase(str4);
     EXPECT_EQ(str4, "test");
 
     std::string str5 = "   t \nE\t\t    s\n   T    ";
     // process in place
-    aw::scrubString(str5);
+    aw::scrubStringAndLowerCase(str5);
     EXPECT_EQ(str5, "test");
 
 

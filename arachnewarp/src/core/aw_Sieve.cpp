@@ -28,31 +28,32 @@ namespace aw {
 // constructor
 Sieve::Sieve(std::string s)
 {
-    parse(s);
+    readString(s);
 }
 
 
 // =============================================================================
 // parse and load a string representation
-void Sieve::parse(std::string s)
+void Sieve::readString(std::string s)
 {
-    inputString = s; // cannot get this to work as a constructor
+    inputString_ = s; // cannot get this to work as a constructor
     // print out input string
-    // std::cout << inputString << std::endl;
+    // std::cout << inputString_ << std::endl;
 
     // a vector of strings
     std::vector<std::string> tokens;
     // the boost split, assigns values to tokens
-    boost::split(tokens, inputString, boost::is_any_of("|"));
+    boost::split(tokens, inputString_, boost::is_any_of("|"));
 
     for (int i=0; i<tokens.size(); i++) {
         // std::cout << tokens[i] << std::endl;
         // create a Residual class
-        ResidualClass rc;
-        rc.setModulusAndShift(tokens[i]);
+        ResidualClassPtr rc(new ResidualClass());
+        //ResidualClass rc;
+        rc->setModulusAndShift(tokens[i]);
         // print  modulus and shifts
-        // std::cout << a.represent() << std::endl;
-        rcStorage.push_back(rc);
+        // std::cout << a.getString() << std::endl;
+        rcStorage_.push_back(rc);
     };
 
 
@@ -77,22 +78,22 @@ void Sieve::parse(std::string s)
 
 // =============================================================================
 // get a string representation
-const std::string Sieve::represent()
+const std::string Sieve::getString()
 {
 //     std::stringstream out;
 // 
-//     for (int i=0; i<rcStorage.size(); i++) {
+//     for (int i=0; i<rcStorage_.size(); i++) {
 //         // call represent on residual class
-//         out << rcStorage[i].represent() << "|" ; 
+//         out << rcStorage_[i].getString() << "|" ; 
 //     };
 //     return out.str(); // returns as a string
 
 
     std::vector<std::string> tokens;
 
-    for (int i=0; i<rcStorage.size(); i++) {
-        // call represent on residual class
-        tokens.push_back(rcStorage[i].represent()); 
+    for (int i=0; i<rcStorage_.size(); i++) {
+        // call represent on residual class pointer
+        tokens.push_back(rcStorage_[i]->getString()); 
     };
 
     // using boost::join, returns a string
@@ -105,7 +106,8 @@ const std::string Sieve::represent()
 // =============================================================================
 // second arg is passing an integer vector z by reference
 // return a vector
-std::vector<int> Sieve::segment(int n, std::vector<int> &z)
+// TODO: implement
+std::vector<int> Sieve::getSegment(int n, std::vector<int> &z)
 {
     // create a variable named post that is a vector; init w/ array
     // initialize with zeros

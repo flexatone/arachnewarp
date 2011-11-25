@@ -60,7 +60,6 @@ std::string parameterContextToString(aw::ParameterContext pc)
         default:
             throw std::out_of_range("parameterContextToString(): the given ParameterContext matches no known ParameterContext"); 
     };
-
     return pcName;
 }
 
@@ -71,7 +70,7 @@ aw::ParameterContext stringToParameterContext(std::string str)
 {
     // copy of a string is pased, not a reference, so can edit in place
     // remove extra space, lower case
-    aw::scrubString(str);
+    aw::scrubStringAndLowerCase(str);
     aw::ParameterContext pc; // an integer
 
     if (str == "none" || str == "") // an empty string is none
@@ -144,7 +143,9 @@ std::string parameterNameToString(aw::ParameterName pn)
         case aw::pNameStride: // stride magnitude; integer step size
             pName += "stride";
             break;
-
+        case aw::pNameFilePath: // stride magnitude; integer step size
+            pName += "filePath";
+            break;
         default:
             throw std::out_of_range("parameterNameToString(): the given ParameterName matches no known ParameterName"); 
     };
@@ -156,8 +157,7 @@ aw::ParameterName stringToParameterName(std::string str)
 {
     // copy of a string is pased, not a reference, so can edit in place
     // remove extra space, lower case
-    aw::scrubString(str);
-    
+    aw::scrubStringAndLowerCase(str);
     ParameterName pn; // an integer
 
     if (str == "minimum" || str == "min")
@@ -190,13 +190,12 @@ aw::ParameterName stringToParameterName(std::string str)
         pn = aw::pNamePanLeftRight;
     else if (str == "stride")
         pn = aw::pNameStride;
-
+    else if (str == "filepath" || str == "fp")
+        pn = aw::pNameFilePath;
     else
         throw std::out_of_range("stringToParameterName(): the given string (" + str + ") matches no known ParameterName"); 
     return pn;
 }
-
-
 
 // -----------------------------------------------------------------------------
 //! Convert a string representation to an aw::GeneratorName enumeration. 
@@ -205,7 +204,7 @@ aw::GeneratorName stringToGeneratorName(std::string str)
 {
     // copy of a string is pased, not a reference, so can edit in place
     // remove extra space, lower case
-    aw::scrubString(str);
+    aw::scrubStringAndLowerCase(str);
     GeneratorName gn; // an integer
 
     if (str == "add")
@@ -234,12 +233,12 @@ aw::GeneratorName stringToGeneratorName(std::string str)
         gn = aw::gNamePanStereo;
     else if (str == "polyadd")
         gn = aw::gNamePolyAdd;
+    else if (str == "polytablefile")
+        gn = aw::gNamePolyTableFile;
     else
         throw std::out_of_range("stringToGeneratorName(): the given string (" + str + ") matches no known GeneratorName"); 
     return gn;
 }
-
-
 
 
 // =============================================================================
@@ -272,8 +271,6 @@ int mod(int x, int m) {
 // -----------------------------------------------------------------------------
 // need to fit value in range; need to snap to integer range with probabilistic mapping
 // int fitIntegerRange(double v, double a, double b)
-
-
 
 
 // =============================================================================
@@ -424,8 +421,16 @@ aw::Int32Signed doubleToIntProabilistic(double n)
 // pass by reference; used as a proc routine before string comparisons
 void scrubString(std::string& str)
 {
+    boost::erase_all(str, " "); // TODO: skip values in quotes?
+    boost::erase_all(str, "\n");
+    boost::erase_all(str, "\t");
+    //boost::trim(str);
+}
+
+void scrubStringAndLowerCase(std::string& str)
+{
     boost::to_lower(str);
-    boost::erase_all(str, " ");
+    boost::erase_all(str, " "); // TODO: skip values in quotes?
     boost::erase_all(str, "\n");
     boost::erase_all(str, "\t");
     //boost::trim(str);
@@ -568,7 +573,7 @@ std::vector<std::string> splitString(const std::string& srcRaw,
         ++it) { 
         std::string sub = boost::copy_range<std::string>(*it);
         // scrub string in place
-        if (postScrub) aw::scrubString(sub); 
+        if (postScrub) aw::scrubStringAndLowerCase(sub); 
         out.push_back(sub);
     } 
     return out;
@@ -782,7 +787,7 @@ void getFirstParameterTrio(std::string& src, // input
                                std::string& working) {
 
     // remove white space; TODO need to remove intermingled white space 
-    //aw::scrubString(src);
+    //aw::scrubStringAndLowerCase(src);
 
     std::string workingPostName; 
     std::string workingPostArguments; 
