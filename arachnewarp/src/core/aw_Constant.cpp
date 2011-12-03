@@ -28,14 +28,12 @@ Constant :: Constant(aw::SystemPtr o)
 
 // =============================================================================
 //! Destroyer, virtual
-Constant :: ~Constant()
-{
+Constant :: ~Constant() {
 }
 
 // =============================================================================
 //! Perform basic setup
-void Constant :: init()
-{    
+void Constant :: init() {    
     pValid_.push_back(aw::pNameValue);
     pTypeMap_[aw::pNameValue] = aw::gTypeNone;
     value_ = 0;
@@ -112,6 +110,8 @@ void Constant :: setParameter(const aw::ParameterName p, double v,
             match = true;
             break;              
             }
+        default:
+            break;
     }
     if (!match) {
         throw std::invalid_argument("invalid parameter name or parameter context");

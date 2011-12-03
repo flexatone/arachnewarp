@@ -117,9 +117,7 @@ void PolyConstant :: setParameter(const aw::ParameterName p,
     }
     bool match(false);
     switch (p) {                       
-        case aw::pNameValue:  
-
-   
+        case aw::pNameValue:   
             if (isValidContext(p, pc)) {
                 // the workingArray_ may need to be adjusted 
                 resizeWorkingArray(v.size());
@@ -129,13 +127,14 @@ void PolyConstant :: setParameter(const aw::ParameterName p,
                 value_.clear();
                 // note: this Generator does not use the pMap_ map
                 // transfer/copy values to local vector
-                for (int i=0; i<v.size(); i++) {
+                for (unsigned int i=0; i<v.size(); i++) {
                     value_.push_back(v[i]); 
                 };
-
             match = true;
             break;              
             }
+        default: // handle other cases
+            break;
     }
     if (!match) {
         throw std::invalid_argument("invalid parameter name or parameter context");
@@ -219,13 +218,12 @@ void PolyConstant :: readParameterString(std::string& parameterString) {
 
 // =============================================================================
 // return a pointer to a working array
-aw::WorkingArrayPtr PolyConstant :: getPolyAtSample(aw::SampleTimeType)
-{
+aw::WorkingArrayPtr PolyConstant :: getPolyAtSample(aw::SampleTimeType) {
     // update values in working vector; the values may be changed
     // in later processing; thus, at the top of the call chain
     // muse refresh
 
-    for (int i=0; i<polyDepth_; i++) {
+    for (unsigned int i=0; i<polyDepth_; i++) {
         workingArray_[i] = value_[i]; 
     };
     // returning the pointer to the vector

@@ -19,7 +19,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <boost/algorithm/string.hpp>
 #include <boost/array.hpp>
 
-#include "aw_System.h"
+// #include "aw_System.h"
 
 
 
@@ -37,12 +37,12 @@ double const pi2(3.14159265358979323846264338*2.0);
 double const PRINT_LOG(false);
 
 //! The maximum size of PolyGenerator arrays. This determines the initial size of all poly arrays. These arrays will reallocate to larger sizes if necessary. This size is similar to bit depth
-int const defaultPolyDepthAllocated(32);
+unsigned int const defaultPolyDepthAllocated(32);
 
 // characters
-char const charListDelimit = ',';
-char const charPmtrOpen = '{';
-char const charPmtrClose = '}';
+const char charListDelimit = ',';
+const char charPmtrOpen = '{';
+const char charPmtrClose = '}';
 
 // =============================================================================
 // used for sample time
@@ -177,7 +177,7 @@ std::string parameterNameToString(ParameterName pn);
 ParameterName stringToParameterName(std::string str);
 
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //! Define types of Generators; each parameter must define one and only one type of Generator
 enum GeneratorType {
     gTypeMono = 0,
@@ -239,22 +239,20 @@ double bpmToSecondTime(double bpm);
 double secondTimeToSampleTime(double secondTime, int sr=44100);
 
 // =============================================================================
-
-
 //! Random uniform double values within the unit interval. 
 double randomUnit();
 
 //! Random integers within a range, inclusive.
-aw::Int32Signed randomIntegerRange(int a, int b);
+aw::Int32Signed randomIntRange(int a, int b);
 
-//! Random integers within the range [0, n)
-aw::Int32Signed randomInteger(int a);
+//! Random integers within the range [0, n).
+aw::Int32Signed randomInt(int a);
 
-void shuffleIntegerVector(std::vector<aw::Int32Signed>& v);
+//! Shuffle in-place a vector of integers. 
+void shuffleVectorInt(std::vector<aw::Int32Signed>& v);
 
 
 // aw::Int32Signed randomRange(aw::Int32Signed a, aw::Int32Signed b);
-
 
 // =============================================================================
 // number conversions
@@ -302,22 +300,29 @@ std::vector<std::string> splitString(const std::string& str,
 int countSubStrings(const std::string& src, const std::string& find);
 
 
-// -----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //! Retrun boolean if a parameter string is well formed, or of all braces are matching pairs.
 bool stringWellFormed(const std::string& str, 
                       const std::string& open, 
                       const std::string& close);
 
+bool stringWellFormed(const std::string& str, 
+        const char open, 
+        const char close);
+
+//! Get the first parameter name
 void getFirstParameterName(std::string& src, std::string& out, 
                            std::string& working);
 
+//! Get the first delimited range of a parameter statements.
 void getFirstParameterArguments(std::string& src, std::string& out, 
                                 std::string& working);
 
+//! Get the first parameter context string.
 void getFirstParameterContext(std::string& src, std::string& out,
                               std::string& working);
 
-
+//! Get the first group of three parameter components. The working string returns the remaining string. 
 void getFirstParameterTrio(std::string& src, // input
                                std::string& name, // output to write to
                                std::string& arguments,
@@ -325,29 +330,24 @@ void getFirstParameterTrio(std::string& src, // input
                                std::string& working);
 
 
-// =============================================================================
-void printDebug(const char* c);
+//==============================================================================
+void print(const char* c);
 
-void printDebug(std::string& str);
+void print(std::string& str);
 
-void printDebug(double v);
+void print(double v);
 
-
-// =============================================================================
+//------------------------------------------------------------------------------
 // defaults must be specified here
-void printArray (double arg[], aw::Int32Signed length, const std::string& 
-                 header="aw::printArray output");
-
+template <typename T>
+void print (T* arg, aw::Int32Signed length, 
+        const std::string& header="aw:");
 
 // template for handling vectors of other data
 template <typename T>
-void printVector (const std::vector<T>& src, const std::string& header="aw::printVector output");
+void print (const std::vector<T>& src, 
+                  const std::string& header="aw:");
 
-// void aw::printVector (const std::vector<double>&, const std::string& 
-//                  header="aw::printVector<double> output");
-// 
-// void aw::printVector (const std::vector<aw::Int32Signed>&, const std::string& 
-//                  header="aw::printVector<aw::Int32Signed> output");
 
 } // end namespace aw
 

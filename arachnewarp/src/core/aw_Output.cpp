@@ -70,7 +70,7 @@ int Output :: write(aw::GeneratorPtr gen, double dur, char* fp, int fileFormat)
         //float sample[sampleCount]; // this fails over a certain size
         boost::scoped_array<float> sample(new float[sampleCount]);
         // write each sample
-        for (int i=0; i<sampleCount; i++) {
+        for (unsigned int i=0; i<sampleCount; i++) {
             //std::clog<< "writing samples: " << i << std::endl;
             sample[i] = gen->getValueAtSample(i);
         }
@@ -86,7 +86,7 @@ int Output :: write(aw::GeneratorPtr gen, double dur, char* fp, int fileFormat)
 
         // get a pointer to double 
         aw::WorkingArrayPtr outPoly;
-        for (int i=0; i<sampleCount; i++) {
+        for (unsigned int i=0; i<sampleCount; i++) {
             // pointer to poly array
             outPoly = gen->getPolyAtSample(i);
             // get first two values in array
@@ -113,8 +113,8 @@ int Output :: write(aw::GeneratorPtr gen, double dur, char* fp)
 
 int Output :: write(aw::GeneratorPtr gen, double dur)
 {
-
-	char* fp="/Volumes/xdisc/_sync/_x/src/arachneWarp/out/foo.wav";
+    // cast const to normal char*
+	char* fp=(char*)"/Volumes/xdisc/_sync/_x/src/arachneWarp/out/foo.wav";
 	int format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
     return write(gen, dur, fp, format);
 

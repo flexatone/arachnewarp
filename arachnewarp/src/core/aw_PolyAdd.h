@@ -27,8 +27,7 @@ class PolyAdd; // forward declarator
 typedef boost::shared_ptr<PolyAdd> PolyAddPtr;
 
 //! PolyGenerator that adds two PolyGenerators at parallel positions in the working array. Note that this PolyAdd can work just like an Add, and suggests its replacement. 
-class PolyAdd: public aw::PolyGenerator 
-{
+class PolyAdd: public aw::PolyGenerator {
 public:
 
     PolyAdd(aw::SystemPtr sys); 
@@ -51,10 +50,10 @@ private:
 
     aw::MagnitudeType sum_; // for storing sum
 
-    int srcSize1_;
-    int srcSize2_;
-    int srcSize3_;
-    int srcSize4_;
+    unsigned int srcSize1_;
+    unsigned int srcSize2_;
+    unsigned int srcSize3_;
+    unsigned int srcSize4_;
 
     // pointer to working arrays obtained from stored PolyGenerators
     aw::WorkingArrayPtr workingArrayOperand1_;

@@ -79,28 +79,28 @@ TEST(BasicTests, RandomIntegerRangeBasic) {
     // args are min, max
     // always within range of 1 less than max
 
-    EXPECT_EQ(aw::randomIntegerRange(0, 0), 0);
-    EXPECT_EQ(aw::randomIntegerRange(10, 10), 10);
+    EXPECT_EQ(aw::randomIntRange(0, 0), 0);
+    EXPECT_EQ(aw::randomIntRange(10, 10), 10);
 
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) < 21, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) < 21, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) < 21, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) < 21, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) < 21, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) < 21, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) < 21, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) < 21, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) < 21, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) < 21, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) < 21, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) < 21, true);
 
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) > 9, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) > 9, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) > 9, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) > 9, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) > 9, true);
-    EXPECT_EQ(aw::randomIntegerRange(10, 20) > 9, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) > 9, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) > 9, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) > 9, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) > 9, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) > 9, true);
+    EXPECT_EQ(aw::randomIntRange(10, 20) > 9, true);
 
     // test that sequential values are not the same
-    aw::Int32Signed q1 = aw::randomIntegerRange(0, 20000);
-    aw::Int32Signed q2 = aw::randomIntegerRange(0, 20000);
-    aw::Int32Signed q3 = aw::randomIntegerRange(0, 20000);
-    aw::Int32Signed q4 = aw::randomIntegerRange(0, 20000);
+    aw::Int32Signed q1 = aw::randomIntRange(0, 20000);
+    aw::Int32Signed q2 = aw::randomIntRange(0, 20000);
+    aw::Int32Signed q3 = aw::randomIntRange(0, 20000);
+    aw::Int32Signed q4 = aw::randomIntRange(0, 20000);
 
     EXPECT_EQ(q1 != q2, true);
     EXPECT_EQ(q2 != q3, true);
@@ -109,15 +109,15 @@ TEST(BasicTests, RandomIntegerRangeBasic) {
 
     std::vector<int> a;
     for (int i=0; i<10; i++) {
-        a.push_back(aw::randomIntegerRange(0,20)); 
+        a.push_back(aw::randomIntRange(0,20)); 
     }
-    aw::printVector(a, "aw::randomIntegerRange between 0 and 20");
+    aw::printVector(a, "aw::randomIntRange between 0 and 20");
 
     std::vector<int> b;
     for (int i=0; i<10; i++) {
-        b.push_back(aw::randomIntegerRange(-1000,1000)); 
+        b.push_back(aw::randomIntRange(-1000,1000)); 
     }
-    aw::printVector(b, "aw::randomIntegerRange between -1000 and 1000");
+    aw::printVector(b, "aw::randomIntRange between -1000 and 1000");
 
 
 
@@ -884,13 +884,13 @@ TEST(BasicTests, DoubleToIntProbabilistic) {
 TEST(BasicTests, RandomInteger) {
 
     for (int i=0; i<30; i++) {
-        EXPECT_EQ(aw::randomInteger(3) < 3, true);
-        //std::cout << "aw::randomInteger(3): " << aw::randomInteger(3) << std::endl; 
+        EXPECT_EQ(aw::randomInt(3) < 3, true);
+        //std::cout << "aw::randomInt(3): " << aw::randomInt(3) << std::endl; 
     }
 
     for (int i=0; i<30; i++) {
-        EXPECT_EQ(aw::randomInteger(11) < 11, true);
-        //std::cout << "aw::randomInteger(11): " << aw::randomInteger(11) << std::endl; 
+        EXPECT_EQ(aw::randomInt(11) < 11, true);
+        //std::cout << "aw::randomInt(11): " << aw::randomInt(11) << std::endl; 
     }
 
 
@@ -910,12 +910,12 @@ TEST(BasicTests, ShuffleVector) {
 
     for (int i=0; i<30; i++) {
         v.push_back(i);
-        // std::cout << "aw::randomInteger(3): " << aw::randomInteger(3) << std::endl; 
+        // std::cout << "aw::randomInt(3): " << aw::randomInt(3) << std::endl; 
     }
 
     for (int i=0; i<30; i++) {
         // try to shuffle in place
-        aw::shuffleIntegerVector(v);
+        aw::shuffleVectorInt(v);
         sum = 0;
         count = 0;
         for (int i=0; i<v.size(); i++) {
