@@ -5,6 +5,8 @@ Created by Christopher Ariza on 6/30/10.
 Copyright 2010 Flexatone HFP. All rights reserved.
 */
 
+#include <boost/shared_ptr.hpp>
+
 
 #include "aw_GeneratorFactory.h"
 #include "aw_Generator.h"
@@ -24,6 +26,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include "aw_Selector.h"
 #include "aw_PanStereo.h"
 #include "aw_PolyAdd.h"
+
 #include "aw_PolyTableFile.h"
 
 
@@ -44,8 +47,7 @@ GeneratorFactory :: GeneratorFactory(aw::SystemPtr o)
 
 // =============================================================================
 // note: this are in the order presented in the GeneratorName enumerator
-GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
-{
+GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn) {
     switch (gn) {     
         case aw::gNameAdd: {
             aw::AddPtr g(new aw::Add(sys_));
@@ -99,10 +101,12 @@ GeneratorPtr GeneratorFactory :: create(aw::GeneratorName gn)
             aw::PolyAddPtr g(new aw::PolyAdd(sys_));
             return g;
             }
-        case aw::gNamePolyTableFile: {
-            aw::PolyTableFilePtr g(new aw::PolyTableFile(sys_));
-            return g;
-            }
+//         case aw::gNamePolyTableFile: {
+//             aw::PolyTableFilePtr g(new aw::PolyTableFile(sys_));
+//             return g;
+//             }
+        default:
+            throw std::invalid_argument("no matching GeneratorName: " + gn);
 
     };
     // compiler warning here for not having an output
@@ -117,7 +121,8 @@ GeneratorPtr GeneratorFactory :: create(std::string& gn)
     // remove all spaces and returns; keep case
     aw::scrubString(gn);
 
-    if (aw::stringWellFormed(gn, &aw::charPmtrOpen, &aw::charPmtrClose) == 
+    // TODO: passing these as pointers does not work
+    if (aw::stringWellFormed(gn, aw::charPmtrOpen, aw::charPmtrClose) == 
         false) {
         throw std::invalid_argument("malformed parameter string cannot be used to create a generator: " + gn);
     }
@@ -148,7 +153,7 @@ GeneratorPtr GeneratorFactory :: create(std::string& gn)
 
 // -----------------------------------------------------------------------------
 //! Create a Generator give a character array. Calls string version of create().
-GeneratorPtr GeneratorFactory :: create(char* const charArray)
+GeneratorPtr GeneratorFactory :: create(const char* charArray)
 {
     // convert string to a GeneratorName, pass to create
     // no direct conversion is necessary here

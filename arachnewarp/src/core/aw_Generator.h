@@ -242,9 +242,9 @@ protected:
     aw::GeneratorType gt_;
 
     //! The active depth used (active data) on the poly array. For all Generators this is 1. For PolyGenerators this is 1 or larger
-    int unsigned polyDepth_;
+    unsigned int polyDepth_;
     //! Store current size of workingArray as actually allocated, not just what is used as defined by polyDepth_.
-    int unsigned polyDepthAllocated_;
+    unsigned int polyDepthAllocated_;
 
 
     ///! All generators can optionally define a number of frames defined as samples; for dynamic generators, this will always be 1; for tables, this will be the number of frames

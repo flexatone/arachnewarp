@@ -51,7 +51,7 @@ public:
     virtual void clearWorkingArray();
 
     //! Delete and create again the working array to a new size on the heap. This also initializes all values to zero and sets both polyDepthAllocated_ and polyDepth to size. Will not make a change if size is already sufficient
-    virtual void resizeWorkingArray(int size);
+    virtual void resizeWorkingArray(unsigned int size);
 
 
     //! Return a sinlge value, as a double, from the PolyGenerator representation, simulating a Generator. This overrides the normal behavior or Generator. 

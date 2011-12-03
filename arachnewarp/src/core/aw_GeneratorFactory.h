@@ -19,8 +19,7 @@ namespace aw {
 
 
 //! Object to create Generators
-class GeneratorFactory
-{
+class GeneratorFactory {
 public:
 
     GeneratorFactory(aw::SystemPtr o); 
@@ -29,7 +28,7 @@ public:
 
     GeneratorPtr create(std::string& gnStr);
 
-    GeneratorPtr create(char* const charArray);
+    GeneratorPtr create(const char* charArray);
 
 
 private:

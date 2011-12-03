@@ -13,6 +13,9 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 #include <iomanip>
 #include <stdexcept>
 
+#include <boost/shared_ptr.hpp>
+
+
 #include "aw_Selector.h"
 #include "aw_Common.h"
 
@@ -167,7 +170,7 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
         // strideMagnitude_ is not used here
         else if (selectionMethod_ == 3) {
             // range is inclusive of last value
-            i_ = aw::randomIntegerRange(0, srcSize_-1);
+            i_ = aw::randomIntRange(0, srcSize_-1);
         }
 
         // if 4, random permutation
@@ -178,7 +181,7 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
 
             // always shuffle when all indices have been used
             if (permutationIndex_ > srcSize_ - 1) {
-                aw::shuffleIntegerVector(permutationIndices_);
+                aw::shuffleVectorInt(permutationIndices_);
                 permutationIndex_ = 0;
             }
             // set to value from permutation
@@ -197,9 +200,9 @@ double Selector :: getValueAtSample(aw::SampleTimeType st)
             // range is inclusive of last value
             //std::cout << "Selector: random walk " << walkSwitch_ << " pre i_ " << i_  << std::endl;
             if (walkSwitch_ > 0.5) {
-                i_ -= aw::randomIntegerRange(1, strideMagnitude_);
+                i_ -= aw::randomIntRange(1, strideMagnitude_);
             } else {
-                i_ += aw::randomIntegerRange(1, strideMagnitude_);
+                i_ += aw::randomIntRange(1, strideMagnitude_);
             }
             i_ = aw::mod(i_, srcSize_);
 

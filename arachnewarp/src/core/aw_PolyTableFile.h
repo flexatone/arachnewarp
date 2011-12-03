@@ -26,7 +26,7 @@ namespace aw {
     class PolyTableFile; // forward declarator
     typedef boost::shared_ptr<PolyTableFile> PolyTableFilePtr;
 
-    //! A PolyGenerator of a stored of values derived from an audio file, where data points are bundled into groups per frame and output as a poly. This can handle n-channel audio files.
+    //! A PolyGenerator of stored of values derived from an audio file, where data points are bundled into groups per frame and output as a poly. This can handle n-channel audio files.
     class PolyTableFile: public aw::PolyGenerator 
     {
     public:

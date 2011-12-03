@@ -27,16 +27,14 @@ PolyGenerator :: PolyGenerator(aw::SystemPtr o)
 }
 
 // =============================================================================
-PolyGenerator :: ~PolyGenerator()
-{
+PolyGenerator :: ~PolyGenerator() {
     // now, using a heap-based array, need to delete workingArray
     delete[] workingArray_;
     //std::cout << "PolyGenerator deleted working array" <<  std::endl;
 }
 
 // =============================================================================
-void PolyGenerator :: init()
-{   
+void PolyGenerator :: init() {   
     gt_ = aw::gTypePoly;
     defaultFoldDownMethod_ = aw::fdMethodFirst;
     polyDepth_ = 1; // default init size
@@ -66,15 +64,14 @@ void PolyGenerator :: clearWorkingArray()
 {
     // need to initialize working array over all allocated values, not just
     // those in use
-    for (int i=0; i<polyDepthAllocated_; i++) {
+    for (unsigned int i=0; i<polyDepthAllocated_; i++) {
         workingArray_[i] = 0; 
     };
 }
 
 // =============================================================================
 // Resize the working array only if necessary.
-void PolyGenerator :: resizeWorkingArray(int size)
-{
+void PolyGenerator :: resizeWorkingArray(unsigned int size) {
     // delete the old and create new size if larger than exisiting
     // assume that the requested size is also the 
     if (size > polyDepthAllocated_) {

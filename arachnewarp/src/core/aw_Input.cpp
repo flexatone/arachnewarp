@@ -7,6 +7,7 @@ Copyright 2010 Flexatone HFP. All rights reserved.
 
 
 #include <sndfile.hh>
+
 #include <boost/scoped_array.hpp>
 #include <vector>
 #include <string>

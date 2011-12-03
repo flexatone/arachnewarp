@@ -39,9 +39,8 @@ Generator :: Generator(aw::SystemPtr o)
 
 // =============================================================================
 // destructor
-Generator :: ~Generator()
-{
-    for (int i = 0; i < localGenerators_.size(); ++i) {
+Generator :: ~Generator() {
+    for (unsigned int i = 0; i < localGenerators_.size(); ++i) {
         // here, use -> on smart pointer to access method
         if (aw::PRINT_LOG) {
             std::clog<< "destroying a local generator: " << i << " name: " << localGenerators_[i]->getName() << std::endl;
@@ -65,83 +64,81 @@ void Generator :: init()
 }
 
 // =============================================================================
-void Generator :: reset()
-{
+void Generator :: reset() {
 }
 
 // =============================================================================
-std::string Generator :: getName()
-{
+std::string Generator :: getName() {
     static const std::string name = "Generator";
     return name;
 }
 
 // =============================================================================
-aw::GeneratorType Generator :: getGeneratorType()
-{
+aw::GeneratorType Generator :: getGeneratorType() {
     return gt_;
 }
 
 // =============================================================================
 //! Get the size of the active region of this Generator
-int Generator :: getPolyDepth()
-{
+int Generator :: getPolyDepth() {
     return polyDepth_;
 }
 
 // =============================================================================
-int Generator :: getFramesDefined()
-{
+int Generator :: getFramesDefined() {
     return framesDefined_;
 }
 
 // =============================================================================
 // only relevant in PolyGenerator subclass
-void Generator :: clearWorkingArray()
-{
+void Generator :: clearWorkingArray() {
 }
 
 // =============================================================================
 // only relevant in PolyGenerator subclass
-void Generator :: resizeWorkingArray(int size)
-{
+void Generator :: resizeWorkingArray(int size) {
 }
 
 
 // =============================================================================
-std::string Generator :: getParameterString(bool compact)
-{
+std::string Generator :: getParameterString(bool compact) {
     // "refresh{30}{frequency}"
     std::string str;
 
     str += getName();
-    str += "{";
-    
+    //str += "{";
+    str += aw::charPmtrOpen;
     //result = std::find(pValid_.begin(), pValid_.end(), p);
     for (ParameterNameVector::iterator it = pValid_.begin(); 
         it != pValid_.end(); 
-        ++it)  // need to pre-increment here
-    {
+        ++it) { // need to pre-increment here
+    
         //std::cout << *it << std::endl;
         // parameter names are actually just Integers, as the are defined
         // in an enum; need to convert
         str += aw::parameterNameToString(*it); // dereference string
-        str += "{";
+        //str += "{";
+        str += aw::charPmtrOpen;
+
         // provide value set to this Parmeter
         //GeneratorPtr subParameter = getParameter(*it);
         str += getParameter(*it)->getParameterString(compact);
-        str += "}";
+        //str += "}";
+        str += aw::charPmtrClose;
 
         // might only show context if it is not none
         aw::ParameterContext localContext = getContext(*it);
         
         if (localContext != aw::pContextNameNone) {
-            str += "{";
+            //str += "{";
+            str += aw::charPmtrOpen;
             str += aw::parameterContextToString(localContext);
-            str += "}";
+            //str += "}";
+            str += aw::charPmtrClose;
         }
     }
-    str += "}";
+    //str += "}";
+    str += aw::charPmtrClose;
 
     return str;
 }
@@ -593,8 +590,7 @@ void Generator :: readParameterString(std::string& parameterString) {
 // =============================================================================
 double Generator :: getValueWithContextToFrequency(double v, 
                     aw::ParameterName pn, 
-                    aw::SampleRateType sr)
-{
+                    aw::SampleRateType sr) {
     switch (pContextMap_[pn]) {       
         case aw::pContextNameFrequency:
             // do nothing
@@ -615,6 +611,8 @@ double Generator :: getValueWithContextToFrequency(double v,
             // convert from period in samples to frequency
             v = 1.0 / aw::bpmToSecondTime(v);
             break;
+        default:
+            break;
     };
     return v;
 }    
@@ -622,8 +620,7 @@ double Generator :: getValueWithContextToFrequency(double v,
 // -----------------------------------------------------------------------------
 double Generator :: getValueWithContextToPeriodSamples(double v, 
                     aw::ParameterName pn, 
-                    aw::SampleRateType sr)
-{
+                    aw::SampleRateType sr) {
     // the context of the input value is determined by the context alone
     // whatever the context, return the value in sample
     switch (pContextMap_[pn]) {       
@@ -657,7 +654,8 @@ double Generator :: getValueWithContextToPeriodSamples(double v,
             v = aw::secondTimeToSampleTime(aw::bpmToSecondTime(v), sr);
             break;
 
-
+        default:
+            break;
     };
 
     //std::cout << "getValueWithContextToPeriodSamples() " << " pContextMap_[pn] " << pContextMap_[pn] << " pn " << pn <<  " v " << v << std::endl;
@@ -750,7 +748,7 @@ void Generator :: printSample(int n, double t, int scalar, aw::TimeContext tc)
         }; // end case    
         if (i % scalar == 0) values.push_back(v); 
     };
-    aw::printVector(values, getName());
+    aw::print(values, getName());
 }
 
 

@@ -81,8 +81,7 @@ void PolyAdd :: reset()
 
 // =============================================================================
 //! Return a string name
-std::string PolyAdd :: getName()
-{
+std::string PolyAdd :: getName() {
     static const std::string name("PolyAdd");
     return name;
 }
@@ -90,8 +89,7 @@ std::string PolyAdd :: getName()
 
 // =============================================================================
 // return a pointer to a working array
-aw::WorkingArrayPtr PolyAdd :: getPolyAtSample(aw::SampleTimeType st)
-{
+aw::WorkingArrayPtr PolyAdd :: getPolyAtSample(aw::SampleTimeType st) {
     sampleTime_ = st;
     sr_ = sys_->getSamplingRate();
 
@@ -129,7 +127,7 @@ aw::WorkingArrayPtr PolyAdd :: getPolyAtSample(aw::SampleTimeType st)
 //     aw::printArray(workingArrayOperand3_, srcSize3_);
 //     aw::printArray(workingArrayOperand4_, srcSize4_);
 
-    for (int i=0; i<polyDepth_; i++) {
+    for (unsigned int i=0; i<polyDepth_; i++) {
         sum_ = 0;
         if (i < srcSize1_) {
             sum_ += workingArrayOperand1_[i];
