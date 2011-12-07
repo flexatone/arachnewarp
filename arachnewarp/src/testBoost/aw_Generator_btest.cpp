@@ -36,26 +36,17 @@ BOOST_AUTO_TEST_CASE(GeneratorBasic) {
     Generator gen1(sys); 
 
     BOOST_CHECK_EQUAL(gen1.getName(), "Generator");
-
     BOOST_CHECK_EQUAL(gen1.getGeneratorType(), aw::gTypeMono);
-
     BOOST_CHECK_EQUAL(gen1.getSystem()->getSamplingRate(), 44100);
-
     BOOST_CHECK_EQUAL(sys.use_count(), 2);
-
 
     // try to pass the same object
     Generator gen2(sys); 
     BOOST_CHECK_EQUAL(gen2.getSystem()->getSamplingRate(), 44100);
 
-
     // we can find the use count b/c this is a smart pointer!
     BOOST_CHECK_EQUAL(sys.use_count(), 3);
-
-
     BOOST_CHECK_EQUAL(gen1.getFramesDefined(), 1);
-
-
 }
 
 

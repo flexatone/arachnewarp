@@ -29,10 +29,8 @@ Output :: Output(aw::SystemPtr o)
 // =============================================================================
 int Output :: write(aw::GeneratorPtr gen, double dur, char* fp, int fileFormat)
 {
-
 	// char* outfilename="/Volumes/xdisc/_sync/_x/src/arachneWarp/out/foo.wav";
     // should determine file format by file extension
-
     // sample format is indepedent of System settings
 
 	int unsigned format = fileFormat;
@@ -57,7 +55,7 @@ int Output :: write(aw::GeneratorPtr gen, double dur, char* fp, int fileFormat)
 
 
     std::clog << "about to write samples samples: " << sampleCount << 
-    " gen->getGeneratorType(): " << gen->getGeneratorType() << std::endl;
+    " gen->getGeneratorType(): " << gen->getGeneratorType() << " to: " << fp << std::endl;
 
     // must declare sample array within scope of each branch
     if (gen->getGeneratorType() == aw::gTypeMono) {
@@ -81,7 +79,6 @@ int Output :: write(aw::GeneratorPtr gen, double dur, char* fp, int fileFormat)
         // interleaved, twice as large
         //const unsigned int size = sampleCount * 2; 
         //float sample[size];
-
         boost::scoped_array<float> sample(new float[sampleCount * 2]);
 
         // get a pointer to double 
@@ -114,7 +111,7 @@ int Output :: write(aw::GeneratorPtr gen, double dur, char* fp)
 int Output :: write(aw::GeneratorPtr gen, double dur)
 {
     // cast const to normal char*
-	char* fp=(char*)"/Volumes/xdisc/_sync/_x/src/arachneWarp/out/foo.wav";
+	char* fp=(char*)"/Volumes/xdisc/_sync/_x/src/arachnewarp/arachnewarp/out/audio/foo.wav";
 	int format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
     return write(gen, dur, fp, format);
 

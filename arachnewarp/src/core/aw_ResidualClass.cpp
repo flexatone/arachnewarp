@@ -23,8 +23,6 @@
 namespace aw {
 
 
-
-
 // =============================================================================
 // constructor
 ResidualClass::ResidualClass(int m, int s)
@@ -118,7 +116,7 @@ std::vector<int> ResidualClass::getSegment(int n, std::vector<int>& z)
     int nLocal = 0;
 
     // iterate over values in the input z vector
-    for (int i=0; i<z.size(); i++)
+    for (std::size_t i=0; i<z.size(); i++)
     {
         // check that n+shift is w/n modulus
         // N is the start value 

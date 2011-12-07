@@ -45,7 +45,7 @@ void Sieve::readString(std::string s)
     // the boost split, assigns values to tokens
     boost::split(tokens, inputString_, boost::is_any_of("|"));
 
-    for (int i=0; i<tokens.size(); i++) {
+    for (std::size_t i=0; i<tokens.size(); i++) {
         // std::cout << tokens[i] << std::endl;
         // create a Residual class
         ResidualClassPtr rc(new ResidualClass());
@@ -91,7 +91,7 @@ const std::string Sieve::getString()
 
     std::vector<std::string> tokens;
 
-    for (int i=0; i<rcStorage_.size(); i++) {
+    for (std::size_t i=0; i<rcStorage_.size(); i++) {
         // call represent on residual class pointer
         tokens.push_back(rcStorage_[i]->getString()); 
     };
