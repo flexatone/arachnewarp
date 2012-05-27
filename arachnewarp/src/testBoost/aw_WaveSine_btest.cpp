@@ -27,7 +27,6 @@ BOOST_AUTO_TEST_CASE(WaveSineBasic) {
     // set sampling rate to 1 for testing
     SystemPtr sys(new System(44100, 8));
 
-
     WaveSine gen1(sys); 
 
     gen1.setParameter(aw::pNameMinimum, -5);
