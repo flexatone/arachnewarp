@@ -1,5 +1,6 @@
 
 #include <stdexcept>
+#include <iostream>
 
 #include "aw_common.h"
 
@@ -9,8 +10,25 @@ namespace aw {
 
 
 //==============================================================================
+// display
+
+void print(SVT* out, AST size) {
+    std::cout << "<array ";
+    for (AST i=0; i<size; ++i) {
+        std::cout << out[i] << ' ';
+    }
+
+    // TODO: figure out how to do this idiom    
+    //while (out < out+size) {
+        //std::cout << *out++ << ' ';
+    //}    
+    std::cout << '>' << std::endl;
+}
+
+
+//==============================================================================
 // unit interval transformations and value mapping
-double denormalize(double value, double a, double b) {
+SVT denormalize_unit(SVT value, SVT a, SVT b) {
     // need to handle value beyond 0 and 1
     if (value < 0 || value > 1) 
         throw std::out_of_range("value must be between 0 and 1"); 
