@@ -1,0 +1,41 @@
+
+
+
+frame_size = number of samples per frame
+frame_dimensions = number of channels in a frame
+    Generators need to be able to see this when given an i/o generator
+    
+
+Generators need to be vectorized.
+
+need to favor object composition rather than subclasse to optimzier performance
+    have a manager class that lives inside classes manually configured with no v/table
+
+want to be able to pass a Generator in as an argument for a constant or other parameter in another generator
+
+
+Generators need to process input (more than one) and output.
+
+Generators can be passed in an input Generator and read its output vector for input
+    if the output is not ready yet, call _gen()
+    if an input frame_dimension is larger than the output frame_imension
+        needs to increase output_frame size
+
+
+Generators need to store local frame_count 
+    the frame_count needs to be passed down to all instances
+    an instance will only call its _gen routine if frame_count needs to be
+    incremented 
+
+
+input/output frames might be initially scaled for a certain number of dimensions beyond the number that are needed
+
+
+conception cases: mixer: need to take multiple inputs, or one input with multi dimension
+
+
+
+
+
+
+

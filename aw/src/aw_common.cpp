@@ -33,7 +33,7 @@ SVT denormalize_unit(SVT value, SVT a, SVT b) {
     if (value < 0 || value > 1) 
         throw std::out_of_range("value must be between 0 and 1"); 
     // if no range, return boundary
-    if (a == b) return a;
+    //if (a == b) return a;
     // general form: value * (max - min) + max;
     // a is min, b is max
     else if (a < b) return (value * (b - a)) + a;
