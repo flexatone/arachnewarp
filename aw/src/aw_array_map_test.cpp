@@ -23,9 +23,9 @@ BOOST_AUTO_TEST_CASE(aw_array_map_test1) {
 	std::cout << "running aw_array_map_test" << std::endl;
 
 	// this has to be const
-	aw::AST const size = 12;
-	aw::SVT in1[size] = {0};
-	aw::SVT out1[size] = {0};
+	aw::FRAME_SIZE_T const size = 12;
+	aw::SAMPLE_T in1[size] = {0};
+	aw::SAMPLE_T out1[size] = {0};
 	
 	aw::denormalize(in1, out1, size);
 	aw::print(out1, size);
