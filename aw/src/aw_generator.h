@@ -11,6 +11,9 @@
 namespace aw {
 
 
+
+// todo: add mechanism to tag generators
+
 class Generator;
 // define shared ptr
 typedef std::shared_ptr<Generator> GeneratorShared;
@@ -29,10 +32,6 @@ class Generator {
     Generator();
     ~Generator();
     
-
-
-    // gen routine is defined in derived class and is not inherited
-    // need a variable list of input, each of which is a generator
     
     //! A std::vector if shared Generators that are the inputs to this function.
     std::vector<GeneratorShared> inputs;
@@ -40,7 +39,7 @@ class Generator {
     //! Can store dictionary of input type classes: these can store all sorts of specialized metadata data about the inputs needed for this Generator
     std::vector<std::string> input_names;    
     
-    //! A linear array of samples, which may include multiple dimensions in series. 
+    //! A linear array of samples, which may include multiple dimensions in series. This probably should be private.
     SAMPLE_T* output;
 
     //! Initialize the Generator, allocating the output array.
@@ -50,11 +49,24 @@ class Generator {
     
     //! Print the output buffer for all dimensions at the current sample.
     void print_output();
+
+    //! Render the requested frame if not already rendered
+    void render(FRAME_COUNT_T f); 
+  
     
 };
 
 
 } // end namespace aw
+
+
+
+/*class Constant: public Generator {*/
+/*};*/
+
+
+
+
 
 
 #endif // ends _AW_GENERATOR_H_

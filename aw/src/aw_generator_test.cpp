@@ -1,4 +1,4 @@
-// g++ aw_prototype_a_test.cpp aw_prototype_a.cpp  aw_common.cpp -DSTAND_ALONE -lboost_unit_test_framework -std=c++0x -Wall -o aw_prototype_a
+// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp -DSTAND_ALONE -lboost_unit_test_framework -std=c++0x -Wall -o aw_generator_test
 
 
 #define BOOST_TEST_DYN_LINK
@@ -12,13 +12,19 @@
 #include "aw_common.h"
 
 
-BOOST_AUTO_TEST_CASE(aw_prototype_test_1) {
+BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 	std::cout << "running aw_prototype_a 1" << std::endl;
 
 	aw::Generator g1;
 	g1.print_output();
-	
+	g1.render(1); // can call directly on object
+	g1.print_output();
+	g1.render(3); // will render twice, moving to 3
+	g1.print_output();
+
 	aw::GeneratorShared g2 = aw::GeneratorShared(new aw::Generator);
+	g2->render(4);
+	g2->print_output();
 
 }
 
