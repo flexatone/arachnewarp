@@ -10,7 +10,7 @@ namespace aw {
 // have a common base class that does not define functions
 
 Generator :: Generator()
-    : _output_frame_dimension(2), _frame_size(10), _frame_count(0) {
+    : _output_frame_dimension(2), _frame_size(20), _frame_count(0) {
     init();
     reset(); // initialize values
 }
@@ -38,7 +38,6 @@ void Generator :: reset() {
     _frame_count = 0;
 }
 
-
 void Generator :: print_output() {
     std::cout << "<output@" << _frame_count << ": ";            
     for (int i=0; i<_output_size; ++i) {
@@ -50,7 +49,16 @@ void Generator :: print_output() {
     std::cout << '>' << std::endl;
 }
 
-
+void Generator :: render(FRAME_COUNT_T f) {
+    while (_frame_count < f) {
+        // do a processing run and increment the frame count
+        for (int i=0; i<_output_size; ++i) {
+            // sum of previous values
+            output[i] = output[i] + .2; 
+        }
+        _frame_count += 1;
+    }
+}
 
 } // end namespaces aw
 
