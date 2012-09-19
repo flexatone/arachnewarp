@@ -12,8 +12,8 @@ namespace aw {
 // need to find a way to pass in a an array or dictionary of parameters vectors
 
 // it would be nice if these were in a single argument
-void denormalize(SVT* in, SVT* out, AST size) {
-    for (AST i=0; i<size; ++i) {
+void denormalize(SAMPLE_T* in, SAMPLE_T* out, FRAME_SIZE_T size) {
+    for (FRAME_SIZE_T i=0; i<size; ++i) {
         out[i] = in[i] + 1; // temporary 
     }
 }

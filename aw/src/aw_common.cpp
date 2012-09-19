@@ -12,9 +12,9 @@ namespace aw {
 //==============================================================================
 // display
 
-void print(SVT* out, AST size) {
+void print(SAMPLE_T* out, FRAME_SIZE_T size) {
     std::cout << "<array ";
-    for (AST i=0; i<size; ++i) {
+    for (FRAME_SIZE_T i=0; i<size; ++i) {
         std::cout << out[i] << ' ';
     }
 
@@ -28,7 +28,7 @@ void print(SVT* out, AST size) {
 
 //==============================================================================
 // unit interval transformations and value mapping
-SVT denormalize_unit(SVT value, SVT a, SVT b) {
+SAMPLE_T denormalize_unit(SAMPLE_T value, SAMPLE_T a, SAMPLE_T b) {
     // need to handle value beyond 0 and 1
     if (value < 0 || value > 1) 
         throw std::out_of_range("value must be between 0 and 1"); 

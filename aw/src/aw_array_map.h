@@ -6,7 +6,7 @@
 
 namespace aw {
 
-void denormalize(SVT* in, SVT* out, AST size);
+void denormalize(SAMPLE_T* in, SAMPLE_T* out, FRAME_SIZE_T size);
 
 
 }

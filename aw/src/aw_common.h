@@ -5,26 +5,32 @@
 #include <string>
 #include <vector>
 
-#include <stdint.h> // has uint32_t
+#include <cstdint> // has uint32_t
 
 
 
 namespace aw {
 
 // define the sample format
-typedef double SVT; // sample value type
-typedef int AST; // arary size type: TODO: use a smaller data size
+typedef double SAMPLE_T; // sample value type
+
+// frame size type: probadbly under 10,000, 0 to 65535
+typedef std::uint16_t FRAME_SIZE_T;
+// dimension probably never more than 200!
+typedef std::uint8_t FRAME_DIM_T; 
+// needs to be very large
+typedef std::uint64_t FRAME_COUNT_T; 
 
 
-SVT const pi(3.14159265358979323846264338);
-SVT const pi2(3.14159265358979323846264338*2.0);
+SAMPLE_T const PI(3.14159265358979323846264338);
+SAMPLE_T const PI2(3.14159265358979323846264338*2.0);
 
 
-//! Print an arry of SVT of size type AST.
-void print(SVT* out, AST size);
+//! Print an arry of SAMPLE_T of size type FRAME_SIZE_T.
+void print(SAMPLE_T* out, FRAME_SIZE_T size);
 
 //! Denormalize a value within the unit interval to the range specified by a and b.
-SVT denormalize_unit(SVT value, SVT a=0, SVT b=1);
+SAMPLE_T denormalize_unit(SAMPLE_T value, SAMPLE_T a=0, SAMPLE_T b=1);
 
 
 
