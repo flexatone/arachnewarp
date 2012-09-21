@@ -2,9 +2,12 @@
 #define _AW_GENERATOR_H_
 
 
-#include <memory>
 #include <vector>
 #include <string>
+
+//#include <memory> # only with -std=c++0x
+// #include <boost/shared_ptr.hpp>
+#include <tr1/memory>
 
 #include "aw_common.h"
 
@@ -16,7 +19,7 @@ namespace aw {
 
 class Generator;
 // define shared ptr
-typedef std::shared_ptr<Generator> GeneratorShared;
+typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 
 class Generator {
     private:    

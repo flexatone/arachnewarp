@@ -1,8 +1,9 @@
 
 CC=g++
-CFLAGS=-std=c++0x -c -Wall
-CFLAGS_TEST=-lboost_unit_test_framework -std=c++0x -Wall
+CFLAGS=-c -Wall
+CFLAGS_TEST=-lboost_unit_test_framework -Wall
 
+# had to remove -std=c++0x because cannot get gcc4.4 on macos yet
 EXECUTABLE=aw_test 
 
 
