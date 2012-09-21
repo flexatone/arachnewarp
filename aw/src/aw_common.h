@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <cstdint> // has uint32_t
+#include <tr1/cstdint> // has uint32_t
 
 
 
@@ -15,11 +15,11 @@ namespace aw {
 typedef double SAMPLE_T; // sample value type
 
 // frame size type: probadbly under 10,000, 0 to 65535
-typedef std::uint16_t FRAME_SIZE_T;
+typedef std::tr1::uint16_t FRAME_SIZE_T;
 // dimension probably never more than 200!
-typedef std::uint8_t FRAME_DIM_T; 
+typedef std::tr1::uint8_t FRAME_DIM_T; 
 // needs to be very large
-typedef std::uint64_t FRAME_COUNT_T; 
+typedef std::tr1::uint64_t FRAME_COUNT_T; 
 
 
 SAMPLE_T const PI(3.14159265358979323846264338);
