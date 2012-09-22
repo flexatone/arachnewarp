@@ -14,7 +14,36 @@
 namespace aw {
 
 
+//==============================================================================
+// parameter types define what various input means
+// examples include: SampleValue (can be constant, operand)
+// Rate, Phase, Amplitude
+// 
+class ParameterType;
+typedef std::tr1::shared_ptr<ParameterType> ParameterTypeShared;
 
+
+class ParameterType {
+    private:
+    std::string _name;
+    // for specific instances we can define what the rate or sample value
+    // is or means 
+    std::string _description; 
+    public:    
+    // this is the index for the vector in generator
+    PARAMETER_INDEX_T index;
+
+    ParameterType();
+    ~ParameterType();
+    
+};
+
+class ParameterTypeValue: public ParameterType {
+};
+
+
+
+//==============================================================================
 // todo: add mechanism to tag generators
 
 class Generator;
@@ -32,9 +61,6 @@ class Generator {
     
 
     public:
-    Generator();
-    ~Generator();
-    
     
     //! A std::vector if shared Generators that are the inputs to this function.
     std::vector<GeneratorShared> inputs;
@@ -42,8 +68,12 @@ class Generator {
     //! Can store dictionary of input type classes: these can store all sorts of specialized metadata data about the inputs needed for this Generator
     std::vector<std::string> input_names;    
     
-    //! A linear array of samples, which may include multiple dimensions in series. This probably should be private.
+    //! A linear array of samples, which may include multiple dimensions in series. This probably should be private, but for performance this can be public
     SAMPLE_T* output;
+
+
+    Generator();
+    ~Generator();
 
     //! Initialize the Generator, allocating the output array.
     void init();
@@ -60,16 +90,14 @@ class Generator {
 };
 
 
+//==============================================================================
+class Constant: public Generator {
+};
+
+
+
+
+
 } // end namespace aw
-
-
-
-/*class Constant: public Generator {*/
-/*};*/
-
-
-
-
-
 
 #endif // ends _AW_GENERATOR_H_

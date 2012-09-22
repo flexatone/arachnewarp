@@ -22,6 +22,10 @@ typedef std::tr1::uint8_t FRAME_DIM_T;
 typedef std::tr1::uint64_t FRAME_COUNT_T; 
 
 
+// dimension probably never more than 200!
+typedef std::tr1::uint8_t PARAMETER_INDEX_T; 
+
+
 SAMPLE_T const PI(3.14159265358979323846264338);
 SAMPLE_T const PI2(3.14159265358979323846264338*2.0);
 

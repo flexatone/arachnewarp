@@ -7,6 +7,16 @@
 
 namespace aw {
 
+//==============================================================================
+ParameterType :: ParameterType() {
+}
+
+ParameterType :: ~ParameterType() {
+}
+
+
+
+//==============================================================================
 // have a common base class that does not define functions
 
 Generator :: Generator()
