@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <tr1/unordered_map>
 
 //#include <memory> # only with -std=c++0x
 // #include <boost/shared_ptr.hpp>
@@ -21,23 +22,27 @@ namespace aw {
 // 
 class ParameterType;
 typedef std::tr1::shared_ptr<ParameterType> ParameterTypeShared;
-
-
 class ParameterType {
-    private:
+    protected:
     std::string _name;
-    // for specific instances we can define what the rate or sample value
-    // is or means 
+    // for specific instances we can define what the rate or sample value means 
     std::string _description; 
+
+    // can also define, for a particular instance, an expected context; that is, if fq is required, this can be defined here. then, when given another generator at a different context, conversion can happen?
     public:    
-    // this is the index for the vector in generator
-    PARAMETER_INDEX_T index;
 
     ParameterType();
     ~ParameterType();
+
+    // not passing by const ref because making a copy?
+    void set_name(std::string s) {_name = s;};
+    // should this return a const by reference?
+    std::string get_name() {return _name;};
     
 };
 
+class ParameterTypeValue;
+typedef std::tr1::shared_ptr<ParameterTypeValue> ParameterTypeValueShared;
 class ParameterTypeValue: public ParameterType {
 };
 
@@ -47,11 +52,12 @@ class ParameterTypeValue: public ParameterType {
 // todo: add mechanism to tag generators
 
 class Generator;
-// define shared ptr
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
-
 class Generator {
-    private:    
+    public:
+    typedef std::tr1::unordered_map<PARAMETER_INDEX_T, ParameterTypeShared> MapIndexToParameterTypeShared;
+
+    protected:    
     FRAME_DIM_T _output_frame_dimension;
     FRAME_SIZE_T _output_size; // can use frame size, as is 16 bit
     FRAME_SIZE_T _frame_size; // if changed, need to rebuild output
@@ -59,24 +65,40 @@ class Generator {
     //! The number of rames that have passed since the last reset
     FRAME_COUNT_T _frame_count;
     
+    // to be called in init routine to setup Generator
+    void _register_input_parameter_type(ParameterTypeShared pts);
+
+    //! Can store dictionary of paramter type classes: these can store all sorts of specialized metadata data about the inputs needed for this Generator
+    std::tr1::unordered_map<PARAMETER_INDEX_T, 
+                            ParameterTypeShared> _input_parameter_type;
+    PARAMETER_INDEX_T _input_parameter_count;
+
+
+    //! Initialize the Generator, allocating the output array.
+    virtual void _init();
+
+    //! Resize the output vector. Always called at creation; can be called when inputs are added
+    void _resize_output();
 
     public:
     
-    //! A std::vector if shared Generators that are the inputs to this function.
+    //! A std::vector if GeneratorsShared that are the inputs to this function. This remains public so that a client of this Generator can access the input directly form the vector at constant time without a function call. This could be an unordered map too, but vector will have optimal performance.
     std::vector<GeneratorShared> inputs;
 
-    //! Can store dictionary of input type classes: these can store all sorts of specialized metadata data about the inputs needed for this Generator
-    std::vector<std::string> input_names;    
+    //! TODO: may need inputs_required, inputs_free
+    // some gens, like operators, might have any number of inputs
+    // or: each required input is actually itself a vector of inputs
+    // meaning that every required input (of a certain parameter type) can have multiple sub-inputs
+    // like this: std::vector<std::vector<GeneratorShared>> inputs;
+
     
-    //! A linear array of samples, which may include multiple dimensions in series. This probably should be private, but for performance this can be public
+    //! A linear array of samples, which may include multiple dimensions in series. This probably should be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
     SAMPLE_T* output;
 
 
     Generator();
-    ~Generator();
+    virtual ~Generator();
 
-    //! Initialize the Generator, allocating the output array.
-    void init();
     //! Reset all parameters, and zero out the output array.
     void reset();
     
@@ -84,14 +106,32 @@ class Generator {
     void print_output();
 
     //! Render the requested frame if not already rendered
+    // should this be passed by const ref?
     void render(FRAME_COUNT_T f); 
+
+    PARAMETER_INDEX_T get_parameter_count() {
+        return _input_parameter_count;};
+
+    PARAMETER_INDEX_T get_parameter_index_from_name(const std::string& s);
+
+    //! directly set a parameter given an index
+    void set_parameter_by_index(PARAMETER_INDEX_T i, GeneratorShared gs);
   
-    
 };
 
 
 //==============================================================================
+class Constant;
+typedef std::tr1::shared_ptr<Constant> ConstantShared;
 class Constant: public Generator {
+    protected:
+    virtual void _init();
+
+    public:
+    Constant();
+    ~Constant();
+
+
 };
 
 
