@@ -13,7 +13,7 @@
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
-	std::cout << "running aw_prototype_a 1" << std::endl;
+	std::cout << "running aw_generator 1" << std::endl;
 
 	aw::Generator g1;
 	g1.print_output();
@@ -29,14 +29,22 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 
 	// can creat the table subclass
 	aw::Constant g3;
+
+    BOOST_CHECK_EQUAL(g3.get_parameter_count(), 1);
+    BOOST_CHECK_EQUAL(g3.get_parameter_index_from_name("Constant numerical value"), 0);
+
 	
-	
-	//==========================================================================
-	// parameter type tests
-	aw::ParameterType pt1;
-	pt1.index = 3;
+
 }
 
+BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
+	std::cout << "running aw_generator 2" << std::endl;
+
+	// testing creationg
+	aw::ParameterTypeShared pt1 = aw::ParameterTypeShared(new 
+                                    aw::ParameterType);
+
+}
 
 
 
