@@ -37,7 +37,7 @@ Generator :: ~Generator() {
 
 void Generator :: _init() {
     // in derived classes this can prepare parameters
-    std::cout << "calling "<< *this << " init" << std::endl;
+    std::cout << *this << ": init()" << std::endl;
 }
 
 void Generator :: _resize_output() {
@@ -156,18 +156,34 @@ void Generator :: set_parameter_by_index(PARAMETER_INDEX_T i,
     inputs[i].push_back(gs);    
 }
 
+// overridden method for setting a sample value: generates a constant
+void Generator :: set_parameter_by_index(PARAMETER_INDEX_T i, 
+                                        SAMPLE_T v){
+    inputs[i].clear();
+    // TODO: create a constant at value v
+    inputs[i].push_back(GeneratorShared());    
+}
+
 
 void Generator :: add_parameter_by_index(PARAMETER_INDEX_T i, 
                                         GeneratorShared gs){
     inputs[i].push_back(gs);    
 }
 
+// overridden method for setting a sample value: adds a constant
+void Generator :: set_parameter_by_index(PARAMETER_INDEX_T i, 
+                                        SAMPLE_T v){
+    // TODO: create a constant at value v
+    inputs[i].push_back(GeneratorShared());    
+}
+
+
 
 //==============================================================================
 Constant :: Constant() 
     : _value(0) {
     _name = "Constant"; 
-    // base _init auto called
+    // Generator :: _init auto called
     _init(); // call constants init
 }
 // dtor
@@ -175,17 +191,43 @@ Constant :: ~Constant() {
 }
 
 void Constant :: _init() {
-    std::cout << "Constant::init()" << std::endl;
+    std::cout << *this << ": init()" << std::endl;
     // register some parameters
     aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
                                        aw::ParameterTypeValue);
     pt1->set_name("Constant numerical value");
 
     // when this is called, the inputs vectors are filled with GeneratorShared
+    // these will the inputs vector will be filled with 1 empty placeholder
     _register_input_parameter_type(pt1);
 
 }
 
+
+// overridden method for setting value
+void Constant :: set_parameter_by_index(PARAMETER_INDEX_T i, 
+                                        SAMPLE_T v){
+    _value = v;    
+    reset(); 
+}
+
+void Constant :: add_parameter_by_index(PARAMETER_INDEX_T i, 
+                                        SAMPLE_T v){
+    // simply add to this value; could store a vector?
+    _value += v;    
+    reset();  
+}
+
+
+void Constant :: reset() {
+    std::cout << "calling "<< *this << " reset" << std::endl;
+    // do not need to partion by diminsons
+    for (int i=0; i<_output_size; ++i) {
+        output[i] = _value; // set to the value
+    }
+    // always reset frame count?
+    _frame_count = 0;
+}
 
 
 
