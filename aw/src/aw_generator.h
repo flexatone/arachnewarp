@@ -19,12 +19,12 @@ namespace aw {
 // parameter types define what various input means
 // examples include: SampleValue (can be constant, operand)
 // Rate, Phase, Amplitude
-// 
 class ParameterType;
 typedef std::tr1::shared_ptr<ParameterType> ParameterTypeShared;
 class ParameterType {
     protected://----------------------------------------------------------------
-    std::string _name;
+	// TODO: add _class_name 
+    std::string _instance_name;
     // for specific instances we can define what the rate or sample value means 
     std::string _description; 
 
@@ -39,10 +39,10 @@ class ParameterType {
 						const ParameterType& pt);
 
     //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Generator and may not be the same even if its the same ParameterType subclass. 
-    void set_name(const std::string& s) {_name = s;};
+    void set_name(const std::string& s) {_instance_name = s;};
 
     //! Return the name as a string. 
-    std::string get_name() {return _name;};
+    std::string get_name() {return _instance_name;};
     
 };
 
@@ -60,11 +60,15 @@ typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 class Generator {
 	
     protected://----------------------------------------------------------------
-    std::string _name;
+    std::string _class_name;
 
     FRAME_DIM_T _output_frame_dimension;
-    FRAME_SIZE_T _output_size; // can use frame size, as is 16 bit
+	
+	//! The size of each frame for each dimension. This probably is provided externally from the system representatino. 
     FRAME_SIZE_T _frame_size; // if changed, need to rebuild output
+	
+	//! The _output_size is derived from frame dimension times the frame size. 
+    FRAME_SIZE_T _output_size;
     
     //! The number of frames that have passed since the last reset.
     FRAME_COUNT_T _frame_count;
@@ -113,13 +117,14 @@ class Generator {
     //! Reset all parameters, and zero out the output array.
     virtual void reset();
 
+	//! Output stream friend function: returns the name of the Generator. 
 	friend std::ostream& operator<<(std::ostream& output, const Generator& g);
 
     //! Print the output buffer for all dimensions at the current sample.
     void print_output();
 
     //! Print the the hierarchical list of all input values. This is virtual because Constant must print inputs in as different way. No other generator should need to specialize. 
-    virtual void print_inputs();
+    virtual void print_inputs(bool recursive=false, UINT8_T recurse_level=0);
 
     //! Render the requested frame if not already rendered. This is virtual because every Generator renders in a different way. 
     virtual void render(FRAME_COUNT_T f); 
@@ -128,6 +133,7 @@ class Generator {
     PARAMETER_INDEX_T get_parameter_count() {
         return _input_parameter_count;};
 
+	//! Return the parameter index for a named parameter.
     PARAMETER_INDEX_T get_parameter_index_from_name(const std::string& s);
 
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
@@ -163,7 +169,7 @@ class Constant: public Generator {
     virtual void reset();
 	
 	//! This derived function is necessary to handle displaying internal input components.
-	virtual void print_inputs();
+	virtual void print_inputs(bool recursive=false, UINT8_T recurse_level=0);
 	
 	//! This overridden method needs only increment the _frame_count, as the output array is set when reset() is called. 
     virtual void render(FRAME_COUNT_T f); 	

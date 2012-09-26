@@ -36,7 +36,6 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
 	// testing creation
 	aw::ParameterTypeShared pt1 = aw::ParameterTypeShared(new 
                                     aw::ParameterType);
-
 }
 
 
@@ -77,12 +76,25 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
 	aw::GeneratorShared g3 = aw::AddShared(new aw::Add);
 
 	g1->set_parameter_by_index(0, 2);
+	g1->print_output();
 	g2->set_parameter_by_index(0, 3);
 	
 	// need to set first, so as to clear out the old one
 	g3->add_parameter_by_index(0, g1);
 	g3->add_parameter_by_index(0, g2);
 	g3->print_inputs();
+	
+	g3->render(1);
+	g3->print_output();
+	g3->render(8);
+	g3->print_output();
+	g1->print_output();
+
+	g3->print_inputs(true);
+	
+    BOOST_CHECK_CLOSE(g1->output[0], 2, .0000001);	
+    BOOST_CHECK_CLOSE(g2->output[0], 3, .0000001);	
+    BOOST_CHECK_CLOSE(g3->output[0], 5, .0000001);
 
 }
 

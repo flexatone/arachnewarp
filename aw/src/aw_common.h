@@ -16,13 +16,17 @@ typedef double SAMPLE_T; // sample value type
 
 // frame size type: probadbly under 10,000, 0 to 65535
 typedef std::tr1::uint16_t FRAME_SIZE_T;
+
 // dimension probably never more than 200!
 typedef std::tr1::uint8_t FRAME_DIM_T; 
+
+typedef std::tr1::uint8_t UINT8_T; 
+
 // needs to be very large
 typedef std::tr1::uint64_t FRAME_COUNT_T; 
 
 
-// dimension probably never more than 200!
+// never have more thean 200 parameter types
 typedef std::tr1::uint8_t PARAMETER_INDEX_T; 
 
 
