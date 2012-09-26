@@ -15,7 +15,7 @@ ParameterType :: ~ParameterType() {
 }
 
 std::ostream& operator<<(std::ostream& output, const ParameterType& pt) {
-    output << "<PmtrType: " << pt._name << ">";
+    output << "<PmtrType: " << pt._instance_name << ">";
     return output; 
 }
 
@@ -27,8 +27,7 @@ std::ostream& operator<<(std::ostream& output, const ParameterType& pt) {
 Generator :: Generator()
     : _output_frame_dimension(2), _frame_size(20), _frame_count(0), _input_parameter_count(0), output(NULL) {
 
-    _name = "Generator"; 
-    // always create this first
+    _class_name = "Generator"; // will be reset in derived classes
     _resize_output();
     _init();
     reset(); // initialize values
@@ -65,7 +64,7 @@ void Generator :: reset() {
 }
 
 std::ostream& operator<<(std::ostream& output, const Generator& g) {
-    output << "<Gen: " << g._name << ">";
+    output << "<Gen: " << g._class_name << ">";
     return output; 
 }
 
@@ -81,24 +80,33 @@ void Generator :: print_output() {
     std::cout << std::endl;
 }
 
-void Generator :: print_inputs() {
-    std::cout << *this << " Inputs:" << std::endl;
+void Generator :: print_inputs(bool recursive, UINT8_T recurse_level) {
+    //std::cout << "recurse_level: " << (int)recurse_level << std::endl;
+    
+    std::string space1 = std::string(recurse_level*4, ' ');
+    std::string space2 = std::string((recurse_level+1)*4, ' '); 
+    std::string space3 = std::string((recurse_level+2)*4, ' '); 
+    
+    std::cout << space1 << *this << " Inputs:" << std::endl;
     VGeneratorShared :: const_iterator j;
     // need an interger as key for _input_parameter_type
     for (PARAMETER_INDEX_T k=0; k!=_inputs.size(); ++k) {   
         ParameterTypeShared pts = _input_parameter_type[k];
         // need to iterate over each sub vector
-        std::cout << "    " << *pts << std::endl;
+        std::cout << space2 << *pts << std::endl;
         for (j=_inputs[k].begin(); j!=_inputs[k].end(); ++j) {
             // deref
             GeneratorShared g = *j;
-            // deref one more time to print
-            if (g == NULL) {
-                std::cout << "        " << "<Empty>" << std::endl;                
+            if (g == NULL) { // an empty GeneratorShared
+                std::cout << space3 << "<Empty>" << std::endl;                
             }
             else {
-                // need to deref the shared generator
-                std::cout << "        " << *g << std::endl;
+                if (recursive) {
+                    g->print_inputs(recursive, recurse_level+2);
+                }
+                else { // need to deref the shared generator
+                    std::cout << "        " << *g << std::endl;
+                }
             }
         }
     }
@@ -185,7 +193,7 @@ void Generator :: add_parameter_by_index(PARAMETER_INDEX_T i,
 
 //==============================================================================
 Constant :: Constant() {
-    _name = "Constant"; 
+    _class_name = "Constant"; 
     // Generator :: _init auto called
     _init(); // call constants init
 }
@@ -225,16 +233,22 @@ void Constant :: reset() {
     _frame_count = 0;
 }
 
-void Constant :: print_inputs() {
-    std::cout << *this << " Inputs:" << std::endl;
+
+void Constant :: print_inputs(bool recursive, UINT8_T recurse_level) {
+    std::string space1 = std::string(recurse_level*4, ' ');
+    std::string space2 = std::string((recurse_level+1)*4, ' '); 
+    std::string space3 = std::string((recurse_level+2)*4, ' ');     
+    // this cannot recurse so nothing to do with parameters; just so that
+    // they are the same as Generator
+    std::cout << space1 << *this << " Inputs:" << std::endl;
     // the size here is correct
     for (PARAMETER_INDEX_T k=0; k!=_inputs.size(); ++k) {   
         ParameterTypeShared pts = _input_parameter_type[k];
-        std::cout << "    " << *pts << std::endl;
+        std::cout << space2 << *pts << std::endl;
         // need to iterate over values in _values
         VSample :: const_iterator j;
         for (j = _values.begin(); j!=_values.end(); ++j) {
-            std::cout << "        " << "<Value: " << *j << " >" << std::endl;
+            std::cout << space3 << "<Value: " << *j << " >" << std::endl;
         }
     }
 }
@@ -262,8 +276,7 @@ void Constant :: add_parameter_by_index(PARAMETER_INDEX_T i, SAMPLE_T v){
 //==============================================================================
 Add :: Add()
     : _input_index_num_value(0), _sum(0) {
-    _name = "Add"; 
-    // Generator :: _init auto called
+    _class_name = "Add"; 
     _init();
 }
 // dtor
