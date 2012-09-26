@@ -107,7 +107,7 @@ class Generator {
     virtual ~Generator();
 
     //! Reset all parameters, and zero out the output array.
-    void reset();
+    virtual void reset();
 
 	friend std::ostream &operator<<(std::ostream& output, const Generator& g);
 
@@ -128,10 +128,15 @@ class Generator {
     PARAMETER_INDEX_T get_parameter_index_from_name(const std::string& s);
 
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
-    void set_parameter_by_index(PARAMETER_INDEX_T i, GeneratorShared gs);
+    virtual void set_parameter_by_index(PARAMETER_INDEX_T i, 
+                                        GeneratorShared gs);
+    virtual void set_parameter_by_index(PARAMETER_INDEX_T i, SAMPLE_T v);
 
     //! Add a multiple input at this parameter. 
-    void add_parameter_by_index(PARAMETER_INDEX_T i, GeneratorShared gs);
+    virtual void add_parameter_by_index(PARAMETER_INDEX_T i, 
+                                        GeneratorShared gs);
+
+    virtual void add_parameter_by_index(PARAMETER_INDEX_T i, SAMPLE_T v);
   
 };
 
