@@ -29,6 +29,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 
 	// can creat the table subclass
 	aw::Constant g3;
+    g3.print_inputs();
 
     BOOST_CHECK_EQUAL(g3.get_parameter_count(), 1);
     BOOST_CHECK_EQUAL(g3.get_parameter_index_from_name("Constant numerical value"), 0);

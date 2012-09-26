@@ -54,10 +54,10 @@ class ParameterTypeValue: public ParameterType {
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 class Generator {
-    public:
-    typedef std::tr1::unordered_map<PARAMETER_INDEX_T, ParameterTypeShared> MapIndexToParameterTypeShared;
 
     protected:    
+    std::string _name;
+
     FRAME_DIM_T _output_frame_dimension;
     FRAME_SIZE_T _output_size; // can use frame size, as is 16 bit
     FRAME_SIZE_T _frame_size; // if changed, need to rebuild output
@@ -65,57 +65,73 @@ class Generator {
     //! The number of rames that have passed since the last reset
     FRAME_COUNT_T _frame_count;
     
-    // to be called in init routine to setup Generator
-    void _register_input_parameter_type(ParameterTypeShared pts);
-
     //! Can store dictionary of paramter type classes: these can store all sorts of specialized metadata data about the inputs needed for this Generator
     std::tr1::unordered_map<PARAMETER_INDEX_T, 
                             ParameterTypeShared> _input_parameter_type;
     PARAMETER_INDEX_T _input_parameter_count;
 
 
+    public:
+    typedef std::tr1::unordered_map<PARAMETER_INDEX_T, ParameterTypeShared> MapIndexToParameterTypeShared;
+
+    typedef std::vector<GeneratorShared> VGeneratorShared;
+    typedef std::vector< VGeneratorShared > VVGeneratorShared;
+
+    //! A std::vector if GeneratorsShared that are the inputs to this function. This remains public so that a client of this Generator can access the input directly form the vector at constant time without a function call. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
+    // std::vector<GeneratorShared> inputs;
+
+    // or: each required input is actually itself a vector of inputs, meaning that every required input (of a certain parameter type) can have multiple sub-inputs. The inner iterator may be better as a list.
+    VVGeneratorShared inputs;
+
+    // this means that inputs are not the same as parameters; each parameter can have multiple inputs
+    
+    //! A linear array of samples, which may include multiple dimensions in series. This probably should be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
+    // This could be a vector, but optimal performance, no need for sorting, suggests using an dyn alloc array for now.
+    SAMPLE_T* output;
+
+
+    // methods ================================================================
+    protected:
     //! Initialize the Generator, allocating the output array.
     virtual void _init();
 
     //! Resize the output vector. Always called at creation; can be called when inputs are added
     void _resize_output();
 
+    // to be called in init routine to setup Generator
+    void _register_input_parameter_type(ParameterTypeShared pts);
+
+
     public:
-    
-    //! A std::vector if GeneratorsShared that are the inputs to this function. This remains public so that a client of this Generator can access the input directly form the vector at constant time without a function call. This could be an unordered map too, but vector will have optimal performance.
-    std::vector<GeneratorShared> inputs;
-
-    //! TODO: may need inputs_required, inputs_free
-    // some gens, like operators, might have any number of inputs
-    // or: each required input is actually itself a vector of inputs
-    // meaning that every required input (of a certain parameter type) can have multiple sub-inputs
-    // like this: std::vector<std::vector<GeneratorShared>> inputs;
-
-    
-    //! A linear array of samples, which may include multiple dimensions in series. This probably should be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
-    SAMPLE_T* output;
-
-
     Generator();
     virtual ~Generator();
 
     //! Reset all parameters, and zero out the output array.
     void reset();
-    
+
+	friend std::ostream &operator<<(std::ostream& output, const Generator& g);
+
     //! Print the output buffer for all dimensions at the current sample.
     void print_output();
+
+    //! Print the the hierarchical list of all input values.
+    void print_inputs();
 
     //! Render the requested frame if not already rendered
     // should this be passed by const ref?
     void render(FRAME_COUNT_T f); 
 
+    //! Return the number of parameters; this is not the same as the number of Generators, as each parameter may have 1 or more Generators
     PARAMETER_INDEX_T get_parameter_count() {
         return _input_parameter_count;};
 
     PARAMETER_INDEX_T get_parameter_index_from_name(const std::string& s);
 
-    //! directly set a parameter given an index
+    //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     void set_parameter_by_index(PARAMETER_INDEX_T i, GeneratorShared gs);
+
+    //! Add a multiple input at this parameter. 
+    void add_parameter_by_index(PARAMETER_INDEX_T i, GeneratorShared gs);
   
 };
 
@@ -124,6 +140,10 @@ class Generator {
 class Constant;
 typedef std::tr1::shared_ptr<Constant> ConstantShared;
 class Constant: public Generator {
+
+    private:
+    SAMPLE_T _value;
+
     protected:
     virtual void _init();
 
