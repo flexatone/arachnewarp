@@ -1,0 +1,43 @@
+#include <ctime>
+#include <string>
+#include <iostream>
+
+#include "aw_common.h"
+#include "aw_timer.h"
+
+namespace aw {
+    
+Timer :: Timer(const std::string& n) 
+    : _stopped(false), _name(n), _start_time(0), _end_time(0) {
+}
+
+void Timer :: start() {
+    _start_time = std::clock();
+    _stopped = false;    
+}
+    
+void Timer :: end() {
+    _end_time = std::clock();
+    _stopped = true;
+}
+
+double Timer :: _get_ms_difference(double start, double end) const {
+    return ((end-start) / double(CLOCKS_PER_SEC)) * 1000;
+}
+
+std::ostream& operator<<(std::ostream& output, const Timer& t) {
+    // get time difference but do not stop
+    double dif(0);
+    if (not (t._stopped)) { // if not stopped, get comparison to now
+        dif = t._get_ms_difference(t._start_time, std::clock());
+    }
+    else {
+        dif = t._get_ms_difference(t._start_time, t._end_time);        
+    }
+    output << "<Timer: " << t._name << ": " << dif << "ms>";
+    return output; 
+}
+
+    
+    
+}
