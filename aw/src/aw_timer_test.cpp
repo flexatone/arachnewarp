@@ -15,9 +15,9 @@
 #include "aw_common.h"
 
 
-BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
+BOOST_AUTO_TEST_CASE(aw_timer_test_1) {
 
-    BOOST_CHECK_EQUAL(0, 0);
+//    BOOST_CHECK_EQUAL(0, 0);
     
     std::cout << double(std::clock()) << " CLOCKS_PER_SEC: " << CLOCKS_PER_SEC << std::endl;
     
@@ -25,14 +25,33 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     t.start();
 
     int x(2);
-    for (int i=0; i<10234923; ++i) {
+    for (unsigned long i=0; i<1023493; ++i) {
         x+=x;
     }
     
-    t.end();
+    t.stop();
 
     std::cout << t << std::endl;
 
     std::cout << double(std::clock()) << std::endl;
 	
 }
+
+
+BOOST_AUTO_TEST_CASE(aw_timer_test_2) {
+
+    aw::Timer t("printing without stopping");
+    t.start();
+
+    int x(2);
+    for (unsigned long i=0; i<1000000; ++i) {
+        x+=x;
+        if (i % 100000 == 0) std::cout << t << std::endl;
+    }
+    
+    t.stop();
+    std::cout << "end time: " << t << std::endl;
+
+	
+}
+

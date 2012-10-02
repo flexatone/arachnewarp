@@ -40,7 +40,7 @@ class ParameterType {
     void set_name(const std::string& s) {_instance_name = s;};
 
     //! Return the name as a string. 
-    std::string get_instance_name() {return _instance_name;};
+    std::string get_instance_name() const {return _instance_name;};
     
 };
 
@@ -160,10 +160,10 @@ class Generator {
     void set_dimension(FRAME_DIM_T d);    
 
     //! Return the the number of output dimensions
-    FRAME_DIM_T get_dimension() {return _output_frame_dimension;};
+    FRAME_DIM_T get_dimension() const {return _output_frame_dimension;};
 
     //! Return the the output size
-    FRAME_DIM_T get_output_size() {return _output_size;};
+    FRAME_DIM_T get_output_size() const {return _output_size;};
 
     //! Reset all parameters, and zero out the output array.
     virtual void reset();
@@ -173,7 +173,7 @@ class Generator {
 
 
     //! Return the name as a string. 
-    std::string get_class_name() {return _class_name;};
+    std::string get_class_name() const {return _class_name;};
 
 
     //! Print the output buffer for all dimensions at the current sample.
@@ -233,15 +233,14 @@ class Constant: public Generator {
 	//! This overridden method needs only increment the _frame_count, as the output array is set when reset() is called. 
     virtual void render(FRAME_COUNT_T f); 	
     
-    
-    //! This overridden method is throws an exception.
+    //! This overridden method throws an exception: you cannot set a Generator to a constant.
     virtual void set_parameter_by_index(PARAMETER_INDEX_T i, 
                                         GeneratorShared gs);    
                                         
     //! Set value as a SAMPLE_T value.
 	virtual void set_parameter_by_index(PARAMETER_INDEX_T i, SAMPLE_T v);
     
-    //! This overridden method is throws an exception.    
+    //! This overridden method throws an exception: you cannot set a Generator to a constant.    
     virtual void add_parameter_by_index(PARAMETER_INDEX_T i, 
                                         GeneratorShared gs);    
                                         
@@ -259,7 +258,6 @@ class Add: public Generator {
     private://------------------------------------------------------------------
     PARAMETER_INDEX_T _input_index_opperands;    
     SAMPLE_T _sum_opperands;
-
 
     protected://----------------------------------------------------------------
 
