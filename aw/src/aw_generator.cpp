@@ -22,7 +22,7 @@ std::ostream& operator<<(std::ostream& output, const ParameterType& pt) {
 }
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 ParameterTypeValue :: ParameterTypeValue() {
     _class_name = "ParameterTypeValue";
 }
@@ -34,10 +34,37 @@ ParameterTypeValue :: ~ParameterTypeValue() {
 
 
 //==============================================================================
-GeneratorShared  Generator :: make(GeneratorID q){
-    // default will be an empty shared generator
-    aw::GeneratorShared g;    
+GeneratorConfigShared GeneratorConfig :: make_default() {
+    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig);
+    return gc;
+}
 
+GeneratorConfigShared GeneratorConfig :: make_with_dimension(FRAME_DIM_T d) {
+    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig);
+    gc->set_init_frame_dimension(d);
+    return gc;
+}
+
+
+GeneratorConfig :: GeneratorConfig() 
+    : _init_frame_dimension(1), _frame_size(64) {
+    // set standard generator defaults here: 1 d, size 128
+}
+
+GeneratorConfig :: ~GeneratorConfig() {
+}
+
+
+
+
+
+//==============================================================================
+// TODO: add make with config()
+
+GeneratorShared  Generator :: make(GeneratorID q){
+    // static factory method
+    // default will be an empty shared generator
+    GeneratorShared g;    
     if (q == ID_Constant) {
         g = ConstantShared(new Constant);
     } 
@@ -55,13 +82,18 @@ GeneratorShared  Generator :: make(GeneratorID q){
 
 
 Generator :: Generator()
-    : _class_name("Generator"), _output_frame_dimension(2), _frame_size(20), _resizable_output(true), 
+    : _class_name("Generator"), _output_frame_dimension(1), _frame_size(64),
+    _dimension_is_resizable(true), 
     _frame_count(0), 
     _input_parameter_count(0), output(NULL) {
     // constructor
-        
-    // do not call virtual functions in constructors!!!
-
+    // do not call virtual functions in constructors!
+    
+    // create a default generator config
+    GeneratorConfigShared gc = GeneratorConfig :: make_default();
+    _output_frame_dimension = gc->get_init_frame_dimension();
+    _frame_size = gc->get_frame_size();
+    
 }
 
 Generator :: ~Generator() {
@@ -336,7 +368,7 @@ void Generator :: add_parameter_by_index(PARAMETER_INDEX_T i,
 
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 Constant :: Constant() {
     _class_name = "Constant"; 
 }
@@ -455,7 +487,7 @@ void Constant :: add_parameter_by_index(PARAMETER_INDEX_T i, SAMPLE_T v){
 
 
 
-//==============================================================================
+//------------------------------------------------------------------------------
 Add :: Add()
     : _input_index_opperands(0), _sum_opperands(0) {
     _class_name = "Add"; 

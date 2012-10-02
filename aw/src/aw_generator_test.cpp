@@ -216,6 +216,25 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_config_1) {
+    // a simple way to get and pass defaults s
+	aw::GeneratorConfigShared gc1 = aw::GeneratorConfig::make_default();
+    
+    // 64 is a default for testing
+    BOOST_CHECK_EQUAL(gc1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(gc1->get_init_frame_dimension(), 1);
+
+
+	aw::GeneratorConfigShared gc2 = aw::GeneratorConfig::make_with_dimension(3);    
+    BOOST_CHECK_EQUAL(gc2->get_init_frame_dimension(), 3);
+
+	aw::GeneratorConfigShared gc3 = aw::GeneratorConfig::make_with_dimension(5);    
+    BOOST_CHECK_EQUAL(gc3->get_init_frame_dimension(), 5);
+
+
+}
+
+
 
 
 
