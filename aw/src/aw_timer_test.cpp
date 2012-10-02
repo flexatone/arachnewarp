@@ -10,31 +10,32 @@
 
 
 #include <iostream>
+#include <list>
 
 #include "aw_timer.h"
 #include "aw_common.h"
+
 
 
 BOOST_AUTO_TEST_CASE(aw_timer_test_1) {
 
 //    BOOST_CHECK_EQUAL(0, 0);
     
-    std::cout << double(std::clock()) << " CLOCKS_PER_SEC: " << CLOCKS_PER_SEC << std::endl;
+    std::cout << "clocks: " << double(std::clock()) << " CLOCKS_PER_SEC: " << CLOCKS_PER_SEC << std::endl;
     
-    aw::Timer t("basic");
+    aw::Timer t("Pushing back on a list");
     t.start();
-
-    int x(2);
-    for (unsigned long i=0; i<1023493; ++i) {
-        x+=x;
-    }
     
+    std::list<int> l;
+
+    for (unsigned long i=0; i<1000000; ++i) {
+        l.push_back(i);
+    }
     t.stop();
 
     std::cout << t << std::endl;
-
-    std::cout << double(std::clock()) << std::endl;
-	
+    std::cout << "clocks: " << double(std::clock()) << std::endl;
+	// on ubuntu/lonovo this returns 60 msec
 }
 
 

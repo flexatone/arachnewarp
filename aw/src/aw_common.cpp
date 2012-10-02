@@ -27,7 +27,12 @@ void print(SAMPLE_T* out, FRAME_SIZE_T size) {
 
 
 
-
+//void denormalize(SAMPLE_T* in, SAMPLE_T* out, FRAME_SIZE_T size) {
+    //for (FRAME_SIZE_T i=0; i<size; ++i) {
+        //out[i] = in[i] + 1; // temporary 
+    //}
+//}
+    
 
 
 

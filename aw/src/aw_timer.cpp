@@ -8,7 +8,7 @@
 namespace aw {
     
 Timer :: Timer(const std::string& n) 
-    : _stopped(false), _name(n), _start_time(0), _end_time(0) {
+    : _name(n), _start_time(0), _end_time(0), _stopped(false) {
 }
 
 void Timer :: start() {

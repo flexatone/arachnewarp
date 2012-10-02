@@ -58,7 +58,9 @@ class ParameterTypeValue: public ParameterType {
 //==============================================================================
 // Dimensionality
 
-// When adding an input to a generator, we have to look at all inputs recursively and find the amx dimensionality. If this dimensionality is greater then the current dimensionality, and 
+// After adding an input to a generator, we have to look at all inputs attached to that generator (recursively) and find the max dimensionality. If this dimensionality is greater then the current dimensionality of the Generator, and the Generator is_resizable == true, then resize to the maximum size. Otherwise, keep at current size. The render method will have to take into account having higher dimensionality inputs
+// Case 1: Create Add@2 and add operator inputs Constant@4 and Constant@3; Add should automatically resize to Add@4, as addition should not mix dimensionalities.
+// Case 2: Create MixMono
 
 
 //==============================================================================

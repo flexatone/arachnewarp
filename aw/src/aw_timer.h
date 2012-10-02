@@ -25,11 +25,15 @@ class Timer {
     private://----------------------------------------------------------------
 	//! Since this function is called by operator<<, it needs to be const, otherwise we cannot pass the const Timer inst to this function. 
 	double _get_ms_difference(double start, double end) const;
-	bool _stopped;
+
+	//! Storage for the name of the timer. 
     std::string _name;
-	// data format is clock_t
+		
+	//! Data format std::clock_t is natively returned by std::clocl()
     std::clock_t _start_time;
     std::clock_t _end_time;
+	bool _stopped;	
+
 };
     
 }
