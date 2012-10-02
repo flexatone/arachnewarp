@@ -16,13 +16,14 @@ void Timer :: start() {
     _stopped = false;    
 }
     
-void Timer :: end() {
+void Timer :: stop() {
     _end_time = std::clock();
     _stopped = true;
 }
 
 double Timer :: _get_ms_difference(double start, double end) const {
-    return ((end-start) / double(CLOCKS_PER_SEC)) * 1000;
+    // this will cast inputs given as std::clock_t values
+    return ((end-start) / double(CLOCKS_PER_SEC)) * 1000.0;
 }
 
 std::ostream& operator<<(std::ostream& output, const Timer& t) {
@@ -34,7 +35,7 @@ std::ostream& operator<<(std::ostream& output, const Timer& t) {
     else {
         dif = t._get_ms_difference(t._start_time, t._end_time);        
     }
-    output << "<Timer: " << t._name << ": " << dif << "ms>";
+    output << "<Timer: " << t._name << ": " << dif << " msec>";
     return output; 
 }
 
