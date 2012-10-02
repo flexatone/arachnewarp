@@ -32,8 +32,6 @@ void print(SAMPLE_T* out, FRAME_SIZE_T size) {
         //out[i] = in[i] + 1; // temporary 
     //}
 //}
-    
-
 
 
 } // end namespace aw

@@ -2,7 +2,6 @@
 #include <string>
 #include <iostream>
 
-#include "aw_common.h"
 #include "aw_timer.h"
 
 namespace aw {
@@ -25,6 +24,7 @@ double Timer :: _get_ms_difference(double start, double end) const {
     // this will cast inputs given as std::clock_t values
     return ((end-start) / double(CLOCKS_PER_SEC)) * 1000.0;
 }
+
 
 std::ostream& operator<<(std::ostream& output, const Timer& t) {
     // get time difference but do not stop

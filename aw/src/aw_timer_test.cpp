@@ -33,6 +33,7 @@ BOOST_AUTO_TEST_CASE(aw_timer_test_1) {
     }
     t.stop();
 
+
     std::cout << t << std::endl;
     std::cout << "clocks: " << double(std::clock()) << std::endl;
 	// on ubuntu/lonovo this returns 60 msec
