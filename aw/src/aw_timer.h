@@ -5,8 +5,6 @@
 #include <ctime>
 #include <iostream>
 
-#include "aw_common.h"
-
 namespace aw {
     
 // example here:
