@@ -10,6 +10,9 @@
 
 int main() {
 
+    //44100 / 64 == 689 // default
+    //44100 / 128 == 345
+    //44100 / 256 == 172
     
     // will be initialized();
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
@@ -23,7 +26,7 @@ int main() {
     g2->print_inputs(true);
     
     aw::Timer t2("44100 additions");
-	g2->render(44100);
+	g2->render(689);
     std::cout << t2 << std::endl;
     
 	g2->print_output();

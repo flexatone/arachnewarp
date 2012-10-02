@@ -58,7 +58,33 @@ class ParameterTypeValue: public ParameterType {
 //==============================================================================
 // Dimensionality
 
-// 
+// When adding an input to a generator, we have to look at all inputs recursively and find the amx dimensionality. If this dimensionality is greater then the current dimensionality, and 
+
+
+//==============================================================================
+//! The GeneratorConfig provides input parameters for Generators. If not provide, a default GeneratorConfig is used. 
+class GeneratorConfig;
+typedef std::tr1::shared_ptr<GeneratorConfig> GeneratorConfigShared;
+class GeneratorConfig {
+    public://-------------------------------------------------------------------
+
+    static GeneratorConfigShared make_default();
+    static GeneratorConfigShared make_with_dimension(FRAME_DIM_T d);
+        
+    GeneratorConfig();
+    ~GeneratorConfig();
+
+    FRAME_DIM_T get_init_frame_dimension() const {return _init_frame_dimension;};
+    void set_init_frame_dimension(FRAME_DIM_T d) {_init_frame_dimension = d;};
+    
+    FRAME_SIZE_T get_frame_size() const {return _frame_size;};
+    
+    private://------------------------------------------------------------------
+    FRAME_DIM_T _init_frame_dimension;
+    FRAME_SIZE_T _frame_size; 
+
+};
+
 
 
 //==============================================================================
@@ -66,7 +92,6 @@ class ParameterTypeValue: public ParameterType {
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 class Generator {
-
 	
     public://-------------------------------------------------------------------    
     // public typedefs
@@ -81,19 +106,20 @@ class Generator {
     typedef std::vector<V_FRAME_DIM_T> VV_FRAME_DIM_T;
     
     protected://----------------------------------------------------------------
+    //! The name of the class. This is set during the class constructor. 
     std::string _class_name;
 
     //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
     FRAME_DIM_T _output_frame_dimension;
 	
-	//! The size of each frame for each dimension. This probably is provided externally from the system representatino. 
+	//! The size of each frame for each dimension.
     FRAME_SIZE_T _frame_size; // if changed, need to rebuild output
 	
 	//! The _output_size is derived from frame dimension times the frame size. 
     FRAME_SIZE_T _output_size;
     
     //! Define if this Generator has resiable outpout. Most generators have resizable output; only some (like a mono or stereo mixer) do not.
-    bool _resizable_output;
+    bool _dimension_is_resizable;
         
     //! The number of frames that have passed since the last reset.
     FRAME_COUNT_T _frame_count;
@@ -118,7 +144,7 @@ class Generator {
     enum GeneratorID {
         ID_Constant,    
         ID_Add,
-        };
+    };
     
         
     //! A linear array of samples, which may include multiple dimensions in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
@@ -144,17 +170,19 @@ class Generator {
     inline void _render_inputs(FRAME_COUNT_T f);
 
 
-
     public://-------------------------------------------------------------------
     //! Factory for all Generators. This creates a Generator, and calls its init() method. 
     static GeneratorShared make(GeneratorID);
 
-
     explicit Generator();
+    
     virtual ~Generator();
     
     //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called. 
     virtual void init();    
+
+    //! Return the the number of output dimensions
+    bool is_resizable() const {return _dimension_is_resizable;};
     
     //! Public method for resizing. Calls _resize_output only if necessary. 
     void set_dimension(FRAME_DIM_T d);    
@@ -204,6 +232,10 @@ class Generator {
     virtual void add_parameter_by_index(PARAMETER_INDEX_T i, SAMPLE_T v);
   
 };
+
+
+
+
 
 
 //==============================================================================

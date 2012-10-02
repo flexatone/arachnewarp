@@ -14,13 +14,15 @@ namespace aw {
 
 //! A Timer class. 
 class Timer {
-public:
+
+    public://-------------------------------------------------------------------    
+
     explicit Timer(const std::string& n);
     void start();
     void stop(); 
 	friend std::ostream& operator<<(std::ostream& output, const Timer& t);
     
-private:
+    private://----------------------------------------------------------------
 	//! Since this function is called by operator<<, it needs to be const, otherwise we cannot pass the const Timer inst to this function. 
 	double _get_ms_difference(double start, double end) const;
 	bool _stopped;
