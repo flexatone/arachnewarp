@@ -24,14 +24,10 @@ BOOST_AUTO_TEST_CASE(aw_common_test1) {
 
     // as enum it has an interger value
     //BOOST_CHECK_EQUAL(aw::Gen_Name_Constant, 0);
-    
 
 }
 
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	std::cout << "running aw_common_test 2" << std::endl;
-
-    
-
 }
 

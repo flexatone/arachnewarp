@@ -231,8 +231,35 @@ BOOST_AUTO_TEST_CASE(aw_generator_config_1) {
 	aw::GeneratorConfigShared gc3 = aw::GeneratorConfig::make_with_dimension(5);    
     BOOST_CHECK_EQUAL(gc3->get_init_frame_dimension(), 5);
 
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_config_2) {
+
+	aw::GeneratorConfigShared gc1 = aw::GeneratorConfig::make_with_dimension(3);    
+    BOOST_CHECK_EQUAL(gc1->get_init_frame_dimension(), 3);
+	
+	aw::GeneratorShared g1 = aw::GeneratorShared(new aw::Generator(gc1));
+    g1->init();
+    BOOST_CHECK_CLOSE(g1->output[0], 0, .0000001);
+	BOOST_CHECK_EQUAL(g1->get_dimension(), 3);	
+	BOOST_CHECK_EQUAL(g1->get_dimension(), 3);
+	BOOST_CHECK_EQUAL(g1->get_output_size(), 192); // 64 * 3
+	
+
+	aw::GeneratorConfigShared gc2 = aw::GeneratorConfig::make_with_dimension(5);    
+    BOOST_CHECK_EQUAL(gc2->get_init_frame_dimension(), 5);
+	
+	aw::GeneratorShared g2 = aw::GeneratorShared(new aw::Generator(gc2));
+	g2->init(); // must call!
+	BOOST_CHECK_EQUAL(g2->get_dimension(), 5);
+	BOOST_CHECK_EQUAL(g2->get_output_size(), 320); // 64 * 5
+    BOOST_CHECK_CLOSE(g2->output[0], 0, .0000001);
 
 }
+
+
+
+
 
 
 
