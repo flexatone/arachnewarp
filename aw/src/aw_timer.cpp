@@ -20,10 +20,18 @@ void Timer :: stop() {
     _stopped = true;
 }
 
-double Timer :: _get_ms_difference(double start, double end) const {
-    // this will cast inputs given as std::clock_t values
-    return ((end-start) / double(CLOCKS_PER_SEC)) * 1000.0;
+//double Timer :: _get_ms_difference(double start, double end) const {
+//    // this will cast inputs given as std::clock_t values
+//    return ((end-start) / double(CLOCKS_PER_SEC)) * 1000.0;
+//}
+
+
+double Timer :: _get_ms_difference(std::clock_t start, std::clock_t end) const {
+    // difftime (time2-time1), returns floating point double of time in sec.
+    // just convert to msec
+    return std::difftime(end, start) / 1000.0;
 }
+
 
 
 std::ostream& operator<<(std::ostream& output, const Timer& t) {
