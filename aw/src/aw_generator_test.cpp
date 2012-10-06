@@ -8,22 +8,29 @@
 #endif
 #include <boost/test/unit_test.hpp>
 
+#include <stdexcept>
+
 
 #include "aw_generator.h"
 #include "aw_common.h"
 
 
-BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 
-	aw::Generator g1;
+BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
+	aw::GeneratorConfigShared gc1 = aw::GeneratorConfig::make_with_dimension(1);    
+
+	aw::Generator g1(gc1);
     g1.init();
 	g1.print_output();
 	g1.render(1); // can call directly on object
 	g1.print_output();
 	g1.render(3); // will render twice, moving to 3
 	g1.print_output();
+    
+    // this has no parameters so should raise exception on trying to set or add
+    BOOST_REQUIRE_THROW(g1.set_parameter_by_index(0, 30), std::invalid_argument);
 
-	aw::GeneratorShared g2 = aw::GeneratorShared(new aw::Generator);
+	aw::GeneratorShared g2 = aw::GeneratorShared(new aw::Generator(gc1));
     g2->init();
     BOOST_CHECK_CLOSE(g2->output[0], 0, .0000001);
 	
@@ -42,14 +49,19 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
-	// can creat the table subclass
-	aw::Constant g3;
+	aw::GeneratorConfigShared gc1 = aw::GeneratorConfig::make_with_dimension(1);    
+
+	aw::Constant g3(gc1);
     g3.init();
     g3.print_inputs();
 
     BOOST_CHECK_EQUAL(g3.get_parameter_count(), 1);
     BOOST_CHECK_EQUAL(g3.get_parameter_index_from_name("Constant numerical value"), 0);
+    // check index out of range
+    BOOST_REQUIRE_THROW(g3.set_parameter_by_index(2, 30), std::invalid_argument);
+    BOOST_REQUIRE_THROW(g3.set_parameter_by_index(1, 23), std::invalid_argument);
 	
+    
 	// set a constant value
 	g3.set_parameter_by_index(0, 29);
 	g3.print_output();
@@ -74,11 +86,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
 	// note: these are all being made of different type
 	// is this correct?
-	aw::GeneratorShared g1 = aw::ConstantShared(new aw::Constant);
+	aw::GeneratorConfigShared gc1 = aw::GeneratorConfig::make_with_dimension(1);    
+    
+	aw::GeneratorShared g1 = aw::ConstantShared(new aw::Constant(gc1));
     g1->init();
-	aw::GeneratorShared g2 = aw::ConstantShared(new aw::Constant);
+	aw::GeneratorShared g2 = aw::ConstantShared(new aw::Constant(gc1));
     g2->init();
-	aw::GeneratorShared g3 = aw::AddShared(new aw::Add);
+	aw::GeneratorShared g3 = aw::AddShared(new aw::Add(gc1));
     g3->init();
 
 	g1->set_parameter_by_index(0, 2);
@@ -88,6 +102,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
 	// need to set first, so as to clear out the old one
 	g3->add_parameter_by_index(0, g1);
 	g3->add_parameter_by_index(0, g2);
+    BOOST_REQUIRE_THROW(g3->set_parameter_by_index(1, 23), std::invalid_argument);
+    BOOST_REQUIRE_THROW(g3->set_parameter_by_index(-1, 23), std::invalid_argument);
+    
 	g3->print_inputs();
 	
 	g3->render(1);
