@@ -105,9 +105,80 @@ typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 //==============================================================================
 // GeneratorBase
 
-//! This base class is used to initialize common attributes without duplicating code in different constructors. 
-class GeneratorBase {
-	
+////! This base class is used to initialize common attributes without duplicating code in different constructors. 
+//class GeneratorBase {
+//	
+//    public://-------------------------------------------------------------------    
+//    // public typedefs
+//    typedef std::tr1::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
+//    
+//	typedef std::vector<SampleType> VSampleType;
+//	
+//    typedef std::vector<GeneratorShared> VGenShared;
+//    typedef std::vector< VGenShared > VVGenShared;
+//	
+//    typedef std::vector<FrameDimensionType> VFrameDimension;
+//    typedef std::vector<VFrameDimension> VVFrameDimension;
+//	
+//    protected://----------------------------------------------------------------
+//    //! The name of the class. This is set during the class constructor. 
+//    std::string _class_name;
+//
+//    //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
+//    FrameDimensionType _output_frame_dimension;
+//	
+//	//! The size of each frame for each dimension.
+//    FrameSizeType _frame_size; // if changed, need to rebuild output
+//	
+//	//! The _output_size is derived from frame dimension times the frame size. 
+//    FrameSizeType _output_size;
+//    
+//    //! Define if this Generator has resiable outpout. Most generators have resizable output; only some (like a mono or stereo mixer) do not.
+//    bool _dimension_is_resizable;
+//        
+//    //! The number of frames that have passed since the last reset.
+//    FrameCountType _frame_count;
+//    
+//    //! Numner of inptu parameter slots used by this Generator. More than one Generator can reside in each slot. 
+//    ParameterIndexType _input_parameter_count;
+//    
+//    //! Store and update the output sizes of all inputs; this only needs to be updated when resizing has happened in the inputs. 
+//    VVFrameDimension _inputs_output_size;	
+//    
+//    //! The main storage for ParameterTypeShared instances. These are mapped by index value, which is the same index value in the inputs vector. 
+//    std::tr1::unordered_map<ParameterIndexType, 
+//                            ParameterTypeShared> _input_parameter_type;
+//                            
+//    //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
+//    VVGenShared _inputs;	
+//
+//    public://-------------------------------------------------------------------
+//
+//    //! This defines the types of generators avaialble from the factory. 
+//    enum GeneratorID {
+//        ID_Constant,    
+//        ID_Add,
+//    };
+//        
+//    //! A linear array of samples, which may include multiple dimensions in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
+//    SampleType* output;	
+//	
+//
+//    public://-------------------------------------------------------------------    
+//	//! Constructor. Only initializes variables.
+//	GeneratorBase();
+//	
+//	//! Deconstructor. Virtual. 
+//	virtual ~GeneratorBase();
+//};
+//
+
+
+//==============================================================================
+// Generator
+
+class Generator {
+
     public://-------------------------------------------------------------------    
     // public typedefs
     typedef std::tr1::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
@@ -162,22 +233,7 @@ class GeneratorBase {
         
     //! A linear array of samples, which may include multiple dimensions in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
     SampleType* output;	
-	
-
-    public://-------------------------------------------------------------------    
-	//! Constructor. Only initializes variables.
-	GeneratorBase();
-	
-	//! Deconstructor. Virtual. 
-	virtual ~GeneratorBase();
-};
-
-
-
-//==============================================================================
-// Generator
-
-class Generator: public GeneratorBase {
+    
 
     private://------------------------------------------------------------------   
 	//! Store the GeneratorConfig instance here; this is the only data attributes stored here and not in GeneratorBase. 
@@ -210,9 +266,9 @@ class Generator: public GeneratorBase {
     static GeneratorShared make(GeneratorID);
 
 	//! Default constructor
-    explicit Generator();
+//    explicit Generator();
 
-	//! Alternative constructor that takes a generator config. 
+	//! Main constructor that takes a generator config. 
     explicit Generator(GeneratorConfigShared gc);
     
     virtual ~Generator();
@@ -292,7 +348,7 @@ class Constant: public Generator {
     virtual FrameDimensionType _find_max_input_dimension(FrameDimensionType d=1);
 
     public://-------------------------------------------------------------------
-    explicit Constant();
+//    explicit Constant();
 	explicit Constant(GeneratorConfigShared);
     ~Constant();
     
@@ -334,7 +390,7 @@ class Add: public Generator {
     protected://----------------------------------------------------------------
 
     public://-------------------------------------------------------------------
-    explicit Add();
+//    explicit Add();
     explicit Add(GeneratorConfigShared);
 	
     ~Add();

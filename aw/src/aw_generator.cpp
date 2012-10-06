@@ -39,7 +39,7 @@ ParameterTypeValue :: ~ParameterTypeValue() {
 
 //==============================================================================
 // GeneratorConfig
-// intentionally not using overridden make functions here to make code as clear as spossible
+// intentionally not using overridden make functions here to make code as clear as possible
 
 GeneratorConfigShared GeneratorConfig :: make_default() {
     GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig);
@@ -53,7 +53,7 @@ GeneratorConfigShared GeneratorConfig :: make_with_dimension(
     return gc;
 }
 
-
+//..............................................................................
 GeneratorConfig :: GeneratorConfig() 
     : _init_frame_dimension(1), _frame_size(64) {
     // set standard generator defaults here: 1 d, size 128
@@ -66,23 +66,23 @@ GeneratorConfig :: ~GeneratorConfig() {
 //==============================================================================
 // GeneratorBase
 
-GeneratorBase :: GeneratorBase() 
-	// all necessary intitializations are handled here
-	: _class_name("Generator"), 
-	_output_frame_dimension(1), 
-	_frame_size(64),
-	_output_size(1),
-    _dimension_is_resizable(true), 
-    _frame_count(0), 
-    _input_parameter_count(0), 
-	_inputs_output_size(0),
-	output(NULL) {
-    // std::cout << "GeneratorBase: Constructor" << std::endl;		
-}
-
-GeneratorBase :: ~GeneratorBase() {
-}
-	
+//GeneratorBase :: GeneratorBase() 
+//	// all necessary intitializations are handled here
+//	: _class_name("Generator"), 
+//	_output_frame_dimension(1), 
+//	_frame_size(64),
+//	_output_size(1),
+//    _dimension_is_resizable(true), 
+//    _frame_count(0), 
+//    _input_parameter_count(0), 
+//	_inputs_output_size(0),
+//	output(NULL) {
+//    // std::cout << "GeneratorBase: Constructor" << std::endl;		
+//}
+//
+//GeneratorBase :: ~GeneratorBase() {
+//}
+//	
 
 //==============================================================================
 // Generator
@@ -112,17 +112,26 @@ GeneratorShared  Generator :: make(GeneratorID q){
 	return Generator :: make_with_dimension(q, d);
 }
 
-
-Generator :: Generator()
-	// will call GeneratorBase constructor first
-	: _generator_config(GeneratorConfig :: make_default())
-    {
-    //std::cout << "Generator (no args): Constructor" << std::endl;				
-}
+//..............................................................................
+//Generator :: Generator()
+//	// will call GeneratorBase constructor first
+//	: _generator_config(GeneratorConfig :: make_default())
+//    {
+//    //std::cout << "Generator (no args): Constructor" << std::endl;				
+//}
 
 Generator :: Generator(GeneratorConfigShared gc) 
 	// will call GeneratorBase constructor first
-	: _generator_config(gc) {
+	: _class_name("Generator"), 
+	_output_frame_dimension(1), 
+	_frame_size(64),
+	_output_size(1),
+    _dimension_is_resizable(true), 
+    _frame_count(0), 
+    _input_parameter_count(0), 
+	_inputs_output_size(0),
+	output(NULL),
+    _generator_config(gc) {
     //std::cout << "Generator (1 arg): Constructor" << std::endl;						
 }
 
@@ -136,7 +145,7 @@ Generator :: ~Generator() {
 
 void Generator :: init() {
     // virtual method, specialzied in subclass, but the base class is explicitly called.
-    std::cout << *this << " Generator::init()" << std::endl;
+    //std::cout << *this << " Generator::init()" << std::endl;
 
 	// read values from GeneratorConfig
     _output_frame_dimension = _generator_config->get_init_frame_dimension();
@@ -248,7 +257,7 @@ void Generator :: set_dimension(FrameDimensionType d) {
 
 
 void Generator :: reset() {
-    std::cout << *this << " Generator::reset()" << std::endl;
+    //std::cout << *this << " Generator::reset()" << std::endl;
     // do not need to partion by diminsons
     for (int i=0; i<_output_size; ++i) {
         output[i] = 0.0; // set to zero; float or int?
@@ -256,6 +265,9 @@ void Generator :: reset() {
     // always reset frame count?
     _frame_count = 0;
 }
+
+//..............................................................................
+// display methods
 
 std::ostream& operator<<(std::ostream& output, const Generator& g) {
     output << "<Gen: " << g._class_name << " @" << 
@@ -309,12 +321,15 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
     }
 }
 
-
+//..............................................................................
 void Generator :: render(FrameCountType f) {
     // this is a dummy render method just for demonstartion
     _frame_count += 1;
 }
 
+
+//..............................................................................
+// parameter translating
 
 ParameterIndexType Generator :: get_parameter_index_from_name(
     const std::string& s) {
@@ -332,20 +347,22 @@ ParameterIndexType Generator :: get_parameter_index_from_name(
 }
 
 
+//..............................................................................
+// parameter setting and adding
+
 void Generator :: set_parameter_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
-    // should _input_parameter_type be examined for anything?
-    // could check value types or range
-    // _input_parameter_type[i]
-
-    // a given input can be examined here to determine if dimensionality 
-    // should change
+    // if zero, none are set; current value is next available slot for registering
+    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+        throw std::invalid_argument("Parameter index is not available.");                                        
+    }        
 
     // this removes all stored values
     _inputs[i].clear();
     _inputs_output_size[i].clear();
     
     _inputs[i].push_back(gs);    
+    // store in advance the output size of the input
     _inputs_output_size[i].push_back(gs->get_output_size());
     
     _update_for_new_input();
@@ -360,18 +377,18 @@ void Generator :: set_parameter_by_index(ParameterIndexType i,
     c->init();
     c->set_parameter_by_index(0, v); // this will call Constant::reset()
     set_parameter_by_index(i, c); // call overloaded
-
 }
 
 
 void Generator :: add_parameter_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
+    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+        throw std::invalid_argument("Parameter index is not available.");                                        
+    }
     // adding additiona, with a generator
     _inputs[i].push_back(gs);    
     _inputs_output_size[i].push_back(gs->get_output_size());    
-    
     _update_for_new_input();
-    
 }
 
 void Generator :: add_parameter_by_index(ParameterIndexType i, 
@@ -392,10 +409,10 @@ void Generator :: add_parameter_by_index(ParameterIndexType i,
 
 
 //------------------------------------------------------------------------------
-Constant :: Constant() {
-	// will call no argument default constructor
-    _class_name = "Constant"; 
-}
+//Constant :: Constant() {
+//	// will call no argument default constructor
+//    _class_name = "Constant"; 
+//}
 
 Constant :: Constant(GeneratorConfigShared gc) 
 	// must initialize base class with passed arg
@@ -408,14 +425,14 @@ Constant :: ~Constant() {
 
 FrameDimensionType Constant :: _find_max_input_dimension(FrameDimensionType d) {
     // overriden virtual method b/c this is terminal of recusive search
-    // just return dimensionality
+    // just return dimensionality of this generator
     return get_dimension();
 }
 
 
 // the int routie must configure the names and types of parameters
 void Constant :: init() {
-    std::cout << *this << " Constant::init()" << std::endl;
+    //std::cout << *this << " Constant::init()" << std::endl;
     // resize and reset after setting parameters
     // this will call the virtual reset 
     Generator::init();
@@ -433,7 +450,7 @@ void Constant :: init() {
 
 void Constant :: reset() {
     // need overidden reset because have to transfer stored value to the output array; normal reset sets the output to zer. 
-    std::cout << *this << " Constant::reset()" << std::endl;
+    //std::cout << *this << " Constant::reset()" << std::endl;
     // sum values first, then reseset all output to values
     SampleType v(0);
     VSampleType :: const_iterator j;
@@ -479,10 +496,13 @@ void Constant :: render(FrameCountType f) {
 
 void Constant :: set_parameter_by_index(ParameterIndexType i, 
                                         GeneratorShared gs) {
-    throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constatn");                                        
+    throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
 }
 
 void Constant :: set_parameter_by_index(ParameterIndexType i, SampleType v){
+    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+        throw std::invalid_argument("Parameter index is not available.");                                        
+    }
     // store the passed SampleType value in the _values vector
     _values.clear();
     _values.push_back(v);    
@@ -494,11 +514,14 @@ void Constant :: set_parameter_by_index(ParameterIndexType i, SampleType v){
 
 void Constant :: add_parameter_by_index(ParameterIndexType i, 
                                     GeneratorShared gs) {
-    throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constatn");
+    throw std::invalid_argument("invalid to add a GeneratoreShared as a value to a Constatn");
 }
 
 
 void Constant :: add_parameter_by_index(ParameterIndexType i, SampleType v){
+    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+        throw std::invalid_argument("Parameter index is not available.");                                        
+    }
     _values.push_back(v);    
     reset();  
     // do not need to call     _update_for_new_input();
@@ -509,11 +532,11 @@ void Constant :: add_parameter_by_index(ParameterIndexType i, SampleType v){
 
 
 //------------------------------------------------------------------------------
-Add :: Add()
-    : _input_index_opperands(0), 
-	_sum_opperands(0) {
-    _class_name = "Add"; 
-}
+//Add :: Add()
+//    : _input_index_opperands(0), 
+//	_sum_opperands(0) {
+//    _class_name = "Add"; 
+//}
 
 Add :: Add(GeneratorConfigShared gc) 
 	// must initialize base class with passed arg
