@@ -22,11 +22,11 @@ namespace aw {
 typedef double SampleType; // sample value type
 
 // frame size type: probadbly under 10,000, 0 to 65535
+// if we store complete audio files in a frame, this will need to be bigger
 typedef std::tr1::uint16_t FrameSizeType;
 
 // dimension probably never more than 200!
 typedef std::tr1::uint8_t FrameDimensionType; 
-
 
 //! A small unsigned interger forf specialized cases. 
 typedef std::tr1::uint8_t UINT8; 
