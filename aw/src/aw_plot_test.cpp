@@ -39,11 +39,12 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
     // need to get an output directory from common
     std::string fp("plot.plt");
     
-    BOOST_REQUIRE_THROW(p._write(v, 0, fp), std::invalid_argument);
-    BOOST_REQUIRE_THROW(p._write(v, -1, fp), std::invalid_argument);
+    BOOST_REQUIRE_THROW(p.plot(v, 0), std::invalid_argument);
+    BOOST_REQUIRE_THROW(p.plot(v, -1), std::invalid_argument);
     
-	p._write(v, d, fp);
-     
+	p.plot(v, d);
+    //p.print();
+    p.write(fp); 
 }
 
 BOOST_AUTO_TEST_CASE(aw_plot_test2) {
