@@ -14,11 +14,11 @@ Plotter :: Plotter() {}
 Plotter :: ~Plotter() {}
 
 
-// TODO: refactor this to write to a std::ostringstream strstrm;
-// http://www.codeproject.com/Articles/1992/OStringStream-or-how-to-stop-worrying-and-never-us
-void Plotter :: _write(const std::vector<SampleType>& v, FrameDimensionType d, 
-                       const std::string& fp, bool interleaved) {
-                    
+void Plotter :: plot(const std::vector<SampleType>& v, 
+    FrameDimensionType d, bool interleaved) {
+
+    // clear the string
+    _stream.str(""); 
     if (d <= 0) {
     	throw std::invalid_argument("dimension must be greater than zero");
     }                
@@ -32,12 +32,7 @@ void Plotter :: _write(const std::vector<SampleType>& v, FrameDimensionType d,
     	throw std::invalid_argument("frame size is less than 1");
     }                
     
-                    
-    std::ofstream f; // for writing, need out file stream
-    f.open(fp.c_str()); //  std::ios::in
-    
-        
-    f << "\
+    _stream << "\
 unset key \n\
 set style line 11 lc rgb '#ffffff' lt 1 \n\
 set tics out nomirror scale 0,0.001 \n\
@@ -46,12 +41,12 @@ set grid \n\
 set lmargin screen 0.02 \n\
 set rmargin screen 0.98 " << std::endl;    
     
-    f << "set multiplot layout " << static_cast<int>(d) 
+    _stream << "set multiplot layout " << static_cast<int>(d) 
         <<",1" << std::endl;
 
     for (int i=1; i<d+1; ++i) {
         // TODO: need to increment color 
-        f << "set style line " << i 
+        _stream << "set style line " << i 
             << " lt 1 lw 1 pt 3 lc rgb '#332255'" << std::endl;
     }
     
@@ -79,22 +74,36 @@ set rmargin screen 0.98 " << std::endl;
         }        
         pos -= height;
                 
-        f << "set tmargin screen " << top << std::endl;
-        f << "set bmargin screen " << bottom << std::endl;
-        f << "plot '-' using ($1) with impulse linestyle " 
+        _stream << "set tmargin screen " << top << std::endl;
+        _stream << "set bmargin screen " << bottom << std::endl;
+        _stream << "plot '-' using ($1) with impulse linestyle " 
             << static_cast<int>(dStep) << std::endl;    
 
         // provide data here; assuming non-interleaved
         for (FrameSizeType i=frameSize*(dStep-1); i<frameSize*dStep; ++i) {
-            f << std::setprecision(8) << v[i] << std::endl;
+            _stream << std::setprecision(8) << v[i] << std::endl;
         }
-        f << "e" << std::endl; // show end of data        
+        _stream << "e" << std::endl; // show end of data        
     }
-    f << "unset multiplot\n" << "pause -1\n" << std::endl;
-        
-        
+    _stream << "unset multiplot\n" << "pause -1\n" << std::endl;
+}
+
+
+
+void Plotter :: print() {
+    std::cout << _stream.str() << std::endl;
+}
+
+
+void Plotter :: write(const std::string& fp) {
+    std::ofstream f; // for writing, need out file stream
+    f.open(fp.c_str()); //  std::ios::in
+    f << _stream.str() << std::endl;
     f.close();
 }
+
+
+
 
 } // end namespace aw
 

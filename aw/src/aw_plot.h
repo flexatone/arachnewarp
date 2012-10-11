@@ -3,6 +3,7 @@
 
 #include <tr1/memory>
 #include <vector>
+#include <sstream>
 
 #include "aw_common.h"
 
@@ -15,15 +16,23 @@ class Plotter;
 typedef std::tr1::shared_ptr<Plotter> PlotterShared;
 class Plotter {
     private://------------------------------------------------------------------
+    std::stringstream _stream;
+
+    //! Write the plot to the stream passed in
+    void render(const std::vector<SampleType>& v, FrameDimensionType d, 
+                            bool interleaved=true); 
 
     public://-------------------------------------------------------------------
+
     explicit Plotter();
     ~Plotter();
 
-    // make private; public now for testing    
-    void _write(const std::vector<SampleType>& v, FrameDimensionType d, 
-            const std::string& fp, bool interleaved=true); 
+    void plot(const std::vector<SampleType>& v, FrameDimensionType d, 
+                bool interleaved=true); 
+
+    void print();
     
+    void write(const std::string& fp);
 
 };
 
