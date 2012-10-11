@@ -1,4 +1,4 @@
-// g++ aw_plot_test.cpp aw_plot.cpp -DSTAND_ALONE -lboost_unit_test_framework -Wall -o aw_plot_test
+// g++ aw_plotter_test.cpp aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -Wall -o aw_plotter_test
 
 
 #define BOOST_TEST_DYN_LINK
@@ -19,7 +19,7 @@
 
 
 #include "aw_common.h"
-#include "aw_plot.h"
+#include "aw_plotter.h"
 
 
 // provide testCase, name
@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
 	for (int i=-100; i<100; ++i) {
 		v.push_back(i);
 	}
-	aw::FrameDimensionType d(4);
+	aw::FrameDimensionType d(2);
 
     // need to get an output directory from common
     std::string fp("plot.plt");

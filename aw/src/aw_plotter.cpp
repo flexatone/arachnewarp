@@ -4,7 +4,7 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "aw_plot.h"
+#include "aw_plotter.h"
 
 namespace aw {
 
@@ -17,8 +17,6 @@ Plotter :: ~Plotter() {}
 void Plotter :: plot(const std::vector<SampleType>& v, 
     FrameDimensionType d, bool interleaved) {
 
-    // clear the string
-    _stream.str(""); 
     if (d <= 0) {
     	throw std::invalid_argument("dimension must be greater than zero");
     }                
@@ -31,7 +29,9 @@ void Plotter :: plot(const std::vector<SampleType>& v,
     if (frameSize < 1) {
     	throw std::invalid_argument("frame size is less than 1");
     }                
-    
+
+    // clear the string
+    _stream.str("");     
     _stream << "\
 unset key \n\
 set style line 11 lc rgb '#ffffff' lt 1 \n\
