@@ -22,7 +22,7 @@ class Plotter {
 
     // make private; public now for testing    
     void _write(const std::vector<SampleType>& v, FrameDimensionType d, 
-            bool interleaved=true); 
+            const std::string& fp, bool interleaved=true); 
     
 
 };

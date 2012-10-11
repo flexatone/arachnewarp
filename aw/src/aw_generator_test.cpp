@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	
     BOOST_CHECK_CLOSE(g1->output[0], 12.7, .0000001);
 
-    g1->set_dimension(4);
+    g1->set_dimension(4); // calls resize and reset
 	g1->render(20);
 	g1->print_output();
 	g1->print_inputs();
@@ -274,6 +274,30 @@ BOOST_AUTO_TEST_CASE(aw_generator_config_2) {
 
 }
 
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_resize_2) {
+	// test auto constant creation when adding a sample type
+
+	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
+                            aw::Generator::ID_Constant, 1);
+	g2->add_parameter_by_index(0, 3);
+    g2->set_dimension(2); // set to a higher dimension
+    
+	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
+                            aw::Generator::ID_Add, 1);
+	g1->add_parameter_by_index(0, 1);
+    BOOST_CHECK_EQUAL(g1->get_dimension(), 1);    
+    // adding a 2d gen should cause this to grow
+	g1->add_parameter_by_index(0, g2); 
+    // now this is 2d	
+    BOOST_CHECK_EQUAL(g1->get_dimension(), 2);
+	
+
+    g1->render(1);
+    BOOST_CHECK_CLOSE(g1->output[0], 4, .0000001);
+
+}
 
 
 
