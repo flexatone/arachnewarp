@@ -14,6 +14,9 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
+#include <stdexcept>
+
 
 #include "aw_common.h"
 #include "aw_plot.h"
@@ -28,12 +31,19 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
 	
 	aw::Plotter p;
 	std::vector<aw::SampleType> v;
-	for (int i=-10; i<10; ++i) {
+	for (int i=-100; i<100; ++i) {
 		v.push_back(i);
 	}
-	aw::FrameDimensionType d(3);
+	aw::FrameDimensionType d(4);
 
-	p._write(v, d); 
+    // need to get an output directory from common
+    std::string fp("plot.plt");
+    
+    BOOST_REQUIRE_THROW(p._write(v, 0, fp), std::invalid_argument);
+    BOOST_REQUIRE_THROW(p._write(v, -1, fp), std::invalid_argument);
+    
+	p._write(v, d, fp);
+     
 }
 
 BOOST_AUTO_TEST_CASE(aw_plot_test2) {

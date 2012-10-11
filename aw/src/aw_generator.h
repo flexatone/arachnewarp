@@ -242,7 +242,7 @@ class Generator {
     // methods =================================================================
     protected://----------------------------------------------------------------
 		
-    //! Resize the output vector. Always called during init and also by set_dimension. Will remove an exisiting array. For public resizing use set_dimension().  
+    //! Resize the output vector. Always called during init and also by set_dimension. Will remove an exisiting array. For public resizing use set_dimension(). Will not reset.  
     void _resize_output();    
 
     //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and both _inputs and _inputs_output_size are givne a blank vector for appending to. 

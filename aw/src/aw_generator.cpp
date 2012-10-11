@@ -184,8 +184,6 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
 
     // store a vector in the position to accept inputs
     VGenShared vInner;  
-    // a place holder is not necessary
-    //vInner.push_back(GeneratorShared());
     _inputs.push_back(vInner); // extr copy made here
     
     // add vector to output size as well 
@@ -215,16 +213,26 @@ FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) 
 
 void Generator :: _update_for_new_input() {
     // get all the output sizes of all inputs to reduce function calls during rendering.     
+    
+    // these values are set when the input is added; probably not necessary to search through all here, unless an input (or an input's input) could have changed since it was added; this does not seem likelye
+    
     // not using iterators here os as to be able to ref both VVs
-    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
-        // inputs are a vector of Generators        
-        for (ParameterIndexType j=0; j<_inputs[i].size(); ++j) {
-            _inputs_output_size[i][j] = _inputs[i][j]->get_output_size();
-        }
-    } 
-    // this is recursive, which previous methos are not:
+//    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
+//        // inputs are a vector of Generators        
+//        for (ParameterIndexType j=0; j<_inputs[i].size(); ++j) {
+//            _inputs_output_size[i][j] = _inputs[i][j]->get_output_size();
+//        }
+//    } 
+
+    // this is recursive, which previous methods are not:
     FrameDimensionType maxDim = _find_max_input_dimension();
     std::cout << *this << " Found max input dim: @" << (int)maxDim << std::endl;
+
+    // if resizable, and size is less, resize    
+    // if size is greater, no need to resize (it seems)
+    if (_dimension_is_resizable and _output_frame_dimension < maxDim) {
+        set_dimension(maxDim); // will resize and reset
+    }
 }
 
 
@@ -348,7 +356,7 @@ ParameterIndexType Generator :: get_parameter_index_from_name(
 
 
 //..............................................................................
-// parameter setting and adding
+// parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
 
 void Generator :: set_parameter_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
