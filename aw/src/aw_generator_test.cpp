@@ -296,6 +296,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_2) {
 
     g1->render(1);
     BOOST_CHECK_CLOSE(g1->output[0], 4, .0000001);
+    
+    // test loading output to passed in vector 
+    aw::Generator::VSampleType v1; 
+    g1->load_output(v1);
+    BOOST_CHECK_EQUAL(v1.size(), 128);
+    BOOST_CHECK_CLOSE(v1[0], 4, .0000001);
+        
 
 }
 

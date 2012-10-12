@@ -25,6 +25,9 @@ typedef double SampleType; // sample value type
 // if we store complete audio files in a frame, this will need to be bigger
 typedef std::tr1::uint16_t FrameSizeType;
 
+//! Output size. May need to be larger if we accept file sizes. 
+typedef std::tr1::uint16_t OutputSizeType;
+
 // dimension probably never more than 200!
 typedef std::tr1::uint8_t FrameDimensionType; 
 

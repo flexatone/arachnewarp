@@ -73,6 +73,7 @@ class GeneratorConfig {
 
 	// Static factory methods
     static GeneratorConfigShared make_default();
+
     static GeneratorConfigShared make_with_dimension(FrameDimensionType d);
         
 	//! Constructor
@@ -97,85 +98,11 @@ class GeneratorConfig {
 
 
 //==============================================================================
-// forward declarations
+// Generator
+
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 
-
-//==============================================================================
-// GeneratorBase
-
-////! This base class is used to initialize common attributes without duplicating code in different constructors. 
-//class GeneratorBase {
-//	
-//    public://-------------------------------------------------------------------    
-//    // public typedefs
-//    typedef std::tr1::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
-//    
-//	typedef std::vector<SampleType> VSampleType;
-//	
-//    typedef std::vector<GeneratorShared> VGenShared;
-//    typedef std::vector< VGenShared > VVGenShared;
-//	
-//    typedef std::vector<FrameDimensionType> VFrameDimension;
-//    typedef std::vector<VFrameDimension> VVFrameDimension;
-//	
-//    protected://----------------------------------------------------------------
-//    //! The name of the class. This is set during the class constructor. 
-//    std::string _class_name;
-//
-//    //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
-//    FrameDimensionType _output_frame_dimension;
-//	
-//	//! The size of each frame for each dimension.
-//    FrameSizeType _frame_size; // if changed, need to rebuild output
-//	
-//	//! The _output_size is derived from frame dimension times the frame size. 
-//    FrameSizeType _output_size;
-//    
-//    //! Define if this Generator has resiable outpout. Most generators have resizable output; only some (like a mono or stereo mixer) do not.
-//    bool _dimension_is_resizable;
-//        
-//    //! The number of frames that have passed since the last reset.
-//    FrameCountType _frame_count;
-//    
-//    //! Numner of inptu parameter slots used by this Generator. More than one Generator can reside in each slot. 
-//    ParameterIndexType _input_parameter_count;
-//    
-//    //! Store and update the output sizes of all inputs; this only needs to be updated when resizing has happened in the inputs. 
-//    VVFrameDimension _inputs_output_size;	
-//    
-//    //! The main storage for ParameterTypeShared instances. These are mapped by index value, which is the same index value in the inputs vector. 
-//    std::tr1::unordered_map<ParameterIndexType, 
-//                            ParameterTypeShared> _input_parameter_type;
-//                            
-//    //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
-//    VVGenShared _inputs;	
-//
-//    public://-------------------------------------------------------------------
-//
-//    //! This defines the types of generators avaialble from the factory. 
-//    enum GeneratorID {
-//        ID_Constant,    
-//        ID_Add,
-//    };
-//        
-//    //! A linear array of samples, which may include multiple dimensions in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
-//    SampleType* output;	
-//	
-//
-//    public://-------------------------------------------------------------------    
-//	//! Constructor. Only initializes variables.
-//	GeneratorBase();
-//	
-//	//! Deconstructor. Virtual. 
-//	virtual ~GeneratorBase();
-//};
-//
-
-
-//==============================================================================
-// Generator
 
 class Generator {
 
@@ -202,7 +129,7 @@ class Generator {
     FrameSizeType _frame_size; // if changed, need to rebuild output
 	
 	//! The _output_size is derived from frame dimension times the frame size. 
-    FrameSizeType _output_size;
+    OutputSizeType _output_size;
     
     //! Define if this Generator has resiable outpout. Most generators have resizable output; only some (like a mono or stereo mixer) do not.
     bool _dimension_is_resizable;
@@ -288,16 +215,18 @@ class Generator {
     //! Return the the output size
     FrameSizeType get_output_size() const {return _output_size;};
 
+    //! Load the output into a passed-in vector. The vector is cleared before loading. 
+    void load_output(VSampleType& vst) const;
+
     //! Reset all parameters, and zero out the output array.
     virtual void reset();
 
 	//! Output stream friend function: returns the name of the Generator. 
 	friend std::ostream& operator<<(std::ostream& output, const Generator& g);
-
+    
 
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
-
 
     //! Print the output buffer for all dimensions at the current sample.
     void print_output();
