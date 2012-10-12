@@ -64,27 +64,6 @@ GeneratorConfig :: ~GeneratorConfig() {
 
 
 //==============================================================================
-// GeneratorBase
-
-//GeneratorBase :: GeneratorBase() 
-//	// all necessary intitializations are handled here
-//	: _class_name("Generator"), 
-//	_output_frame_dimension(1), 
-//	_frame_size(64),
-//	_output_size(1),
-//    _dimension_is_resizable(true), 
-//    _frame_count(0), 
-//    _input_parameter_count(0), 
-//	_inputs_output_size(0),
-//	output(NULL) {
-//    // std::cout << "GeneratorBase: Constructor" << std::endl;		
-//}
-//
-//GeneratorBase :: ~GeneratorBase() {
-//}
-//	
-
-//==============================================================================
 // Generator
 
 GeneratorShared  Generator :: make_with_dimension(GeneratorID q, FrameDimensionType d){
@@ -132,7 +111,7 @@ Generator :: Generator(GeneratorConfigShared gc)
 	_inputs_output_size(0),
 	output(NULL),
     _generator_config(gc) {
-    //std::cout << "Generator (1 arg): Constructor" << std::endl;						
+    //std::cout << "Generator (1 arg): Constructor" << std::endl;
 }
 
 
@@ -160,6 +139,9 @@ void Generator :: init() {
     _resize_output();
     reset(); // zero output; zero frame count
 }
+
+//..............................................................................
+// private methods
 
 void Generator :: _resize_output() {
     // _output_size is set here
@@ -253,6 +235,9 @@ void Generator :: _render_inputs(FrameCountType f) {
 }
 
 
+//..............................................................................
+// public methods
+
 void Generator :: set_dimension(FrameDimensionType d) {
     // only change if different; assume already created
     if (d != _output_frame_dimension) {
@@ -264,10 +249,20 @@ void Generator :: set_dimension(FrameDimensionType d) {
 }
 
 
+void Generator :: load_output(VSampleType& vst) const {
+    vst.clear(); // may not be necessary, but insures consistancy
+    vst.reserve(_output_size);
+    for (OutputSizeType i=0; i<_output_size; ++i) {
+        vst.push_back(output[i]); 
+    }
+    
+}
+
+
 void Generator :: reset() {
     //std::cout << *this << " Generator::reset()" << std::endl;
     // do not need to partion by diminsons
-    for (int i=0; i<_output_size; ++i) {
+    for (OutputSizeType i=0; i<_output_size; ++i) {
         output[i] = 0.0; // set to zero; float or int?
     }
     // always reset frame count?
@@ -278,6 +273,7 @@ void Generator :: reset() {
 // display methods
 
 std::ostream& operator<<(std::ostream& output, const Generator& g) {
+    // replace with static cast
     output << "<Gen: " << g._class_name << " @" << 
         (int)g._output_frame_dimension << ">";
     return output; 
@@ -288,7 +284,7 @@ void Generator :: print_output() {
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
     
     std::cout << *this << " Output@" << _frame_count << ": ";
-    for (int i=0; i<_output_size; ++i) {
+    for (OutputSizeType i=0; i<_output_size; ++i) {
         if (i % _frame_size == 0) {
             std::cout << std::endl << space1;        
         }
