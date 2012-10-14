@@ -7,26 +7,33 @@
 #include "aw_common.h"
 
 
-int main() {
 
-	// can creat the table subclass
+bool test_1() {
 //	aw::Constant g3;
 //    assert(g3.get_parameter_count() == 1);
-//
-//    aw::ConstantShared g4 = aw::ConstantShared(new aw::Constant);
-//    assert(g4->get_parameter_count() == 1);
-//    
-//    // check that dynamically created constants are managed properly
-//    
-//    aw::AddShared g1 = aw::AddShared(new aw::Add);
-//    
-//    g1->add_parameter_by_index(0, 1);
-//    g1->add_parameter_by_index(0, 20.5);
-//    g1->render(100);
-//    g1->print_inputs(true);
-//    g1->print_output();
-//	
+
+	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Constant);
+
+    //aw::ConstantShared g4 = aw::ConstantShared(new aw::Constant);
+    assert(g4->get_parameter_count() == 1);
     
+    // check that dynamically created constants are managed properly
+    
+    //aw::AddShared g1 = aw::AddShared(new aw::Add);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    
+    g1->add_parameter_by_index(0, 1);
+    g1->add_parameter_by_index(0, 20.5);
+    g1->render(100);
+    g1->print_inputs(true);
+    g1->print_output();
+
+	return true;
+}
+
+
+bool test_2() {
+	// can creat the table subclass
     
     // test resizing
     
@@ -48,7 +55,16 @@ int main() {
     // problem, however, is lower-level gens only have default dimensionality
     g2->render(10);
 	g2->print_output();
+    
+    return true;
 
+}
+
+
+int main() {
+
+
+    assert(test_1() & test_2());
     
 }
 

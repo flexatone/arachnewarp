@@ -14,6 +14,7 @@
 //#include <boost/test/included/unit_test_framework.hpp> 
 
 #include <iostream>
+#include <string>
 
 #include "aw_common.h"
 
@@ -22,12 +23,20 @@
 BOOST_AUTO_TEST_CASE(aw_common_test1) {
 	std::cout << "running aw_common_test 1" << std::endl;
 
-    // as enum it has an interger value
-    //BOOST_CHECK_EQUAL(aw::Gen_Name_Constant, 0);
-
+    std::string home = aw::get_fp_home();
+    std::cout << home << std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	std::cout << "running aw_common_test 2" << std::endl;
 }
+
+
+
+
+
+
+
+
+
 
