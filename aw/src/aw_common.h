@@ -6,6 +6,9 @@
 #include <vector>
 
 #include <tr1/cstdint> // has uint32_t
+#include <tr1/memory>
+
+#include <boost/filesystem.hpp>
 
 
 
@@ -52,8 +55,43 @@ std::tr1::uint8_t const INDENT_SIZE(2);
 void print(SampleType* out, FrameSizeType size);
 
 
+boost::filesystem::path get_fp_home();
+
 //std::string gen_id_to_name(GeneratorID q);
 //GeneratorID gen_name_to_id(const std::string& q);
+
+
+
+
+// utility classes =============================================================
+
+class Environment;
+typedef std::tr1::shared_ptr<Environment> EnvironmentShared;
+//! A representation of the users enviroinment
+class Environment {
+    private://-----------------------------------------------------------------
+    
+    //! Store the temp directory
+    //std::string _temp_directory;
+    boost::filesystem::path _temp_directory ;   
+
+    void _load_defaults();
+	
+    public://-------------------------------------------------------------------
+
+    Environment();
+    ~Environment();
+
+    boost::filesystem::path get_fp_plot(std::string name="plot.plt");
+
+
+};
+
+
+
+
+
+
 
 
 
