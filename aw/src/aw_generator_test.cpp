@@ -1,4 +1,4 @@
-// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp -DSTAND_ALONE -lboost_unit_test_framework  -Wall -o aw_generator_test
+// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -Wall -o aw_generator_test
 
 // -std=c++0x
 
