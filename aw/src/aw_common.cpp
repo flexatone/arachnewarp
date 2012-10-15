@@ -80,7 +80,7 @@ void Environment :: _load_defaults() {
 }
 
 //! This returns a file name used for temporary plots. 
-boost::filesystem::path Environment :: get_fp_plot(std::string name) {
+boost::filesystem::path Environment :: get_fp_plot(std::string name) const {
     // this might read from a file or do other configurations
     return _temp_directory / name;
 }

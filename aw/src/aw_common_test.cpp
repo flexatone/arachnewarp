@@ -1,4 +1,4 @@
-// g++ aw_common_test.cpp aw_common.cpp -DSTAND_ALONE -lboost_unit_test_framework -Wall -o aw_common_test
+// g++ aw_common_test.cpp aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -Wall -o aw_common_test
 // -std=c++0x 
 
 
@@ -6,7 +6,9 @@
 #ifdef STAND_ALONE
 #   define BOOST_TEST_MODULE main
 #endif
+
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem.hpp>
 
 // stand-alone way of testing with non-compiled boost
 //#define BOOST_TEST_MODULE
@@ -23,8 +25,11 @@
 BOOST_AUTO_TEST_CASE(aw_common_test1) {
 	std::cout << "running aw_common_test 1" << std::endl;
 
-    std::string home = aw::get_fp_home();
+    boost::filesystem::path home = aw::get_fp_home();
     std::cout << home << std::endl;
+    
+    BOOST_CHECK_EQUAL(4, 4);    
+    
 }
 
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
