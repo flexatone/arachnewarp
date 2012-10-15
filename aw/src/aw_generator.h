@@ -119,9 +119,10 @@ class Generator {
     typedef std::vector<VFrameDimension> VVFrameDimension;
 	
     protected://----------------------------------------------------------------
-    //! The name of the class. This is set during the class constructor. 
+    //! The name of the class. This is set during the class constructor by the derived class, and thus needs to be protected.
     std::string _class_name;
 
+    private://------------------------------------------------------------------
     //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
     FrameDimensionType _output_frame_dimension;
 	
@@ -133,20 +134,22 @@ class Generator {
     
     //! Define if this Generator has resiable outpout. Most generators have resizable output; only some (like a mono or stereo mixer) do not.
     bool _dimension_is_resizable;
-        
-    //! The number of frames that have passed since the last reset.
-    FrameCountType _frame_count;
     
     //! Numner of inptu parameter slots used by this Generator. More than one Generator can reside in each slot. 
     ParameterIndexType _input_parameter_count;
     
+                            
+    protected://----------------------------------------------------------------
+    //! The number of frames that have passed since the last reset. Protected because render() and reset() routines need to alter this. 
+    FrameCountType _frame_count;
+	
+    //! The main storage for ParameterTypeShared instances. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
+    std::tr1::unordered_map<ParameterIndexType, 
+                            ParameterTypeShared> _input_parameter_type;	
+	
     //! Store and update the output sizes of all inputs; this only needs to be updated when resizing has happened in the inputs. 
     VVFrameDimension _inputs_output_size;	
-    
-    //! The main storage for ParameterTypeShared instances. These are mapped by index value, which is the same index value in the inputs vector. 
-    std::tr1::unordered_map<ParameterIndexType, 
-                            ParameterTypeShared> _input_parameter_type;
-                            
+	
     //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenShared _inputs;	
 
@@ -163,8 +166,9 @@ class Generator {
     
 
     private://------------------------------------------------------------------   
-	//! Store the GeneratorConfig instance here; this is the only data attributes stored here and not in GeneratorBase. 
+	//! Store the GeneratorConfig instance.
     GeneratorConfigShared _generator_config;
+
 
     // methods =================================================================
     protected://----------------------------------------------------------------
@@ -192,8 +196,7 @@ class Generator {
     //! Factory for all Generators. This creates a Generator, and calls its init() method. 
     static GeneratorShared make(GeneratorID);
 
-	//! Default constructor
-//    explicit Generator();
+
 
 	//! Main constructor that takes a generator config. 
     explicit Generator(GeneratorConfigShared gc);

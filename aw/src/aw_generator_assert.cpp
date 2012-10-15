@@ -1,4 +1,4 @@
-// g++ aw_generator_assert.cpp aw_generator.cpp aw_common.cpp -Wall -o aw_generator_assert
+// g++ aw_generator_assert.cpp aw_generator.cpp aw_common.cpp -l boost_filesystem -l boost_system -Wall -o aw_generator_assert
 
 #include <cassert>
 

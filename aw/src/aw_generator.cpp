@@ -106,9 +106,8 @@ Generator :: Generator(GeneratorConfigShared gc)
 	_frame_size(64),
 	_output_size(1),
     _dimension_is_resizable(true), 
-    _frame_count(0), 
     _input_parameter_count(0), 
-	_inputs_output_size(0),
+    _frame_count(0), 	
 	output(NULL),
     _generator_config(gc) {
     //std::cout << "Generator (1 arg): Constructor" << std::endl;
@@ -462,7 +461,7 @@ void Constant :: reset() {
         v += *j;
     }
     // do not need to partion by diminsons
-    for (int i=0; i<_output_size; ++i) {
+    for (int i=0; i<get_output_size(); ++i) {
         output[i] = v; // set to the value
     }
     // always reset frame count?
@@ -504,7 +503,7 @@ void Constant :: set_parameter_by_index(ParameterIndexType i,
 }
 
 void Constant :: set_parameter_by_index(ParameterIndexType i, SampleType v){
-    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+    if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
     // store the passed SampleType value in the _values vector
@@ -523,7 +522,7 @@ void Constant :: add_parameter_by_index(ParameterIndexType i,
 
 
 void Constant :: add_parameter_by_index(ParameterIndexType i, SampleType v){
-    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+    if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
     _values.push_back(v);    
@@ -572,15 +571,17 @@ void Add :: render(FrameCountType f) {
     FrameSizeType i;
     ParameterIndexType j;
     
-    // called once for efficiency
+    // called once for efficiency; this is the number of operrands that live in this position
     FrameDimensionType len_at_num_value = _inputs[_input_index_opperands].size();
-    
+	// output size is private, so must get once per render call; if this is a performance problem can expose output size
+    OutputSizeType output_size = get_output_size();
+	
     while (_frame_count < f) {
         // calling render inputs updates the output of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);        
         
-        // i is the position in output; we need to read through this in order, as it is the order of time
-        for (i=0; i<_output_size; ++i) {
+        // i is the position in output; we need to read through this in order, as for each dimension it is the order of time
+        for (i=0; i < output_size; ++i) {
             // must sum teh value at this sample in time found across all Generators for each parameter type employed  
             _sum_opperands = 0;
             // we know we only have one input parameter type, but we do not know how many Generators reside in this input, so look at outputs and sum
