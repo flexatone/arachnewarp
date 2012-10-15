@@ -79,10 +79,10 @@ class Environment {
 	
     public://-------------------------------------------------------------------
 
-    Environment();
+    explicit Environment();
     ~Environment();
 
-    boost::filesystem::path get_fp_plot(std::string name="plot.plt");
+    boost::filesystem::path get_fp_plot(std::string name="plot.plt") const;
 
 
 };
