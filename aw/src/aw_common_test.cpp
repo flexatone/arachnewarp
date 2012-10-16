@@ -27,13 +27,22 @@ BOOST_AUTO_TEST_CASE(aw_common_test1) {
 
     boost::filesystem::path home = aw::get_fp_home();
     std::cout << home << std::endl;
-    
-    BOOST_CHECK_EQUAL(4, 4);    
-    
+        
 }
 
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
-	std::cout << "running aw_common_test 2" << std::endl;
+	//std::cout << "running aw_common_test 2" << std::endl;
+	
+	aw::EnvironmentShared es = aw::EnvironmentShared(new aw::Environment);
+	boost::filesystem::path fp = es->get_fp_plot();
+
+	std::string match("plot.plt");
+	// give starting position, in source, length of target, target
+	
+	BOOST_CHECK_EQUAL(fp.string().compare(
+					fp.string().length() - match.length(), 
+					match.length(), 
+					match), 0);
 }
 
 
