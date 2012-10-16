@@ -36,7 +36,7 @@ void print(SampleType* out, FrameSizeType size) {
 }
 
 
-//! Return the users home directory as a string
+
 boost::filesystem::path get_fp_home() {
     // do not need anyimport to use getnev
     const char* homeDir = getenv("HOME");
@@ -63,12 +63,12 @@ Environment :: Environment() {
 
 Environment :: ~Environment() {}
 
+
+
 void Environment :: _load_defaults() {
-
+    // this method is called on init
     _temp_directory = get_fp_home() / ".arachne_warp";
-
     //std::cout << _temp_directory << std::endl;
-    
     if (not boost::filesystem::exists(_temp_directory)) {
         //std::cout << "creating dir: " << _temp_directory << std::endl;
         bool ok = boost::filesystem::create_directory(_temp_directory);

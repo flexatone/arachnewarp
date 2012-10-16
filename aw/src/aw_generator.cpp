@@ -86,7 +86,7 @@ GeneratorShared  Generator :: make_with_dimension(GeneratorID q, FrameDimensionT
 }
 
 GeneratorShared  Generator :: make(GeneratorID q){
-	// provide a default dimensionality of 1, pass to amek with dimension
+	// provide a default dimensionality of 1, pass to make_with_dimension
 	FrameDimensionType d(1);
 	return Generator :: make_with_dimension(q, d);
 }

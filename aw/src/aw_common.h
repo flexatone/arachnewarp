@@ -9,6 +9,7 @@
 #include <tr1/memory>
 
 #include <boost/filesystem.hpp>
+#include <boost/exception/all.hpp>
 
 
 
@@ -54,7 +55,7 @@ std::tr1::uint8_t const INDENT_SIZE(2);
 //! Print an arry of SampleType of size type FrameSizeType.
 void print(SampleType* out, FrameSizeType size);
 
-
+//! Return the users home directory as a Boost path object
 boost::filesystem::path get_fp_home();
 
 //std::string gen_id_to_name(GeneratorID q);
@@ -80,6 +81,7 @@ class Environment {
     public://-------------------------------------------------------------------
 
     explicit Environment();
+    
     ~Environment();
 
     boost::filesystem::path get_fp_plot(std::string name="plot.plt") const;
