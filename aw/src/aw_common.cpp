@@ -42,14 +42,15 @@ boost::filesystem::path get_fp_home() {
     const char* homeDir = getenv("HOME");
     //const char* homeDir(0);
     // getenv may not always be correct; 
-    if (1) {
+    if (!homeDir) {
         // this is a struct from pwd header in C; does not need struct 
+        // this leaks on ubuntu
         passwd* pwd(NULL);        
         pwd = getpwuid(getuid());
         if (pwd)
            homeDir = pwd->pw_dir;
     }
-    return homeDir; // will get converted to a string
+    return homeDir; // will get converted
 }
 
 
