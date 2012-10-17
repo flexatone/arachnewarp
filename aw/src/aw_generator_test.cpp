@@ -1,4 +1,4 @@
-// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -Wall -o aw_generator_test
+// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -Wall -o aw_generator_test
 
 // -std=c++0x
 
@@ -238,9 +238,18 @@ BOOST_AUTO_TEST_CASE(aw_generator_config_1) {
 	aw::GeneratorConfigShared gc1 = aw::GeneratorConfig::make_default();
     
     // 64 is a default for testing
-    BOOST_CHECK_EQUAL(gc1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(gc1->get_init_frame_size(), 64);
     BOOST_CHECK_EQUAL(gc1->get_init_frame_dimension(), 1);
 
+
+	// see if we can get the default-created Environment
+	aw::EnvironmentShared e = gc1->get_environment();
+	std::string match("plot.plt");
+	std::string fp = e->get_fp_plot();
+	std::cout << fp << std::endl;
+	BOOST_CHECK_EQUAL(fp.compare(fp.length() - match.length(), 
+					match.length(), 
+					match), 0);	
 
 	aw::GeneratorConfigShared gc2 = aw::GeneratorConfig::make_with_dimension(3);    
     BOOST_CHECK_EQUAL(gc2->get_init_frame_dimension(), 3);
@@ -299,7 +308,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_2) {
     
     // test loading output to passed in vector 
     aw::Generator::VSampleType v1; 
-    g1->load_output(v1);
+    g1->output_to_vector(v1);
     BOOST_CHECK_EQUAL(v1.size(), 128);
     BOOST_CHECK_CLOSE(v1[0], 4, .0000001);
         

@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(aw_timer_test_1) {
     
     std::list<int> l;
 
-    for (unsigned long i=0; i<1000000; ++i) {
+    for (unsigned long i=0; i<100; ++i) {
         l.push_back(i);
     }
     t.stop();
@@ -46,9 +46,9 @@ BOOST_AUTO_TEST_CASE(aw_timer_test_2) {
     t.start();
 
     int x(2);
-    for (unsigned long i=0; i<1000000; ++i) {
+    for (unsigned long i=0; i<100; ++i) {
         x+=x;
-        if (i % 100000 == 0) std::cout << t << std::endl;
+        if (i % 1000 == 0) std::cout << t << std::endl;
     }
     
     t.stop();

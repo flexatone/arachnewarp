@@ -55,8 +55,8 @@ std::tr1::uint8_t const INDENT_SIZE(2);
 //! Print an arry of SampleType of size type FrameSizeType.
 void print(SampleType* out, FrameSizeType size);
 
-//! Return the users home directory as a Boost path object
-boost::filesystem::path get_fp_home();
+//! Return the users home directory as a const char pointer. This is what is returned by low-level calls, and is thus returned here to reduce creating temporary objects.
+const char* get_fp_home();
 
 //std::string gen_id_to_name(GeneratorID q);
 //GeneratorID gen_name_to_id(const std::string& q);
@@ -67,8 +67,9 @@ boost::filesystem::path get_fp_home();
 // utility classes =============================================================
 
 class Environment;
+// TODO: perhaps make this a const Environment, asserting that it cannot be changed
 typedef std::tr1::shared_ptr<Environment> EnvironmentShared;
-//! A representation of the users enviroinment
+//! A representation of the users enviroinment. Presently this uses boost
 class Environment {
     private://-----------------------------------------------------------------
     
@@ -84,8 +85,10 @@ class Environment {
     
     ~Environment();
 
-    boost::filesystem::path get_fp_plot(std::string name="plot.plt") const;
+    //! Return a file path for a plot in the user's temporary directory. 
+    std::string get_fp_plot(std::string name="plot.plt") const;
 
+    //also need methods to return audio files from a default audio dir
 
 };
 

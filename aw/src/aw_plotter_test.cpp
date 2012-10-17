@@ -1,4 +1,4 @@
-// g++ aw_plotter_test.cpp aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -Wall -o aw_plotter_test
+// g++ aw_plotter_test.cpp aw_plotter.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -lboost_unit_test_framework -Wall -o aw_plotter_test
 
 
 #define BOOST_TEST_DYN_LINK

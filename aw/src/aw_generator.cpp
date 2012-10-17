@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "aw_generator.h"
+#include "aw_plotter.h"
 
 // TODO: get rid of default constructors with no args
 // require all generators to use either factor or explicit args
@@ -42,20 +43,26 @@ ParameterTypeValue :: ~ParameterTypeValue() {
 // intentionally not using overridden make functions here to make code as clear as possible
 
 GeneratorConfigShared GeneratorConfig :: make_default() {
-    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig);
+	EnvironmentShared e = EnvironmentShared(new Environment);
+    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig(e));
     return gc;
 }
 
 GeneratorConfigShared GeneratorConfig :: make_with_dimension(
 	FrameDimensionType d) {
-    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig);
+	EnvironmentShared e = EnvironmentShared(new Environment);
+    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig(e));
     gc->set_init_frame_dimension(d);
     return gc;
 }
 
+// TODO: can add make that takes an EnvironmeShared 
+
 //..............................................................................
-GeneratorConfig :: GeneratorConfig() 
-    : _init_frame_dimension(1), _frame_size(64) {
+GeneratorConfig :: GeneratorConfig(EnvironmentShared e) 
+    : _init_frame_dimension(1), 
+	_frame_size(64),
+	_environment(e) {
     // set standard generator defaults here: 1 d, size 128
 }
 
@@ -92,15 +99,8 @@ GeneratorShared  Generator :: make(GeneratorID q){
 }
 
 //..............................................................................
-//Generator :: Generator()
-//	// will call GeneratorBase constructor first
-//	: _generator_config(GeneratorConfig :: make_default())
-//    {
-//    //std::cout << "Generator (no args): Constructor" << std::endl;				
-//}
-
 Generator :: Generator(GeneratorConfigShared gc) 
-	// will call GeneratorBase constructor first
+	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame dimension and frame size.
 	: _class_name("Generator"), 
 	_output_frame_dimension(1), 
 	_frame_size(64),
@@ -127,7 +127,7 @@ void Generator :: init() {
 
 	// read values from GeneratorConfig
     _output_frame_dimension = _generator_config->get_init_frame_dimension();
-    _frame_size = _generator_config->get_frame_size();
+    _frame_size = _generator_config->get_init_frame_size();
     
     // since this might be called more than once in the life of an object, need to repare storage units that are general set in the init() routine
     _input_parameter_type.clear();
@@ -144,7 +144,7 @@ void Generator :: init() {
 
 void Generator :: _resize_output() {
     // _output_size is set here
-    std::cout << *this << " Generator::_resize_output()" << std::endl;
+    // std::cout << *this << " Generator::_resize_output()" << std::endl;
     // must delete if set to something else
     if (output != NULL) delete[] output;
     // size is always dim * _frame_size
@@ -176,7 +176,7 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
 
 
 FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) {
-	// recurisvely find teh max dimension in all inputs and their input
+	// recursively find the max dimension in all inputs and their input
     // pass in max value found so far
     FrameDimensionType dSub(1);
     for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
@@ -195,15 +195,7 @@ FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) 
 void Generator :: _update_for_new_input() {
     // get all the output sizes of all inputs to reduce function calls during rendering.     
     
-    // these values are set when the input is added; probably not necessary to search through all here, unless an input (or an input's input) could have changed since it was added; this does not seem likelye
-    
-    // not using iterators here os as to be able to ref both VVs
-//    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
-//        // inputs are a vector of Generators        
-//        for (ParameterIndexType j=0; j<_inputs[i].size(); ++j) {
-//            _inputs_output_size[i][j] = _inputs[i][j]->get_output_size();
-//        }
-//    } 
+    // these values are set when the input is added; probably not necessary to search through all here, unless an input (or an input's input) could have changed since it was added; this does not seem likely, but is possible
 
     // this is recursive, which previous methods are not:
     FrameDimensionType maxDim = _find_max_input_dimension();
@@ -248,7 +240,7 @@ void Generator :: set_dimension(FrameDimensionType d) {
 }
 
 
-void Generator :: load_output(VSampleType& vst) const {
+void Generator :: output_to_vector(VSampleType& vst) const {
     vst.clear(); // may not be necessary, but insures consistancy
     vst.reserve(_output_size);
     for (OutputSizeType i=0; i<_output_size; ++i) {
@@ -256,7 +248,6 @@ void Generator :: load_output(VSampleType& vst) const {
     }
     
 }
-
 
 void Generator :: reset() {
     //std::cout << *this << " Generator::reset()" << std::endl;
@@ -322,6 +313,23 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
             }
         }
     }
+}
+
+
+void Generator :: plot_to_temp_fp(bool open) {
+	// grab a shared handle to envirionment
+	EnvironmentShared e = _generator_config->get_environment();
+	Plotter p;
+	// assume not interleaved
+	VSampleType v;
+	output_to_vector(v); // load output into this vecotr
+	p.plot(v, get_dimension());
+	// get the default plot directory
+	p.write(e->get_fp_plot());
+	
+	if (open) {
+		// make system call to gnuplot
+	}
 }
 
 //..............................................................................
@@ -443,7 +451,7 @@ void Constant :: init() {
     // register some parameters
     aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
                                        aw::ParameterTypeValue);
-    pt1->set_name("Constant numerical value");
+    pt1->set_instance_name("Constant numerical value");
     // when this is called, the inputs vectors are filled with GeneratorShared
     // these will the inputs vector will be filled with 1 empty placeholder
     _register_input_parameter_type(pt1);
@@ -560,7 +568,7 @@ void Add :: init() {
     // register some parameters
     aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
                                        aw::ParameterTypeValue);
-    pt1->set_name("Opperands");
+    pt1->set_instance_name("Opperands");
     _register_input_parameter_type(pt1);
     // we can store ahead our only known input for performance
     _input_index_opperands = 0; // stored for speed

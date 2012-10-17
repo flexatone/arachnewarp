@@ -37,18 +37,20 @@ void print(SampleType* out, FrameSizeType size) {
 
 
 
-boost::filesystem::path get_fp_home() {
+const char* get_fp_home() {
     // do not need anyimport to use getnev
     const char* homeDir = getenv("HOME");
     //const char* homeDir(0);
     // getenv may not always be correct; 
     if (!homeDir) {
         // this is a struct from pwd header in C; does not need struct 
-        // this leaks on ubuntu
-        passwd* pwd(NULL);        
-        pwd = getpwuid(getuid());
-        if (pwd)
+        // this leaks a small but constant amount ubuntu
+        passwd* pwd = getpwuid(getuid());
+        if (pwd) // if not null
            homeDir = pwd->pw_dir;
+    }
+    if (!homeDir) { // if failed
+		throw std::domain_error("no home directory can be found");
     }
     return homeDir; // will get converted
 }
@@ -64,11 +66,10 @@ Environment :: Environment() {
 
 Environment :: ~Environment() {}
 
-
-
 void Environment :: _load_defaults() {
     // this method is called on init
-    _temp_directory = get_fp_home() / ".arachne_warp";
+    _temp_directory = boost::filesystem::path(get_fp_home()) / ".arachne_warp";
+
     //std::cout << _temp_directory << std::endl;
     if (not boost::filesystem::exists(_temp_directory)) {
         //std::cout << "creating dir: " << _temp_directory << std::endl;
@@ -80,10 +81,10 @@ void Environment :: _load_defaults() {
     }
 }
 
-//! This returns a file name used for temporary plots. 
-boost::filesystem::path Environment :: get_fp_plot(std::string name) const {
+//! This returns a file name used for temporary plots. This retruns a string for easier compatibility with clients.
+std::string Environment :: get_fp_plot(std::string name) const {
     // this might read from a file or do other configurations
-    return _temp_directory / name;
+    return (_temp_directory / name).string();
 }
 
 

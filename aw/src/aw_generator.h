@@ -37,13 +37,14 @@ class ParameterType {
 						const ParameterType& pt);
 
     //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Generator and may not be the same even if its the same ParameterType subclass. 
-    void set_name(const std::string& s) {_instance_name = s;};
+    void set_instance_name(const std::string& s) {_instance_name = s;};
 
     //! Return the name as a string. 
     std::string get_instance_name() const {return _instance_name;};
     
 };
 
+//! A basic subclass of ParameterType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
 class ParameterTypeValue;
 typedef std::tr1::shared_ptr<ParameterTypeValue> ParameterTypeValueShared;
 class ParameterTypeValue: public ParameterType {
@@ -65,19 +66,19 @@ class ParameterTypeValue: public ParameterType {
 
 
 //==============================================================================
-//! The GeneratorConfig provides input parameters for Generators. If not provide, a default GeneratorConfig is used. 
+//! The GeneratorConfig provides input parameters for Generators. If not provided, a default GeneratorConfig is used. 
 class GeneratorConfig;
 typedef std::tr1::shared_ptr<GeneratorConfig> GeneratorConfigShared;
 class GeneratorConfig {
     public://-------------------------------------------------------------------
 
-	// Static factory methods
+	//! Static factory method for default.
     static GeneratorConfigShared make_default();
 
     static GeneratorConfigShared make_with_dimension(FrameDimensionType d);
         
 	//! Constructor
-    explicit GeneratorConfig();
+    explicit GeneratorConfig(EnvironmentShared e);
 	
 	//! Deconstructor
     ~GeneratorConfig();
@@ -88,11 +89,21 @@ class GeneratorConfig {
     void set_init_frame_dimension(FrameDimensionType d) {
 		_init_frame_dimension = d;};
     
-    FrameSizeType get_frame_size() const {return _frame_size;};
+    FrameSizeType get_init_frame_size() const {return _frame_size;};
+	
+	//! Return the Environement shared pointer. Should be const to this class. 
+	EnvironmentShared get_environment() {return _environment;};
     
     private://------------------------------------------------------------------
+	
+	//! This is the initial frame dimension requested; for some Generators, this may be rejected or may change. 
     FrameDimensionType _init_frame_dimension;
+	
+	//! This is the initial frame size. 
     FrameSizeType _frame_size; 
+	
+	//! We store an instance of an environment on generator config. It is possible that we might, at some time after creation, change the Environment. However, doing this should explicitly require calling a methods
+	EnvironmentShared _environment; 
 
 };
 
@@ -102,7 +113,6 @@ class GeneratorConfig {
 
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
-
 
 class Generator {
 
@@ -166,7 +176,7 @@ class Generator {
     
 
     private://------------------------------------------------------------------   
-	//! Store the GeneratorConfig instance.
+	//! Store the GeneratorConfig instance. This also stores a handle to shared Environment in stance. 
     GeneratorConfigShared _generator_config;
 
 
@@ -197,7 +207,7 @@ class Generator {
     static GeneratorShared make(GeneratorID);
 
 
-
+    public://-------------------------------------------------------------------
 	//! Main constructor that takes a generator config. 
     explicit Generator(GeneratorConfigShared gc);
     
@@ -219,7 +229,7 @@ class Generator {
     FrameSizeType get_output_size() const {return _output_size;};
 
     //! Load the output into a passed-in vector. The vector is cleared before loading. 
-    void load_output(VSampleType& vst) const;
+    void output_to_vector(VSampleType& vst) const;
 
     //! Reset all parameters, and zero out the output array.
     virtual void reset();
@@ -227,10 +237,10 @@ class Generator {
 	//! Output stream friend function: returns the name of the Generator. 
 	friend std::ostream& operator<<(std::ostream& output, const Generator& g);
     
-
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
+	// display .................................................................    
     //! Print the output buffer for all dimensions at the current sample.
     void print_output();
 
@@ -240,6 +250,9 @@ class Generator {
     //! Render the requested frame if not already rendered. This is virtual because every Generator renders in a different way. 
     virtual void render(FrameCountType f); 
 
+	void plot_to_temp_fp(bool open=true);
+
+	// parameter ...............................................................    
     //! Return the number of parameters; this is not the same as the number of Generators, as each parameter may have 1 or more Generators
     ParameterIndexType get_parameter_count() {
         return _input_parameter_count;};

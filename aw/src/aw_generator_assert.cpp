@@ -1,4 +1,4 @@
-// g++ aw_generator_assert.cpp aw_generator.cpp aw_common.cpp -l boost_filesystem -l boost_system -Wall -o aw_generator_assert
+// g++ aw_generator_assert.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -l boost_filesystem -l boost_system -Wall -o aw_generator_assert
 
 #include <cassert>
 
@@ -55,7 +55,8 @@ bool test_2() {
     // problem, however, is lower-level gens only have default dimensionality
     g2->render(10);
 	g2->print_output();
-    
+	
+    g2->plot_to_temp_fp();
     return true;
 
 }
