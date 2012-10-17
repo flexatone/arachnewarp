@@ -67,8 +67,9 @@ const char* get_fp_home();
 // utility classes =============================================================
 
 class Environment;
-// TODO: perhaps make this a const Environment, asserting that it cannot be changed
-typedef std::tr1::shared_ptr<Environment> EnvironmentShared;
+
+//! The shared Environment is always const: it cannot be changed from the outside.
+typedef std::tr1::shared_ptr<const Environment> EnvironmentShared;
 //! A representation of the users enviroinment. Presently this uses boost
 class Environment {
     private://-----------------------------------------------------------------

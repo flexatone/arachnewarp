@@ -49,7 +49,8 @@ bool test_2() {
 	g2->print_inputs(true);
 	
     g2->set_dimension(3);
-	g2->print_output(); // output has been reset
+	assert(g2->output[0] == 0.0);
+	g2->print_output(); // output has been reset to zero
     
     // we need to re-renter to get output
     // problem, however, is lower-level gens only have default dimensionality

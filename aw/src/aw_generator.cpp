@@ -61,7 +61,7 @@ GeneratorConfigShared GeneratorConfig :: make_with_dimension(
 //..............................................................................
 GeneratorConfig :: GeneratorConfig(EnvironmentShared e) 
     : _init_frame_dimension(1), 
-	_frame_size(64),
+	_init_frame_size(64),
 	_environment(e) {
     // set standard generator defaults here: 1 d, size 128
 }
@@ -73,7 +73,8 @@ GeneratorConfig :: ~GeneratorConfig() {
 //==============================================================================
 // Generator
 
-GeneratorShared  Generator :: make_with_dimension(GeneratorID q, FrameDimensionType d){
+GeneratorShared  Generator :: make_with_dimension(GeneratorID q, 
+	FrameDimensionType d){
     // static factory method
 	GeneratorConfigShared gc = GeneratorConfig :: make_with_dimension(d);
 	
@@ -168,7 +169,7 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     _inputs.push_back(vInner); // extr copy made here
     
     // add vector to output size as well 
-    VFrameDimension vSizeInner;  
+    VOutputSize vSizeInner;  
     _inputs_output_size.push_back(vSizeInner);
     
     _input_parameter_count += 1;
@@ -239,7 +240,6 @@ void Generator :: set_dimension(FrameDimensionType d) {
     // when we set the dimension, should we set it for inputs?
 }
 
-
 void Generator :: output_to_vector(VSampleType& vst) const {
     vst.clear(); // may not be necessary, but insures consistancy
     vst.reserve(_output_size);
@@ -273,7 +273,7 @@ void Generator :: print_output() {
     // provide name of generator first by dereferencing this
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
     
-    std::cout << *this << " Output@" << _frame_count << ": ";
+    std::cout << *this << " Output frame @" << _frame_count << ": ";
     for (OutputSizeType i=0; i<_output_size; ++i) {
         if (i % _frame_size == 0) {
             std::cout << std::endl << space1;        
@@ -325,10 +325,13 @@ void Generator :: plot_to_temp_fp(bool open) {
 	output_to_vector(v); // load output into this vecotr
 	p.plot(v, get_dimension());
 	// get the default plot directory
-	p.write(e->get_fp_plot());
+	std::string fp(e->get_fp_plot());
+	p.write(fp);
 	
 	if (open) {
 		// make system call to gnuplot
+		std::string cmd = "gnuplot " + fp;
+		system(cmd.c_str());
 	}
 }
 
@@ -367,7 +370,6 @@ void Generator :: set_parameter_by_index(ParameterIndexType i,
     if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }        
-
     // this removes all stored values
     _inputs[i].clear();
     _inputs_output_size[i].clear();
@@ -531,8 +533,8 @@ void Constant :: add_parameter_by_index(ParameterIndexType i,
 
 void Constant :: add_parameter_by_index(ParameterIndexType i, SampleType v){
     if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
-        throw std::invalid_argument("Parameter index is not available.");                                        
-    }
+        throw std::invalid_argument("Parameter index is not available.");
+	}
     _values.push_back(v);    
     reset();  
     // do not need to call     _update_for_new_input();
@@ -597,8 +599,13 @@ void Add :: render(FrameCountType f) {
             // what if the input has a smaller output than this output? an easy solution is to always take the modulus of the generator's size. This will cause a wrap-around of sorts of values. Different Gens can deal with this situation in different ways. 
 
             for (j=0; j<len_at_num_value; ++j) {
-                _sum_opperands += _inputs[_input_index_opperands][j]->
-                    output[i % _inputs_output_size[_input_index_opperands][j]];
+				// i may be larger than permitted on a given input; 
+				//std::cout << _inputs_output_size[_input_index_opperands][j] << std::endl;
+				if (i >= _inputs_output_size[_input_index_opperands][j]) {
+					// j is iterating across different inputs; we must jsut check the next one to add; we might find a way to mark this j value as no longer needed
+					continue; 
+				}
+                _sum_opperands += _inputs[_input_index_opperands][j]->output[i];
             }
             output[i] = _sum_opperands; 
         }
