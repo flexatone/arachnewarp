@@ -1,5 +1,5 @@
-#ifndef _AW_PLOT_H_
-#define _AW_PLOT_H_
+#ifndef _AW_PLOTTER_H_
+#define _AW_PLOTTER_H_
 
 #include <tr1/memory>
 #include <vector>
@@ -17,10 +17,6 @@ typedef std::tr1::shared_ptr<Plotter> PlotterShared;
 class Plotter {
     private://------------------------------------------------------------------
     std::stringstream _stream;
-
-    //! Write the plot to the stream passed in
-    void render(const std::vector<SampleType>& v, FrameDimensionType d, 
-                            bool interleaved=true); 
 
     public://-------------------------------------------------------------------
 
@@ -41,4 +37,4 @@ class Plotter {
 
 } // end namespace aw
 
-#endif // ends _AW_PLOT_H_
+#endif // ends _AW_PLOTTER_H_
