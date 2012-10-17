@@ -61,7 +61,6 @@ class ParameterTypeValue: public ParameterType {
 
 // After adding an input to a generator, we have to look at all inputs attached to that generator (recursively) and find the max dimensionality. If this dimensionality is greater then the current dimensionality of the Generator, and the Generator is_resizable == true, then resize to the maximum size. Otherwise, keep at current size. The render method will have to take into account having higher dimensionality inputs
 // Case 1: Create Add@2 and add operator inputs Constant@4 and Constant@3; Add should automatically resize to Add@4, as addition should not mix dimensionalities.
-// Case 2: Create MixMono
 
 
 
@@ -89,10 +88,10 @@ class GeneratorConfig {
     void set_init_frame_dimension(FrameDimensionType d) {
 		_init_frame_dimension = d;};
     
-    FrameSizeType get_init_frame_size() const {return _frame_size;};
+    FrameSizeType get_init_frame_size() const {return _init_frame_size;};
 	
 	//! Return the Environement shared pointer. Should be const to this class. 
-	EnvironmentShared get_environment() {return _environment;};
+	EnvironmentShared get_environment() const {return _environment;};
     
     private://------------------------------------------------------------------
 	
@@ -100,7 +99,7 @@ class GeneratorConfig {
     FrameDimensionType _init_frame_dimension;
 	
 	//! This is the initial frame size. 
-    FrameSizeType _frame_size; 
+    FrameSizeType _init_frame_size; 
 	
 	//! We store an instance of an environment on generator config. It is possible that we might, at some time after creation, change the Environment. However, doing this should explicitly require calling a methods
 	EnvironmentShared _environment; 
@@ -125,8 +124,8 @@ class Generator {
     typedef std::vector<GeneratorShared> VGenShared;
     typedef std::vector< VGenShared > VVGenShared;
 	
-    typedef std::vector<FrameDimensionType> VFrameDimension;
-    typedef std::vector<VFrameDimension> VVFrameDimension;
+    typedef std::vector<OutputSizeType> VOutputSize;
+    typedef std::vector<VOutputSize> VVOutputSize;
 	
     protected://----------------------------------------------------------------
     //! The name of the class. This is set during the class constructor by the derived class, and thus needs to be protected.
@@ -157,8 +156,8 @@ class Generator {
     std::tr1::unordered_map<ParameterIndexType, 
                             ParameterTypeShared> _input_parameter_type;	
 	
-    //! Store and update the output sizes of all inputs; this only needs to be updated when resizing has happened in the inputs. 
-    VVFrameDimension _inputs_output_size;	
+    //! Store and update the output sizes of all inputs (a vector for each parameter type, and an OutputSizeType for each value therein); this only needs to be updated when resizing has happened in the inputs. These needs to be accessed in subclass render routines, so will be protected for now.
+    VVOutputSize _inputs_output_size;	
 	
     //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenShared _inputs;	
@@ -228,6 +227,9 @@ class Generator {
     //! Return the the output size
     FrameSizeType get_output_size() const {return _output_size;};
 
+    //! Return the the frame size 
+    OutputSizeType get_frame_size() const {return _frame_size;};	
+	
     //! Load the output into a passed-in vector. The vector is cleared before loading. 
     void output_to_vector(VSampleType& vst) const;
 
