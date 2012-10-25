@@ -85,10 +85,13 @@ GeneratorShared  Generator :: make_with_dimension(GeneratorID q,
     else if (q == ID_Add) {
         g = AddShared(new Add(gc));    
     }
+    else if (q == ID_Buffer) {
+        g = BufferShared(new Buffer(gc));    
+    }	
     else {
         throw std::invalid_argument("no matching GeneratorID: " + q);
     }
-    // automatically call init
+    // automatically call init; this will subclass init, which calls baseclass init
     g->init();
     return g;
 }
@@ -103,11 +106,12 @@ GeneratorShared  Generator :: make(GeneratorID q){
 Generator :: Generator(GeneratorConfigShared gc) 
 	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame dimension and frame size.
 	: _class_name("Generator"), 
-	_output_frame_dimension(1), 
+	_frame_dimension(1), 
 	_frame_size(64),
 	_output_size(1),
+    _input_parameter_count(0), 	
     _dimension_is_resizable(true), 
-    _input_parameter_count(0), 
+    _frame_size_is_resizable(false), 	
     _frame_count(0), 	
 	output(NULL),
     _generator_config(gc) {
@@ -127,7 +131,7 @@ void Generator :: init() {
     //std::cout << *this << " Generator::init()" << std::endl;
 
 	// read values from GeneratorConfig
-    _output_frame_dimension = _generator_config->get_init_frame_dimension();
+    _frame_dimension = _generator_config->get_init_frame_dimension();
     _frame_size = _generator_config->get_init_frame_size();
     
     // since this might be called more than once in the life of an object, need to repare storage units that are general set in the init() routine
@@ -136,28 +140,36 @@ void Generator :: init() {
     _input_parameter_count = 0;
     
     // _register_input_parameter_type is called to add inputs here
+	// cant use set_dimension() here because we compare to the value _frame_dimension and only change if it is different; thus, here we must manually set for the initial size. 
     _resize_output();
     reset(); // zero output; zero frame count
 }
+
 
 //..............................................................................
 // private methods
 
 void Generator :: _resize_output() {
-    // _output_size is set here
+    // _output_size is set here, memory is allocated
     // std::cout << *this << " Generator::_resize_output()" << std::endl;
     // must delete if set to something else
     if (output != NULL) delete[] output;
     // size is always dim * _frame_size
     // only do this once to avoid repeating
-    _output_size = _output_frame_dimension * _frame_size;
+    _output_size = _frame_dimension * _frame_size;
+	// alloc!
     output = new SampleType[_output_size];
     // check that alloc was sucesful
     if (output == NULL) {
         throw std::bad_alloc();    
     }
+	// whenever this called, need to update _dimension_offsets; this is done once per resizing for efficiency
+	_dimension_offsets.clear();
+	_dimension_offsets.reserve(_frame_dimension);
+	for (FrameDimensionType d=0; d<_frame_dimension; ++d) {
+		_dimension_offsets.push_back(d * _frame_size);
+	}
 }
-
 
 void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
 	// called in derived init() to setup a input types and prepare storage
@@ -175,7 +187,6 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     _input_parameter_count += 1;
 }
 
-
 FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) {
 	// recursively find the max dimension in all inputs and their input
     // pass in max value found so far
@@ -192,7 +203,6 @@ FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) 
     return d;
 }
 
-
 void Generator :: _update_for_new_input() {
     // get all the output sizes of all inputs to reduce function calls during rendering.     
     
@@ -204,11 +214,11 @@ void Generator :: _update_for_new_input() {
 
     // if resizable, and size is less, resize    
     // if size is greater, no need to resize (it seems)
-    if (_dimension_is_resizable and _output_frame_dimension < maxDim) {
+    if (_dimension_is_resizable && _frame_dimension < maxDim) {
+		// set_dimension() checks _dimension_is_resizable too
         set_dimension(maxDim); // will resize and reset
     }
 }
-
 
 void Generator :: _render_inputs(FrameCountType f) {
     // for each of the inputs, need to render up to this frame
@@ -230,24 +240,51 @@ void Generator :: _render_inputs(FrameCountType f) {
 //..............................................................................
 // public methods
 
+
+void Generator :: render(FrameCountType f) {
+    // this is a dummy render method just for demonstartion
+    _frame_count += 1;
+}
+
+
+//..............................................................................
+
 void Generator :: set_dimension(FrameDimensionType d) {
     // only change if different; assume already created
-    if (d != _output_frame_dimension) {
-        _output_frame_dimension = d;
+	if (!_dimension_is_resizable) {
+		throw std::domain_error("this generator does not support dimension setting");
+	}
+	if (d == 0) {
+		throw std::invalid_argument("a dimension of 0 is not supported");
+	}	
+    if (d != _frame_dimension) {
+        _frame_dimension = d;
         _resize_output(); // _output_size is set here with dimension
         reset(); // must reset values to zero 
     }
     // when we set the dimension, should we set it for inputs?
 }
 
-void Generator :: output_to_vector(VSampleType& vst) const {
-    vst.clear(); // may not be necessary, but insures consistancy
-    vst.reserve(_output_size);
-    for (OutputSizeType i=0; i<_output_size; ++i) {
-        vst.push_back(output[i]); 
+void Generator :: set_frame_size(FrameSizeType f) {
+    // only change if different; assume already created
+	if (!_frame_size_is_resizable) {
+		throw std::domain_error("this generator does not support frame size setting");
+	}	
+	if (f == 0) {
+		throw std::invalid_argument("a frame size of 0 is not supported");
+	}		
+    if (f != _frame_size) {
+        _frame_size = f;
+        _resize_output(); // _output_size is set here with dimension
+        reset(); // must reset values to zero 
     }
-    
+    // when we set the dimension, should we set it for inputs?
 }
+
+// TODO: might have method to set both dim and frame size with the same method; this would be faster
+//void Generator :: set_frame_size_and_or_dimension(FrameSizeType f, FrameDimensionType d) {}
+
+
 
 void Generator :: reset() {
     //std::cout << *this << " Generator::reset()" << std::endl;
@@ -265,7 +302,7 @@ void Generator :: reset() {
 std::ostream& operator<<(std::ostream& output, const Generator& g) {
     // replace with static cast
     output << "<Gen: " << g._class_name << " @" << 
-        (int)g._output_frame_dimension << ">";
+        (int)g._frame_dimension << ">";
     return output; 
 }
 
@@ -316,13 +353,13 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
 }
 
 
-void Generator :: plot_to_temp_fp(bool open) {
+void Generator :: plot_output_to_temp_fp(bool open) {
 	// grab a shared handle to envirionment
 	EnvironmentShared e = _generator_config->get_environment();
 	Plotter p;
 	// assume not interleaved
 	VSampleType v;
-	output_to_vector(v); // load output into this vecotr
+	write_output_to_vector(v); // load output into this vecotr
 	p.plot(v, get_dimension());
 	// get the default plot directory
 	std::string fp(e->get_fp_plot());
@@ -335,10 +372,79 @@ void Generator :: plot_to_temp_fp(bool open) {
 	}
 }
 
+
+
 //..............................................................................
-void Generator :: render(FrameCountType f) {
-    // this is a dummy render method just for demonstartion
-    _frame_count += 1;
+// loading writing output
+
+void Generator :: write_output_to_vector(VSampleType& vst) const {
+    vst.clear(); // may not be necessary, but insures consistancy
+    vst.reserve(_output_size);
+    for (OutputSizeType i=0; i<_output_size; ++i) {
+        vst.push_back(output[i]); 
+    }
+}
+
+
+void Generator :: set_output_from_array(SampleType* v, OutputSizeType s, 
+								FrameDimensionType ch, bool interleaved){
+	// caller is responsible for releasing called array
+	// TODO: add method to do both of these at the same time: set_frame_size_and_or_dimension
+	bool reset_needed(true); 
+	if (_frame_size_is_resizable) {
+		// frame size is the number of outpuots divided by channel
+		set_frame_size(s/ch);
+		reset_needed = false;
+	}
+	if (_dimension_is_resizable) {
+		set_dimension(ch);
+		reset_needed = false;		
+	}
+	// must reset values to zero (if not done above) as s may be smaller than outputsize, and we would get mixed content
+	if (reset_needed) reset(); 
+
+	// if we did not resize dimensions, limit at max
+	if (s > _output_size) {
+		s = _output_size;
+	}
+	// if we did not resize dimensions, limit at max
+	if (ch > _frame_dimension) {
+		ch = _frame_dimension;
+	}
+	
+	// assuming interleaved source to non-inter dest
+	FrameDimensionType j(0);
+	OutputSizeType i(0);
+	OutputSizeType k(0);
+	
+	// we will never run over larger area than output size, s is less than output; we also must not run over v, so we must iterate by s. 
+    while (i < s) {
+		// step over dimensions
+		for (j=0; j<ch; ++j) {
+			// i+j maybe greater than s; and not caught above
+			if (i >= s) break;
+	        output[k+_dimension_offsets[j]] = v[i];
+			//std::cout << i << std::endl;
+			i += 1;
+		}
+		k += 1; // will only reach total/ch
+    }
+}
+
+void Generator :: set_output_from_vector(const VSampleType& vst, 
+								FrameDimensionType ch, bool interleaved) {
+
+	OutputSizeType s = vst.size();
+	// pack this in an array for reuse of the same function
+    SampleType* v = new SampleType[s];
+	// cant use iterator b/c need number
+    for (OutputSizeType i=0; i<s; ++i) {
+		v[i] = vst[i];
+	}
+	set_output_from_array(v, s, ch, interleaved);
+	// clean up temporary vector 
+	delete[] v;
+		
 }
 
 
@@ -478,7 +584,6 @@ void Constant :: reset() {
     _frame_count = 0;
 }
 
-
 void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
     // need overridden print because this is terminal in recursive searches
     std::string space1 = std::string(recurse_level*INDENT_SIZE, ' ');
@@ -530,7 +635,6 @@ void Constant :: add_parameter_by_index(ParameterIndexType i,
     throw std::invalid_argument("invalid to add a GeneratoreShared as a value to a Constatn");
 }
 
-
 void Constant :: add_parameter_by_index(ParameterIndexType i, SampleType v){
     if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
         throw std::invalid_argument("Parameter index is not available.");
@@ -543,14 +647,7 @@ void Constant :: add_parameter_by_index(ParameterIndexType i, SampleType v){
 
 
 
-
 //------------------------------------------------------------------------------
-//Add :: Add()
-//    : _input_index_opperands(0), 
-//	_sum_opperands(0) {
-//    _class_name = "Add"; 
-//}
-
 Add :: Add(GeneratorConfigShared gc) 
 	// must initialize base class with passed arg
 	: Generator(gc), 
@@ -612,6 +709,34 @@ void Add :: render(FrameCountType f) {
         _frame_count += 1;
     }    
 }
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+Buffer :: Buffer(GeneratorConfigShared gc) 
+	// must initialize base class with passed arg
+	: Generator(gc) {
+	_class_name = "Buffer";
+	_frame_size_is_resizable = true; // this is the only difference
+	// we can require this to be set at init; then, on import, handle how we map this
+	_dimension_is_resizable = false; 
+}
+
+Buffer :: ~Buffer() {
+}
+
+void Buffer :: init() {
+    // the int routie must configure the names and types of parameters
+    std::cout << *this << " Buffer::init()" << std::endl;
+    // call base init, allocates and resets()
+    Generator::init();    
+    // register some parameters: none to register here
+}
+
+
 
 
 
