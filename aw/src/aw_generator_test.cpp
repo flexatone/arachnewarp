@@ -216,18 +216,28 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	g1->add_parameter_by_index(0, 9.2);
 	
     BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
+    BOOST_CHECK_EQUAL(g1->dimension_is_resizable(), true);
+    BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), false);
+    BOOST_REQUIRE_THROW(g1->set_frame_size(30), std::domain_error);
+    
     
 	g1->render(20);
 	g1->print_output();
 	
     BOOST_CHECK_CLOSE(g1->output[0], 12.7, .0000001);
-
+	// this based on defaults and might change
+    BOOST_CHECK_EQUAL(g1->get_output_size(), 64);
+	
     g1->set_dimension(4); // calls resize and reset
 	g1->render(20);
 	g1->print_output();
 	g1->print_inputs();
     
     BOOST_CHECK_EQUAL(g1->get_dimension(), 4);
+	// this based on defaults and might change
+    BOOST_CHECK_EQUAL(g1->get_output_size(), 256);
+	
+	// change frame size
 
 }
 
@@ -308,7 +318,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_2) {
     
     // test loading output to passed in vector 
     aw::Generator::VSampleType v1; 
-    g1->output_to_vector(v1);
+    g1->write_output_to_vector(v1);
     BOOST_CHECK_EQUAL(v1.size(), 128);
     BOOST_CHECK_CLOSE(v1[0], 4, .0000001);
         
@@ -354,6 +364,40 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
 
 
 
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
+	// test auto constant creation when adding a sample type
+    
+	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_Buffer, 1);
+    BOOST_CHECK_EQUAL(g1->get_output_size(), 64);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
+    BOOST_CHECK_EQUAL(g1->dimension_is_resizable(), false);
+
+	g1->set_frame_size(743);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 743);
+    BOOST_CHECK_EQUAL(g1->get_output_size(), 743);
+	
+	g1->set_frame_size(34);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 34);	
+    BOOST_CHECK_EQUAL(g1->get_output_size(), 34);
+
+
+	// 2d version
+	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_Buffer, 2);
+	g2->set_frame_size(200);
+    BOOST_CHECK_EQUAL(g2->get_frame_size(), 200);
+    BOOST_CHECK_EQUAL(g2->get_output_size(), 400);
+
+	g2->set_frame_size(40);
+    BOOST_CHECK_EQUAL(g2->get_frame_size(), 40);
+    BOOST_CHECK_EQUAL(g2->get_output_size(), 80);
+	// cannot do this
+    BOOST_REQUIRE_THROW(g2->set_dimension(30), std::domain_error);
+	
+}
 
 
 

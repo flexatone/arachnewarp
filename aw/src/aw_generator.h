@@ -52,14 +52,13 @@ class ParameterTypeValue: public ParameterType {
     public://-------------------------------------------------------------------
     explicit ParameterTypeValue();
     virtual ~ParameterTypeValue();
-
 };
 
 
 //==============================================================================
 // Dimensionality
 
-// After adding an input to a generator, we have to look at all inputs attached to that generator (recursively) and find the max dimensionality. If this dimensionality is greater then the current dimensionality of the Generator, and the Generator is_resizable == true, then resize to the maximum size. Otherwise, keep at current size. The render method will have to take into account having higher dimensionality inputs
+// After adding an input to a generator, we have to look at all inputs attached to that generator (recursively) and find the max dimensionality. If this dimensionality is greater then the current dimensionality of the Generator, and the Generator dimension_is_resizable == true, then resize to the maximum size. Otherwise, keep at current size. The render method will have to take into account having higher dimensionality inputs
 // Case 1: Create Add@2 and add operator inputs Constant@4 and Constant@3; Add should automatically resize to Add@4, as addition should not mix dimensionalities.
 
 
@@ -133,7 +132,7 @@ class Generator {
 
     private://------------------------------------------------------------------
     //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
-    FrameDimensionType _output_frame_dimension;
+    FrameDimensionType _frame_dimension;
 	
 	//! The size of each frame for each dimension.
     FrameSizeType _frame_size; // if changed, need to rebuild output
@@ -141,14 +140,16 @@ class Generator {
 	//! The _output_size is derived from frame dimension times the frame size. 
     OutputSizeType _output_size;
     
-    //! Define if this Generator has resiable outpout. Most generators have resizable output; only some (like a mono or stereo mixer) do not.
-    bool _dimension_is_resizable;
-    
     //! Numner of inptu parameter slots used by this Generator. More than one Generator can reside in each slot. 
-    ParameterIndexType _input_parameter_count;
+    ParameterIndexType _input_parameter_count;    
     
-                            
     protected://----------------------------------------------------------------
+    //! Define if this Generator has resizable output. Most generators have resizable output; only some (like a mono or stereo mixer) do not.
+    bool _dimension_is_resizable;
+	
+    //! Define if this Generator has resizable frames size. Most generators do not have have resizable frame size; only some (like a Buffer or WaveTable) do.
+    bool _frame_size_is_resizable;	
+                            
     //! The number of frames that have passed since the last reset. Protected because render() and reset() routines need to alter this. 
     FrameCountType _frame_count;
 	
@@ -161,6 +162,10 @@ class Generator {
 	
     //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenShared _inputs;	
+	
+	//! A vector of output offsets, to be used when iterating over dimension and incorporating interleaved or non-interleaved presentation of the output. This must be updated after every resizing, as dimension and frame size may have changed. This is protected because subclass methods may want to use this structure (but the should not change it)
+	VFrameDimensionType _dimension_offsets; 
+
 
     public://-------------------------------------------------------------------
 
@@ -168,6 +173,7 @@ class Generator {
     enum GeneratorID {
         ID_Constant,    
         ID_Add,
+        ID_Buffer,		
     };
         
     //! A linear array of samples, which may include multiple dimensions in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
@@ -178,13 +184,13 @@ class Generator {
 	//! Store the GeneratorConfig instance. This also stores a handle to shared Environment in stance. 
     GeneratorConfigShared _generator_config;
 
+    //! Resize the output vector. Always called during init and also by set_dimension. Will remove an exisiting array. For public resizing use set_dimension(). Will not reset.  
+    void _resize_output();    
+	
 
     // methods =================================================================
     protected://----------------------------------------------------------------
 		
-    //! Resize the output vector. Always called during init and also by set_dimension. Will remove an exisiting array. For public resizing use set_dimension(). Will not reset.  
-    void _resize_output();    
-
     //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and both _inputs and _inputs_output_size are givne a blank vector for appending to. 
     void _register_input_parameter_type(ParameterTypeShared pts);
 
@@ -196,7 +202,6 @@ class Generator {
     
     //! Call the render method on all stored inputs. This is done once for each render call; this calls each  input Generator's render() method. This means that during render() calls, _render_inputs() does not need to be called. 
     inline void _render_inputs(FrameCountType f);
-
 
     public://-------------------------------------------------------------------
 	//! Factory for all Generators that creates a  Generator with a dimension. Calls init() method. 
@@ -215,23 +220,26 @@ class Generator {
     //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called. 
     virtual void init();    
 
-    //! Return the the number of output dimensions
-    bool is_resizable() const {return _dimension_is_resizable;};
+    //! Return a Boolean if this Generator has resizable output
+    bool dimension_is_resizable() const {return _dimension_is_resizable;};
     
-    //! Public method for resizing. Calls _resize_output only if necessary. 
+    //! Public method for resizing based on dimesion. Calls _resize_output only if necessary. 
     void set_dimension(FrameDimensionType d);    
 
     //! Return the the number of output dimensions
-    FrameDimensionType get_dimension() const {return _output_frame_dimension;};
+    FrameDimensionType get_dimension() const {return _frame_dimension;};
 
     //! Return the the output size
     FrameSizeType get_output_size() const {return _output_size;};
 
+    //! Return a Boolean if this Generator has resizable frame size
+    bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
+
+    //! Public method for resizing based on frame size. Calls _resize_output only if necessary. 
+    void set_frame_size(FrameSizeType f);    
+	
     //! Return the the frame size 
     OutputSizeType get_frame_size() const {return _frame_size;};	
-	
-    //! Load the output into a passed-in vector. The vector is cleared before loading. 
-    void output_to_vector(VSampleType& vst) const;
 
     //! Reset all parameters, and zero out the output array.
     virtual void reset();
@@ -242,7 +250,8 @@ class Generator {
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
-	// display .................................................................    
+
+	// display ................................................................    
     //! Print the output buffer for all dimensions at the current sample.
     void print_output();
 
@@ -252,9 +261,27 @@ class Generator {
     //! Render the requested frame if not already rendered. This is virtual because every Generator renders in a different way. 
     virtual void render(FrameCountType f); 
 
-	void plot_to_temp_fp(bool open=true);
+	//! Create a plot at a temporary file path. Another method should take a string to write this file somewhere. 
+	void plot_output_to_temp_fp(bool open=true);
 
-	// parameter ...............................................................    
+
+	// loading/writing to output ..............................................    
+	
+    //! Load the output into a passed-in vector. The vector is cleared before loading. 
+    void write_output_to_vector(VSampleType& vst) const;
+	
+	//! Set the output from an array. 
+	void set_output_from_array(SampleType* v, OutputSizeType s, 
+							FrameDimensionType ch, bool interleaved=true);
+								
+	//! Set the output (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. 
+	void set_output_from_vector(const VSampleType& vst, 
+								FrameDimensionType ch, bool interleaved=true);
+
+
+
+
+	// parameter ..............................................................    
     //! Return the number of parameters; this is not the same as the number of Generators, as each parameter may have 1 or more Generators
     ParameterIndexType get_parameter_count() {
         return _input_parameter_count;};
@@ -302,11 +329,11 @@ class Constant: public Generator {
     virtual void init();	
     virtual void reset();
 	
-	//! This derived function is necessary to handle displaying internal input components.
-	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
-	
 	//! This overridden method needs only increment the _frame_count, as the output array is set when reset() is called. 
     virtual void render(FrameCountType f); 	
+	
+	//! This derived function is necessary to handle displaying internal input components.
+	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.
     virtual void set_parameter_by_index(ParameterIndexType i, 
@@ -334,10 +361,7 @@ class Add: public Generator {
     ParameterIndexType _input_index_opperands;    
     SampleType _sum_opperands;
 
-    protected://----------------------------------------------------------------
-
     public://-------------------------------------------------------------------
-//    explicit Add();
     explicit Add(GeneratorConfigShared);
 	
     ~Add();
@@ -347,6 +371,52 @@ class Add: public Generator {
 	//! Render addition. 
     virtual void render(FrameCountType f); 	
 };
+
+
+//==============================================================================
+class Buffer;
+typedef std::tr1::shared_ptr<Buffer> BufferShared;
+class Buffer: public Generator {
+
+    private://------------------------------------------------------------------
+    //ParameterIndexType _input_index_opperands;    
+    //SampleType _sum_opperands;
+
+    public://-------------------------------------------------------------------
+    explicit Buffer(GeneratorConfigShared);
+	
+    ~Buffer();
+
+    virtual void init();    
+		
+	// Rendering a Buffer is not necessary 
+    //virtual void render(FrameCountType f); 	
+};
+
+
+
+//==============================================================================
+/*class Phasor;*/
+/*typedef std::tr1::shared_ptr<Phasor> PhasorShared;*/
+/*class Phasor: public Generator {*/
+
+    /*private://------------------------------------------------------------------*/
+    /*//ParameterIndexType _input_index_opperands;    */
+    /*//SampleType _sum_opperands;*/
+
+    /*public://-------------------------------------------------------------------*/
+    /*explicit Phasor(GeneratorConfigShared);*/
+	
+    /*~Phasor();*/
+
+    /*virtual void init();    */
+		
+	/*//! Render addition. */
+    /*virtual void render(FrameCountType f); 	*/
+/*};*/
+
+
+
 
 
 

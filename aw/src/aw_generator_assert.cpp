@@ -57,16 +57,35 @@ bool test_2() {
     g2->render(10);
 	g2->print_output();
 	
-    g2->plot_to_temp_fp();
+    //g2->plot_output_to_temp_fp();
+    return true;
+
+}
+
+bool test_3() {
+	// can create the table subclass
+    
+   	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
+		aw::Generator::ID_Buffer, 3);
+
+	aw::Generator::VSampleType v;
+	for (std::size_t i=0; i < 120; ++i) {
+		v.push_back(i % 5);
+	}
+	
+	g1->set_output_from_vector(v, 3); // declare 2d
+	g1->print_output();
+    //g1->plot_output_to_temp_fp();
     return true;
 
 }
 
 
+
 int main() {
+	// TODO: read command line args to support selecting test by name
 
-
-    assert(test_1() & test_2());
+    assert(test_1() & test_2() & test_3());
     
 }
 
