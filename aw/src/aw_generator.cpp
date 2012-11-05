@@ -2,12 +2,17 @@
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+#include <cmath>
+
+// needed for BufferFile
+#include <sndfile.hh>
+
 
 #include "aw_generator.h"
 #include "aw_plotter.h"
 
-// TODO: get rid of default constructors with no args
-// require all generators to use either factor or explicit args
+
+
 
 
 namespace aw {
@@ -56,7 +61,7 @@ GeneratorConfigShared GeneratorConfig :: make_with_dimension(
     return gc;
 }
 
-// TODO: can add make that takes an EnvironmeShared 
+// TODO: can add a make method that takes an EnvironmeShared 
 
 //..............................................................................
 GeneratorConfig :: GeneratorConfig(EnvironmentShared e) 
@@ -78,6 +83,7 @@ GeneratorShared  Generator :: make_with_dimension(GeneratorID q,
     // static factory method
 	GeneratorConfigShared gc = GeneratorConfig :: make_with_dimension(d);
 	
+    // ids are defined as public enum in generator.h
     GeneratorShared g;    
     if (q == ID_Constant) {
         g = ConstantShared(new Constant(gc));
@@ -85,8 +91,8 @@ GeneratorShared  Generator :: make_with_dimension(GeneratorID q,
     else if (q == ID_Add) {
         g = AddShared(new Add(gc));    
     }
-    else if (q == ID_Buffer) {
-        g = BufferShared(new Buffer(gc));    
+    else if (q == ID_BufferFile) {
+        g = BufferFileShared(new BufferFile(gc));    
     }	
     else {
         throw std::invalid_argument("no matching GeneratorID: " + q);
@@ -112,7 +118,7 @@ Generator :: Generator(GeneratorConfigShared gc)
     _input_parameter_count(0), 	
     _dimension_is_resizable(true), 
     _frame_size_is_resizable(false), 	
-    _frame_count(0), 	
+    _render_count(0), 	
 	output(NULL),
     _generator_config(gc) {
     //std::cout << "Generator (1 arg): Constructor" << std::endl;
@@ -220,7 +226,7 @@ void Generator :: _update_for_new_input() {
     }
 }
 
-void Generator :: _render_inputs(FrameCountType f) {
+void Generator :: _render_inputs(RenderCountType f) {
     // for each of the inputs, need to render up to this frame
     // this is "pulling" lower-level values up to date
     // this seems somewhat wasteful as in most cases we just will be advancing by 1 more than the previous frame count value 
@@ -241,9 +247,9 @@ void Generator :: _render_inputs(FrameCountType f) {
 // public methods
 
 
-void Generator :: render(FrameCountType f) {
+void Generator :: render(RenderCountType f) {
     // this is a dummy render method just for demonstartion
-    _frame_count += 1;
+    _render_count += 1;
 }
 
 
@@ -264,6 +270,50 @@ void Generator :: set_dimension(FrameDimensionType d) {
     }
     // when we set the dimension, should we set it for inputs?
 }
+
+SampleType Generator :: get_output_abs_average() const {
+    SampleType sum(0);
+    for (OutputSizeType i=0; i < _output_size; ++i) {
+        sum += fabs(output[i]);
+    }
+    return sum / _output_size;
+}
+
+SampleType Generator :: get_output_average(FrameDimensionType d) const {
+    // if d is zero, get all dimensions, otherwise, just get rquested dimension (i.e., 2d gets vector pos 1
+	if (d > _frame_dimension) {
+		throw std::invalid_argument("a dimension greater than the number available has been requested");
+	}	
+    VFrameSizeType dims; 
+    OutputSizeType count(0); 
+    
+	if (d == 0) {
+        // this makes a copy
+        dims = _dimension_offsets;  // do all 
+        count = _output_size; // will be complete size
+    }
+    else {
+        // need to request from 1 less than submitted positio, as dim 0 is the first dimension; we know tha td is greater tn zero
+        FrameDimensionType dPos = d - 1;
+        if (dPos >= _dimension_offsets.size()) {
+            // this should not happend due to check above
+            throw std::invalid_argument("requested dimension is greater than that supported");
+        }
+        // just store the start position in the output for the dimension requested
+        dims.push_back(_dimension_offsets[dPos]);
+        count = _frame_size; // will be one frame size
+    }
+    SampleType sum(0);    
+    // get average of one dim or all 
+    for (VFrameSizeType::const_iterator i=dims.begin(); i!=dims.end(); ++i) {
+        // from start of dim to 1 less than frame plus start
+        for (OutputSizeType j=(*i); j < (*i) + _frame_size; ++j) {
+            sum += output[j];
+        }
+    }
+    return sum / count; // cast count to 
+}
+
 
 void Generator :: set_frame_size(FrameSizeType f) {
     // only change if different; assume already created
@@ -293,7 +343,7 @@ void Generator :: reset() {
         output[i] = 0.0; // set to zero; float or int?
     }
     // always reset frame count?
-    _frame_count = 0;
+    _render_count = 0;
 }
 
 //..............................................................................
@@ -310,7 +360,7 @@ void Generator :: print_output() {
     // provide name of generator first by dereferencing this
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
     
-    std::cout << *this << " Output frame @" << _frame_count << ": ";
+    std::cout << *this << " Output frame @" << _render_count << ": ";
     for (OutputSizeType i=0; i<_output_size; ++i) {
         if (i % _frame_size == 0) {
             std::cout << std::endl << space1;        
@@ -375,7 +425,7 @@ void Generator :: plot_output_to_temp_fp(bool open) {
 
 
 //..............................................................................
-// loading writing output
+// loading and writing output
 
 void Generator :: write_output_to_vector(VSampleType& vst) const {
     vst.clear(); // may not be necessary, but insures consistancy
@@ -385,10 +435,22 @@ void Generator :: write_output_to_vector(VSampleType& vst) const {
     }
 }
 
+void Generator :: write_output_to_fp(const std::string& fp, 
+                                    FrameDimensionType d) const {
+    throw std::domain_error("not implemented on base class");                                    
+}
+
+
 
 void Generator :: set_output_from_array(SampleType* v, OutputSizeType s, 
 								FrameDimensionType ch, bool interleaved){
 	// caller is responsible for releasing called array
+    
+	if (s < 1) {
+		throw std::domain_error(
+            "the supplied vector must have size greater than 0");
+	}	
+    
 	// TODO: add method to do both of these at the same time: set_frame_size_and_or_dimension
 	bool reset_needed(true); 
 	if (_frame_size_is_resizable) {
@@ -400,6 +462,7 @@ void Generator :: set_output_from_array(SampleType* v, OutputSizeType s,
 		set_dimension(ch);
 		reset_needed = false;		
 	}
+    
 	// must reset values to zero (if not done above) as s may be smaller than outputsize, and we would get mixed content
 	if (reset_needed) reset(); 
 
@@ -412,6 +475,8 @@ void Generator :: set_output_from_array(SampleType* v, OutputSizeType s,
 		ch = _frame_dimension;
 	}
 	
+//    std::cout << "set_output_from_array: ch: " << (int)ch << " s: " << s << " output size: " << get_output_size() << " frame size: " << get_frame_size() << " _dimension_offsets[0]] " << (int)_dimension_offsets[0] << "_dimension_offsets[1]] " << (int)_dimension_offsets[1]  << std::endl;
+    
 	// assuming interleaved source to non-inter dest
 	FrameDimensionType j(0);
 	OutputSizeType i(0);
@@ -447,6 +512,13 @@ void Generator :: set_output_from_vector(const VSampleType& vst,
 		
 }
 
+
+void Generator :: set_output_from_fp(const std::string& fp) {
+    // vitual method overridden in BufferFile (so as to localize use of libsndfile
+    // an exception to call on base class
+    throw std::domain_error("not implemented on base class");
+
+}
 
 //..............................................................................
 // parameter translating
@@ -577,11 +649,11 @@ void Constant :: reset() {
         v += *j;
     }
     // do not need to partion by diminsons
-    for (int i=0; i<get_output_size(); ++i) {
+    for (OutputSizeType i=0; i<get_output_size(); ++i) {
         output[i] = v; // set to the value
     }
     // always reset frame count?
-    _frame_count = 0;
+    _render_count = 0;
 }
 
 void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
@@ -605,9 +677,9 @@ void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
     }
 }
 
-void Constant :: render(FrameCountType f) {
+void Constant :: render(RenderCountType f) {
     // do not need to iterate, as the output array always stores the proper values
-    _frame_count = f;
+    _render_count = f;
 }
 
 
@@ -674,7 +746,7 @@ void Add :: init() {
 }
 
 
-void Add :: render(FrameCountType f) {
+void Add :: render(RenderCountType f) {
     FrameSizeType i;
     ParameterIndexType j;
     
@@ -683,7 +755,7 @@ void Add :: render(FrameCountType f) {
 	// output size is private, so must get once per render call; if this is a performance problem can expose output size
     OutputSizeType output_size = get_output_size();
 	
-    while (_frame_count < f) {
+    while (_render_count < f) {
         // calling render inputs updates the output of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);        
         
@@ -706,37 +778,113 @@ void Add :: render(FrameCountType f) {
             }
             output[i] = _sum_opperands; 
         }
-        _frame_count += 1;
+        _render_count += 1;
     }    
 }
 
 
 
 
-
-
 //------------------------------------------------------------------------------
-Buffer :: Buffer(GeneratorConfigShared gc) 
+BufferFile :: BufferFile(GeneratorConfigShared gc) 
 	// must initialize base class with passed arg
 	: Generator(gc) {
-	_class_name = "Buffer";
+	_class_name = "BufferFile";
 	_frame_size_is_resizable = true; // this is the only difference
-	// we can require this to be set at init; then, on import, handle how we map this
-	_dimension_is_resizable = false; 
+    
+	// dimension is resizable not because of embedded generators, but because we will always read in all channels from an audio file; 
+	_dimension_is_resizable = true; 
 }
 
-Buffer :: ~Buffer() {
+BufferFile :: ~BufferFile() {
 }
 
-void Buffer :: init() {
+void BufferFile :: init() {
     // the int routie must configure the names and types of parameters
-    std::cout << *this << " Buffer::init()" << std::endl;
+    std::cout << *this << " BufferFile::init()" << std::endl;
     // call base init, allocates and resets()
     Generator::init();    
     // register some parameters: none to register here
 }
 
 
+void BufferFile :: write_output_to_fp(const std::string& fp, 
+                                    FrameDimensionType d) const {
+    // default is d is 0
+    // if want ch 2 of stereo, d is 2
+    if (d > get_dimension()) {
+        // this should not happend due to check above
+        throw std::invalid_argument("requested dimension is greater than that supported");
+    }
+    // can select format here
+	int format = SF_FORMAT_AIFF | SF_FORMAT_PCM_16;
+                                    
+    VFrameSizeType dims;     
+    OutputSizeType count(0);
+    
+    FrameDimensionType reqDim(1); // one if requested a specific dim
+    if (d==0) {
+        reqDim = get_dimension(); // number of dims
+        dims = _dimension_offsets; // copy                                                                              
+        count = get_output_size();        
+    } 
+    else { // just write a single dim specified 
+        FrameDimensionType dPos = d - 1;
+        if (dPos >= _dimension_offsets.size()) {
+            // this should not happen due to check above
+            throw std::invalid_argument("requested dimension is greater than that supported");
+        }
+        dims.push_back(_dimension_offsets[dPos]);    
+        count = get_frame_size();
+    }
+
+    // TODO: sampling rate needs to come from environment?
+    FrameSizeType sr(44100);
+	SndfileHandle outfile(fp, SFM_WRITE, format, reqDim, sr);
+	if (not outfile){
+        throw std::bad_alloc();    
+    }
+
+    double* v = new SampleType[count];
+	if (not v) {
+        throw std::bad_alloc();    
+    }
+
+    OutputSizeType i(0);
+    OutputSizeType j(0);
+    
+    // interleave dimensions if more than one requested
+    // iterate over frame size; for each frame, we will write that many dimensiosn
+    for (i = 0; i < get_frame_size(); ++i) {
+        for (VFrameSizeType::const_iterator p = dims.begin(); 
+            p != dims.end(); ++p) {
+            // if we are stereo, for each frame point we write two points, one at each offset position
+            v[j] = output[i + (*p)];
+            ++j;
+        }
+    }
+    // TODO: j should equal count, check
+    outfile.write(v, count);
+    delete[] v;
+    
+}
+
+void BufferFile :: set_output_from_fp(const std::string& fp) {
+    // vitual method overridden in BufferFile (so as to localize use of libsndfile
+    // an exception to call on base class
+    std::cout << *this << ": set_output_from_fp" << std::endl;
+
+    // libsndfile nomenclature is different than used here: For a sound file with only one channel, a frame is the same as a item (ie a single sample) while for multi channel sound files, a single frame contains a single item for each channel.
+	SndfileHandle sh(fp);
+    // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array
+    OutputSizeType s(sh.frames() * sh.channels());
+    double* v = new double[s];
+    sh.readf(v, sh.frames());
+    // will resize frame/dim
+    set_output_from_array(v, s, sh.channels());
+    delete[] v;
+
+}
 
 
 

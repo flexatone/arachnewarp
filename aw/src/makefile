@@ -7,7 +7,7 @@ CC=g++
 CFLAGS=-c -Wall 
 
 # this is the text ececutable
-CFLAGS_TEST=-lboost_filesystem -lboost_system -lboost_unit_test_framework -Wall
+CFLAGS_TEST=-lboost_filesystem -lboost_system -lboost_unit_test_framework -lsndfile -Wall
 
 # had to remove -std=c++0x because cannot get gcc4.4 on macos yet
 

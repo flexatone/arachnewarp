@@ -8,7 +8,7 @@
 #include <pwd.h>
 
 
-
+// Anything that includes common will need to include -l boost_filesystem -l boost_system to run the Environment code here
 #include <boost/filesystem.hpp>
 
 

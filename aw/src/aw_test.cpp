@@ -1,4 +1,4 @@
-// g++ aw_test.cpp aw_array_map_test.cpp aw_array_map.cpp aw_common_test.cpp  aw_common.cpp -lboost_unit_test_framework -std=c++0x -Wall -o aw_test
+// g++ aw_test.cpp aw_array_map_test.cpp aw_array_map.cpp aw_common_test.cpp  aw_common.cpp -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile  -Wall -o aw_test
 
 
 

@@ -107,11 +107,9 @@ class GeneratorConfig {
 
 
 //==============================================================================
-// Generator
-
+//! Generator class. Base class of all Generators. 
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
-
 class Generator {
 
     public://-------------------------------------------------------------------    
@@ -151,7 +149,7 @@ class Generator {
     bool _frame_size_is_resizable;	
                             
     //! The number of frames that have passed since the last reset. Protected because render() and reset() routines need to alter this. 
-    FrameCountType _frame_count;
+    RenderCountType _render_count;
 	
     //! The main storage for ParameterTypeShared instances. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
     std::tr1::unordered_map<ParameterIndexType, 
@@ -164,8 +162,7 @@ class Generator {
     VVGenShared _inputs;	
 	
 	//! A vector of output offsets, to be used when iterating over dimension and incorporating interleaved or non-interleaved presentation of the output. This must be updated after every resizing, as dimension and frame size may have changed. This is protected because subclass methods may want to use this structure (but the should not change it)
-	VFrameDimensionType _dimension_offsets; 
-
+	VFrameSizeType _dimension_offsets; 
 
     public://-------------------------------------------------------------------
 
@@ -173,13 +170,12 @@ class Generator {
     enum GeneratorID {
         ID_Constant,    
         ID_Add,
-        ID_Buffer,		
+        ID_BufferFile,		
     };
         
     //! A linear array of samples, which may include multiple dimensions in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
     SampleType* output;	
     
-
     private://------------------------------------------------------------------   
 	//! Store the GeneratorConfig instance. This also stores a handle to shared Environment in stance. 
     GeneratorConfigShared _generator_config;
@@ -201,7 +197,7 @@ class Generator {
     void _update_for_new_input();
     
     //! Call the render method on all stored inputs. This is done once for each render call; this calls each  input Generator's render() method. This means that during render() calls, _render_inputs() does not need to be called. 
-    inline void _render_inputs(FrameCountType f);
+    inline void _render_inputs(RenderCountType f);
 
     public://-------------------------------------------------------------------
 	//! Factory for all Generators that creates a  Generator with a dimension. Calls init() method. 
@@ -231,6 +227,12 @@ class Generator {
 
     //! Return the the output size
     FrameSizeType get_output_size() const {return _output_size;};
+    
+    //! Get the average value of all output values. 
+    SampleType get_output_abs_average() const;
+
+    //! Get the average of single dimension of output. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
+    SampleType get_output_average(FrameDimensionType d) const;
 
     //! Return a Boolean if this Generator has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
@@ -259,7 +261,7 @@ class Generator {
     virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
 
     //! Render the requested frame if not already rendered. This is virtual because every Generator renders in a different way. 
-    virtual void render(FrameCountType f); 
+    virtual void render(RenderCountType f); 
 
 	//! Create a plot at a temporary file path. Another method should take a string to write this file somewhere. 
 	void plot_output_to_temp_fp(bool open=true);
@@ -269,6 +271,10 @@ class Generator {
 	
     //! Load the output into a passed-in vector. The vector is cleared before loading. 
     void write_output_to_vector(VSampleType& vst) const;
+
+    //! Write out all outpout to the provided file path. If this is a BufferFile, this can be used to write an audio file.
+    virtual void write_output_to_fp(const std::string& fp, 
+                                    FrameDimensionType d=0) const;
 	
 	//! Set the output from an array. 
 	void set_output_from_array(SampleType* v, OutputSizeType s, 
@@ -279,7 +285,8 @@ class Generator {
 								FrameDimensionType ch, bool interleaved=true);
 
 
-
+    //! If we are in a BufferFile class, this method loads a complete file path to an audio file into the outpout of this Generator. 
+    virtual void set_output_from_fp(const std::string& fp);
 
 	// parameter ..............................................................    
     //! Return the number of parameters; this is not the same as the number of Generators, as each parameter may have 1 or more Generators
@@ -329,8 +336,8 @@ class Constant: public Generator {
     virtual void init();	
     virtual void reset();
 	
-	//! This overridden method needs only increment the _frame_count, as the output array is set when reset() is called. 
-    virtual void render(FrameCountType f); 	
+	//! This overridden method needs only increment the _render_count, as the output array is set when reset() is called. 
+    virtual void render(RenderCountType f); 	
 	
 	//! This derived function is necessary to handle displaying internal input components.
 	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
@@ -369,29 +376,40 @@ class Add: public Generator {
     virtual void init();    
 		
 	//! Render addition. 
-    virtual void render(FrameCountType f); 	
+    virtual void render(RenderCountType f); 	
 };
 
 
+
+
 //==============================================================================
-class Buffer;
-typedef std::tr1::shared_ptr<Buffer> BufferShared;
-class Buffer: public Generator {
+//! A BufferFile has the ability to load its outpout to and from the file system. 
+
+class BufferFile;
+typedef std::tr1::shared_ptr<BufferFile> BufferFileShared;
+class BufferFile: public Generator {
 
     private://------------------------------------------------------------------
     //ParameterIndexType _input_index_opperands;    
     //SampleType _sum_opperands;
 
     public://-------------------------------------------------------------------
-    explicit Buffer(GeneratorConfigShared);
+    explicit BufferFile(GeneratorConfigShared);
 	
-    ~Buffer();
+    ~BufferFile();
 
     virtual void init();    
 		
-	// Rendering a Buffer is not necessary 
-    //virtual void render(FrameCountType f); 	
+    //! Write to a file given dimensions selections.
+    virtual void write_output_to_fp(const std::string& fp, 
+                                    FrameDimensionType d=0) const;
+        
+    //! This overridden method makes the usage of libsndfile to read in a file. 
+    virtual void set_output_from_fp(const std::string& fp);
+        
 };
+
+
 
 
 
@@ -412,7 +430,7 @@ class Buffer: public Generator {
     /*virtual void init();    */
 		
 	/*//! Render addition. */
-    /*virtual void render(FrameCountType f); 	*/
+    /*virtual void render(RenderCountType f); 	*/
 /*};*/
 
 
