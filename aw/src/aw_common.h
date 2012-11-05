@@ -27,7 +27,7 @@ typedef double SampleType; // sample value type
 
 // frame size type: probadbly under 10,000, 0 to 65535
 // if we store complete audio files in a frame, this will need to be bigger
-typedef std::tr1::uint16_t FrameSizeType;
+typedef std::tr1::uint32_t FrameSizeType;
 
 //! Output size. Was uint16_t, but for handling files was increased to uint32_t
 typedef std::tr1::uint32_t OutputSizeType;
@@ -36,13 +36,13 @@ typedef std::tr1::uint32_t OutputSizeType;
 typedef std::tr1::uint8_t FrameDimensionType; 
 
 //! A vector of frame dimension types. This is used for offsets into the output.
-typedef std::vector<FrameDimensionType> VFrameDimensionType;
+typedef std::vector<FrameSizeType> VFrameSizeType;
 
 //! A small unsigned interger forf specialized cases. 
 typedef std::tr1::uint8_t UINT8; 
 
 //! Each Generator counts the number of frames that have passed; this number needs to be very large and overflow gracefully. 
-typedef std::tr1::uint64_t FrameCountType; 
+typedef std::tr1::uint64_t RenderCountType; 
 
 // never have more thean 200 parameter types
 typedef std::tr1::uint8_t ParameterIndexType; 

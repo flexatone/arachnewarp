@@ -1,4 +1,4 @@
-// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -Wall -o aw_generator_test
+// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_test
 
 // -std=c++0x
 
@@ -369,11 +369,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 	// test auto constant creation when adding a sample type
     
 	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-							aw::Generator::ID_Buffer, 1);
+							aw::Generator::ID_BufferFile, 1);
     BOOST_CHECK_EQUAL(g1->get_output_size(), 64);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
     BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
-    BOOST_CHECK_EQUAL(g1->dimension_is_resizable(), false);
+    BOOST_CHECK_EQUAL(g1->dimension_is_resizable(), true);
 
 	g1->set_frame_size(743);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 743);
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 
 	// 2d version
 	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
-							aw::Generator::ID_Buffer, 2);
+							aw::Generator::ID_BufferFile, 2);
 	g2->set_frame_size(200);
     BOOST_CHECK_EQUAL(g2->get_frame_size(), 200);
     BOOST_CHECK_EQUAL(g2->get_output_size(), 400);
@@ -395,13 +395,42 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
     BOOST_CHECK_EQUAL(g2->get_frame_size(), 40);
     BOOST_CHECK_EQUAL(g2->get_output_size(), 80);
 	// cannot do this
-    BOOST_REQUIRE_THROW(g2->set_dimension(30), std::domain_error);
 	
+    
 }
 
 
 
-
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
+	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_BufferFile, 1);
+                            
+    std::string s("12518-sk1Kick.aif");
+    g1->set_output_from_fp(s);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 2641);
+    BOOST_CHECK_EQUAL(g1->get_output_size(), 2641);
+    
+    //g1->plot_output_to_temp_fp();
+//    
+//    // just checking that averae values are approximate
+//    //std::cout << g1->get_output_abs_average() << std::endl;
+    BOOST_CHECK_CLOSE(g1->get_output_abs_average(), 0.16651, .001);
+//    //g1->print_output();
+    
+    std::string s2("testStereo1.aif");
+    g1->set_output_from_fp(s2);
+    
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 888);
+    BOOST_CHECK_EQUAL(g1->get_output_size(), 1776);
+    // check one dim at a time
+    // left is all pos, right is all neg
+    BOOST_CHECK_CLOSE(g1->get_output_average(1),  0.460886, .0001);
+    BOOST_CHECK_CLOSE(g1->get_output_average(2), -0.484650, .0001);
+    
+    BOOST_CHECK_CLOSE(g1->get_output_average(0), -0.011881922816371,  .001);
+    //g1->plot_output_to_temp_fp();
+    
+}
 
 
 
