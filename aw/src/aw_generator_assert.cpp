@@ -1,4 +1,5 @@
-// g++ aw_generator_assert.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -l boost_filesystem -l boost_system -Wall -o aw_generator_assert
+// g++ aw_generator_assert.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
+
 
 #include <cassert>
 
@@ -66,7 +67,7 @@ bool test_3() {
 	// can create the table subclass
     
    	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-		aw::Generator::ID_Buffer, 3);
+		aw::Generator::ID_BufferFile, 3);
 
 	aw::Generator::VSampleType v;
 	for (std::size_t i=0; i < 120; ++i) {
@@ -85,7 +86,7 @@ bool test_3() {
 int main() {
 	// TODO: read command line args to support selecting test by name
 
-    assert(test_1() & test_2() & test_3());
+    assert(test_1() && test_2() && test_3());
     
 }
 

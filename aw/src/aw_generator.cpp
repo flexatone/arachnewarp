@@ -445,7 +445,6 @@ void Generator :: write_output_to_fp(const std::string& fp,
 void Generator :: set_output_from_array(SampleType* v, OutputSizeType s, 
 								FrameDimensionType ch, bool interleaved){
 	// caller is responsible for releasing called array
-    
 	if (s < 1) {
 		throw std::domain_error(
             "the supplied vector must have size greater than 0");
@@ -790,8 +789,8 @@ BufferFile :: BufferFile(GeneratorConfigShared gc)
 	// must initialize base class with passed arg
 	: Generator(gc) {
 	_class_name = "BufferFile";
-	_frame_size_is_resizable = true; // this is the only difference
-    
+	// this is the unique difference of the BufferFile class 
+    _frame_size_is_resizable = true;
 	// dimension is resizable not because of embedded generators, but because we will always read in all channels from an audio file; 
 	_dimension_is_resizable = true; 
 }
@@ -880,7 +879,7 @@ void BufferFile :: set_output_from_fp(const std::string& fp) {
     OutputSizeType s(sh.frames() * sh.channels());
     double* v = new double[s];
     sh.readf(v, sh.frames());
-    // will resize frame/dim
+    // this call will resize frame/dim
     set_output_from_array(v, s, sh.channels());
     delete[] v;
 
