@@ -81,7 +81,7 @@ void Environment :: _load_defaults() {
     }
 }
 
-//! This returns a file name used for temporary plots. This retruns a string for easier compatibility with clients.
+//! This returns a file name used for temporary plots. This returns a string for easier compatibility with clients.
 std::string Environment :: get_fp_plot(std::string name) const {
     // this might read from a file or do other configurations
     return (_temp_directory / name).string();

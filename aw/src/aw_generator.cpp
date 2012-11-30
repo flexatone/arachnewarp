@@ -36,9 +36,24 @@ std::ostream& operator<<(std::ostream& output, const ParameterType& pt) {
 ParameterTypeValue :: ParameterTypeValue() {
     _class_name = "ParameterTypeValue";
 }
-
 ParameterTypeValue :: ~ParameterTypeValue() {
 }
+
+//------------------------------------------------------------------------------
+ParameterTypeFrequency :: ParameterTypeFrequency() {
+    _class_name = "ParameterTypeFrequency";
+}
+ParameterTypeFrequency :: ~ParameterTypeFrequency() {
+}
+
+//------------------------------------------------------------------------------
+ParameterTypePhase :: ParameterTypePhase() {
+    _class_name = "ParameterTypePhase";
+}
+ParameterTypePhase :: ~ParameterTypePhase() {
+}
+
+
 
 
 
@@ -94,10 +109,13 @@ GeneratorShared  Generator :: make_with_dimension(GeneratorID q,
     else if (q == ID_BufferFile) {
         g = BufferFileShared(new BufferFile(gc));    
     }	
+    else if (q == ID_Phasor) {
+        g = PhasorShared(new Phasor(gc));    
+    }
     else {
         throw std::invalid_argument("no matching GeneratorID: " + q);
     }
-    // automatically call init; this will subclass init, which calls baseclass init
+    // automatically call init; this will call subclass init, which calls baseclass init
     g->init();
     return g;
 }
@@ -824,7 +842,7 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
     FrameDimensionType reqDim(1); // one if requested a specific dim
     if (d==0) {
         reqDim = get_dimension(); // number of dims
-        dims = _dimension_offsets; // copy                                                                              
+        dims = _dimension_offsets; //copy         
         count = get_output_size();        
     } 
     else { // just write a single dim specified 
@@ -885,6 +903,56 @@ void BufferFile :: set_output_from_fp(const std::string& fp) {
 
 }
 
+
+
+
+
+
+//------------------------------------------------------------------------------
+Phasor :: Phasor(GeneratorConfigShared gc) 
+	// must initialize base class with passed arg
+	: Generator(gc)
+	//, 
+	//_input_index_opperands(0), 
+	//_sum_opperands(0) 
+	{
+	_class_name = "Phasor"; 
+}
+
+Phasor :: ~Phasor() {
+}
+
+void Phasor :: init() {
+    // the int routie must configure the names and types of parameters
+    std::cout << *this << " Phasor::init()" << std::endl;
+    // call base init, allocates and resets()
+    Generator::init();    
+    // register some parameters
+    aw::ParameterTypeFrequencyShared pt1 = aw::ParameterTypeFrequencyShared(new 
+                                       aw::ParameterTypeFrequency);
+    pt1->set_instance_name("Frequency");
+    _register_input_parameter_type(pt1);
+	
+	
+    aw::ParameterTypePhaseShared pt2 = aw::ParameterTypePhaseShared(new 
+                                       aw::ParameterTypePhase);
+    pt2->set_instance_name("Phase");
+    _register_input_parameter_type(pt2);	
+	
+}
+
+
+void Phasor :: render(RenderCountType f) {
+
+    OutputSizeType output_size = get_output_size();
+	
+    while (_render_count < f) {
+        // calling render inputs updates the output of all inputs by calling their render functions; after doing so, the outputs are ready for reading
+        _render_inputs(f);        
+        
+        _render_count += 1;
+    }    
+}
 
 
 
