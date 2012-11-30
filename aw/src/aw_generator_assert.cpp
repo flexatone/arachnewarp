@@ -34,7 +34,7 @@ bool test_1() {
 
 
 bool test_2() {
-	// can creat the table subclass
+	// can create the table subclass
     
     // test resizing
     
@@ -81,12 +81,22 @@ bool test_3() {
 
 }
 
+bool test_4() {
+	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_BufferFile, 1);	
+    std::string s("12518-sk1Kick.aif");
+    g1->set_output_from_fp(s);	
+    g1->write_output_to_fp("testOutput.aif");	
+	return true;
+}
 
 
 int main() {
 	// TODO: read command line args to support selecting test by name
 
-    assert(test_1() && test_2() && test_3());
+    //assert(test_1() && test_2() && test_3());
+	
+	test_4();
     
 }
 

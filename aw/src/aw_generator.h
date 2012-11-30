@@ -54,6 +54,29 @@ class ParameterTypeValue: public ParameterType {
     virtual ~ParameterTypeValue();
 };
 
+//! A subclass of ParameterType that specifies a frequency; this is assumed presently to be in Hertz.
+// TODO: provide a RateConverter that permits specifiying values in a variety of different ways. 
+class ParameterTypeFrequency;
+typedef std::tr1::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyShared;
+class ParameterTypeFrequency: public ParameterType {
+
+    public://-------------------------------------------------------------------
+    explicit ParameterTypeFrequency();
+    virtual ~ParameterTypeFrequency();
+};
+
+//! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
+// TODO: phase can be provided in floating point values or degrees; figure out how to handle this
+class ParameterTypePhase;
+typedef std::tr1::shared_ptr<ParameterTypePhase> ParameterTypePhaseShared;
+class ParameterTypePhase: public ParameterType {
+
+    public://-------------------------------------------------------------------
+    explicit ParameterTypePhase();
+    virtual ~ParameterTypePhase();
+};
+
+
 
 //==============================================================================
 // Dimensionality
@@ -171,6 +194,7 @@ class Generator {
         ID_Constant,    
         ID_Add,
         ID_BufferFile,		
+        ID_Phasor,				
     };
         
     //! A linear array of samples, which may include multiple dimensions in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
@@ -400,11 +424,11 @@ class BufferFile: public Generator {
 
     virtual void init();    
 		
-    //! Write to a file given dimensions selections.
+    //! Write to an audio file to given the ouput file path. The optional FrameDimensionType argument can be used to specify a single dimension of many to write. If FrameDimensionType is 0, all dimensions are written.
     virtual void write_output_to_fp(const std::string& fp, 
                                     FrameDimensionType d=0) const;
         
-    //! This overridden method makes the usage of libsndfile to read in a file. 
+    //! Set the output of this Generator to the content of an audio file. This overridden method makes the usage of libsndfile to read in a file. 
     virtual void set_output_from_fp(const std::string& fp);
         
 };
@@ -414,24 +438,26 @@ class BufferFile: public Generator {
 
 
 //==============================================================================
-/*class Phasor;*/
-/*typedef std::tr1::shared_ptr<Phasor> PhasorShared;*/
-/*class Phasor: public Generator {*/
+//! The phasor has a ramp from 0 to 1 for each dimension defined. In the case of multidimesional frequencies and phases, these values are summed. 
 
-    /*private://------------------------------------------------------------------*/
-    /*//ParameterIndexType _input_index_opperands;    */
-    /*//SampleType _sum_opperands;*/
+class Phasor;
+typedef std::tr1::shared_ptr<Phasor> PhasorShared;
+class Phasor: public Generator {
 
-    /*public://-------------------------------------------------------------------*/
-    /*explicit Phasor(GeneratorConfigShared);*/
+    private://------------------------------------------------------------------
+    //ParameterIndexType _input_index_opperands;    
+    //SampleType _sum_opperands;
+
+    public://-------------------------------------------------------------------
+    explicit Phasor(GeneratorConfigShared);
 	
-    /*~Phasor();*/
+    ~Phasor();
 
-    /*virtual void init();    */
+    virtual void init();    
 		
-	/*//! Render addition. */
-    /*virtual void render(RenderCountType f); 	*/
-/*};*/
+	//! Render the phasor. 
+    virtual void render(RenderCountType f);
+};
 
 
 

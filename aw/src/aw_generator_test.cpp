@@ -184,6 +184,43 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
+	// test auto constant creation when adding a sample type
+    
+	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_Constant, 2);
+	g1->set_parameter_by_index(0, 2); 							
+	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_Constant, 3);	
+	g2->set_parameter_by_index(0, 3); 							
+							
+	// make a 1 dimensional adder
+	aw::GeneratorShared g3 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_Add, 1);
+	// add opperands
+	g3->set_parameter_by_index(0, g1); 							
+	g3->add_parameter_by_index(0, g2); 							
+		
+	// must expand to 3d
+    BOOST_CHECK_EQUAL(g3->get_dimension(), 3);
+
+	g3->render(1);	
+	g3->print_inputs();
+	g3->print_output();
+	
+	// this results are based on non-interleaved output presentation 
+	// sum in dims 1 and 2 are first two opperands
+    BOOST_CHECK_CLOSE(g3->output[0], 5, .0000001);
+	// at 2 dim boundary
+    BOOST_CHECK_CLOSE(g3->output[0+(g3->get_frame_size())], 5, .0000001);
+	// at 3 dim boundary value is different because mixed dim of inputs
+    BOOST_CHECK_CLOSE(g3->output[0+(g3->get_frame_size()*2)], 3, .0000001);
+
+}
+
+
+
+
 BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
 	// test auto constant creation when adding a sample type
     
@@ -327,41 +364,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_2) {
 
 
 
-BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
-	// test auto constant creation when adding a sample type
-    
-	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-							aw::Generator::ID_Constant, 2);
-	g1->set_parameter_by_index(0, 2); 							
-	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
-							aw::Generator::ID_Constant, 3);	
-	g2->set_parameter_by_index(0, 3); 							
-							
-	// make a 1 dimensional adder
-	aw::GeneratorShared g3 = aw::Generator::make_with_dimension(
-							aw::Generator::ID_Add, 1);
-	// add opperands
-	g3->set_parameter_by_index(0, g1); 							
-	g3->add_parameter_by_index(0, g2); 							
-		
-	// must expand to 3d
-    BOOST_CHECK_EQUAL(g3->get_dimension(), 3);
-
-	g3->render(1);	
-	g3->print_inputs();
-	g3->print_output();
-	
-	// this results are based on non-interleaved output presentation 
-	// sum in dims 1 and 2 are first two opperands
-    BOOST_CHECK_CLOSE(g3->output[0], 5, .0000001);
-	// at 2 dim boundary
-    BOOST_CHECK_CLOSE(g3->output[0+(g3->get_frame_size())], 5, .0000001);
-	// at 3 dim boundary value is different because mixed dim of inputs
-    BOOST_CHECK_CLOSE(g3->output[0+(g3->get_frame_size()*2)], 3, .0000001);
-
-}
-
-
 
 
 
@@ -404,7 +406,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
 	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
 							aw::Generator::ID_BufferFile, 1);
-                            
+	// testing setting the output from a file path
+	
     std::string s("12518-sk1Kick.aif");
     g1->set_output_from_fp(s);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 2641);
@@ -431,6 +434,64 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
     //g1->plot_output_to_temp_fp();
     
 }
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {    
+	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
+							aw::Generator::ID_BufferFile, 1);
+	// test round trip file reading and writing; this is good for valgrind testing as we have to create dyanmic vectors for temporary storage
+	
+    std::string s("12518-sk1Kick.aif");
+    g1->set_output_from_fp(s);	
+    g1->write_output_to_fp("testOutput.aif");	
+}
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
+	// test auto constant creation when adding a sample type
+    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+    
+    // this will automatically create constant Generators
+	//g3->add_parameter_by_index(0, 11);
+	//g3->add_parameter_by_index(0, 20);
+	
+	//g3->render(200);
+	//g3->print_output();
+	//g3->print_inputs(true);
+	
+    //BOOST_CHECK_CLOSE(g3->output[0], 31, .0000001);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
