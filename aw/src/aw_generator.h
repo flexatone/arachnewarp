@@ -161,7 +161,7 @@ class Generator {
 	//! The _output_size is derived from frame dimension times the frame size. 
     OutputSizeType _output_size;
     
-    //! Numner of inptu parameter slots used by this Generator. More than one Generator can reside in each slot. 
+    //! Number of input parameter slots used by this Generator. More than one Generator can reside in each slot. 
     ParameterIndexType _input_parameter_count;    
     
     protected://----------------------------------------------------------------
@@ -178,7 +178,7 @@ class Generator {
     std::tr1::unordered_map<ParameterIndexType, 
                             ParameterTypeShared> _input_parameter_type;	
 	
-    //! Store and update the output sizes of all inputs (a vector for each parameter type, and an OutputSizeType for each value therein); this only needs to be updated when resizing has happened in the inputs. These needs to be accessed in subclass render routines, so will be protected for now.
+    //! Store and update the output sizes of all inputs (a vector for each parameter type, and an OutputSizeType for each value therein); this only needs to be updated when resizing has happened in the inputs. This needs to be accessed in subclass render routines, so will be protected for now.
     VVOutputSize _inputs_output_size;	
 	
     //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
@@ -438,15 +438,26 @@ class BufferFile: public Generator {
 
 
 //==============================================================================
-//! The phasor has a ramp from 0 to 1 for each dimension defined. In the case of multidimesional frequencies and phases, these values are summed. 
+//! The phasor has a ramp from 0 to 1 for each dimension defined. In the case of multidimesional frequency and phase inputs, these values are summed. 
 
 class Phasor;
 typedef std::tr1::shared_ptr<Phasor> PhasorShared;
 class Phasor: public Generator {
 
     private://------------------------------------------------------------------
-    //ParameterIndexType _input_index_opperands;    
-    //SampleType _sum_opperands;
+    ParameterIndexType _input_index_frequency;    
+    ParameterIndexType _input_index_phase;    
+	
+	// TODO: these should be Vectors of size equal to frame and filled from the input
+    SampleType _sum_frequency;
+    SampleType _sum_phase;	
+	
+	// state variables used for wave calc
+	//SampleType _period_seconds;
+	SampleType _amp;	
+	SampleType _period_samples_float;		
+	RenderCountType _period_start_sample_pos;	
+	RenderCountType _abs_sample_pos;	
 
     public://-------------------------------------------------------------------
     explicit Phasor(GeneratorConfigShared);
