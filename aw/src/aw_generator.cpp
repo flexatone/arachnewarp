@@ -788,7 +788,7 @@ void Add :: render(RenderCountType f) {
 				// i may be larger than permitted on a given input; 
 				//std::cout << _inputs_output_size[_input_index_opperands][j] << std::endl;
 				if (i >= _inputs_output_size[_input_index_opperands][j]) {
-					// j is iterating across different inputs; we must jsut check the next one to add; we might find a way to mark this j value as no longer needed
+					// j is iterating across different inputs; we must just check the next one to add; we might find a way to mark this j value as no longer needed
 					continue; 
 				}
                 _sum_opperands += _inputs[_input_index_opperands][j]->output[i];
@@ -911,12 +911,13 @@ void BufferFile :: set_output_from_fp(const std::string& fp) {
 //------------------------------------------------------------------------------
 Phasor :: Phasor(GeneratorConfigShared gc) 
 	// must initialize base class with passed arg
-	: Generator(gc)
-	//, 
-	//_input_index_opperands(0), 
-	//_sum_opperands(0) 
+	: Generator(gc),
+		// TODO: initialize all variables
+		_period_start_sample_pos(0)
 	{
 	_class_name = "Phasor"; 
+	// use a fixed size, regardless of inputs (which are summed)
+	_dimension_is_resizable = false; 	
 }
 
 Phasor :: ~Phasor() {
@@ -932,24 +933,78 @@ void Phasor :: init() {
                                        aw::ParameterTypeFrequency);
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
-	
+	_input_index_frequency = 0;
 	
     aw::ParameterTypePhaseShared pt2 = aw::ParameterTypePhaseShared(new 
                                        aw::ParameterTypePhase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
-	
+	_input_index_phase = 1;	
 }
 
 
 void Phasor :: render(RenderCountType f) {
 
-    OutputSizeType output_size = get_output_size();
+	// given a frequency and a sample rate, we can calculate the number of samples per cycle
+	// 1 / fq is time in seconds
+	// sr is samples per sec
+
+    //OutputSizeType output_size = get_output_size();
+
+	// must access _frame_size ; each render is a frame worth
 	
+	// can calculate period in seconds for every change in frequency, then derive samples to predict best ending point (or just end immediately); 1 / fq. gives time. we need to do this every time fq changes as we might round differently to different discrete sample positions.
+
+	// to derive position, we store start of period in abs sample time; this cannot be negative; as we always get the current sample time when calling render, we can calc progress toward completion: 
+	// if cur_sampe > start_samp, (cur_samp - start_samp) / period_samp
+	// if we wrap around our RenderCountType, we need to get span from cur_samp to max_int, then add current value; for now, raise exception
+		
+	
+	// this does not need to be done each render call, but if so, ensure continuity
+	OutputSizeType fs = get_frame_size();
+	_abs_sample_pos = f * get_frame_size(); 		
+		
+	OutputSizeType i(0);
+		
+
     while (_render_count < f) {
         // calling render inputs updates the output of all inputs by calling their render functions; after doing so, the outputs are ready for reading
-        _render_inputs(f);        
-        
+        _render_inputs(f);
+		
+		for (i=0; i < fs; ++i) {
+			// for each frame position, must get sum across all frequency values calculated.
+			
+			// iterate over vector of Generators, get output value only for first dimension for now; could possible do this in advance 
+			_sum_frequency = 0;
+			VGenShared :: const_iterator j;
+			VGenShared vf = _inputs[_input_index_frequency];
+			for (j=vf.begin(); j!=vf.end(); ++j) {
+				// always getting the first dimension only here
+				_sum_frequency += (*j)->output[i];
+			}
+			//std::cout << "_sum_frequency: " << _sum_frequency << std::endl;
+			//_period_seconds = 1.0 / _sum_frequency; 
+			// need to round this! 
+			_period_samples_float = 44100 / _sum_frequency;
+						
+			_amp = ((_abs_sample_pos - _period_start_sample_pos) /	
+					_period_samples_float);
+
+			// if amp is at or above 1, set to zero and reset start position; this means tt the phasor will never really reach 1
+			if (_amp >= 1) {
+				_amp = 0.0;
+				_period_start_sample_pos = _abs_sample_pos; 
+			}
+			// write output in all dimensions
+			output[i] = _amp; 
+			
+			// after processing, update for next position
+			_abs_sample_pos += 1; // this might overflow!
+			
+		}
+		// can use _dimension_offsets; stores index position of start of each dimension
+		
+		        
         _render_count += 1;
     }    
 }

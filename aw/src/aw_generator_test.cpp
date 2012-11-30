@@ -458,11 +458,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
     
     // this will automatically create constant Generators
-	//g3->add_parameter_by_index(0, 11);
-	//g3->add_parameter_by_index(0, 20);
+	g1->add_parameter_by_index(0, 5512.5);
 	
-	//g3->render(200);
-	//g3->print_output();
+	g1->render(2);
+	g1->print_output();
 	//g3->print_inputs(true);
 	
     //BOOST_CHECK_CLOSE(g3->output[0], 31, .0000001);
