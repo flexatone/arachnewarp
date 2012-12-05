@@ -53,6 +53,9 @@ typedef std::tr1::uint8_t ParameterIndexType;
 SampleType  const PI(3.14159265358979323846264338);
 SampleType const PI2(3.14159265358979323846264338*2.0);
 
+//! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
+SampleType  const MIN_FQ(.00001);
+
 //! Defined for all hierarchical displays. 
 std::tr1::uint8_t const INDENT_SIZE(2);
 
@@ -67,7 +70,8 @@ const char* get_fp_home();
 //std::string gen_id_to_name(GeneratorID q);
 //GeneratorID gen_name_to_id(const std::string& q);
 
-
+//! Frequency values might swing through zero, or exceed Nyquist. This function solves this problem. 
+SampleType frequency_limiter(SampleType fq, SampleType nyquist);
 
 
 // utility classes =============================================================

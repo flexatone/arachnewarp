@@ -976,37 +976,30 @@ void Phasor :: render(RenderCountType f) {
 				// always getting the first dimension only here
 				_sum_frequency += (*j)->output[i];
 			}
-			//std::cout << "_sum_frequency: " << _sum_frequency << std::endl;
-			//_period_seconds = 1.0 / _sum_frequency; 
+
+
+			_sum_frequency = frequency_limiter(_sum_frequency, 22050);
 			// we might dither this to increase accuracy over time
 			// what about sum fq of 0?
 			_period_samples = floor((44100 / _sum_frequency) + 0.5);
 			
-			// this meeans we have exceed nyquist; we might fileter sum fq values instead of looking here at periods. 
-			if (_period_samples < 2) {
-				_period_samples = 2; 
-			}
-			// first approach was to get proportion of period complete
-			//_amp = ((_abs_sample_pos - _period_start_sample_pos) /	
-					//_period_samples_float);
-					
+			// this is not necessary b/c we are not permitting fq to go above nyquist
+			//if (_period_samples < 2) {
+				//_period_samples = 2; 
+			//}
+
 			// add amp increment to previou amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
-			//_amp_temp = _amp;
 			_amp = _amp_prev + (1.0 / (_period_samples - 1));
 
-			// if amp is at or above 1, set to zero and reset start position; this means tt the phasor will never really reach 1
+			// if amp is at or above 1, set to zero and reset start position; 
 			if (_amp > 1) {
 				_amp = 0.0;
-				//_period_start_sample_pos = _abs_sample_pos; 
 			}
 			_amp_prev = _amp;
 			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
 			
 			// write output to all dimensions; for now just writing to one
-			output[i] = _amp; 
-			
-			// after processing, update for next position
-			//_abs_sample_pos += 1; // this might overflow!
+			output[i] = _amp;
 			
 		}
 		// can use _dimension_offsets; stores index position of start of each dimension

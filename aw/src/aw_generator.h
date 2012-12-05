@@ -458,8 +458,6 @@ class Phasor: public Generator {
 	SampleType _amp_prev;		
 	
 	RenderCountType _period_samples;		
-	//RenderCountType _period_start_sample_pos;	
-	//RenderCountType _abs_sample_pos;	
 
     public://-------------------------------------------------------------------
     explicit Phasor(GeneratorConfigShared);
