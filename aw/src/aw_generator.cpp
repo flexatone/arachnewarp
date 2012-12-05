@@ -913,7 +913,9 @@ Phasor :: Phasor(GeneratorConfigShared gc)
 	// must initialize base class with passed arg
 	: Generator(gc),
 		// TODO: initialize all variables
-		_period_start_sample_pos(0)
+		_amp(0),
+		_amp_prev(1) // init amp previous to 1 so to force reset to 0 on start
+		//_period_start_sample_pos(0)
 	{
 	_class_name = "Phasor"; 
 	// use a fixed size, regardless of inputs (which are summed)
@@ -949,27 +951,19 @@ void Phasor :: render(RenderCountType f) {
 	// 1 / fq is time in seconds
 	// sr is samples per sec
 
-    //OutputSizeType output_size = get_output_size();
-
 	// must access _frame_size ; each render is a frame worth
-	
-	// can calculate period in seconds for every change in frequency, then derive samples to predict best ending point (or just end immediately); 1 / fq. gives time. we need to do this every time fq changes as we might round differently to different discrete sample positions.
-
-	// to derive position, we store start of period in abs sample time; this cannot be negative; as we always get the current sample time when calling render, we can calc progress toward completion: 
-	// if cur_sampe > start_samp, (cur_samp - start_samp) / period_samp
-	// if we wrap around our RenderCountType, we need to get span from cur_samp to max_int, then add current value; for now, raise exception
-		
-	
 	// this does not need to be done each render call, but if so, ensure continuity
 	OutputSizeType fs = get_frame_size();
-	_abs_sample_pos = f * get_frame_size(); 		
-		
+	// this is the abs positoin in this frame
+	//_abs_sample_pos = f * fs; 		
+	// this is the relative postion in this frame
 	OutputSizeType i(0);
-		
-
+	
     while (_render_count < f) {
         // calling render inputs updates the output of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);
+		
+		// at this point i could get a vector of size equal to frame size for each input and just read values from this as needed for each sample position. 		
 		
 		for (i=0; i < fs; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
@@ -984,22 +978,35 @@ void Phasor :: render(RenderCountType f) {
 			}
 			//std::cout << "_sum_frequency: " << _sum_frequency << std::endl;
 			//_period_seconds = 1.0 / _sum_frequency; 
-			// need to round this! 
-			_period_samples_float = 44100 / _sum_frequency;
-						
-			_amp = ((_abs_sample_pos - _period_start_sample_pos) /	
-					_period_samples_float);
+			// we might dither this to increase accuracy over time
+			// what about sum fq of 0?
+			_period_samples = floor((44100 / _sum_frequency) + 0.5);
+			
+			// this meeans we have exceed nyquist; we might fileter sum fq values instead of looking here at periods. 
+			if (_period_samples < 2) {
+				_period_samples = 2; 
+			}
+			// first approach was to get proportion of period complete
+			//_amp = ((_abs_sample_pos - _period_start_sample_pos) /	
+					//_period_samples_float);
+					
+			// add amp increment to previou amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
+			//_amp_temp = _amp;
+			_amp = _amp_prev + (1.0 / (_period_samples - 1));
 
 			// if amp is at or above 1, set to zero and reset start position; this means tt the phasor will never really reach 1
-			if (_amp >= 1) {
+			if (_amp > 1) {
 				_amp = 0.0;
-				_period_start_sample_pos = _abs_sample_pos; 
+				//_period_start_sample_pos = _abs_sample_pos; 
 			}
-			// write output in all dimensions
+			_amp_prev = _amp;
+			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
+			
+			// write output to all dimensions; for now just writing to one
 			output[i] = _amp; 
 			
 			// after processing, update for next position
-			_abs_sample_pos += 1; // this might overflow!
+			//_abs_sample_pos += 1; // this might overflow!
 			
 		}
 		// can use _dimension_offsets; stores index position of start of each dimension

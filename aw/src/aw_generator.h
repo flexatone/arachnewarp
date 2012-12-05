@@ -454,10 +454,12 @@ class Phasor: public Generator {
 	
 	// state variables used for wave calc
 	//SampleType _period_seconds;
-	SampleType _amp;	
-	SampleType _period_samples_float;		
-	RenderCountType _period_start_sample_pos;	
-	RenderCountType _abs_sample_pos;	
+	SampleType _amp;
+	SampleType _amp_prev;		
+	
+	RenderCountType _period_samples;		
+	//RenderCountType _period_start_sample_pos;	
+	//RenderCountType _abs_sample_pos;	
 
     public://-------------------------------------------------------------------
     explicit Phasor(GeneratorConfigShared);
