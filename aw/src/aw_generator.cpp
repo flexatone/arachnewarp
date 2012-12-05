@@ -977,16 +977,10 @@ void Phasor :: render(RenderCountType f) {
 				_sum_frequency += (*j)->output[i];
 			}
 
-
-			_sum_frequency = frequency_limiter(_sum_frequency, 22050);
 			// we might dither this to increase accuracy over time
-			// what about sum fq of 0?
-			_period_samples = floor((44100 / _sum_frequency) + 0.5);
-			
-			// this is not necessary b/c we are not permitting fq to go above nyquist
-			//if (_period_samples < 2) {
-				//_period_samples = 2; 
-			//}
+			_period_samples = floor((44100 / 
+							frequency_limiter(_sum_frequency, 22050)) + 0.5);
+			// sample period must not be 0 or 1
 
 			// add amp increment to previou amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
 			_amp = _amp_prev + (1.0 / (_period_samples - 1));

@@ -70,8 +70,15 @@ const char* get_fp_home();
 //std::string gen_id_to_name(GeneratorID q);
 //GeneratorID gen_name_to_id(const std::string& q);
 
+
 //! Frequency values might swing through zero, or exceed Nyquist. This function solves this problem. 
-inline SampleType frequency_limiter(SampleType fq, SampleType nyquist);
+// note that inline functions need to be defined in the header
+inline SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
+	// this is inlined
+	fq = fq == 0 ? MIN_FQ : fq;
+	fq = fq > nyquist ? nyquist : fq;
+	return fq < -nyquist ? -nyquist : fq;	
+}
 
 
 // utility classes =============================================================
