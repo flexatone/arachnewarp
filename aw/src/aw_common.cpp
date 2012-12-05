@@ -57,12 +57,7 @@ const char* get_fp_home() {
 
 
 
-SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
-	// this is inlined
-	fq = fq == 0 ? MIN_FQ : fq;
-	fq = fq > nyquist ? nyquist : fq;
-	return fq < -nyquist ? -nyquist : fq;	
-}
+
 
 
 //==============================================================================

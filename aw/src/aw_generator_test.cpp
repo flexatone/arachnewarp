@@ -463,10 +463,26 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 	// this is an eq of 4 samples
 	//g1->add_parameter_by_index(0, 11025.0); 
 	g1->add_parameter_by_index(0, 5512.5); // 8 samples
-	
 	g1->render(1);
-	g1->print_output();
-	//g3->print_inputs(true);
+	// cycle is 8 samples long
+    BOOST_CHECK_CLOSE(g1->output[0], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->output[4], .57142857, .00001);	
+    BOOST_CHECK_CLOSE(g1->output[7], 1, .00001);
+    BOOST_CHECK_CLOSE(g1->output[8], 0, .00001);
+	
+	//g1->print_output();
+	
+	
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+	g2->add_parameter_by_index(0, 11025.5); // 8 samples
+	g2->render(1);	
+    BOOST_CHECK_CLOSE(g2->output[0], 0, .00001);
+    BOOST_CHECK_CLOSE(g2->output[1], 0.333333333, .00001);
+    BOOST_CHECK_CLOSE(g2->output[2], 0.666666666, .00001);
+    BOOST_CHECK_CLOSE(g2->output[3], 1, .00001);
+    BOOST_CHECK_CLOSE(g2->output[4], 0, .00001);
+	
+	//g2->print_output();
 	
     //BOOST_CHECK_CLOSE(g3->output[0], 31, .0000001);
 
