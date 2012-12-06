@@ -1,4 +1,4 @@
-// g++ aw_generator_perf.cpp aw_generator.cpp aw_common.cpp aw_timer.cpp -Wall -o aw_generator_perf
+// g++ aw_generator_perf.cpp aw_generator.cpp aw_common.cpp aw_timer.cpp aw_plotter.cpp -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_perf
 
 #include <cassert>
 
@@ -14,20 +14,20 @@ int main() {
     //44100 / 128 == 345
     //44100 / 256 == 172
     
+    
     // will be initialized();
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
 
     // this will automatically create constant Generators
     aw::Timer t1("adding two constant inputs");    
-	g2->add_parameter_by_index(0, 6);
-	g2->add_parameter_by_index(0, -5);
+	g2->add_parameter_by_index(0, 0);
     std::cout << t1 << std::endl;
     
     g2->print_inputs(true);
     
-    aw::Timer t2("44100 additions");
+    aw::Timer t2("44100 phase calculations");
 	g2->render(689);
-    std::cout << t2 << std::endl;
+    std::cout << "total time for 1 second of audio: " << t2 << std::endl;
     
 	g2->print_output();
 
