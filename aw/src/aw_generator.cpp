@@ -13,8 +13,6 @@
 
 
 
-
-
 namespace aw {
 
 //==============================================================================
@@ -84,6 +82,7 @@ GeneratorConfig :: GeneratorConfig(EnvironmentShared e)
 	_init_frame_size(64),
 	_environment(e) {
     // set standard generator defaults here: 1 d, size 128
+	// what determiens what comes from environment, what comes from GenteratorConfig?
 }
 
 GeneratorConfig :: ~GeneratorConfig() {
@@ -132,7 +131,7 @@ Generator :: Generator(GeneratorConfigShared gc)
 	: _class_name("Generator"), 
 	_frame_dimension(1), 
 	_frame_size(64),
-	_output_size(1),
+	_output_size(1), // will be updated after resizing
     _input_parameter_count(0), 	
     _dimension_is_resizable(true), 
     _frame_size_is_resizable(false), 	
@@ -153,7 +152,6 @@ Generator :: ~Generator() {
 void Generator :: init() {
     // virtual method, specialzied in subclass, but the base class is explicitly called.
     //std::cout << *this << " Generator::init()" << std::endl;
-
 	// read values from GeneratorConfig
     _frame_dimension = _generator_config->get_init_frame_dimension();
     _frame_size = _generator_config->get_init_frame_size();
@@ -207,7 +205,6 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     // add vector to output size as well 
     VOutputSize vSizeInner;  
     _inputs_output_size.push_back(vSizeInner);
-    
     _input_parameter_count += 1;
 }
 
@@ -637,7 +634,6 @@ FrameDimensionType Constant :: _find_max_input_dimension(FrameDimensionType d) {
     return get_dimension();
 }
 
-
 // the int routie must configure the names and types of parameters
 void Constant :: init() {
     //std::cout << *this << " Constant::init()" << std::endl;
@@ -699,8 +695,6 @@ void Constant :: render(RenderCountType f) {
     _render_count = f;
 }
 
-
-
 void Constant :: set_parameter_by_index(ParameterIndexType i, 
                                         GeneratorShared gs) {
     throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
@@ -742,6 +736,9 @@ Add :: Add(GeneratorConfigShared gc)
 	: Generator(gc), 
 	_input_index_opperands(0), 
 	_sum_opperands(0) {
+		
+    _frame_size_is_resizable = false;		
+	_dimension_is_resizable = true; 	
 	_class_name = "Add"; 
 }
 
@@ -761,7 +758,6 @@ void Add :: init() {
     // we can store ahead our only known input for performance
     _input_index_opperands = 0; // stored for speed
 }
-
 
 void Add :: render(RenderCountType f) {
     FrameSizeType i;
@@ -946,7 +942,6 @@ void Phasor :: init() {
 
 
 void Phasor :: render(RenderCountType f) {
-
 	// given a frequency and a sample rate, we can calculate the number of samples per cycle
 	// 1 / fq is time in seconds
 	// sr is samples per sec
@@ -968,7 +963,8 @@ void Phasor :: render(RenderCountType f) {
 		for (i=0; i < fs; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
 			
-			// iterate over vector of Generators, get output value only for first dimension for now; could possible do this in advance 
+			// TODO: fill a vector for each input that sums across all inputs
+			// iterate over vector of Generators, get output value only for first dimension for now; 
 			_sum_frequency = 0;
 			VGenShared :: const_iterator j;
 			VGenShared vf = _inputs[_input_index_frequency];
@@ -992,7 +988,7 @@ void Phasor :: render(RenderCountType f) {
 			_amp_prev = _amp;
 			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
 			
-			// write output to all dimensions; for now just writing to one
+			// TODO: write output to all dimensions; for now just writing to one
 			output[i] = _amp;
 			
 		}

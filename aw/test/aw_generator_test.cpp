@@ -1,4 +1,4 @@
-// g++ aw_generator_test.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_test
+// g++ -I ../src aw_generator_test.cpp ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_test
 
 // -std=c++0x
 
@@ -408,7 +408,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
 							aw::Generator::ID_BufferFile, 1);
 	// testing setting the output from a file path
 	
-    std::string s("12518-sk1Kick.aif");
+    std::string s("../test/12518-sk1Kick.aif");
     g1->set_output_from_fp(s);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 2641);
     BOOST_CHECK_EQUAL(g1->get_output_size(), 2641);
@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
     BOOST_CHECK_CLOSE(g1->get_output_abs_average(), 0.16651, .001);
 //    //g1->print_output();
     
-    std::string s2("testStereo1.aif");
+    std::string s2("../test/testStereo1.aif");
     g1->set_output_from_fp(s2);
     
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 888);
@@ -442,7 +442,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {
 							aw::Generator::ID_BufferFile, 1);
 	// test round trip file reading and writing; this is good for valgrind testing as we have to create dyanmic vectors for temporary storage
 	
-    std::string s("12518-sk1Kick.aif");
+    std::string s("../test/12518-sk1Kick.aif");
     g1->set_output_from_fp(s);	
     g1->write_output_to_fp("testOutput.aif");	
 }
@@ -471,7 +471,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
     BOOST_CHECK_CLOSE(g1->output[8], 0, .00001);
 	
 	//g1->print_output();
-	
 	
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
 	g2->add_parameter_by_index(0, 11025.5); // 8 samples

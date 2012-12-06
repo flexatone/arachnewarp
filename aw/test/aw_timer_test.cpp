@@ -1,4 +1,4 @@
-// g++ aw_timer_test.cpp aw_timer.cpp aw_common.cpp -DSTAND_ALONE -lboost_unit_test_framework  -Wall -o aw_timer_test
+// g++ -I ../src aw_timer_test.cpp ../src/aw_timer.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework  -Wall -o aw_timer_test
 
 // -std=c++0x
 
