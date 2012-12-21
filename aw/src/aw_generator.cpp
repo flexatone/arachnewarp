@@ -216,22 +216,32 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     // add vector to output size as well 
     VOutputSize vSizeInner;  
     _inputs_output_size.push_back(vSizeInner);
+	
+	VSampleType vSampleTypeInner;
+	_summed_inputs.push_back(vSampleTypeInner);
+	
     _input_parameter_count += 1;
 }
 
 FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) {
 	// recursively find the max dimension in all inputs and their input
     // pass in max value found so far
-    FrameDimensionType dSub(1);
+	
+	// get the dim of this Generator, which might be bigger than its inputs
+    FrameDimensionType dSub(get_dimension());
+	if (dSub > d) {
+		d = dSub;
+	}
     for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
         // inputs are a vector of Generators        
         for (ParameterIndexType j=0; j<_inputs[i].size(); ++j) {
+			// if this is a Constant, it will return the constant dimensionality stored
             dSub = _inputs[i][j]->_find_max_input_dimension(d);
             if (dSub > d) {
                 d = dSub;
             }
         }
-    }    
+    }
     return d;
 }
 
@@ -269,9 +279,45 @@ void Generator :: _render_inputs(RenderCountType f) {
 }
 
 
+void Generator :: _sum_inputs() {
+	// sum all inputs for all 1 frame of each dimension, up to the max dimension found;
+	//std::cout << "_sum_inputs(): " << std::endl;
+	SampleType sum(0);
+	// iterate over each input parameter type
+    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
+		// resize to the max output size found in this input type position
+		// need the max of all values in _inputs_output_size[i]
+	    OutputSizeType maxFound(1);		
+        for (ParameterIndexType j=0; j<_inputs[i].size(); ++j) {
+			// note that if ther is a Buffer or something with a large size it could appear as being very large
+			if (_inputs_output_size[i][j] > maxFound) {
+				maxFound = _inputs_output_size[i][j];
+			}		
+		}
+		// not: we are still doing a pus_back call here; might be faster to 
+		_summed_inputs[i].clear();
+		// only call reserve() if necessary
+		if (_summed_inputs[i].capacity() != maxFound) {
+			_summed_inputs[i].reserve(maxFound);
+			// std::cout << "_sum_inputs(): reserving: " << maxFound << std::endl;			
+		}
+		// go up to the max for each input slot, but stop reading from an input when necessary
+		for (unsigned int k=0; k < maxFound; ++k) {
+			sum = 0;
+			// now iterate over each input in this slot
+			for (ParameterIndexType j=0; j<_inputs[i].size(); ++j) {
+				if (k >= _inputs_output_size[i][j]) continue;
+				// get the stored output value @k and sum it into position k
+				sum += _inputs[i][j]->output[k];
+			}	
+			// index of value at push_back is k
+			_summed_inputs[i].push_back(sum);
+		}
+	}
+}
+
 //..............................................................................
 // public methods
-
 
 void Generator :: render(RenderCountType f) {
     // this is a dummy render method just for demonstartion
@@ -742,8 +788,7 @@ Add :: Add(GeneratorConfigShared gc)
 	// must initialize base class with passed arg
 	: Generator(gc), 
 	_input_index_opperands(0), 
-	_sum_opperands(0) {
-		
+	_sum_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;		
 	_dimension_dynamics = DD_ResizableFreely; 	
 	_class_name = "Add"; 
@@ -774,10 +819,12 @@ void Add :: render(RenderCountType f) {
     FrameDimensionType len_at_num_value = _inputs[_input_index_opperands].size();
 	// output size is private, so must get once per render call; if this is a performance problem can expose output size
     OutputSizeType output_size = get_output_size();
-	
+		
     while (_render_count < f) {
         // calling render inputs updates the output of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);        
+        
+		// NOTE: not using _sum_inputs() and related tools to demontrate approach for other similar operator process that will not necessarily summ all inputs in the same position.         
         
         // i is the position in output; we need to read through this in order, as for each dimension it is the order of time
         for (i=0; i < output_size; ++i) {
@@ -858,8 +905,7 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
         count = get_frame_size();
     }
 
-    // TODO: sampling rate needs to come from environment?
-    FrameSizeType sr(44100);
+    FrameSizeType sr(_sampling_rate);
 	SndfileHandle outfile(fp, SFM_WRITE, format, reqDim, sr);
 	if (not outfile){
         throw std::bad_alloc();    
@@ -964,21 +1010,21 @@ void Phasor :: render(RenderCountType f) {
         // calling render inputs updates the output of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);
 		
-		// at this point i could get a vector of size equal to frame size for each input and just read values from this as needed for each sample position. 		
+		// get a vector  for each input summing accross all dimensions
+		_sum_inputs();
 		
 		for (i=0; i < fs; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
-			
-			// TODO: optimization: fill a vector/array for each input that sums across all inputs
-			
+						
 			// iterate over vector of Generators, get output value only for first dimension for now; 
-			_sum_frequency = 0;
-			VGenShared :: const_iterator j;
-			VGenShared vf = _inputs[_input_index_frequency];
-			for (j=vf.begin(); j!=vf.end(); ++j) {
-				// always getting the first dimension only here
-				_sum_frequency += (*j)->output[i];
-			}
+			
+			_sum_frequency = _summed_inputs[_input_index_frequency][i];
+			//VGenShared :: const_iterator j;
+			//VGenShared vf = _inputs[_input_index_frequency];
+			//for (j=vf.begin(); j!=vf.end(); ++j) {
+				//// always getting the first dimension only here
+				//_sum_frequency += (*j)->output[i];
+			//}
 
 			// we might dither this to increase accuracy over time
 			_period_samples = floor((_sampling_rate / 
@@ -988,7 +1034,7 @@ void Phasor :: render(RenderCountType f) {
 			// add amp increment to previou amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
 			_amp = _amp_prev + (1.0 / (_period_samples - 1));
 
-			// if amp is at or above 1, set to zero and reset start position; 
+			// if amp is at or above 1, set to zero
 			if (_amp > 1) {
 				_amp = 0.0;
 			}

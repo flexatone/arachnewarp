@@ -156,13 +156,15 @@ class Generator {
     typedef std::tr1::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
     
 	typedef std::vector<SampleType> VSampleType;
+	typedef std::vector<VSampleType> VVSampleType;
 	
     typedef std::vector<GeneratorShared> VGenShared;
-    typedef std::vector< VGenShared > VVGenShared;
+    typedef std::vector<VGenShared> VVGenShared;
 	
     typedef std::vector<OutputSizeType> VOutputSize;
     typedef std::vector<VOutputSize> VVOutputSize;
 
+    // enums
     //! Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators. 
     enum GeneratorID {
         ID_Constant,    
@@ -173,7 +175,7 @@ class Generator {
         
     enum DimensionDynamics {
         DD_FixedMono,    
-		//DD_Fixed_N, // size is fixed based on class definition; does not change		
+		//DD_FixedN, // size is fixed based on class definition; does not change		
         DD_ResizableAtInit, // size can only be set at init
         DD_ResizableFreely,		
     };
@@ -223,7 +225,10 @@ class Generator {
     VVOutputSize _inputs_output_size;	
 	
     //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
-    VVGenShared _inputs;	
+    VVGenShared _inputs;
+	
+	//! For render call, we sum all inputs up to the highest dimension available in the input and store that in a Vector of sample types.
+	VVSampleType _summed_inputs;
 	
 	//! A vector of output offsets, to be used when iterating over dimension and incorporating interleaved or non-interleaved presentation of the output. This must be updated after every resizing, as dimension and frame size may have changed. This is protected because subclass methods may want to use this structure (but the should not change it)
 	VFrameSizeType _dimension_offsets; 
@@ -254,7 +259,10 @@ class Generator {
     
     //! Call the render method on all stored inputs. This is done once for each render call; this calls each  input Generator's render() method. This means that during render() calls, _render_inputs() does not need to be called. 
     inline void _render_inputs(RenderCountType f);
-
+	
+	//! Flatten or sum multiple inputs that reside in the same input type. This is done to optimize dealing with multiple inputs in the same input type ahead of calculations for rendering. 
+	inline void _sum_inputs();
+	
     public://-------------------------------------------------------------------
 	//! Factory for all Generators that creates a  Generator with a dimension. Calls init() method. 
     static GeneratorShared make_with_dimension(GeneratorID, FrameDimensionType);
