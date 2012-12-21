@@ -74,7 +74,6 @@ GeneratorConfigShared GeneratorConfig :: make_with_dimension(
     return gc;
 }
 
-// TODO: can add a make method that takes an EnvironmeShared 
 
 //..............................................................................
 GeneratorConfig :: GeneratorConfig(EnvironmentShared e) 
@@ -133,11 +132,14 @@ Generator :: Generator(GeneratorConfigShared gc)
 	_frame_size(64),
 	_output_size(1), // will be updated after resizing
     _input_parameter_count(0), 	
-    _dimension_is_resizable(true), 
+	_generator_config(gc),
+	// protected ...
+	_sampling_rate(0), // set from Envrionment in init()
+	_nyquist(0), // set from Envrionment in init()
+    _dimension_dynamics(DD_ResizableFreely), 
     _frame_size_is_resizable(false), 	
-    _render_count(0), 	
-	output(NULL),
-    _generator_config(gc) {
+    _render_count(0),	
+	output(NULL) {
     //std::cout << "Generator (1 arg): Constructor" << std::endl;
 }
 
@@ -154,7 +156,16 @@ void Generator :: init() {
     //std::cout << *this << " Generator::init()" << std::endl;
 	// read values from GeneratorConfig
     _frame_dimension = _generator_config->get_init_frame_dimension();
+	if (_dimension_dynamics == DD_FixedMono && _frame_dimension != 1) {
+		throw std::invalid_argument("the requested dimension is not supported (and can be only 1)");			
+	}
     _frame_size = _generator_config->get_init_frame_size();
+
+	// Get relevant data from the environment and store in the Generator when assumed to be static. 
+	EnvironmentShared e = _generator_config->get_environment();
+    
+    _sampling_rate = e->get_sampling_rate();
+	_nyquist = _sampling_rate / 2; // let floor
     
     // since this might be called more than once in the life of an object, need to repare storage units that are general set in the init() routine
     _input_parameter_type.clear();
@@ -235,8 +246,8 @@ void Generator :: _update_for_new_input() {
 
     // if resizable, and size is less, resize    
     // if size is greater, no need to resize (it seems)
-    if (_dimension_is_resizable && _frame_dimension < maxDim) {
-		// set_dimension() checks _dimension_is_resizable too
+    if (_dimension_dynamics == DD_ResizableFreely && _frame_dimension < maxDim) {
+		// set_dimension() checks _dimension_dynamics too
         set_dimension(maxDim); // will resize and reset
     }
 }
@@ -271,8 +282,9 @@ void Generator :: render(RenderCountType f) {
 //..............................................................................
 
 void Generator :: set_dimension(FrameDimensionType d) {
+	// this public method is not used during Generator::__init__
     // only change if different; assume already created
-	if (!_dimension_is_resizable) {
+	if (_dimension_dynamics != DD_ResizableFreely) {
 		throw std::domain_error("this generator does not support dimension setting");
 	}
 	if (d == 0) {
@@ -472,7 +484,7 @@ void Generator :: set_output_from_array(SampleType* v, OutputSizeType s,
 		set_frame_size(s/ch);
 		reset_needed = false;
 	}
-	if (_dimension_is_resizable) {
+	if (_dimension_dynamics == DD_ResizableFreely) {
 		set_dimension(ch);
 		reset_needed = false;		
 	}
@@ -614,11 +626,6 @@ void Generator :: add_parameter_by_index(ParameterIndexType i,
 
 
 //------------------------------------------------------------------------------
-//Constant :: Constant() {
-//	// will call no argument default constructor
-//    _class_name = "Constant"; 
-//}
-
 Constant :: Constant(GeneratorConfigShared gc) 
 	// must initialize base class with passed arg
 	: Generator(gc) {
@@ -738,7 +745,7 @@ Add :: Add(GeneratorConfigShared gc)
 	_sum_opperands(0) {
 		
     _frame_size_is_resizable = false;		
-	_dimension_is_resizable = true; 	
+	_dimension_dynamics = DD_ResizableFreely; 	
 	_class_name = "Add"; 
 }
 
@@ -806,7 +813,7 @@ BufferFile :: BufferFile(GeneratorConfigShared gc)
 	// this is the unique difference of the BufferFile class 
     _frame_size_is_resizable = true;
 	// dimension is resizable not because of embedded generators, but because we will always read in all channels from an audio file; 
-	_dimension_is_resizable = true; 
+	_dimension_dynamics = DD_ResizableFreely; 
 }
 
 BufferFile :: ~BufferFile() {
@@ -908,14 +915,13 @@ void BufferFile :: set_output_from_fp(const std::string& fp) {
 Phasor :: Phasor(GeneratorConfigShared gc) 
 	// must initialize base class with passed arg
 	: Generator(gc),
-		// TODO: initialize all variables
 		_amp(0),
 		_amp_prev(1) // init amp previous to 1 so to force reset to 0 on start
 		//_period_start_sample_pos(0)
 	{
 	_class_name = "Phasor"; 
-	// use a fixed size, regardless of inputs (which are summed)
-	_dimension_is_resizable = false; 	
+	// use a fixed size of 1, regardless of inputs (which are summed only for the relevent dimension
+	_dimension_dynamics = DD_FixedMono; 	
 }
 
 Phasor :: ~Phasor() {
@@ -924,7 +930,7 @@ Phasor :: ~Phasor() {
 void Phasor :: init() {
     // the int routie must configure the names and types of parameters
     std::cout << *this << " Phasor::init()" << std::endl;
-    // call base init, allocates and resets()
+    // call base init, sets _frame_dimension, _frame_size, allocates and resets(); this is called after the constructor, so the _dimension_dynamics parameter is already set
     Generator::init();    
     // register some parameters
     aw::ParameterTypeFrequencyShared pt1 = aw::ParameterTypeFrequencyShared(new 
@@ -963,7 +969,8 @@ void Phasor :: render(RenderCountType f) {
 		for (i=0; i < fs; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
 			
-			// TODO: fill a vector for each input that sums across all inputs
+			// TODO: optimization: fill a vector/array for each input that sums across all inputs
+			
 			// iterate over vector of Generators, get output value only for first dimension for now; 
 			_sum_frequency = 0;
 			VGenShared :: const_iterator j;
@@ -974,8 +981,8 @@ void Phasor :: render(RenderCountType f) {
 			}
 
 			// we might dither this to increase accuracy over time
-			_period_samples = floor((44100 / 
-							frequency_limiter(_sum_frequency, 22050)) + 0.5);
+			_period_samples = floor((_sampling_rate / 
+							frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
 			// sample period must not be 0 or 1
 
 			// add amp increment to previou amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
@@ -987,14 +994,10 @@ void Phasor :: render(RenderCountType f) {
 			}
 			_amp_prev = _amp;
 			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
-			
-			// TODO: write output to all dimensions; for now just writing to one
 			output[i] = _amp;
 			
 		}
-		// can use _dimension_offsets; stores index position of start of each dimension
-		
-		        
+		// can use _dimension_offsets; stores index position of start of each dimension		        
         _render_count += 1;
     }    
 }

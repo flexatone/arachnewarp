@@ -23,13 +23,13 @@ int main() {
 	g2->add_parameter_by_index(0, 0);
     std::cout << t1 << std::endl;
     
-    g2->print_inputs(true);
+    //g2->print_inputs(true);
     
     aw::Timer t2("44100 phase calculations");
 	g2->render(689);
     std::cout << "total time for 1 second of audio: " << t2 << std::endl;
     
-	g2->print_output();
+	//g2->print_output();
 
     
 }
