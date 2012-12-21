@@ -1,4 +1,5 @@
 // g++ -I ../src aw_common_test.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -Wall -o aw_common_test
+
 // -std=c++0x 
 
 
@@ -21,12 +22,11 @@
 #include "aw_common.h"
 
 
-// provide testCase, name
 BOOST_AUTO_TEST_CASE(aw_common_test1) {
-	std::cout << "running aw_common_test 1" << std::endl;
+	//std::cout << "running aw_common_test 1" << std::endl;
 
     boost::filesystem::path home(aw::get_fp_home());
-    std::cout << home << std::endl;
+    // std::cout << home << std::endl;
         
 }
 
@@ -42,6 +42,8 @@ BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	BOOST_CHECK_EQUAL(fp.compare(fp.length() - match.length(), 
 					match.length(), 
 					match), 0);
+					
+	BOOST_CHECK_EQUAL(es->get_sampling_rate(), 44100);
 }
 
 

@@ -27,14 +27,12 @@ void print(SampleType* out, FrameSizeType size) {
     for (FrameSizeType i=0; i<size; ++i) {
         std::cout << out[i] << ' ';
     }
-
     // TODO: figure out how to do this idiom    
     //while (out < out+size) {
         //std::cout << *out++ << ' ';
     //}    
     std::cout << '>' << std::endl;
 }
-
 
 
 const char* get_fp_home() {
@@ -57,14 +55,13 @@ const char* get_fp_home() {
 
 
 
-
-
-
 //==============================================================================
 // utility classes
 
 
-Environment :: Environment() {
+Environment :: Environment() 
+	: _sampling_rate(44100) {
+	// post initializers
     _load_defaults();
 }
 
@@ -73,7 +70,6 @@ Environment :: ~Environment() {}
 void Environment :: _load_defaults() {
     // this method is called on init
     _temp_directory = boost::filesystem::path(get_fp_home()) / ".arachne_warp";
-
     //std::cout << _temp_directory << std::endl;
     if (not boost::filesystem::exists(_temp_directory)) {
         //std::cout << "creating dir: " << _temp_directory << std::endl;
@@ -85,7 +81,6 @@ void Environment :: _load_defaults() {
     }
 }
 
-//! This returns a file name used for temporary plots. This returns a string for easier compatibility with clients.
 std::string Environment :: get_fp_plot(std::string name) const {
     // this might read from a file or do other configurations
     return (_temp_directory / name).string();

@@ -35,8 +35,20 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     BOOST_CHECK_CLOSE(g2->output[0], 0, .0000001);
 	
 	g2->render(4);
-	g2->print_output();
+	//g2->print_output();
 	// check default
+
+    BOOST_CHECK_EQUAL(g2->get_dimension(), 1);
+
+    BOOST_CHECK_EQUAL(g2->get_output_size(), 64);
+    BOOST_CHECK_EQUAL(g2->get_frame_size(), 64);
+
+    BOOST_CHECK_EQUAL(g2->get_sampling_rate(), 44100);
+    BOOST_CHECK_EQUAL(g2->get_nyquist(), 22050);
+
+	
+    BOOST_CHECK_EQUAL(g2->get_class_name(), "Generator");
+	
 
 
 }
@@ -53,7 +65,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
 
 	aw::Constant g3(gc1);
     g3.init();
-    g3.print_inputs();
+    //g3.print_inputs();
 
     BOOST_CHECK_EQUAL(g3.get_parameter_count(), 1);
     BOOST_CHECK_EQUAL(g3.get_parameter_index_from_name("Constant numerical value"), 0);
@@ -64,16 +76,16 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     
 	// set a constant value
 	g3.set_parameter_by_index(0, 29);
-	g3.print_output();
+	//g3.print_output();
 	g3.render(4);
-	g3.print_output();
+	//g3.print_output();
 	
 
     BOOST_CHECK_CLOSE(g3.output[0], 29, .0000001);
 
 	g3.add_parameter_by_index(0, 1);
 	g3.render(4);
-	g3.print_inputs();
+	//g3.print_inputs();
 	// this is the sum 
     BOOST_CHECK_CLOSE(g3.output[0], 30, .0000001);
 }
@@ -96,7 +108,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
     g3->init();
 
 	g1->set_parameter_by_index(0, 2);
-	g1->print_output();
+	//g1->print_output();
 	g2->set_parameter_by_index(0, 3);
 	
 	// need to set first, so as to clear out the old one
@@ -105,15 +117,15 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
     BOOST_REQUIRE_THROW(g3->set_parameter_by_index(1, 23), std::invalid_argument);
     BOOST_REQUIRE_THROW(g3->set_parameter_by_index(-1, 23), std::invalid_argument);
     
-	g3->print_inputs();
+	//g3->print_inputs();
 	
 	g3->render(1);
-	g3->print_output();
+	//g3->print_output();
 	g3->render(8);
-	g3->print_output();
-	g1->print_output();
+	//g3->print_output();
+	//g1->print_output();
 
-	g3->print_inputs(true);
+	//g3->print_inputs(true);
 	
     BOOST_CHECK_CLOSE(g1->output[0], 2, .0000001);	
     BOOST_CHECK_CLOSE(g2->output[0], 3, .0000001);	
@@ -150,14 +162,14 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 //	g2->set_parameter_by_index(0, 3);
     g3->add_parameter_by_index(0, g1);
 	g3->add_parameter_by_index(0, g6);
-	g3->print_inputs();
+	//g3->print_inputs();
 	
 	g3->render(1);
-	g3->print_output();
+	//g3->print_output();
 	g3->render(8);
-	g3->print_output();
+	//g3->print_output();
 
-	g3->print_inputs(true);
+	//g3->print_inputs(true);
 	
     BOOST_CHECK_CLOSE(g3->output[0], 33, .0000001);
 
@@ -176,8 +188,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
 	g3->add_parameter_by_index(0, 20);
 	
 	g3->render(200);
-	g3->print_output();
-	g3->print_inputs(true);
+	//g3->print_output();
+	//g3->print_inputs(true);
 	
     BOOST_CHECK_CLOSE(g3->output[0], 31, .0000001);
 
@@ -205,8 +217,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
     BOOST_CHECK_EQUAL(g3->get_dimension(), 3);
 
 	g3->render(1);	
-	g3->print_inputs();
-	g3->print_output();
+	//g3->print_inputs();
+	//g3->print_output();
 	
 	// this results are based on non-interleaved output presentation 
 	// sum in dims 1 and 2 are first two opperands
@@ -233,8 +245,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
     BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
     
 	g1->render(50);
-	g1->print_output();
-	g1->print_inputs(true);
+	//g1->print_output();
+	//g1->print_inputs(true);
 	
     BOOST_CHECK_CLOSE(g1->output[0], 2.7, .0000001);
 
@@ -253,13 +265,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	g1->add_parameter_by_index(0, 9.2);
 	
     BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
-    BOOST_CHECK_EQUAL(g1->dimension_is_resizable(), true);
+    BOOST_CHECK_EQUAL(g1->get_dimension_dyanmics(), aw::Generator::DD_ResizableFreely);
     BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), false);
     BOOST_REQUIRE_THROW(g1->set_frame_size(30), std::domain_error);
     
     
 	g1->render(20);
-	g1->print_output();
+	//g1->print_output();
 	
     BOOST_CHECK_CLOSE(g1->output[0], 12.7, .0000001);
 	// this based on defaults and might change
@@ -267,8 +279,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	
     g1->set_dimension(4); // calls resize and reset
 	g1->render(20);
-	g1->print_output();
-	g1->print_inputs();
+	//g1->print_output();
+	//g1->print_inputs();
     
     BOOST_CHECK_EQUAL(g1->get_dimension(), 4);
 	// this based on defaults and might change
@@ -375,7 +387,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
     BOOST_CHECK_EQUAL(g1->get_output_size(), 64);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
     BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
-    BOOST_CHECK_EQUAL(g1->dimension_is_resizable(), true);
+    BOOST_CHECK_EQUAL(g1->get_dimension_dyanmics(), aw::Generator::DD_ResizableFreely);
 
 	g1->set_frame_size(743);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 743);
@@ -470,7 +482,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
     BOOST_CHECK_CLOSE(g1->output[7], 1, .00001);
     BOOST_CHECK_CLOSE(g1->output[8], 0, .00001);
 	
-	//g1->print_output();
+	g1->print_output();
 	
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
 	g2->add_parameter_by_index(0, 11025.5); // 8 samples
@@ -481,9 +493,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
     BOOST_CHECK_CLOSE(g2->output[3], 1, .00001);
     BOOST_CHECK_CLOSE(g2->output[4], 0, .00001);
 	
-	//g2->print_output();
-	
-    //BOOST_CHECK_CLOSE(g3->output[0], 31, .0000001);
+
+	// this will raise an exception because Phasor is defined as DD_FixedMono, and can only be created with an output dimensionality of 1	
+    BOOST_REQUIRE_THROW(aw::Generator::make_with_dimension(aw::Generator::ID_Phasor, 2), 
+						std::invalid_argument);
+
 
 }
 
