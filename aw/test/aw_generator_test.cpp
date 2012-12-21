@@ -464,9 +464,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {
 
 
 
-BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
-	// test auto constant creation when adding a sample type
-    
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {    
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
     
     // this will automatically create constant Generators
@@ -500,6 +498,31 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 
 
 }
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
+	// test summing if inputs for frequency
+    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+    
+    // 5512.5 / 2 == 2206.25
+	g1->add_parameter_by_index(0, 2756.25); //
+	
+	// TODO: add a multidimensional Constant here to make sure that it does not break anything. 
+	g1->add_parameter_by_index(0, 2756.25); //	
+	g1->render(1);
+	// cycle is 8 samples long
+    BOOST_CHECK_CLOSE(g1->output[0], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->output[4], .57142857, .00001);	
+    BOOST_CHECK_CLOSE(g1->output[7], 1, .00001);
+    BOOST_CHECK_CLOSE(g1->output[8], 0, .00001);
+	
+	g1->print_output();
+
+
+}
+
+
 
 
 

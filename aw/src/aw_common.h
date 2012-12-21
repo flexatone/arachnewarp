@@ -13,9 +13,6 @@
 
 
 //! @file
-
-
-
 //! The ArachneWarp namespace, including all components of the system.
 namespace aw {
 
