@@ -476,23 +476,33 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
 }
 
 
-void Generator :: plot_output_to_temp_fp(bool open) {
-	// grab a shared handle to envirionment
-	EnvironmentShared e = _generator_config->get_environment();
+// this is no longer necessary, but if we ever want to plot to a file, we might need something similar
+//void Generator :: plot_output_to_temp_fp(bool open) {
+//	// grab a shared handle to envirionment
+//	EnvironmentShared e = _generator_config->get_environment();
+//	Plotter p;
+//	// assume not interleaved
+//	VSampleType v;
+//	write_output_to_vector(v); // load output into this vecotr
+//	p.plot(v, get_dimension());
+//	// get the default plot directory
+//	std::string fp(e->get_fp_plot());
+//	p.write(fp);
+//	
+//	if (open) {
+//		// make system call to gnuplot
+//		std::string cmd = "gnuplot " + fp;
+//		system(cmd.c_str());
+//	}
+//}
+
+
+void Generator :: plot_output() {
 	Plotter p;
-	// assume not interleaved
 	VSampleType v;
 	write_output_to_vector(v); // load output into this vecotr
 	p.plot(v, get_dimension());
-	// get the default plot directory
-	std::string fp(e->get_fp_plot());
-	p.write(fp);
-	
-	if (open) {
-		// make system call to gnuplot
-		std::string cmd = "gnuplot " + fp;
-		system(cmd.c_str());
-	}
+	p.pipe(); // pipe to gnu plot
 }
 
 

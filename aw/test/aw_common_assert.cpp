@@ -17,7 +17,7 @@ bool test_1() {
 
     aw::Environment e;
     
-    std::cout << e.get_fp_plot() << std::endl;
+    std::cout << e.get_fp_temp() << std::endl;
     
     return true;
 }

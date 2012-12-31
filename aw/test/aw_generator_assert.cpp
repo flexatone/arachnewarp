@@ -1,4 +1,4 @@
-// g++ aw_generator_assert.cpp aw_generator.cpp aw_common.cpp aw_plotter.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
+// g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_plotter.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
 
 
 #include <cassert>
@@ -58,7 +58,7 @@ bool test_2() {
     g2->render(10);
 	g2->print_output();
 	
-    //g2->plot_output_to_temp_fp();
+    //g2->plot_output();
     return true;
 
 }
@@ -76,7 +76,7 @@ bool test_3() {
 	
 	g1->set_output_from_vector(v, 3); // declare 2d
 	g1->print_output();
-    //g1->plot_output_to_temp_fp();
+    //g1->plot_output();
     return true;
 
 }
@@ -87,6 +87,8 @@ bool test_4() {
     std::string s("12518-sk1Kick.aif");
     g1->set_output_from_fp(s);	
     g1->write_output_to_fp("testOutput.aif");	
+    
+    //g1->plot_output();
 	return true;
 }
 

@@ -89,7 +89,7 @@ typedef std::tr1::shared_ptr<const Environment> EnvironmentShared;
 class Environment {
     private://-----------------------------------------------------------------
     
-    //! We internally store the temp directory as a Boost filepath object. The temp directory is stored in the user's home directory. 
+    //! We internally store the temp directory as a Boost filepath object. The temp directory is stored in the user's home directory. This can be overriden in the future with different. location. 
     boost::filesystem::path _temp_directory;
 	
 	//! Private sampling rate storage. Defaults to 44100. 
@@ -104,10 +104,11 @@ class Environment {
     
     ~Environment();
 	
+    //! Return the sampleing rate
 	OutputSizeType get_sampling_rate() const {return _sampling_rate;};
 
-	//! This returns a file name used for temporary plots. This returns a string for easier compatibility with clients, rather than a Boost file path
-    std::string get_fp_plot(std::string name="plot.plt") const;
+	//! This returns a file path in the environment-specified temporary directory. By default this is in the user directory .arachnewaro. This returns a string for easier compatibility with clients, rather than a Boost file path
+    std::string get_fp_temp(std::string name) const;
 
     //also need methods to return audio files from a default/or set audio dir
 

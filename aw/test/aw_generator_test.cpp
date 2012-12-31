@@ -303,8 +303,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_config_1) {
 
 	// see if we can get the default-created Environment
 	aw::EnvironmentShared e = gc1->get_environment();
-	std::string match("plot.plt");
-	std::string fp = e->get_fp_plot();
+
+	std::string match("test.aif");
+	std::string fp = e->get_fp_temp("test.aif");
 	std::cout << fp << std::endl;
 	BOOST_CHECK_EQUAL(fp.compare(fp.length() - match.length(), 
 					match.length(), 
