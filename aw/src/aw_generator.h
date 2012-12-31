@@ -333,8 +333,11 @@ class Generator {
     //! Render the requested frame if not already rendered. This is virtual because every Generator renders in a different way. 
     virtual void render(RenderCountType f); 
 
-	//! Create a plot at a temporary file path. Another method should take a string to write this file somewhere. 
-	void plot_output_to_temp_fp(bool open=true);
+
+    //void plot_output_to_temp_fp(bool open=true);
+
+    //! Plot the output by piping it to gnuplot using a subprocess. 
+	void plot_output();
 
 
 	// loading/writing to output ..............................................    

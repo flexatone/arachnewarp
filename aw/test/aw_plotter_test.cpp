@@ -43,8 +43,9 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
     BOOST_REQUIRE_THROW(p.plot(v, -1), std::invalid_argument);
     
 	p.plot(v, d);
+    p.pipe();
     //p.print();
-    p.write(fp); 
+    //p.write(fp); 
 }
 
 BOOST_AUTO_TEST_CASE(aw_plot_test2) {

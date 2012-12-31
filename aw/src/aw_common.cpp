@@ -55,6 +55,7 @@ const char* get_fp_home() {
 
 
 
+
 //==============================================================================
 // utility classes
 
@@ -81,7 +82,7 @@ void Environment :: _load_defaults() {
     }
 }
 
-std::string Environment :: get_fp_plot(std::string name) const {
+std::string Environment :: get_fp_temp(std::string name) const {
     // this might read from a file or do other configurations
     return (_temp_directory / name).string();
 }

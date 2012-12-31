@@ -1,4 +1,7 @@
 
+
+#include <cstdio> // for popen and related 
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -93,6 +96,18 @@ set rmargin screen 0.98 " << std::endl;
 void Plotter :: print() {
     std::cout << _stream.str() << std::endl;
 }
+
+
+void Plotter :: pipe() {
+    // this uses c-style file pointers to as these are what we get out of popen; must convert std::string to c string for usage by fprint
+    FILE* gp;
+    gp = popen("gnuplot -persist", "w");
+    if (gp == NULL) throw std::domain_error("popen failed");
+    fprintf(gp, "%s", _stream.str().c_str()); // must use format to avoid error
+    // pclose will wait for termination
+    if (pclose(gp) == -1) throw std::domain_error("pclose failed");
+}
+
 
 
 void Plotter :: write(const std::string& fp) {

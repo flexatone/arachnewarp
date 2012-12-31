@@ -34,9 +34,9 @@ BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	//std::cout << "running aw_common_test 2" << std::endl;
 	
 	aw::EnvironmentShared es = aw::EnvironmentShared(new aw::Environment);
-	std::string fp = es->get_fp_plot();
 
-	std::string match("plot.plt");
+	std::string fp = es->get_fp_temp("test.txt");
+	std::string match("test.txt");
 	// give starting position, in source, length of target, target
 	
 	BOOST_CHECK_EQUAL(fp.compare(fp.length() - match.length(), 
