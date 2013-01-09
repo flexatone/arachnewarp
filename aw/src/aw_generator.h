@@ -171,11 +171,12 @@ class Generator {
         ID_Add,
         ID_BufferFile,		
         ID_Phasor,				
+        ID_Recorder,	
     };
         
     enum DimensionDynamics {
         DD_FixedMono,    
-		//DD_FixedN, // size is fixed based on class definition; does not change		
+		//TODO: replace with DD_FixedN, size is fixed based on class definition; does not change		
         DD_ResizableAtInit, // size can only be set at init
         DD_ResizableFreely,		
     };
@@ -194,15 +195,19 @@ class Generator {
 	//! The _output_size is derived from frame dimension times the frame size. 
     OutputSizeType _output_size;
     
-    //! Number of input parameter slots used by this Generator. More than one Generator can reside in each slot. 
+    //! Number of input parameters used by this Generator. More than one Generator can reside in each slot. 
     ParameterIndexType _input_parameter_count;    
+
+	//! Number of slots used by this Generator. One Generator can reside in each slot. 
+    ParameterIndexType _slot_parameter_count;    
+
     
 	//! Store the GeneratorConfig instance. This also stores a handle to shared Environment in stance. 
     GeneratorConfigShared _generator_config;    
 	
     protected://----------------------------------------------------------------
 	
-	//! The sampling rate, taken from an Environment instance, as passed through from a GeneraotrConfig. 
+	//! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
 	OutputSizeType _sampling_rate;
 	
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
@@ -217,7 +222,7 @@ class Generator {
     //! The number of frames that have passed since the last reset. Protected because render() and reset() routines need to alter this. 
     RenderCountType _render_count;
 	
-    //! The main storage for ParameterTypeShared instances. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
+    //! The main storage for ParameterTypeShared instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
     std::tr1::unordered_map<ParameterIndexType, 
                             ParameterTypeShared> _input_parameter_type;	
 	
@@ -226,6 +231,13 @@ class Generator {
 	
     //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenShared _inputs;
+	
+	//! A std::vector of GeneratorsShared that are used for configuration of this Generator. 
+	VGenShared _slots;
+	
+	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
+    std::tr1::unordered_map<ParameterIndexType, 
+                            ParameterTypeShared> _slot_parameter_type;		
 	
 	//! For render call, we sum all inputs up to the highest dimension available in the input and store that in a Vector of sample types.
 	VVSampleType _summed_inputs;
@@ -248,8 +260,12 @@ class Generator {
 	
     protected://----------------------------------------------------------------
 		
-    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and both _inputs and _inputs_output_size are givne a blank vector for appending to. 
+    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and both _inputs and _inputs_output_size are given a blank vector for appending to. 
     void _register_input_parameter_type(ParameterTypeShared pts);
+
+	//! Called by Generators during init() to configure the slot parameters found in this Generator.
+    void _register_slot_parameter_type(ParameterTypeShared pts);
+
 
     //! Recursively search for the max input dimension. 
     virtual FrameDimensionType _find_max_input_dimension(FrameDimensionType d=1);
@@ -432,7 +448,7 @@ class Constant: public Generator {
 };
 
 //==============================================================================
-//! An adder that sums all Generators across all dimensions at its single operand input.
+//! An adder sums all Generators across all dimensions at its single operand input.
 class Add;
 typedef std::tr1::shared_ptr<Add> AddShared;
 class Add: public Generator {
@@ -476,6 +492,31 @@ class BufferFile: public Generator {
     virtual void set_output_from_fp(const std::string& fp);
         
 };
+
+
+
+//==============================================================================
+//! A Recorder writes its inputs to a Buffer. 
+class Recorder;
+typedef std::tr1::shared_ptr<Recorder> RecorderShared;
+class Recorder: public Generator {
+
+    public://-------------------------------------------------------------------
+    explicit Recorder(GeneratorConfigShared);
+	
+    ~Recorder();
+
+    virtual void init();    
+		
+    //! Write the contents recoreded to an audio file. This works by calling the same method on the Buffer stored in the slot. 
+    virtual void write_output_to_fp(const std::string& fp, 
+                                    FrameDimensionType d=0) const;
+        
+	//! Rendering does not write to output, but instead writes to the slot-stored Buffer. 
+    virtual void render(RenderCountType f);        
+};
+
+
 
 
 
