@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
     BOOST_REQUIRE_THROW(p.plot(v, -1), std::invalid_argument);
     
 	p.plot(v, d);
-    p.pipe();
+    //p.pipe(); // remove comment to test generated output
     //p.print();
     //p.write(fp); 
 }
@@ -51,4 +51,17 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
 BOOST_AUTO_TEST_CASE(aw_plot_test2) {
 	std::cout << "running aw_plot_test 2" << std::endl;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
