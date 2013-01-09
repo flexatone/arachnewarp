@@ -527,6 +527,12 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_recorder_1) {
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
+
+	// TODO: need to set slots with generators; what happens if slots are not filled and we try to run this? perhaps have a stored bool _slots_filled that is checked with render() calls?
+}
 
 
 

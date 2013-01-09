@@ -110,6 +110,9 @@ GeneratorShared  Generator :: make_with_dimension(GeneratorID q,
     else if (q == ID_Phasor) {
         g = PhasorShared(new Phasor(gc));    
     }
+    else if (q == ID_Recorder) {
+        g = RecorderShared(new Recorder(gc));    
+    }	
     else {
         throw std::invalid_argument("no matching GeneratorID: " + q);
     }
@@ -221,6 +224,12 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
 	_summed_inputs.push_back(vSampleTypeInner);
 	
     _input_parameter_count += 1;
+}
+
+void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
+	// called in derived init()
+    _slot_parameter_type[_slot_parameter_count] = pts;	
+    _slot_parameter_count += 1;
 }
 
 FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) {
@@ -963,8 +972,41 @@ void BufferFile :: set_output_from_fp(const std::string& fp) {
 }
 
 
+//------------------------------------------------------------------------------
+Recorder :: Recorder(GeneratorConfigShared gc) 
+	// must initialize base class with passed arg
+	: Generator(gc) {
+	_class_name = "Recorder";
+	// frame size is not used; its the Buffer's that is used
+    _frame_size_is_resizable = false;
+	// dimension is fixed at mono; does not matter, as we can rely on stored buffer; 
+	_dimension_dynamics = DD_FixedMono; 
+}
 
+Recorder :: ~Recorder() {
+}
 
+void Recorder :: init() {
+    // the int routie must configure the names and types of parameters
+    std::cout << *this << " Recorder::init()" << std::endl;
+    // call base init, allocates and resets()
+    Generator::init();    
+    // register some parameters: none to register here
+	// register some slots
+	// TODO: set this to a proper parameter type
+    aw::ParameterTypeFrequencyShared pt1 = aw::ParameterTypeFrequencyShared(new 
+                                       aw::ParameterTypeFrequency);	
+	_register_slot_parameter_type(pt1);
+}
+
+void Recorder :: write_output_to_fp(const std::string& fp, 
+                                    FrameDimensionType d) const {
+	// write to Buffer
+}
+
+void Recorder :: render(RenderCountType f) {
+	// have Buffer store output of inputs
+}
 
 
 //------------------------------------------------------------------------------
