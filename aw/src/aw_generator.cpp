@@ -45,6 +45,13 @@ ParameterTypeFrequency :: ~ParameterTypeFrequency() {
 }
 
 //------------------------------------------------------------------------------
+ParameterTypeDuration :: ParameterTypeDuration() {
+    _class_name = "ParameterTypeDuration";
+}
+ParameterTypeDuration :: ~ParameterTypeDuration() {
+}
+
+//------------------------------------------------------------------------------
 ParameterTypePhase :: ParameterTypePhase() {
     _class_name = "ParameterTypePhase";
 }
@@ -78,7 +85,7 @@ GeneratorConfigShared GeneratorConfig :: make_with_dimension(
 //..............................................................................
 GeneratorConfig :: GeneratorConfig(EnvironmentShared e) 
     : _init_frame_dimension(1), 
-	_init_frame_size(64),
+	_init_frame_size(64), // this is the default for all generators; 
 	_environment(e) {
     // set standard generator defaults here: 1 d, size 128
 	// what determiens what comes from environment, what comes from GenteratorConfig?
@@ -110,9 +117,9 @@ GeneratorShared  Generator :: make_with_dimension(GeneratorID q,
     else if (q == ID_Phasor) {
         g = PhasorShared(new Phasor(gc));    
     }
-    else if (q == ID_Recorder) {
-        g = RecorderShared(new Recorder(gc));    
-    }	
+    //else if (q == ID_Recorder) {
+        //g = RecorderShared(new Recorder(gc));    
+    //}	
     else {
         throw std::invalid_argument("no matching GeneratorID: " + q);
     }
@@ -228,8 +235,15 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
 
 void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
 	// called in derived init()
-    _slot_parameter_type[_slot_parameter_count] = pts;	
+	// set dictionary directly
+    _slot_parameter_type[_slot_parameter_count] = pts;		
+	// unlike with parameters, we need to add a place holder in the slots vector so that we have random access; best to do is set a default constant
+	aw::GeneratorShared c = aw::ConstantShared(new aw::Constant(_generator_config));	
+    c->init();
+    c->set_input_by_index(0, 0.0); // this will call Constant::reset()
+	_slots.push_back(c); // store default constant to hold position
     _slot_parameter_count += 1;
+	
 }
 
 FrameDimensionType Generator :: _find_max_input_dimension(FrameDimensionType d) {
@@ -271,6 +285,12 @@ void Generator :: _update_for_new_input() {
     }
 }
 
+
+void Generator :: _update_for_new_slot() {
+	// when a slot is chagned, we might need to reset/clear data
+}
+
+
 void Generator :: _render_inputs(RenderCountType f) {
     // for each of the inputs, need to render up to this frame
     // this is "pulling" lower-level values up to date
@@ -287,6 +307,17 @@ void Generator :: _render_inputs(RenderCountType f) {
     }
 }
 
+void Generator :: _reset_inputs() {
+    VGenShared :: const_iterator j; // vector of generators    
+    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
+        // inputs are a vector of Generators
+        for (j=_inputs[i].begin(); 
+             j!=_inputs[i].end(); ++j) {
+            // this is a shared generator
+            (*j)->reset();
+        }
+    }
+}
 
 void Generator :: _sum_inputs() {
 	// sum all inputs for all 1 frame of each dimension, up to the max dimension found;
@@ -426,6 +457,7 @@ void Generator :: reset() {
     }
     // always reset frame count?
     _render_count = 0;
+	// should reset reset inputs?
 }
 
 //..............................................................................
@@ -633,7 +665,7 @@ ParameterIndexType Generator :: get_parameter_index_from_name(
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
 
-void Generator :: set_parameter_by_index(ParameterIndexType i, 
+void Generator :: set_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
     // if zero, none are set; current value is next available slot for registering
     if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
@@ -650,19 +682,19 @@ void Generator :: set_parameter_by_index(ParameterIndexType i,
     _update_for_new_input();
 }
 
-void Generator :: set_parameter_by_index(ParameterIndexType i, 
-                                        SampleType v){
+void Generator :: set_input_by_index(ParameterIndexType i, SampleType v){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
 	aw::GeneratorShared c = aw::ConstantShared(
 							new aw::Constant(_generator_config));
     c->init();
-    c->set_parameter_by_index(0, v); // this will call Constant::reset()
-    set_parameter_by_index(i, c); // call overloaded
+    c->set_input_by_index(0, v); // this will call Constant::reset()
+    set_input_by_index(i, c); // call overloaded
+	// do not call _update_for_new_input here b/c called in set_input_by_index
 }
 
 
-void Generator :: add_parameter_by_index(ParameterIndexType i, 
+void Generator :: add_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
     if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
         throw std::invalid_argument("Parameter index is not available.");                                        
@@ -673,7 +705,7 @@ void Generator :: add_parameter_by_index(ParameterIndexType i,
     _update_for_new_input();
 }
 
-void Generator :: add_parameter_by_index(ParameterIndexType i, 
+void Generator :: add_input_by_index(ParameterIndexType i, 
                                         SampleType v){
     // adding additional as a constant value
     // note that no one else will have a handle on this constant
@@ -682,10 +714,39 @@ void Generator :: add_parameter_by_index(ParameterIndexType i,
 	aw::GeneratorShared c = aw::ConstantShared(
 							new aw::Constant(_generator_config));
     c->init();
-    c->set_parameter_by_index(0, v); // this will call Constant::reset()
-    add_parameter_by_index(i, c); // other overloaded
-
+    c->set_input_by_index(0, v); // this will call Constant::reset()
+    add_input_by_index(i, c); // other overloaded
+	// do not call _update_for_new_input here b/c called in set_input_by_index
 }
+
+
+//..............................................................................
+void Generator :: set_slot_by_index(ParameterIndexType i, GeneratorShared gs){
+    // if zero, none are set; current value is next available slot for registering
+    if (_slot_parameter_count <= 0 or i >= _slot_parameter_count) {
+    }        
+    _slots[i] = gs; // direct assignment; replaces default if not there
+    // store in advance the output size of the input    
+    _update_for_new_slot();
+}
+
+void Generator :: set_slot_by_index(ParameterIndexType i, SampleType v){
+    // overridden method for setting a value: generates a constant
+	// pass the GeneratorConfig to produce same dimensionality requested
+	aw::GeneratorShared c = aw::ConstantShared(
+							new aw::Constant(_generator_config));
+    c->init();
+    c->set_input_by_index(0, v); // this will call Constant::reset()
+    set_slot_by_index(i, c); // call overloaded
+	// _update_for_new_slot called in set_slot_by_index
+}
+
+
+
+
+
+
+
 
 
 
@@ -767,12 +828,12 @@ void Constant :: render(RenderCountType f) {
     _render_count = f;
 }
 
-void Constant :: set_parameter_by_index(ParameterIndexType i, 
+void Constant :: set_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs) {
     throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
 }
 
-void Constant :: set_parameter_by_index(ParameterIndexType i, SampleType v){
+void Constant :: set_input_by_index(ParameterIndexType i, SampleType v){
     if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
@@ -785,12 +846,12 @@ void Constant :: set_parameter_by_index(ParameterIndexType i, SampleType v){
     // do not need to call     _update_for_new_input();
 }
 
-void Constant :: add_parameter_by_index(ParameterIndexType i, 
+void Constant :: add_input_by_index(ParameterIndexType i, 
                                     GeneratorShared gs) {
     throw std::invalid_argument("invalid to add a GeneratoreShared as a value to a Constatn");
 }
 
-void Constant :: add_parameter_by_index(ParameterIndexType i, SampleType v){
+void Constant :: add_input_by_index(ParameterIndexType i, SampleType v){
     if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
@@ -890,9 +951,60 @@ void BufferFile :: init() {
     std::cout << *this << " BufferFile::init()" << std::endl;
     // call base init, allocates and resets()
     Generator::init();    
-    // register some parameters: none to register here
+    // register some parameters:
+    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
+                                       aw::ParameterTypeValue);
+    pt1->set_instance_name("Inputs");
+    _register_input_parameter_type(pt1);	
+    // register some slots: 
+    aw::ParameterTypeDurationShared so1 = aw::ParameterTypeDurationShared(new 
+										   aw::ParameterTypeDuration);
+    so1->set_instance_name("Duration in seconds");
+	_register_slot_parameter_type(so1);	
 }
 
+void BufferFile :: _update_for_new_slot() {
+	// dimensions already set to largest found in inputs
+	// set frame size based on slot 1; mult sr by seconds requested
+	set_frame_size(_slots[0]->output[0] * _sampling_rate * get_dimension());
+}
+
+
+void BufferFile :: render(RenderCountType f) {
+	// render count must be ignored; instead, we render until we have filled our buffer; this means that the components will have a higher counter than render; need to be reset at beginning and end
+
+	// must reset; might advance to particular render count
+	_reset_inputs(); 
+	
+	// TODO Is there a better way to get input frame size?
+	// Need a get smalles from size calculation pre-done
+	FrameSizeType input_frame_size = _inputs[0][0]->get_frame_size();
+	
+	// assume that all inputs have the saem init frame size
+	RenderCountType render_cycles_max = get_frames_per_dimension() / input_frame_size;
+	RenderCountType render_count(0);
+	
+	OutputSizeType i(0);		
+	
+	// ignore render count for now; just fill buffer
+    while (render_count < render_cycles_max) {
+
+        _render_inputs(render_count);		
+		_sum_inputs();
+		
+		// TODO need to handle multidemsional inputs to dom outputs
+		for (i=0; i < input_frame_size; ++i) {
+			output[i + (render_count * input_frame_size)] = _summed_inputs[0][i];
+		}
+		
+		render_count++;
+		
+    }
+
+	// we reset after to retrun components to starting state in case someone else uses this later. 	
+	_reset_inputs(); 
+	
+}
 
 void BufferFile :: write_output_to_fp(const std::string& fp, 
                                     FrameDimensionType d) const {
@@ -934,7 +1046,6 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
 	if (not v) {
         throw std::bad_alloc();    
     }
-
     OutputSizeType i(0);
     OutputSizeType j(0);
     
@@ -973,40 +1084,43 @@ void BufferFile :: set_output_from_fp(const std::string& fp) {
 
 
 //------------------------------------------------------------------------------
-Recorder :: Recorder(GeneratorConfigShared gc) 
-	// must initialize base class with passed arg
-	: Generator(gc) {
-	_class_name = "Recorder";
-	// frame size is not used; its the Buffer's that is used
-    _frame_size_is_resizable = false;
-	// dimension is fixed at mono; does not matter, as we can rely on stored buffer; 
-	_dimension_dynamics = DD_FixedMono; 
-}
+//Recorder :: Recorder(GeneratorConfigShared gc) 
+	//// must initialize base class with passed arg
+	//: Generator(gc) {
+	//_class_name = "Recorder";
+	//// frame size is not used; its the Buffer's that is used
+    //_frame_size_is_resizable = false;
+	//// dimension is fixed at mono; does not matter, as we can rely on stored buffer; 
+	//_dimension_dynamics = DD_FixedMono; 
+//}
 
-Recorder :: ~Recorder() {
-}
+//Recorder :: ~Recorder() {
+//}
 
-void Recorder :: init() {
-    // the int routie must configure the names and types of parameters
-    std::cout << *this << " Recorder::init()" << std::endl;
-    // call base init, allocates and resets()
-    Generator::init();    
-    // register some parameters: none to register here
-	// register some slots
-	// TODO: set this to a proper parameter type
-    aw::ParameterTypeFrequencyShared pt1 = aw::ParameterTypeFrequencyShared(new 
-                                       aw::ParameterTypeFrequency);	
-	_register_slot_parameter_type(pt1);
-}
+//void Recorder :: init() {
+    //// the int routie must configure the names and types of parameters
+    //std::cout << *this << " Recorder::init()" << std::endl;
+    //// call base init, allocates and resets()
+    //Generator::init();    
+    //// register some parameters: none to register here
+	//// register some slots
+    //aw::ParameterTypeDurationShared pt1 = aw::ParameterTypeDurationShared(new 
+										   //aw::ParameterTypeDuration);
+    //pt1->set_instance_name("Duration in seconds");
+	//_register_slot_parameter_type(pt1);
+//}
 
-void Recorder :: write_output_to_fp(const std::string& fp, 
-                                    FrameDimensionType d) const {
-	// write to Buffer
-}
+//void Recorder :: write_output_to_fp(const std::string& fp, 
+                                    //FrameDimensionType d) const {
+	//// write ouptut of Buffer
+//}
 
-void Recorder :: render(RenderCountType f) {
-	// have Buffer store output of inputs
-}
+//void Recorder :: render(RenderCountType f) {
+	//// have Buffer store output of inputs
+//}
+
+
+
 
 
 //------------------------------------------------------------------------------
