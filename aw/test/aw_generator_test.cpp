@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 	g1.print_output();
     
     // this has no parameters so should raise exception on trying to set or add
-    BOOST_REQUIRE_THROW(g1.set_parameter_by_index(0, 30), std::invalid_argument);
+    BOOST_REQUIRE_THROW(g1.set_input_by_index(0, 30), std::invalid_argument);
 
 	aw::GeneratorShared g2 = aw::GeneratorShared(new aw::Generator(gc1));
     g2->init();
@@ -70,12 +70,12 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     BOOST_CHECK_EQUAL(g3.get_parameter_count(), 1);
     BOOST_CHECK_EQUAL(g3.get_parameter_index_from_name("Constant numerical value"), 0);
     // check index out of range
-    BOOST_REQUIRE_THROW(g3.set_parameter_by_index(2, 30), std::invalid_argument);
-    BOOST_REQUIRE_THROW(g3.set_parameter_by_index(1, 23), std::invalid_argument);
+    BOOST_REQUIRE_THROW(g3.set_input_by_index(2, 30), std::invalid_argument);
+    BOOST_REQUIRE_THROW(g3.set_input_by_index(1, 23), std::invalid_argument);
 	
     
 	// set a constant value
-	g3.set_parameter_by_index(0, 29);
+	g3.set_input_by_index(0, 29);
 	//g3.print_output();
 	g3.render(4);
 	//g3.print_output();
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
 
     BOOST_CHECK_CLOSE(g3.output[0], 29, .0000001);
 
-	g3.add_parameter_by_index(0, 1);
+	g3.add_input_by_index(0, 1);
 	g3.render(4);
 	//g3.print_inputs();
 	// this is the sum 
@@ -107,15 +107,15 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
 	aw::GeneratorShared g3 = aw::AddShared(new aw::Add(gc1));
     g3->init();
 
-	g1->set_parameter_by_index(0, 2);
+	g1->set_input_by_index(0, 2);
 	//g1->print_output();
-	g2->set_parameter_by_index(0, 3);
+	g2->set_input_by_index(0, 3);
 	
 	// need to set first, so as to clear out the old one
-	g3->add_parameter_by_index(0, g1);
-	g3->add_parameter_by_index(0, g2);
-    BOOST_REQUIRE_THROW(g3->set_parameter_by_index(1, 23), std::invalid_argument);
-    BOOST_REQUIRE_THROW(g3->set_parameter_by_index(-1, 23), std::invalid_argument);
+	g3->add_input_by_index(0, g1);
+	g3->add_input_by_index(0, g2);
+    BOOST_REQUIRE_THROW(g3->set_input_by_index(1, 23), std::invalid_argument);
+    BOOST_REQUIRE_THROW(g3->set_input_by_index(-1, 23), std::invalid_argument);
     
 	//g3->print_inputs();
 	
@@ -153,15 +153,15 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 //	aw::GeneratorShared g6 = aw::AddShared(new aw::Add);
 
 
-	g4->set_parameter_by_index(0, 11);
-	g5->set_parameter_by_index(0, 20);
-	g6->add_parameter_by_index(0, g4);
-	g6->add_parameter_by_index(0, g5);
+	g4->set_input_by_index(0, 11);
+	g5->set_input_by_index(0, 20);
+	g6->add_input_by_index(0, g4);
+	g6->add_input_by_index(0, g5);
 
-	g1->set_parameter_by_index(0, 2);
-//	g2->set_parameter_by_index(0, 3);
-    g3->add_parameter_by_index(0, g1);
-	g3->add_parameter_by_index(0, g6);
+	g1->set_input_by_index(0, 2);
+//	g2->set_input_by_index(0, 3);
+    g3->add_input_by_index(0, g1);
+	g3->add_input_by_index(0, g6);
 	//g3->print_inputs();
 	
 	g3->render(1);
@@ -184,8 +184,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
 	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
     
     // this will automatically create constant Generators
-	g3->add_parameter_by_index(0, 11);
-	g3->add_parameter_by_index(0, 20);
+	g3->add_input_by_index(0, 11);
+	g3->add_input_by_index(0, 20);
 	
 	g3->render(200);
 	//g3->print_output();
@@ -201,17 +201,17 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
     
 	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
 							aw::Generator::ID_Constant, 2);
-	g1->set_parameter_by_index(0, 2); 							
+	g1->set_input_by_index(0, 2); 							
 	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
 							aw::Generator::ID_Constant, 3);	
-	g2->set_parameter_by_index(0, 3); 							
+	g2->set_input_by_index(0, 3); 							
 							
 	// make a 1 dimensional adder
 	aw::GeneratorShared g3 = aw::Generator::make_with_dimension(
 							aw::Generator::ID_Add, 1);
 	// add opperands
-	g3->set_parameter_by_index(0, g1); 							
-	g3->add_parameter_by_index(0, g2); 							
+	g3->set_input_by_index(0, g1); 							
+	g3->add_input_by_index(0, g2); 							
 		
 	// must expand to 3d
     BOOST_CHECK_EQUAL(g3->get_dimension(), 3);
@@ -239,8 +239,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
 
     // this will automatically create constant Generators
-	g1->add_parameter_by_index(0, 1.5);
-	g1->add_parameter_by_index(0, 1.2);
+	g1->add_input_by_index(0, 1.5);
+	g1->add_input_by_index(0, 1.2);
 	
     BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
     
@@ -261,8 +261,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
 
     // this will automatically create constant Generators
-	g1->add_parameter_by_index(0, 3.5);
-	g1->add_parameter_by_index(0, 9.2);
+	g1->add_input_by_index(0, 3.5);
+	g1->add_input_by_index(0, 9.2);
 	
     BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
     BOOST_CHECK_EQUAL(g1->get_dimension_dyanmics(), aw::Generator::DD_ResizableFreely);
@@ -350,15 +350,15 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_2) {
 
 	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
                             aw::Generator::ID_Constant, 1);
-	g2->add_parameter_by_index(0, 3);
+	g2->add_input_by_index(0, 3);
     g2->set_dimension(2); // set to a higher dimension
     
 	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
                             aw::Generator::ID_Add, 1);
-	g1->add_parameter_by_index(0, 1);
+	g1->add_input_by_index(0, 1);
     BOOST_CHECK_EQUAL(g1->get_dimension(), 1);    
     // adding a 2d gen should cause this to grow
-	g1->add_parameter_by_index(0, g2); 
+	g1->add_input_by_index(0, g2); 
     // now this is 2d	
     BOOST_CHECK_EQUAL(g1->get_dimension(), 2);
 	
@@ -469,11 +469,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
     
     // this will automatically create constant Generators
-	//g1->add_parameter_by_index(0, 5512.5);
+	//g1->add_input_by_index(0, 5512.5);
 
 	// this is an eq of 4 samples
-	//g1->add_parameter_by_index(0, 11025.0); 
-	g1->add_parameter_by_index(0, 5512.5); // 8 samples
+	//g1->add_input_by_index(0, 11025.0); 
+	g1->add_input_by_index(0, 5512.5); // 8 samples
 	g1->render(1);
 	// cycle is 8 samples long
     BOOST_CHECK_CLOSE(g1->output[0], 0, .00001);
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 	g1->print_output();
 	
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
-	g2->add_parameter_by_index(0, 11025.5); // 8 samples
+	g2->add_input_by_index(0, 11025.5); // 8 samples
 	g2->render(1);	
     BOOST_CHECK_CLOSE(g2->output[0], 0, .00001);
     BOOST_CHECK_CLOSE(g2->output[1], 0.333333333, .00001);
@@ -507,10 +507,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
     
     // 5512.5 / 2 == 2206.25
-	g1->add_parameter_by_index(0, 2756.25); //
+	g1->add_input_by_index(0, 2756.25); //
 	
 	// TODO: add a multidimensional Constant here to make sure that it does not break anything. 
-	g1->add_parameter_by_index(0, 2756.25); //	
+	g1->add_input_by_index(0, 2756.25); //	
 	g1->render(1);
 	// cycle is 8 samples long
     BOOST_CHECK_CLOSE(g1->output[0], 0, .00001);
@@ -527,11 +527,35 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 
 
 
-BOOST_AUTO_TEST_CASE(aw_generator_recorder_1) {
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
+	
+	std::cerr << std::string(80, '-') << std::endl;
+	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
 
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
 
-	// TODO: need to set slots with generators; what happens if slots are not filled and we try to run this? perhaps have a stored bool _slots_filled that is checked with render() calls?
+	// changing the slot calls overridden _update_for_new_slot(), resizes frame size
+	g1->set_slot_by_index(0, 20.0); // 20 second buffer
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 882000);
+
+	g1->set_slot_by_index(0, 1.0); // 1 second buffer
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
+	
+	g1->set_slot_by_index(0, 5.0); // 5 second buffer
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 220500);
+	
+	// create 
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+    // 5512.5 / 2 == 2206.25
+	g2->add_input_by_index(0, 2756.25); // a constant frequency
+	
+	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
+	g1->add_input_by_index(0, g2);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 220500);
+	
+	g1->render(1); // count deso not amtter here, as will render to fill frame size
+	
+	
 }
 
 

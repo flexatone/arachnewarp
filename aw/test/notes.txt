@@ -6,15 +6,9 @@ frame_dimensions = number of channels in a frame
     Generators need to be able to see this when given an i/o generator
     
 
-Generators need to be vectorized.
-
 need to favor object composition rather than subclasse to optimzier performance
     have a manager class that lives inside classes manually configured with no v/table
 
-want to be able to pass a Generator in as an argument for a constant or other parameter in another generator
-
-
-Generators need to process input (more than one) and output.
 
 Generators can be passed in an input Generator and read its output vector for input
     if the output is not ready yet, call _gen()

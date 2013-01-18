@@ -34,29 +34,27 @@ class ParameterType {
     virtual ~ParameterType();
 
 	//! Output stream processor.
-	friend std::ostream& operator<<(std::ostream& output, 
-						const ParameterType& pt);
+	friend std::ostream& operator<<(std::ostream& output, const ParameterType& pt);
 
     //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Generator and may not be the same even if its the same ParameterType subclass. 
     void set_instance_name(const std::string& s) {_instance_name = s;};
 
     //! Return the name as a string. 
     std::string get_instance_name() const {return _instance_name;};
-    
 };
+
 
 class ParameterTypeValue;
 //! Shared ParameterTypeValue.
 typedef std::tr1::shared_ptr<ParameterTypeValue> ParameterTypeValueShared;
 //! A subclass of ParameterType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
 class ParameterTypeValue: public ParameterType {
-
     public://-------------------------------------------------------------------
     explicit ParameterTypeValue();
     virtual ~ParameterTypeValue();
 };
 
-// TODO: provide a RateConverter that permits specifiying values in a variety of different ways. 
+// TODO: provide a RateConverter that permits specifiying values in a variety of different ways. Parameter type frequency should by usable for all duration types
 class ParameterTypeFrequency;
 typedef std::tr1::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyShared;
 //! A subclass of ParameterType that specifies a frequency; this is assumed presently to be in Hertz.
@@ -65,6 +63,16 @@ class ParameterTypeFrequency: public ParameterType {
     explicit ParameterTypeFrequency();
     virtual ~ParameterTypeFrequency();
 };
+
+class ParameterTypeDuration;
+typedef std::tr1::shared_ptr<ParameterTypeDuration> ParameterTypeDurationShared;
+//! A subclass of ParameterType that specifies a duration in seconds.
+class ParameterTypeDuration: public ParameterType {
+    public://-------------------------------------------------------------------
+    explicit ParameterTypeDuration();
+    virtual ~ParameterTypeDuration();
+};
+
 
 // TODO: phase can be provided in floating point values or degrees; figure out how to handle this
 class ParameterTypePhase;
@@ -188,20 +196,14 @@ class Generator {
     private://------------------------------------------------------------------
     //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
     FrameDimensionType _frame_dimension;
-	
 	//! The size of each frame for each dimension.
-    FrameSizeType _frame_size; // if changed, need to rebuild output
-	
+    FrameSizeType _frame_size; // if changed, need to rebuild output	
 	//! The _output_size is derived from frame dimension times the frame size. 
     OutputSizeType _output_size;
-    
     //! Number of input parameters used by this Generator. More than one Generator can reside in each slot. 
     ParameterIndexType _input_parameter_count;    
-
 	//! Number of slots used by this Generator. One Generator can reside in each slot. 
     ParameterIndexType _slot_parameter_count;    
-
-    
 	//! Store the GeneratorConfig instance. This also stores a handle to shared Environment in stance. 
     GeneratorConfigShared _generator_config;    
 	
@@ -219,7 +221,7 @@ class Generator {
     //! Define if this Generator has resizable frames size. Most generators do not have have resizable frame size; only some (like a Buffer or WaveTable) do.
     bool _frame_size_is_resizable;	
                             
-    //! The number of frames that have passed since the last reset. Protected because render() and reset() routines need to alter this. 
+    //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. 
     RenderCountType _render_count;
 	
     //! The main storage for ParameterTypeShared instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
@@ -242,7 +244,7 @@ class Generator {
 	//! For render call, we sum all inputs up to the highest dimension available in the input and store that in a Vector of sample types.
 	VVSampleType _summed_inputs;
 	
-	//! A vector of output offsets, to be used when iterating over dimension and incorporating interleaved or non-interleaved presentation of the output. This must be updated after every resizing, as dimension and frame size may have changed. This is protected because subclass methods may want to use this structure (but the should not change it)
+	//! A vector of output offsets, to be used when iterating over dimension and incorporating non-interleaved presentation of the output. This must be updated after every resizing, as dimension and frame size may have changed. This is protected because subclass methods may want to use this structure (but they should not change it)
 	VFrameSizeType _dimension_offsets; 
 
     public://-------------------------------------------------------------------
@@ -266,17 +268,19 @@ class Generator {
 	//! Called by Generators during init() to configure the slot parameters found in this Generator.
     void _register_slot_parameter_type(ParameterTypeShared pts);
 
-
     //! Recursively search for the max input dimension. 
     virtual FrameDimensionType _find_max_input_dimension(FrameDimensionType d=1);
 
     //! Call this everytime a new input has been added. Does necessary and may resize this generator. This should not be called in render(). Pre-fetches all the output sizes of all inputs. These are stored in _inputs_output_size.
     void _update_for_new_input();
+
+	//! Call this every time a new slot has been added or changed. This is necessarily virtual as subclasses need to handle their slots in their own way. 
+	virtual void _update_for_new_slot();
     
     //! Call the render method on all stored inputs. This is done once for each render call; this calls each  input Generator's render() method. This means that during render() calls, _render_inputs() does not need to be called. 
     inline void _render_inputs(RenderCountType f);
 	
-	//! Flatten or sum multiple inputs that reside in the same input type. This is done to optimize dealing with multiple inputs in the same input type ahead of calculations for rendering. 
+	//! Flatten or sum multiple inputs that reside in the same input type. This is done to optimize dealing with multiple inputs in the same input type ahead of calculations for rendering. Results are stored in _summed_inputs VV. 
 	inline void _sum_inputs();
 	
     public://-------------------------------------------------------------------
@@ -285,7 +289,6 @@ class Generator {
 	
     //! Factory for all Generators. This creates a Generator, and calls its init() method. 
     static GeneratorShared make(GeneratorID);
-
 
     public://-------------------------------------------------------------------
 	//! Main constructor that takes a generator config. 
@@ -323,6 +326,10 @@ class Generator {
     //! Return the the frame size.
     OutputSizeType get_frame_size() const {return _frame_size;};	
 
+	//! Get frames per dimension
+    OutputSizeType get_frames_per_dimension() const {return _frame_size / 
+															_frame_dimension;};	
+
 	//! Get the sampling rate. 
     OutputSizeType get_sampling_rate() const {return _sampling_rate;};	
 
@@ -331,6 +338,9 @@ class Generator {
 
     //! Reset all parameters, and zero out the output array.
     virtual void reset();
+	
+	//! Call reset on all inputs. 
+	void _reset_inputs();
 
 	//! Output stream friend function: returns the name of the Generator. 
 	friend std::ostream& operator<<(std::ostream& output, const Generator& g);
@@ -379,22 +389,33 @@ class Generator {
 
 	// parameter ..............................................................    
     //! Return the number of parameters; this is not the same as the number of Generators, as each parameter may have 1 or more Generators
-    ParameterIndexType get_parameter_count() {
-        return _input_parameter_count;};
+    ParameterIndexType get_parameter_count() {return _input_parameter_count;};
 
 	//! Return the parameter index for a named parameter.
     ParameterIndexType get_parameter_index_from_name(const std::string& s);
 
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
-    virtual void set_parameter_by_index(ParameterIndexType i, 
+    virtual void set_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs);
-    virtual void set_parameter_by_index(ParameterIndexType i, SampleType v);
+    virtual void set_input_by_index(ParameterIndexType i, SampleType v);
 
     //! Add a multiple input at this parameter. 
-    virtual void add_parameter_by_index(ParameterIndexType i, 
+    virtual void add_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs);
 
-    virtual void add_parameter_by_index(ParameterIndexType i, SampleType v);
+    virtual void add_input_by_index(ParameterIndexType i, SampleType v);
+  
+	// slot ..............................................................    
+    ParameterIndexType get_slot_count() {return _slot_parameter_count;};
+
+	// Return the parameter index for a named parameter.
+    //ParameterIndexType get_slot_index_from_name(const std::string& s);	
+	
+    //! Directly set a parameter given an index. This will remove/erase any parameter on this slot. 	
+    virtual void set_slot_by_index(ParameterIndexType i, GeneratorShared gs);
+	//! Overridden to handle a constant. 
+    virtual void set_slot_by_index(ParameterIndexType i, SampleType v);
+
   
 };
 
@@ -433,16 +454,16 @@ class Constant: public Generator {
 	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.
-    virtual void set_parameter_by_index(ParameterIndexType i, GeneratorShared gs);    
+    virtual void set_input_by_index(ParameterIndexType i, GeneratorShared gs);    
                                         
     //! Set value as a SampleType value.
-	virtual void set_parameter_by_index(ParameterIndexType i, SampleType v);
+	virtual void set_input_by_index(ParameterIndexType i, SampleType v);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.    
-    virtual void add_parameter_by_index(ParameterIndexType i, GeneratorShared gs);    
+    virtual void add_input_by_index(ParameterIndexType i, GeneratorShared gs);    
                                         
     //! Add value as a SampleType value.                                        
-	virtual void add_parameter_by_index(ParameterIndexType i, SampleType v);
+	virtual void add_input_by_index(ParameterIndexType i, SampleType v);
     
     
 };
@@ -483,6 +504,12 @@ class BufferFile: public Generator {
     ~BufferFile();
 
     virtual void init();    
+	
+	//! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
+    virtual void render(RenderCountType f);	
+	
+	//! Overridden to apply slot settings and reset as necessary. 
+	void _update_for_new_slot();
 		
     //! Write to an audio file to given the ouput file path. The optional FrameDimensionType argument can be used to specify a single dimension of many to write. If FrameDimensionType is 0, all dimensions are written.
     virtual void write_output_to_fp(const std::string& fp, 
@@ -497,24 +524,24 @@ class BufferFile: public Generator {
 
 //==============================================================================
 //! A Recorder writes its inputs to a Buffer. 
-class Recorder;
-typedef std::tr1::shared_ptr<Recorder> RecorderShared;
-class Recorder: public Generator {
+/*class Recorder;*/
+/*typedef std::tr1::shared_ptr<Recorder> RecorderShared;*/
+/*class Recorder: public Generator {*/
 
-    public://-------------------------------------------------------------------
-    explicit Recorder(GeneratorConfigShared);
+    /*public://-------------------------------------------------------------------*/
+    /*explicit Recorder(GeneratorConfigShared);*/
 	
-    ~Recorder();
+    /*~Recorder();*/
 
-    virtual void init();    
+    /*virtual void init();    */
 		
-    //! Write the contents recoreded to an audio file. This works by calling the same method on the Buffer stored in the slot. 
-    virtual void write_output_to_fp(const std::string& fp, 
-                                    FrameDimensionType d=0) const;
+    /*//! Write the contents recoreded to an audio file. This works by calling the same method on the Buffer stored in the slot. */
+    /*virtual void write_output_to_fp(const std::string& fp, */
+                                    /*FrameDimensionType d=0) const;*/
         
-	//! Rendering does not write to output, but instead writes to the slot-stored Buffer. 
-    virtual void render(RenderCountType f);        
-};
+	/*//! Rendering does not write to output, but instead writes to the slot-stored Buffer. */
+    /*virtual void render(RenderCountType f);        */
+/*};*/
 
 
 

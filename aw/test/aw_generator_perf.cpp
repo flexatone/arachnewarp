@@ -20,7 +20,7 @@ int main() {
 
     // this will automatically create constant Generators
     aw::Timer t1("adding two constant inputs");    
-	g2->add_parameter_by_index(0, 0);
+	g2->add_input_by_index(0, 0);
     std::cout << t1 << std::endl;
     
     //g2->print_inputs(true);

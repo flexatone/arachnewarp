@@ -23,8 +23,8 @@ bool test_1() {
     //aw::AddShared g1 = aw::AddShared(new aw::Add);
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
     
-    g1->add_parameter_by_index(0, 1);
-    g1->add_parameter_by_index(0, 20.5);
+    g1->add_input_by_index(0, 1);
+    g1->add_input_by_index(0, 20.5);
     g1->render(100);
     g1->print_inputs(true);
     g1->print_output();
@@ -42,8 +42,8 @@ bool test_2() {
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
 
     // this will automatically create constant Generators
-	g2->add_parameter_by_index(0, 6);
-	g2->add_parameter_by_index(0, -5);
+	g2->add_input_by_index(0, 6);
+	g2->add_input_by_index(0, -5);
 	    
 	g2->render(50);
 	g2->print_output();
