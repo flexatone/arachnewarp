@@ -49,7 +49,7 @@ bool test_2() {
 	g2->print_output();
 	g2->print_inputs(true);
 	
-    g2->set_dimension(3);
+    g2->_set_output_count(3);
 	assert(g2->output[0] == 0.0);
 	g2->print_output(); // output has been reset to zero
     
@@ -66,9 +66,9 @@ bool test_2() {
 bool test_3() {
 	// can create the table subclass
     
-   	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-		aw::Generator::ID_BufferFile, 3);
-
+   	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+    // set channels to 3
+    
 	aw::Generator::VSampleType v;
 	for (std::size_t i=0; i < 120; ++i) {
 		v.push_back(i % 5);
@@ -82,8 +82,9 @@ bool test_3() {
 }
 
 bool test_4() {
-	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-							aw::Generator::ID_BufferFile, 1);	
+	aw::GeneratorShared g1 = aw::Generator::make(
+							aw::Generator::ID_BufferFile, 1);
+    // set channels to 1
     std::string s("12518-sk1Kick.aif");
     g1->set_output_from_fp(s);	
     g1->write_output_to_fp("testOutput.aif");	

@@ -18,17 +18,17 @@ Plotter :: ~Plotter() {}
 
 
 void Plotter :: plot(const std::vector<SampleType>& v, 
-    FrameDimensionType d, bool interleaved) {
+    OutputCountType d, bool interleaved) {
 
     if (d <= 0) {
-    	throw std::invalid_argument("dimension must be greater than zero");
+    	throw std::invalid_argument("_output_count must be greater than zero");
     }                
-    // get frame size, or units per dimension    
+    // get frame size, or units per _output_count    
     FrameSizeType frameSize(v.size());
     if (d > 1) {
         frameSize = v.size() / d;
     }
-    // if we get a crazy large dimension, or have a small vector
+    // if we get a crazy large _output_count, or have a small vector
     if (frameSize < 1) {
     	throw std::invalid_argument("frame size is less than 1");
     }                
@@ -60,7 +60,7 @@ set rmargin screen 0.98 " << std::endl;
     double top;
     double bottom;
         
-    for (FrameDimensionType dStep=1; dStep<d+1; ++dStep) {
+    for (OutputCountType dStep=1; dStep<d+1; ++dStep) {
         // use whole margin at top on first
         if (dStep == 1) {
             top = pos - margin; 

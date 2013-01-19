@@ -25,8 +25,8 @@ class Plotter {
     explicit Plotter();
     ~Plotter();
 
-    //! Write the plot to internal storage, given a vector of data and a dimension. The data is assumed to be adjacent, not interleaved. 
-    void plot(const std::vector<SampleType>& v, FrameDimensionType d, 
+    //! Write the plot to internal storage, given a vector of data and a _output_count. The data is assumed to be adjacent, not interleaved. 
+    void plot(const std::vector<SampleType>& v, OutputCountType d, 
                 bool interleaved=true); 
 
     //! Print the plot to standard out. 
