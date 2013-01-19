@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
 	for (int i=-100; i<100; ++i) {
 		v.push_back(i);
 	}
-	aw::FrameDimensionType d(2);
+	aw::OutputCountType d(2);
 
     // need to get an output directory from common
     std::string fp("plot.plt");

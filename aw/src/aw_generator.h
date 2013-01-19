@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <utility> // has pair
 #include <tr1/unordered_map>
 
 //#include <memory> # only with -std=c++0x
@@ -90,49 +91,49 @@ class ParameterTypePhase: public ParameterType {
 
 
 //==============================================================================
-class GeneratorConfig;
-//! A shared GeneratorConfig.
-typedef std::tr1::shared_ptr<GeneratorConfig> GeneratorConfigShared;
-//! The GeneratorConfig provides configuration parameters for Generators. If not provided, a default GeneratorConfig is used. General configuration parameters include an initial frame dimension and size, as well has a handle to a shared Environment.
-class GeneratorConfig {
-    public://-------------------------------------------------------------------
-
-	//! Static factory method for default construction.
-    static GeneratorConfigShared make_default();
-
-	//! Static factory method for creation with a defined dimension. 
-    static GeneratorConfigShared make_with_dimension(FrameDimensionType d);
-        
-	//! Primary constructor for creation with a shared Enviroinment. 
-    explicit GeneratorConfig(EnvironmentShared e);
-	
-	//! Deconstructor
-    ~GeneratorConfig();
-
-    FrameDimensionType get_init_frame_dimension() const {
-		return _init_frame_dimension;};
-
-    void set_init_frame_dimension(FrameDimensionType d) {
-		_init_frame_dimension = d;};
-    
-    FrameSizeType get_init_frame_size() const {return _init_frame_size;};
-	
-	//! Return the Environement shared pointer. Should be const to this class. 
-	EnvironmentShared get_environment() const {return _environment;};
-    
-    private://------------------------------------------------------------------
-	
-	//! This is the initial frame dimension requested; for some Generators, this may be not be a permitted dimension. 
-    FrameDimensionType _init_frame_dimension;
-	
-	//! This is the initial frame size. 
-    FrameSizeType _init_frame_size; 
-	
-	//! We store an instance of an environment on generator config. It is possible that we might, at some time after creation, change the Environment. However, doing this should explicitly require calling a methods
-	EnvironmentShared _environment; 
-
-};
-
+//class GeneratorConfig;
+////! A shared GeneratorConfig.
+//typedef std::tr1::shared_ptr<GeneratorConfig> GeneratorConfigShared;
+////! The GeneratorConfig provides configuration parameters for Generators. If not provided, a default GeneratorConfig is used. General configuration parameters include an initial frame _output_count and size, as well has a handle to a shared Environment.
+//class GeneratorConfig {
+//    public://-------------------------------------------------------------------
+//
+//	//! Static factory method for default construction.
+//    static GeneratorConfigShared make_default();
+//
+//	// Static factory method for creation with a defined _output_count. 
+////    static GeneratorConfigShared make_with_dimension(OutputCountType d);
+//        
+//	//! Primary constructor for creation with a shared Enviroinment. 
+//    explicit GeneratorConfig(EnvironmentShared e);
+//	
+//	//! Deconstructor
+//    ~GeneratorConfig();
+//
+////    OutputCountType get_init_frame_dimension() const {
+////		return _init_frame_dimension;};
+//
+////    void set_init_frame_dimension(OutputCountType d) {
+////		_init_frame_dimension = d;};
+//    
+//    FrameSizeType get_init_frame_size() const {return _init_frame_size;};
+//	
+//	//! Return the Environement shared pointer. Should be const to this class. 
+//	EnvironmentShared get_environment() const {return _environment;};
+//    
+//    private://------------------------------------------------------------------
+//	
+//	//! This is the initial frame _output_count requested; for some Generators, this may be not be a permitted _output_count. 
+////    OutputCountType _init_frame_dimension;
+//	
+//	//! This is the initial frame size. 
+//    FrameSizeType _init_frame_size; 
+//	
+//	//! We store an instance of an environment on generator config. It is possible that we might, at some time after creation, change the Environment. However, doing this should explicitly require calling a methods
+//	EnvironmentShared _environment; 
+//
+//};
+//
 
 
 
@@ -140,20 +141,14 @@ class GeneratorConfig {
 //==============================================================================
 // Dimensionality
 
-// After adding an input to a generator, we have to look at all inputs attached to that generator (recursively) and find the max dimensionality. If this dimensionality is greater then the current dimensionality of the Generator, and the Generator get_dimension_dyanmics == true, then resize to the maximum size. Otherwise, keep at current size. The render method will have to take into account having higher dimensionality inputs
-// Case 1: Create Add@2 and add operator inputs Constant@4 and Constant@3; Add should automatically resize to Add@4, as addition should not mix dimensionalities.
-
+// frame dimensionar the as outputs or channels
 
 
 
 //==============================================================================   
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
-//! Generator class. Base-class of all Generators. A Generaotr has inputs and an output. Inputs are a vector of vectors of Generators. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. 
-
-//! When multiple inputs have a different dimensionality than the Generator a number of options are available. The Generator might scale output to match that of the highest dimensionality of any one input. Alternatively, the Generator's dimensionality might remain fixed and only read the first or some other selection of input dimension. 
-
-//! If the _dimension_dynamics attribute is DD_ResizableFreely, the Generator can be dynamically resized based on inputs. 
+//! Generator class. Base-class of all Generators. A Generaotr has inputs and outputs. Inputs are a vector of vectors of Generators/output number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. 
 
 
 class Generator {
@@ -165,29 +160,27 @@ class Generator {
     
 	typedef std::vector<SampleType> VSampleType;
 	typedef std::vector<VSampleType> VVSampleType;
-	
-    typedef std::vector<GeneratorShared> VGenShared;
-    typedef std::vector<VGenShared> VVGenShared;
-	
-    typedef std::vector<OutputSizeType> VOutputSize;
-    typedef std::vector<VOutputSize> VVOutputSize;
+		
+    typedef std::vector<FrameSizeType> VFrameSize;
+    typedef std::vector<VFrameSize> VVFrameSize;
 
-    // enums
+    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output number, starting from zero, to be read. 
+    typedef std::pair<GeneratorShared, OutputSizeType> GenSharedOutPair;
+    typedef std::vector<GenSharedOutPair> VGenSharedOutPair;
+    typedef std::vector<VGenSharedOutPair> VVGenSharedOutPair;
+
+    //! A vector of GeneratorShared instances used for slots. Slots do not yet need to define output number; generatlly assume that we use the first output?
+    typedef std::vector<GeneratorShared> VGenShared;
+    
+    // enums    
     //! Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators. 
     enum GeneratorID {
         ID_Constant,    
         ID_Add,
         ID_BufferFile,		
         ID_Phasor,				
-        ID_Recorder,	
     };
         
-    enum DimensionDynamics {
-        DD_FixedMono,    
-		//TODO: replace with DD_FixedN, size is fixed based on class definition; does not change		
-        DD_ResizableAtInit, // size can only be set at init
-        DD_ResizableFreely,		
-    };
 		
     protected://----------------------------------------------------------------
     //! The name of the class. This is set during the class constructor by the derived class, and thus needs to be protected.
@@ -195,17 +188,18 @@ class Generator {
 
     private://------------------------------------------------------------------
     //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
-    FrameDimensionType _frame_dimension;
-	//! The size of each frame for each dimension.
+    OutputCountType _output_count;
+	//! The size of each frame for each _output_count.
     FrameSizeType _frame_size; // if changed, need to rebuild output	
-	//! The _output_size is derived from frame dimension times the frame size. 
-    OutputSizeType _output_size;
+	//! The _total_frame_count is derived from frame _output_count times the frame size. 
+    OutputSizeType _total_frame_count;
     //! Number of input parameters used by this Generator. More than one Generator can reside in each slot. 
     ParameterIndexType _input_parameter_count;    
 	//! Number of slots used by this Generator. One Generator can reside in each slot. 
     ParameterIndexType _slot_parameter_count;    
-	//! Store the GeneratorConfig instance. This also stores a handle to shared Environment in stance. 
-    GeneratorConfigShared _generator_config;    
+
+	//! Store the Envrionment instance. 
+    EnvironmentShared _environment;
 	
     protected://----------------------------------------------------------------
 	
@@ -214,10 +208,7 @@ class Generator {
 	
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
 	OutputSizeType _nyquist;
-	
-    //! Define if this Generator has one of three states to describe resizability. Most generators have resizable output; only some (like a mixer) do not.
-    DimensionDynamics _dimension_dynamics;
-	
+		
     //! Define if this Generator has resizable frames size. Most generators do not have have resizable frame size; only some (like a Buffer or WaveTable) do.
     bool _frame_size_is_resizable;	
                             
@@ -229,10 +220,10 @@ class Generator {
                             ParameterTypeShared> _input_parameter_type;	
 	
     //! Store and update the output sizes of all inputs (a vector for each parameter type, and an OutputSizeType for each value therein); this only needs to be updated when resizing has happened in the inputs. This needs to be accessed in subclass render routines, so will be protected for now.
-    VVOutputSize _inputs_output_size;	
+    VVFrameSize _inputs_frame_size;	
 	
-    //! A std::vector of vectors of GeneratorsShared that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
-    VVGenShared _inputs;
+    //! A std::vector of vectors of GeneratorsShared / output id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
+    VVGenSharedOutPair _inputs;
 	
 	//! A std::vector of GeneratorsShared that are used for configuration of this Generator. 
 	VGenShared _slots;
@@ -241,15 +232,15 @@ class Generator {
     std::tr1::unordered_map<ParameterIndexType, 
                             ParameterTypeShared> _slot_parameter_type;		
 	
-	//! For render call, we sum all inputs up to the highest dimension available in the input and store that in a Vector of sample types.
+	//! For render call, we sum all inputs up to the highest _output_count available in the input and store that in a Vector of sample types.
 	VVSampleType _summed_inputs;
 	
-	//! A vector of output offsets, to be used when iterating over dimension and incorporating non-interleaved presentation of the output. This must be updated after every resizing, as dimension and frame size may have changed. This is protected because subclass methods may want to use this structure (but they should not change it)
-	VFrameSizeType _dimension_offsets; 
+	//! A vector of output offsets, to be used when iterating over _output_count and incorporating non-interleaved presentation of the output. This must be updated after every resizing, as _output_count and frame size may have changed. This is protected because subclass methods may want to use this structure (but they should not change it)
+	VFrameSizeType _output_frame_offsets; 
 
     public://-------------------------------------------------------------------
         
-    //! A linear array of samples, which may include multiple dimensions placed in series. This might be private, but for performance this is presently public; when configured to run  dimensions can be stored via requests and than used as constants w/o function calls. 
+    //! A linear array of samples, which may include multiple dimensions (e.g. channels) placed in series. This might be private, but for performance this is presently public: no function call is required to read from it.
     SampleType* output;	
     
 
@@ -257,21 +248,18 @@ class Generator {
 	
     private://------------------------------------------------------------------   	
 	
-    //! Resize the output vector. Always called during init and also by set_dimension. Will remove an exisiting array. For public resizing use set_dimension(). Will not reset.  
+    //! Resize the output vector. Always called during init and also by _set_output_count. Will remove an exisiting array.
     void _resize_output();    
 	
     protected://----------------------------------------------------------------
 		
-    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and both _inputs and _inputs_output_size are given a blank vector for appending to. 
+    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and both _inputs and _inputs_frame_size are given a blank vector for appending to. 
     void _register_input_parameter_type(ParameterTypeShared pts);
 
 	//! Called by Generators during init() to configure the slot parameters found in this Generator.
     void _register_slot_parameter_type(ParameterTypeShared pts);
 
-    //! Recursively search for the max input dimension. 
-    virtual FrameDimensionType _find_max_input_dimension(FrameDimensionType d=1);
-
-    //! Call this everytime a new input has been added. Does necessary and may resize this generator. This should not be called in render(). Pre-fetches all the output sizes of all inputs. These are stored in _inputs_output_size.
+    //! Call this everytime a new input has been added. Does necessary and may resize this generator. This should not be called in render(). Pre-fetches all the output sizes of all inputs. These are stored in _inputs_frame_size.
     void _update_for_new_input();
 
 	//! Call this every time a new slot has been added or changed. This is necessarily virtual as subclasses need to handle their slots in their own way. 
@@ -282,17 +270,20 @@ class Generator {
 	
 	//! Flatten or sum multiple inputs that reside in the same input type. This is done to optimize dealing with multiple inputs in the same input type ahead of calculations for rendering. Results are stored in _summed_inputs VV. 
 	inline void _sum_inputs();
+    
+    
+    //! Method for resizing based on dimesion. Calls _resize_output only if necessary. This method is not called at init(), and thus represets any post-init change to _output_count size, such as that based on changes in input _output_count size. 
+    void _set_output_count(OutputCountType d);    
+    
 	
     public://-------------------------------------------------------------------
-	//! Factory for all Generators that creates a  Generator with a dimension. Calls init() method. 
-    static GeneratorShared make_with_dimension(GeneratorID, FrameDimensionType);
-	
     //! Factory for all Generators. This creates a Generator, and calls its init() method. 
     static GeneratorShared make(GeneratorID);
 
+
     public://-------------------------------------------------------------------
 	//! Main constructor that takes a generator config. 
-    explicit Generator(GeneratorConfigShared gc);
+    explicit Generator(EnvironmentShared e);
     
     virtual ~Generator();
     
@@ -300,22 +291,20 @@ class Generator {
     virtual void init();    
 
     //! Return a Boolean if this Generator has resizable output
-    DimensionDynamics get_dimension_dyanmics() const {return _dimension_dynamics;};
+//    DimensionDynamics get_dimension_dyanmics() const {return _dimension_dynamics;};
     
-    //! Public method for resizing based on dimesion. Calls _resize_output only if necessary. This method is not called at init(), and thus represets any post-init change to dimension size, such as that based on changes in input dimension size. 
-    void set_dimension(FrameDimensionType d);    
 
     //! Return the the number of output dimensions
-    FrameDimensionType get_dimension() const {return _frame_dimension;};
+    OutputCountType get_dimension() const {return _output_count;};
 
     //! Return the the output size
-    FrameSizeType get_output_size() const {return _output_size;};
+    FrameSizeType get_output_size() const {return _total_frame_count;};
     
     //! Get the average value of all output values. 
     SampleType get_output_abs_average() const;
 
-    //! Get the average of single dimension of output. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
-    SampleType get_output_average(FrameDimensionType d) const;
+    //! Get the average of single _output_count of output. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
+    SampleType get_output_average(OutputCountType d) const;
 
     //! Return a Boolean if this Generator has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
@@ -326,9 +315,9 @@ class Generator {
     //! Return the the frame size.
     OutputSizeType get_frame_size() const {return _frame_size;};	
 
-	//! Get frames per dimension
+	//! Get frames per _output_count
     OutputSizeType get_frames_per_dimension() const {return _frame_size / 
-															_frame_dimension;};	
+															_output_count;};	
 
 	//! Get the sampling rate. 
     OutputSizeType get_sampling_rate() const {return _sampling_rate;};	
@@ -373,15 +362,15 @@ class Generator {
 
     //! Write out all outpout to the provided file path. If this is a BufferFile, this can be used to write an audio file.
     virtual void write_output_to_fp(const std::string& fp, 
-                                    FrameDimensionType d=0) const;
+                                    OutputCountType d=0) const;
 	
 	//! Set the output from an array. 
 	void set_output_from_array(SampleType* v, OutputSizeType s, 
-							FrameDimensionType ch, bool interleaved=true);
+							OutputCountType ch, bool interleaved=true);
 								
 	//! Set the output (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. 
 	void set_output_from_vector(const VSampleType& vst, 
-								FrameDimensionType ch, bool interleaved=true);
+								OutputCountType ch, bool interleaved=true);
 
 
     //! If we are in a BufferFile class, this method loads a complete file path to an audio file into the outpout of this Generator. 
@@ -434,14 +423,9 @@ class Constant: public Generator {
 	//! Storage for the internal constant values. This is an array because we want to support a similar interface of applying multiple values to a single input parameter. 
     VSampleType _values;
 
-    protected://----------------------------------------------------------------
-
-    //! Virtual version here needs to return a terminal value, which is the dimensionallity of this generator. 
-    virtual FrameDimensionType _find_max_input_dimension(FrameDimensionType d=1);
-
     public://-------------------------------------------------------------------
 //    explicit Constant();
-	explicit Constant(GeneratorConfigShared);
+	explicit Constant(EnvironmentShared);
     ~Constant();
     
     virtual void init();	
@@ -479,7 +463,7 @@ class Add: public Generator {
     SampleType _sum_opperands;
 
     public://-------------------------------------------------------------------
-    explicit Add(GeneratorConfigShared);
+    explicit Add(EnvironmentShared);
 	
     ~Add();
 
@@ -499,7 +483,7 @@ typedef std::tr1::shared_ptr<BufferFile> BufferFileShared;
 class BufferFile: public Generator {
 
     public://-------------------------------------------------------------------
-    explicit BufferFile(GeneratorConfigShared);
+    explicit BufferFile(EnvironmentShared);
 	
     ~BufferFile();
 
@@ -511,9 +495,9 @@ class BufferFile: public Generator {
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
 		
-    //! Write to an audio file to given the ouput file path. The optional FrameDimensionType argument can be used to specify a single dimension of many to write. If FrameDimensionType is 0, all dimensions are written.
+    //! Write to an audio file to given the ouput file path. The optional OutputCountType argument can be used to specify a single _output_count of many to write. If OutputCountType is 0, all dimensions are written.
     virtual void write_output_to_fp(const std::string& fp, 
-                                    FrameDimensionType d=0) const;
+                                    OutputCountType d=0) const;
         
     //! Set the output of this Generator to the content of an audio file. This overridden method makes the usage of libsndfile to read in a file. 
     virtual void set_output_from_fp(const std::string& fp);
@@ -537,7 +521,7 @@ class BufferFile: public Generator {
 		
     /*//! Write the contents recoreded to an audio file. This works by calling the same method on the Buffer stored in the slot. */
     /*virtual void write_output_to_fp(const std::string& fp, */
-                                    /*FrameDimensionType d=0) const;*/
+                                    /*OutputCountType d=0) const;*/
         
 	/*//! Rendering does not write to output, but instead writes to the slot-stored Buffer. */
     /*virtual void render(RenderCountType f);        */
@@ -550,7 +534,7 @@ class BufferFile: public Generator {
 
 
 //==============================================================================
-//! The phasor has a ramp from 0 to 1 for each dimension defined. Only the first dimension of multiple dimensional inputs is used. 
+//! The phasor has a ramp from 0 to 1 for each _output_count defined. Only the first _output_count of multiple dimensional inputs is used. 
 
 class Phasor;
 typedef std::tr1::shared_ptr<Phasor> PhasorShared;
@@ -572,7 +556,7 @@ class Phasor: public Generator {
 	RenderCountType _period_samples;		
 
     public://-------------------------------------------------------------------
-    explicit Phasor(GeneratorConfigShared);
+    explicit Phasor(EnvironmentShared);
 	
     ~Phasor();
 

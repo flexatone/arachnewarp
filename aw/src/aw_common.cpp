@@ -61,10 +61,17 @@ const char* get_fp_home() {
 
 
 Environment :: Environment() 
-	: _sampling_rate(44100) {
+	: _sampling_rate(44100),
+    _common_frame_size(64) {
 	// post initializers
     _load_defaults();
 }
+
+EnvironmentShared Environment :: make() {
+    EnvironmentShared e = EnvironmentShared(new Environment);
+    return e;
+}
+
 
 Environment :: ~Environment() {}
 

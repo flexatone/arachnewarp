@@ -33,9 +33,9 @@ typedef std::tr1::uint32_t FrameSizeType;
 //! Output size. Was uint16_t, but for handling files was increased to uint32_t. In general, the output is the frame size times the number of dimensions, so output is always greater than or equal to frame size. 
 typedef std::tr1::uint32_t OutputSizeType;
 
-// dimension probably never more than 200!
+// _output_count probably never more than 200!
 //! An unisigned integer describing the number of dimensions for a Generator. 
-typedef std::tr1::uint8_t FrameDimensionType; 
+typedef std::tr1::uint8_t OutputCountType; 
 
 //! A vector of frame size types. This is used for offsets into the output.
 typedef std::vector<FrameSizeType> VFrameSizeType;
@@ -87,15 +87,19 @@ class Environment;
 typedef std::tr1::shared_ptr<const Environment> EnvironmentShared;
 //! A representation of the user's enviroinment. The Environment provides file-system-related access (file paths, etc) as well as audio I/O and related hardware related configuration options. 
 class Environment {
+
+
     private://-----------------------------------------------------------------
-    
     //! We internally store the temp directory as a Boost filepath object. The temp directory is stored in the user's home directory. This can be overriden in the future with different. location. 
     boost::filesystem::path _temp_directory;
 	
 	//! Private sampling rate storage. Defaults to 44100. 
 	OutputSizeType _sampling_rate;
+    
+    //! Common (but not all) frame size. Defaults to 
+	FrameSizeType _common_frame_size;
 	
-
+    //! Load default directories.
     void _load_defaults();
 	
     public://-------------------------------------------------------------------
@@ -104,11 +108,18 @@ class Environment {
     
     ~Environment();
 	
-    //! Return the sampleing rate
+    //! Factory method that sets defaults. 
+    static EnvironmentShared make();    
+    
+    //! Return the sampling rate
 	OutputSizeType get_sampling_rate() const {return _sampling_rate;};
+
+    //! Return the common (or shared) frame size. 
+    FrameSizeType get_common_frame_size() const {return _common_frame_size;};
 
 	//! This returns a file path in the environment-specified temporary directory. By default this is in the user directory .arachnewaro. This returns a string for easier compatibility with clients, rather than a Boost file path
     std::string get_fp_temp(std::string name) const;
+
 
     //also need methods to return audio files from a default/or set audio dir
 

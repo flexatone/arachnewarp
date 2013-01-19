@@ -1,0 +1,142 @@
+
+
+
+==
+todo:
+
+need Table
+
+    subclass into TableSaw and other tables
+    no parameters: just the stored shape
+    
+
+PolyTableFile
+    
+    to provide an audio file to a selector and select amp values from one channel over the selector's life, will need a way to convert ouput of table to soemthing like a polyconstant; need an PolyAccumulateStatic or similar that will read all unique values (or values within a range) and present all values for each sample call.
+        
+
+    
+try to provide automatic smoothing for freqency changes
+
+    
+valueList with only one item raises an error (it interprets it as a value list!
+valueList{360}
+
+
+fix trailing commas: this will fail
+PolyConstant{1,5,}
+
+
+
+
+
+
+== 
+c++ notes
+
+
+
+convert vector into an array pointer:
+double *array = &(*vector.begin());
+
+
+==
+// new generators
+
+
+
+FoldUp: convert a gen into a polygen dynamically 
+    given a Generator as operand, distribute into a workingarray 
+    parameters would be size of working array, 
+    refresh rate: how long until new values are drawn from the source
+        if set to one sample, new values are drawn to fill working array
+        for each call
+        
+FoldDown
+    various approaches to moving from a PolyGenerator to a generator
+
+
+
+
+
+
+
+
+VariableFunctionTable
+
+
+    store wave tables, deal with interpolation, data storage
+    have wave shape be a parameter
+
+
+WaveformTable
+
+    input an audio file from any source
+    have a rate scalar control 
+        integer, where 1 is 1
+        will have to interpolate
+    
+    have a start index parameter
+        parameter context: samples, time, proportion
+
+    have a end index parameter
+        parameter context: samples, time, proportion
+
+    have a phase index parameter: 
+        position where sample 0 starts; 
+        parameter context: samples, time, proportion
+
+
+
+
+
+
+
+==
+
+OutputManager subclasses
+
+subclasses provide interfaces for various types of output?
+
+have a method on a Generator that sends its value to the output for a certain time value?
+
+    in a way, each Generator could provide its own clocking and scheduling
+    each Generator could spawn a new thread to produce outpout
+
+        what if two different Generators, sharing an input parameter, collide?
+
+outputs here could be things like OSC sends, audio files, or rt output via port-audio
+
+for OSC sends, the OutputManager subclass could configure the tags assigned to that generator
+
+
+
+==
+
+
+returning an object created within a function
+
+http://stackoverflow.com/questions/2715198/c-pointer-objects-vs-non-pointer-objects
+
+there is a boost pointer for functions
+
+
+
+
+
+==
+
+
+find this article
+
+Oscillator and Filter Algorithms for Virtual Analog Synthesis (2 times)
+Vesa Välimäki, Antti Huovilainen
+Computer Music Journal Summer 2006, Vol. 30, No. 2, Pages 19-31: 19 -31.
+Citation | PDF (887 KB) | PDF Plus (729 KB) | Add to Favorites 
+
+
+
+--
+
+
+
