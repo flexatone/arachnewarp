@@ -22,7 +22,7 @@ namespace aw {
 //typedefs =====================================================================
 
 // define the sample format
-//! The sample type is used for sample values, e.g., amplitude measurements in the output array. 
+//! The sample type is used for sample values, e.g., amplitude measurements in the matrix array. 
 typedef double SampleType; // sample value type
 
 // frame size type: probadbly under 10,000, 0 to 65535
@@ -30,14 +30,14 @@ typedef double SampleType; // sample value type
 //! The size of a single frame (or vector), or the number of samples processed per computation cycle. This is a very large integer as we might need to accomodate loading in large audio files as a single frame. 
 typedef std::tr1::uint32_t FrameSizeType;
 
-//! Output size. Was uint16_t, but for handling files was increased to uint32_t. In general, the output is the frame size times the number of dimensions, so output is always greater than or equal to frame size. 
-typedef std::tr1::uint32_t OutputSizeType;
+//! Output size. Was uint16_t, but for handling files was increased to uint32_t. In general, the matrix is the frame size times the number of outputs, so matrix is always greater than or equal to frame size. 
+typedef std::tr1::uint32_t MatrixSizeType;
 
 // _output_count probably never more than 200!
 //! An unisigned integer describing the number of dimensions for a Generator. 
 typedef std::tr1::uint8_t OutputCountType; 
 
-//! A vector of frame size types. This is used for offsets into the output.
+//! A vector of frame size types. This is used for offsets into the matrix.
 typedef std::vector<FrameSizeType> VFrameSizeType;
 
 //! A small unsigned interger for specialized cases. 
@@ -94,7 +94,7 @@ class Environment {
     boost::filesystem::path _temp_directory;
 	
 	//! Private sampling rate storage. Defaults to 44100. 
-	OutputSizeType _sampling_rate;
+	MatrixSizeType _sampling_rate;
     
     //! Common (but not all) frame size. Defaults to 
 	FrameSizeType _common_frame_size;
@@ -112,7 +112,7 @@ class Environment {
     static EnvironmentShared make();    
     
     //! Return the sampling rate
-	OutputSizeType get_sampling_rate() const {return _sampling_rate;};
+	MatrixSizeType get_sampling_rate() const {return _sampling_rate;};
 
     //! Return the common (or shared) frame size. 
     FrameSizeType get_common_frame_size() const {return _common_frame_size;};

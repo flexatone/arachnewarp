@@ -50,10 +50,10 @@ bool test_2() {
 	g2->print_inputs(true);
 	
     g2->_set_output_count(3);
-	assert(g2->output[0] == 0.0);
-	g2->print_output(); // output has been reset to zero
+	assert(g2->matrix[0] == 0.0);
+	g2->print_output(); // matrix has been reset to zero
     
-    // we need to re-renter to get output
+    // we need to re-renter to get matrix
     // problem, however, is lower-level gens only have default dimensionality
     g2->render(10);
 	g2->print_output();

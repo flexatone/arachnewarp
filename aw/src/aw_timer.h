@@ -18,7 +18,7 @@ class Timer {
     explicit Timer(const std::string& n);
     void start();
     void stop(); 
-	friend std::ostream& operator<<(std::ostream& output, const Timer& t);
+	friend std::ostream& operator<<(std::ostream& matrix, const Timer& t);
     
     private://----------------------------------------------------------------
 	//! Since this function is called by operator<<, it needs to be const, otherwise we cannot pass the const Timer inst to this function. 

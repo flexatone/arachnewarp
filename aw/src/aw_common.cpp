@@ -72,7 +72,6 @@ EnvironmentShared Environment :: make() {
     return e;
 }
 
-
 Environment :: ~Environment() {}
 
 void Environment :: _load_defaults() {
