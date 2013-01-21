@@ -34,7 +34,7 @@ double Timer :: _get_ms_difference(std::clock_t start, std::clock_t end) const {
 
 
 
-std::ostream& operator<<(std::ostream& output, const Timer& t) {
+std::ostream& operator<<(std::ostream& matrix, const Timer& t) {
     // get time difference but do not stop
     double dif(0);
     if (not (t._stopped)) { // if not stopped, get comparison to now
@@ -43,8 +43,8 @@ std::ostream& operator<<(std::ostream& output, const Timer& t) {
     else {
         dif = t._get_ms_difference(t._start_time, t._end_time);        
     }
-    output << "<Timer: " << t._name << ": " << dif << " msec>";
-    return output; 
+    matrix << "<Timer: " << t._name << ": " << dif << " msec>";
+    return matrix; 
 }
 
     
