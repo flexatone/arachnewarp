@@ -115,48 +115,39 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
     BOOST_CHECK_CLOSE(g3->matrix[0], 5, .0000001);
 
 }
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
-//    // do not need to init() when called with make()
-//	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
-//	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);
-//	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
-//
-//	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Constant);
-//	aw::GeneratorShared g5 = aw::Generator::make(aw::Generator::ID_Constant);
-//	aw::GeneratorShared g6 = aw::Generator::make(aw::Generator::ID_Add);
-//
-////	aw::GeneratorShared g1 = aw::ConstantShared(new aw::Constant);
-////	aw::GeneratorShared g2 = aw::ConstantShared(new aw::Constant);
-////	aw::GeneratorShared g3 = aw::AddShared(new aw::Add);
-////
-////	aw::GeneratorShared g4 = aw::ConstantShared(new aw::Constant);
-////	aw::GeneratorShared g5 = aw::ConstantShared(new aw::Constant);
-////	aw::GeneratorShared g6 = aw::AddShared(new aw::Add);
-//
-//
-//	g4->set_input_by_index(0, 11);
-//	g5->set_input_by_index(0, 20);
-//	g6->add_input_by_index(0, g4);
-//	g6->add_input_by_index(0, g5);
-//
-//	g1->set_input_by_index(0, 2);
-////	g2->set_input_by_index(0, 3);
-//    g3->add_input_by_index(0, g1);
-//	g3->add_input_by_index(0, g6);
-//	//g3->print_inputs();
-//	
-//	g3->render(1);
-//	//g3->print_output();
-//	g3->render(8);
-//	//g3->print_output();
-//
-//	//g3->print_inputs(true);
-//	
-//    BOOST_CHECK_CLOSE(g3->matrix[0], 33, .0000001);
-//
-//}
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
+    // do not need to init() when called with make()
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
+
+	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GeneratorShared g5 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GeneratorShared g6 = aw::Generator::make(aw::Generator::ID_Add);
+
+	g4->set_input_by_index(0, 11);
+	g5->set_input_by_index(0, 20);
+	g6->add_input_by_index(0, g4);
+	g6->add_input_by_index(0, g5);
+
+	g1->set_input_by_index(0, 2);
+    g3->add_input_by_index(0, g1);
+	g3->add_input_by_index(0, g6);˙
+	//g3->print_inputs();
+	
+	g3->render(1);
+	//g3->print_output();
+	g3->render(8);
+	//g3->print_output();
+
+	//g3->print_inputs(true);
+    BOOST_CHECK_CLOSE(g3->matrix[0], 33, .0000001);
+    
+    // TODO: this is  good candidate for graphoz .dot writingß
+
+}
 //
 //
 //
