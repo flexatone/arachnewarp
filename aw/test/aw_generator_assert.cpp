@@ -11,12 +11,12 @@
 
 bool test_1() {
 //	aw::Constant g3;
-//    assert(g3.get_parameter_count() == 1);
+//    assert(g3.get_input_count() == 1);
 
 	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Constant);
 
     //aw::ConstantShared g4 = aw::ConstantShared(new aw::Constant);
-    assert(g4->get_parameter_count() == 1);
+    assert(g4->get_input_count() == 1);
     
     // check that dynamically created constants are managed properly
     
@@ -49,15 +49,15 @@ bool test_2() {
 	g2->print_output();
 	g2->print_inputs(true);
 	
-    g2->_set_output_count(3);
-	assert(g2->matrix[0] == 0.0);
-	g2->print_output(); // matrix has been reset to zero
-    
-    // we need to re-renter to get matrix
-    // problem, however, is lower-level gens only have default dimensionality
-    g2->render(10);
-	g2->print_output();
-	
+//    g2->_set_output_count(3);
+//	assert(g2->matrix[0] == 0.0);
+//	g2->print_output(); // matrix has been reset to zero
+//    
+//    // we need to re-renter to get matrix
+//    // problem, however, is lower-level gens only have default dimensionality
+//    g2->render(10);
+//	g2->print_output();
+//	
     //g2->plot_output();
     return true;
 
@@ -82,8 +82,7 @@ bool test_3() {
 }
 
 bool test_4() {
-	aw::GeneratorShared g1 = aw::Generator::make(
-							aw::Generator::ID_BufferFile, 1);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
     // set channels to 1
     std::string s("12518-sk1Kick.aif");
     g1->set_output_from_fp(s);	

@@ -177,8 +177,8 @@ class Generator {
     //! A std::vector of vectors of GeneratorsShared / matrix id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenSharedOutPair _inputs;
 	
-    //! Store and update the matrix sizes of all inputs (a vector for each parameter type, and an MatrixSizeType for each value therein); this only needs to be updated when resizing has happened in the inputs. This needs to be accessed in subclass render routines, so will be protected for now.
-    VVFrameSize _inputs_frame_size;	
+    // Store and update the matrix sizes of all inputs (a vector for each parameter type, and an MatrixSizeType for each value therein); this only needs to be updated when resizing has happened in the inputs. This needs to be accessed in subclass render routines, so will be protected for now.
+//    VVFrameSize _inputs_frame_size;	
     
 	//! A std::vector of GeneratorsShared that are used for configuration of this Generator. 
 	VGenShared _slots;
@@ -209,8 +209,11 @@ class Generator {
 	
     protected://----------------------------------------------------------------
 		
-    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and both _inputs and _inputs_frame_size are given a blank vector for appending to. 
+    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and _inputs is given a blank vector for appending to. 
     void _register_input_parameter_type(ParameterTypeShared pts);
+
+    //! Remove all inputs; used by slots that dynamically chagne inputs and outputs; all existing inputs will remain. 
+    void _clear_input_parameter_types();
 
 	//! Called by Generators during init() to configure the slot parameters found in this Generator.
     void _register_slot_parameter_type(ParameterTypeShared pts);
@@ -227,6 +230,8 @@ class Generator {
 	//! Flatten or sum multiple inputs that reside in the same input type. This is done to optimize dealing with multiple inputs in the same input type ahead of calculations for rendering. Results are stored in _summed_inputs VV. 
 	inline void _sum_inputs();
     
+	//! Call reset on all inputs. 
+	void _reset_inputs();
     
     //! Method for resizing based on dimesion. Calls _resize_matrix only if necessary. This method is not called at init(), and thus represets any post-init change to _output_count size, such as that based on changes in input _output_count size. 
     void _set_output_count(OutputCountType d);    
@@ -284,9 +289,6 @@ class Generator {
     //! Reset all parameters, and zero out the matrix array.
     virtual void reset();
 	
-	//! Call reset on all inputs. 
-	void _reset_inputs();
-
 	//! Output stream friend function: returns the name of the Generator. 
 	friend std::ostream& operator<<(std::ostream& matrix, const Generator& g);
     
@@ -304,8 +306,6 @@ class Generator {
     //! Render the requested frame if not already rendered. This is virtual because every Generator renders in a different way. 
     virtual void render(RenderCountType f); 
 
-
-    //void plot_output_to_temp_fp(bool open=true);
 
     //! Plot the matrix by piping it to gnuplot using a subprocess. 
 	void plot_output();
@@ -332,13 +332,22 @@ class Generator {
     //! If we are in a BufferFile class, this method loads a complete file path to an audio file into the outpout of this Generator. 
     virtual void set_output_from_fp(const std::string& fp);
 
-	// parameter ..............................................................    
-    //! Return the number of parameters; this is not the same as the number of Generators, as each parameter may have 1 or more Generators
-    ParameterIndexType get_parameter_count() {return _input_parameter_count;};
+
+	// inputs and slots ........................................................    
+    //! Return the number of inputs; this is not the same as the number of Generators, as each input may have 1 or more Generators
+    ParameterIndexType get_input_count() {return _input_parameter_count;};
+
+    //! Return the number of slots. There is only one Generator per slot. 
+    ParameterIndexType get_slot_count() {return _slot_parameter_count;};
 
 	//! Return the parameter index for a named parameter.
-    ParameterIndexType get_parameter_index_from_name(const std::string& s);
+    ParameterIndexType get_input_index_from_parameter_name(const std::string& s);
 
+	//! Return the parameter slot for a named parameter.
+    ParameterIndexType get_slot_index_from_parameter_name(const std::string& s);	
+
+
+	// input ..............................................................    
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     virtual void set_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs);
@@ -350,14 +359,10 @@ class Generator {
 
     virtual void add_input_by_index(ParameterIndexType i, SampleType v);
   
-	// slot ..............................................................    
-    ParameterIndexType get_slot_count() {return _slot_parameter_count;};
-
-	// Return the parameter index for a named parameter.
-    //ParameterIndexType get_slot_index_from_name(const std::string& s);	
-	
+	// slot ..............................................................    	
     //! Directly set a parameter given an index. This will remove/erase any parameter on this slot. 	
     virtual void set_slot_by_index(ParameterIndexType i, GeneratorShared gs);
+    
 	//! Overridden to handle a constant. 
     virtual void set_slot_by_index(ParameterIndexType i, SampleType v);
 
@@ -419,8 +424,8 @@ class Add: public Generator {
     SampleType _sum_opperands;
 
 //    protected://-----------------------------------------------------------------
-//	//! Overridden to apply slot settings and reset as necessary. 
-//	void _update_for_new_slot();
+	//! Overridden to apply slot settings and reset as necessary. 
+	void _update_for_new_slot();
 
     public://-------------------------------------------------------------------
     explicit Add(EnvironmentShared);

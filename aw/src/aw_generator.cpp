@@ -57,75 +57,6 @@ ParameterTypeChannels :: ParameterTypeChannels() {
 
 
 
-
-//==============================================================================
-// GeneratorConfig
-// intentionally not using overridden make functions here to make code as clear as possible
-
-// TODO: this class can go away: replace with Environment directly
-
-//GeneratorConfigShared GeneratorConfig :: make_default() {
-//	EnvironmentShared e = EnvironmentShared(new Environment);
-//    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig(e));
-//    return gc;
-//}
-
-//GeneratorConfigShared GeneratorConfig :: make_with_dimension(
-//	OutputCountType d) {
-//	EnvironmentShared e = EnvironmentShared(new Environment);
-//    GeneratorConfigShared gc = GeneratorConfigShared(new GeneratorConfig(e));
-//    gc->set_init_frame_dimension(d);
-//    return gc;
-//}
-
-
-//..............................................................................
-//GeneratorConfig :: GeneratorConfig(EnvironmentShared e) 
-//    : 
-//	_init_frame_size(64), // this is the default for all generators; 
-//	_environment(e) {
-//    // set standard generator defaults here: 1 d, size 128
-//	// what determiens what comes from environment, what comes from GenteratorConfig?
-//}
-//
-//GeneratorConfig :: ~GeneratorConfig() {
-//}
-
-
-//==============================================================================
-// Generator
-
-// removed: make_with_dimension
-
-
-//GeneratorShared  Generator :: make_with_dimension(GeneratorID q, 
-//	OutputCountType d){
-//    // static factory method
-//	GeneratorConfigShared gc = GeneratorConfig :: make_with_dimension(d);
-//	
-//    // ids are defined as public enum in generator.h
-//    GeneratorShared g;    
-//    if (q == ID_Constant) {
-//        g = ConstantShared(new Constant(gc));
-//    }
-//    else if (q == ID_Add) {
-//        g = AddShared(new Add(gc));    
-//    }
-//    else if (q == ID_BufferFile) {
-//        g = BufferFileShared(new BufferFile(gc));    
-//    }	
-//    else if (q == ID_Phasor) {
-//        g = PhasorShared(new Phasor(gc));    
-//    }
-//    else {
-//        throw std::invalid_argument("no matching GeneratorID: " + q);
-//    }
-//    // automatically call init; this will call subclass init, which calls baseclass init
-//    g->init();
-//    return g;
-//}
-
-
 GeneratorShared  Generator :: make(GeneratorID q){
 	// just get defailt vaules
     EnvironmentShared e = EnvironmentShared(new Environment);
@@ -156,7 +87,7 @@ Generator :: Generator(EnvironmentShared e)
 	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
 	: _class_name("Generator"), 
 	_output_count(1), // always init to 1; can change in init
-	_frame_size(e->get_common_frame_size()),
+	_frame_size(1), // set in init; 
 	_matrix_size(1), // will be updated after resizing
     _input_parameter_count(0), 	
     _slot_parameter_count(0), 	
@@ -196,10 +127,8 @@ void Generator :: init() {
     reset(); // zero matrix; zero frame count
 }
 
-
 //..............................................................................
 // private methods
-
 void Generator :: _resize_matrix() {
     // _matrix_size is set here, memory is allocated
     // std::cout << *this << " Generator::_resize_matrix()" << std::endl;
@@ -240,6 +169,12 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     _input_parameter_count += 1;
 }
 
+void Generator :: _clear_input_parameter_types() {
+    _input_parameter_count = 0;
+    _inputs.clear();
+    _summed_inputs.clear();
+}
+
 void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
 	// called in derived init()
 	// set dictionary directly
@@ -249,11 +184,8 @@ void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
     
 }
 
-
 void Generator :: _update_for_new_input() {
-    // pass
 }
-
 
 void Generator :: _update_for_new_slot() {
     // thi is virtual: override to update
@@ -281,8 +213,7 @@ void Generator :: _reset_inputs() {
     VGenSharedOutPair :: const_iterator j; // vector of generators    
     for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
         // inputs are a vector of Generators
-        for (j=_inputs[i].begin(); 
-             j!=_inputs[i].end(); ++j) {
+        for (j=_inputs[i].begin(); j!=_inputs[i].end(); ++j) {
             // this is a shared generator
             (*j).first->reset();
         }
@@ -290,35 +221,40 @@ void Generator :: _reset_inputs() {
 }
 
 void Generator :: _sum_inputs() {
+    // note that this is nearly identical to Add :: render(); here we store the results in _summed_inputs, not in matrix; we also do not render inputs
+    ParameterIndexType i;
+    FrameSizeType k;
+    ParameterIndexType j;
 
-	// sum all inputs for all 1 frame of each dimension, up to the max dimension found;
-	//std::cout << "_sum_inputs(): " << std::endl;
-	SampleType sum(0);
+    ParameterIndexType gen_count_at_input(0);    
+    OutputCountType out(0);
 
     // we only read and/or sum up to our own frame size
-    FrameSizeType frameSize = get_frame_size();
+    FrameSizeType frameSize(get_frame_size());
+        
+	SampleType sum(0);
     
 	// iterate over each input parameter type
-    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
-
+    for (i=0; i<_input_parameter_count; ++i) {
 		_summed_inputs[i].clear();
 		// only call reserve() if necessary
 		if (_summed_inputs[i].capacity() != frameSize) {
 			_summed_inputs[i].reserve(frameSize);
-			// std::cout << "_sum_inputs(): reserving: " << maxFound << std::endl
         }
-		// go up to the max for each input slot, but stop reading from an input when necessary
-		for (unsigned int k=0; k < frameSize; ++k) {
-            // TODO: store _inputs[i].size()
+        gen_count_at_input = _inputs[i].size();        
+		// for each frame, read across all input
+		for (k=0; k < frameSize; ++k) {
 			sum = 0;
-			// now iterate over each input in this slot
-            // TODO: replace wiht reused iterator over _inputs; .size() is slow
-			for (ParameterIndexType j=0; j<_inputs[i].size(); ++j) {
-				// if (k >= _inputs_frame_size[i][j]) continue;
+			// now iterate over each gen in this input
+			for (j=0; j<gen_count_at_input; ++j) {
+                out = _inputs[i][j].second;            
 				// get the stored matrix value @k and sum it into position k
-				sum += _inputs[i][j].first->matrix[k];
+				sum += _inputs[i][j].first->matrix[
+                    // read from this frame plus the offset for out defined; 
+                    k + _inputs[i][j].first->out_to_matrix_offset[out]
+                ];
 			}
-			// index of value at push_back is k
+			// sum of all gens at this frame
 			_summed_inputs[i].push_back(sum);
 		}
 	}
@@ -592,7 +528,7 @@ void Generator :: set_output_from_fp(const std::string& fp) {
 //..............................................................................
 // parameter translating
 
-ParameterIndexType Generator :: get_parameter_index_from_name(
+ParameterIndexType Generator :: get_input_index_from_parameter_name(
     const std::string& s) {
     // match the string to the name returned by get_instance_name; 
     // this the instance name
@@ -607,6 +543,11 @@ ParameterIndexType Generator :: get_parameter_index_from_name(
 	throw std::invalid_argument("no matching parameter name: " + s);
 }
 
+ParameterIndexType Generator :: get_slot_index_from_parameter_name(    
+    const std::string& s) {
+    // not yet implemented
+	throw std::invalid_argument("no matching parameter name: " + s);    
+}
 
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
@@ -634,8 +575,7 @@ void Generator :: set_input_by_index(ParameterIndexType i, SampleType v){
 	aw::GeneratorShared c = aw::ConstantShared(
 							new aw::Constant(_environment));
     c->init();
-    //std::cout << "Generator :: set_input_by_index(" << std::endl;
-    
+    //std::cout << "Generator :: set_input_by_index(" << std::endl;    
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c); // call overloaded
 	// do not call _update_for_new_input here b/c called in set_input_by_index
@@ -648,7 +588,7 @@ void Generator :: add_input_by_index(ParameterIndexType i,
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
     // adding additiona, with a generator
-    GenSharedOutPair gsop(gs, 0); // TEMPORARY until we assign otuptus to      
+    GenSharedOutPair gsop(gs, 0); // TEMPORARY until we accept more args      
     _inputs[i].push_back(gsop);    
     //_inputs_frame_size[i].push_back(gs->get_matrix_size());    
     _update_for_new_input();
@@ -669,6 +609,7 @@ void Generator :: add_input_by_index(ParameterIndexType i, SampleType v){
 
 
 //..............................................................................
+// public slot control 
 void Generator :: set_slot_by_index(ParameterIndexType i, GeneratorShared gs){
     // if zero, none are set; current value is next available slot for registering
     if (_slot_parameter_count <= 0 or i >= _slot_parameter_count) {
@@ -722,8 +663,8 @@ void Constant :: init() {
     pt1->set_instance_name("Constant numerical value");
     _register_input_parameter_type(pt1);
     
-    // do not define any slots (would require an internal Constant an inf  
-    // _we store one value for each input  
+    // do not define any slots (would require an internal Constant)  
+    // _we store one value for each "gen" assigned to input  
     _values.push_back(0);           
 }
 
@@ -778,7 +719,7 @@ void Constant :: set_input_by_index(ParameterIndexType i,
 }
 
 void Constant :: set_input_by_index(ParameterIndexType i, SampleType v){
-    if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
+    if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
     // store the passed SampleType value in the _values vector
@@ -793,7 +734,7 @@ void Constant :: add_input_by_index(ParameterIndexType i,
 }
 
 void Constant :: add_input_by_index(ParameterIndexType i, SampleType v){
-    if (get_parameter_count() <= 0 or i >= get_parameter_count()) {
+    if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
     _values.push_back(v);    
@@ -822,56 +763,70 @@ void Add :: init() {
     std::cout << *this << " Add::init()" << std::endl;
     // call base init, allocates and resets()
     Generator::init();    
-    // register some parameters
-    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
-                                       aw::ParameterTypeValue);
-    pt1->set_instance_name("Opperands");
-    _register_input_parameter_type(pt1);
+    // register some parameters: done entirely with slots
+//    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
+//                                       aw::ParameterTypeValue);
+//    pt1->set_instance_name("Opperands 1");
+//    _register_input_parameter_type(pt1);
     
     // register slots
-//    aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
-//										   aw::ParameterTypeChannels);
-//    so1->set_instance_name("Channels");
-//    // this will set the 
-//	_register_slot_parameter_type(so1);	// create deafult constant, update
-//    
-//    // set value; will call update for new slot     
-//    set_slot_by_index(0, 1);
+    aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
+										   aw::ParameterTypeChannels);
+    so1->set_instance_name("Channels");
+    // this will set the 
+	_register_slot_parameter_type(so1);	// create deafult constant, update
+    
+    // set value; will call _update_for_new_slot    
+    set_slot_by_index(0, 1);
     
 }
 
-// TODO: can permit ADD to have slot change the number of inputs in this case
 
-//void Add :: _update_for_new_slot() {
-//	// dimensions already set to largest found in inputs
-//	// set frame size based on slot 1; mult sr by seconds requested
-//	_set_output_count(static_cast<OutputCountType>(_slots[0]->matrix[0]));
-//}
+void Add :: _update_for_new_slot() {
+    // this is a small int; might overflow of trying to create large number of outs
+    OutputCountType outs = _slots[0]->matrix[0];
+    if (outs <= 0) {
+        throw std::invalid_argument("outputs must be greater than or equal to zero");
+    }
+	// set ouptuts
+	_set_output_count(static_cast<OutputCountType>(outs));
+    // reset inputs
+    _clear_input_parameter_types();
+    std::stringstream s;
+    aw::ParameterTypeValueShared pt;    
+    // set inputs; this will clear any existing connections
+    for (OutputCountType i=0; i<outs; ++i) {
+        pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        s.str(""); // clears contents; not the same as .clear()
+        s << "Opperands " << i+1;
+        pt->set_instance_name(s.str());
+        _register_input_parameter_type(pt);        
+    }    
+}
 
 
 void Add :: render(RenderCountType f) {
+
     ParameterIndexType i;
+    ParameterIndexType input_count(get_input_count());
     FrameSizeType k;
-    ParameterIndexType j;
-    
-	// matrix size is private, so must get once per render call; if this is a performance problem can expose matrix size
-    
-    // TODO: not the right way to do this now
-    FrameSizeType frameSize = get_frame_size();
-    OutputCountType output_count = get_output_count();
-    std::size_t gen_count_at_input = 0;
+    ParameterIndexType j;    
+
+    ParameterIndexType gen_count_at_input(0);
     OutputCountType out(0);
+    
+    FrameSizeType frameSize(get_frame_size());
         
     while (_render_count < f) {
         // calling render inputs updates the matrix of all inputs by calling their render functions; after doing so, the outputs are ready for reading
-        _render_inputs(f);        
-        // for each parameter input; might be more than one; we should have an output dim for each input
-        for (i = 0; i<output_count; ++i) {
-            // TODO: this should be pre-stored 
+        _render_inputs(f);
+        
+        // for each parameter input we have an output
+        for (i = 0; i < input_count; ++i) {
             gen_count_at_input = _inputs[i].size();
             // step through each frame             
             for (k=0; k < frameSize; ++k) {
-                _sum_opperands = 0;
+                _sum_opperands = 0; // declared in class
                 // add across for each Gen found in this input
                 for (j=0; j<gen_count_at_input; ++j) {
                     out = _inputs[i][j].second;
@@ -880,6 +835,7 @@ void Add :: render(RenderCountType f) {
                         k + _inputs[i][j].first->out_to_matrix_offset[out]
                         ];
                 }
+                // store in out channel for each input
                 matrix[(i*frameSize) + k] = _sum_opperands;
             }
 		}
@@ -967,7 +923,6 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
     // if want ch 2 of stereo, d is 2
     if (d > get_output_count()) {
         // this should not happend due to check above
-        throw std::invalid_argument("requested dimension is greater than that supported");
     }
     // can select format here
 	int format = SF_FORMAT_AIFF | SF_FORMAT_PCM_16;
