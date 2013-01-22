@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     g3.init();
     g3.print_inputs();
 
-    BOOST_CHECK_EQUAL(g3.get_parameter_count(), 1);
-    BOOST_CHECK_EQUAL(g3.get_parameter_index_from_name("Constant numerical value"), 0);
+    BOOST_CHECK_EQUAL(g3.get_input_count(), 1);
+    BOOST_CHECK_EQUAL(g3.get_input_index_from_parameter_name("Constant numerical value"), 0);
     // check index out of range
     BOOST_REQUIRE_THROW(g3.set_input_by_index(2, 30), std::invalid_argument);
     BOOST_REQUIRE_THROW(g3.set_input_by_index(1, 23), std::invalid_argument);
@@ -134,7 +134,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 
 	g1->set_input_by_index(0, 2);
     g3->add_input_by_index(0, g1);
-	g3->add_input_by_index(0, g6);˙
+	g3->add_input_by_index(0, g6);
+    BOOST_CHECK_EQUAL(g3->get_input_count(), 1);
+    BOOST_CHECK_EQUAL(g3->get_slot_count(), 1);
+    
 	//g3->print_inputs();
 	
 	g3->render(1);
@@ -144,8 +147,15 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 
 	//g3->print_inputs(true);
     BOOST_CHECK_CLOSE(g3->matrix[0], 33, .0000001);
+
+    // will create three channels, clear all existing input
+    g3->set_slot_by_index(0, 3);
+    BOOST_CHECK_EQUAL(g3->get_input_count(), 3);
+    BOOST_CHECK_EQUAL(g3->get_slot_count(), 1);
     
-    // TODO: this is  good candidate for graphoz .dot writingß
+	g3->print_inputs();
+    
+    // TODO: this is  good candidate for graphoz .dot writing
 
 }
 //
