@@ -97,7 +97,6 @@ void Plotter :: print() {
     std::cout << _stream.str() << std::endl;
 }
 
-
 void Plotter :: pipe() {
     // this uses c-style file pointers to as these are what we get out of popen; must convert std::string to c string for usage by fprint
     FILE* gp;
@@ -108,8 +107,6 @@ void Plotter :: pipe() {
     if (pclose(gp) == -1) throw std::domain_error("pclose failed");
 }
 
-
-
 void Plotter :: write(const std::string& fp) {
     std::ofstream f; // for writing, need out file stream
     f.open(fp.c_str()); //  std::ios::in
@@ -117,15 +114,64 @@ void Plotter :: write(const std::string& fp) {
     f.close();
 }
 
-
-
-
 } // end namespace aw
 
 
 
 
 
+
+
+
+// dot -Tpdf test.dot -o test.pdf
+
+// digraph G {
+// //splines=curved;
+// splines=curved;
+// // shape = box
+// node [shape=record, fontname=Arial, fontsize=12];
+// edge [color=grey];
+// ranksep="1.5 equally";
+// size="8,8";
+// 
+// 
+// genA [label =   "<doc> \<genA@3@2\{x,y,z\}\> \
+//                | <in0> in:0  \
+//                | <in1> in:1  \
+//                | <in2> in:2  \
+//                | <out0> out:0  \
+//                | <out1> out:1  \
+//                | <out2> out:2  \
+//             "];
+// 
+// genB [label =   "<doc> \<genB@2@2\{x,y,z\}\> \
+//                | <in0> in:0  \
+//                | <in1> in:1  \
+//                | <out0> out:0  \
+//                | <out1> out:1  \
+//                | <slot0> slot:1  \
+//             "];
+// 
+// genC [label =   "<doc> \<genC@2@1\{x,y,z\}\> \
+//                | <in0> in:0  \
+//                | <in1> in:1  \
+//                | <out0> out:0  \
+//             "];
+// 
+// 
+// 
+// "genA":out0:s -> "genB":in0:n;
+// "genA":out1:s -> "genB":in1:n;
+// "genA":out2:s -> "genB":in1:n;
+// "genA":out2:s -> "genB":in0:n;
+// 
+// "genB":out0:s -> "genC":in0:n;
+// "genB":out1:s -> "genC":in1:n;
+// 
+// "genC":out0:s -> "genA":in0:n;
+// 
+// }
+// 
 
 
 
