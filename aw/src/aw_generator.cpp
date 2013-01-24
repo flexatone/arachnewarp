@@ -248,7 +248,7 @@ void Generator :: _sum_inputs() {
 			// now iterate over each gen in this input
 			for (j=0; j<gen_count_at_input; ++j) {
                 out = _inputs[i][j].second;            
-				// get the stored matrix value @k and sum it into position k
+				// the value out @k and sum it into position k
 				sum += _inputs[i][j].first->matrix[
                     // read from this frame plus the offset for out defined; 
                     k + _inputs[i][j].first->out_to_matrix_offset[out]
@@ -264,8 +264,8 @@ void Generator :: _sum_inputs() {
 // public methods
 
 void Generator :: render(RenderCountType f) {
-    // this is a dummy render method just for demonstartion
-    _render_count += 1;
+    // this is a dummy render method just for demonstartion; at the end of a render cycle _render_count must be the same as `f`
+    _render_count = f;
 }
 
 
