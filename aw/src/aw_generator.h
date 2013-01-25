@@ -366,7 +366,6 @@ class Generator {
 	//! Overridden to handle a constant. 
     virtual void set_slot_by_index(ParameterIndexType i, SampleType v);
 
-  
 };
 
 

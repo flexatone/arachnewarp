@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
     // as enum it has an interger value
     //BOOST_CHECK_EQUAL(aw::Gen_Name_Constant, 0);
 	
-	aw::Plotter p;
+	aw::TimeDomainGraph p;
 	std::vector<aw::SampleType> v;
 	for (int i=-100; i<100; ++i) {
 		v.push_back(i);
@@ -39,11 +39,10 @@ BOOST_AUTO_TEST_CASE(aw_plot_test1) {
     // need to get an matrix directory from common
     std::string fp("plot.plt");
     
-    BOOST_REQUIRE_THROW(p.plot(v, 0), std::invalid_argument);
-    BOOST_REQUIRE_THROW(p.plot(v, -1), std::invalid_argument);
+    BOOST_REQUIRE_THROW(p.draw(v, 0), std::invalid_argument);
     
-	p.plot(v, d);
-    //p.pipe(); // remove comment to test generated matrix
+	p.draw(v, d);
+    p.pipe(); // remove comment to test generated matrix
     //p.print();
     //p.write(fp); 
 }

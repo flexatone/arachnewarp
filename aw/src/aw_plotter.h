@@ -10,35 +10,83 @@
 
 namespace aw {
 
-
-//! An interface to GNUplot writing.
-class Plotter;
-typedef std::tr1::shared_ptr<Plotter> PlotterShared;
+//! Common base class for graphing routines.
 class Plotter {
-    private://------------------------------------------------------------------
-    
+
+    protected://------------------------------------------------------------------
     //! A stringstream instance; to be used to write a file or to print to stdio. 
     std::stringstream _stream;
 
-    public://-------------------------------------------------------------------
-
     explicit Plotter();
-    ~Plotter();
+    
+    virtual ~Plotter();
 
-    //! Write the plot to internal storage, given a vector of data and a _output_count. The data is assumed to be adjacent, not interleaved. 
-    void plot(const std::vector<SampleType>& v, OutputCountType d, 
-                bool interleaved=true); 
-
-    //! Print the plot to standard out. 
-    void print();
+    public://-------------------------------------------------------------------
+    //! Write the data to the stringstream. 
+    virtual void draw(const std::vector<SampleType>& v);
+    
+    virtual void draw(const std::vector<SampleType>& v, OutputCountType d);
 
     //! Pipe the the plot to gnuplot directly.
-    void pipe();
-    
+    virtual void pipe();
+
+    // shared base class methods -----------------------------------------------
+    //! Print the plot to standard out. 
+    void print();
+        
     //! Write the plot to a file given by the file path argument. 
     void write(const std::string& fp);
 
 };
+
+
+
+//! An interface to GNUplot writing. Rename this TimeDomain
+class TimeDomainGraph;
+typedef std::tr1::shared_ptr<TimeDomainGraph> TimeDomainGraphShared;
+class TimeDomainGraph : public Plotter{
+    
+    public://-------------------------------------------------------------------
+
+    explicit TimeDomainGraph();
+    
+    virtual ~TimeDomainGraph();
+
+    //! Write the plot to internal storage, given a vector of data and a _output_count. The data is assumed to be adjacent, not interleaved. 
+    virtual void draw(const std::vector<SampleType>& v, OutputCountType d); 
+
+    virtual void draw(const std::vector<SampleType>& v); 
+
+    //! Pipe the the plot to gnuplot directly.
+    virtual void pipe();
+    
+};
+
+
+
+//! An interface to Graphiz writing.
+class NetworkGraph;
+typedef std::tr1::shared_ptr<NetworkGraph> NetworkGraphShared;
+class NetworkGraph : public Plotter{
+    
+    public://-------------------------------------------------------------------
+
+    explicit NetworkGraph();
+    
+    virtual ~NetworkGraph();
+
+    //! Write the plot to internal storage, given a vector of data and a _output_count. The data is assumed to be adjacent, not interleaved. 
+    virtual void draw(const std::vector<SampleType>& v, OutputCountType d); 
+
+    virtual void draw(const std::vector<SampleType>& v); 
+
+    //! Pipe the the plot to gnuplot directly.
+    virtual void pipe();
+    
+};
+
+
+
 
 
 

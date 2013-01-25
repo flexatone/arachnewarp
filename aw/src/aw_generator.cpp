@@ -366,7 +366,7 @@ void Generator :: reset() {
 std::ostream& operator<<(std::ostream& ostream, const Generator& g) {
     // replace with static cast
     ostream << "<Gen: " << g._class_name << " @" << 
-        (int)g._output_count << ">";
+        static_cast<int>(g._output_count) << ">";
     return ostream; 
 }
 
@@ -419,10 +419,10 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
 
 
 void Generator :: plot_output() {
-	Plotter p;
+	TimeDomainGraph p;
 	VSampleType v;
 	write_output_to_vector(v); // load matrix into this vecotr
-	p.plot(v, get_output_count());
+	p.draw(v, get_output_count());
 	p.pipe(); // pipe to gnu plot
 }
 
@@ -713,8 +713,7 @@ void Constant :: render(RenderCountType f) {
     _render_count = f;
 }
 
-void Constant :: set_input_by_index(ParameterIndexType i, 
-                                        GeneratorShared gs) {
+void Constant :: set_input_by_index(ParameterIndexType i, GeneratorShared gs) {
     throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
 }
 
