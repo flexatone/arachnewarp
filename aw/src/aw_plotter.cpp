@@ -12,22 +12,58 @@
 namespace aw {
 
 
+//------------------------------------------------------------------------------
 Plotter :: Plotter() {}
 
 Plotter :: ~Plotter() {}
 
+void Plotter :: draw(const std::vector<SampleType>& v, OutputCountType d) {
+    throw std::invalid_argument("not implemented");
+}
 
-void Plotter :: plot(const std::vector<SampleType>& v, 
-    OutputCountType d, bool interleaved) {
+void Plotter :: draw(const std::vector<SampleType>& v) {
+    throw std::invalid_argument("not implemented");
+}
 
-    if (d <= 0) {
-    	throw std::invalid_argument("_output_count must be greater than zero");
-    }                
+void Plotter :: pipe() {
+    throw std::invalid_argument("not implemented");
+}
+
+void Plotter :: print() {
+    std::cout << _stream.str() << std::endl;
+}
+
+void Plotter :: write(const std::string& fp) {
+    std::ofstream f; // for writing, need out file stream
+    f.open(fp.c_str()); //  std::ios::in
+    f << _stream.str() << std::endl;
+    f.close();
+}
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+TimeDomainGraph :: TimeDomainGraph() {}
+
+TimeDomainGraph :: ~TimeDomainGraph() {}
+
+void TimeDomainGraph :: draw(const std::vector<SampleType>& v, 
+    OutputCountType d) {
+    // d is the output count in the vector
+
     // get frame size, or units per _output_count    
-    FrameSizeType frameSize(v.size());
-    if (d > 1) {
-        frameSize = v.size() / d;
+    FrameSizeType frameSize = static_cast<FrameSizeType>(v.size());
+    // assume that frame size is even division of size
+    if (d >= 1) {
+        frameSize = static_cast<FrameSizeType>(v.size() / d);
     }
+    else {
+    	throw std::invalid_argument("_output_count must be greater than zero");    
+    }
+    
     // if we get a crazy large _output_count, or have a small vector
     if (frameSize < 1) {
     	throw std::invalid_argument("frame size is less than 1");
@@ -92,12 +128,12 @@ set rmargin screen 0.98 " << std::endl;
 }
 
 
-
-void Plotter :: print() {
-    std::cout << _stream.str() << std::endl;
+void TimeDomainGraph :: draw(const std::vector<SampleType>& v) {
+    draw(v, 0);
 }
 
-void Plotter :: pipe() {
+
+void TimeDomainGraph :: pipe() {
     // this uses c-style file pointers to as these are what we get out of popen; must convert std::string to c string for usage by fprint
     FILE* gp;
     gp = popen("gnuplot -persist", "w");
@@ -107,14 +143,43 @@ void Plotter :: pipe() {
     if (pclose(gp) == -1) throw std::domain_error("pclose failed");
 }
 
-void Plotter :: write(const std::string& fp) {
-    std::ofstream f; // for writing, need out file stream
-    f.open(fp.c_str()); //  std::ios::in
-    f << _stream.str() << std::endl;
-    f.close();
+
+
+
+NetworkGraph :: NetworkGraph() {}
+
+NetworkGraph :: ~NetworkGraph() {}
+
+void NetworkGraph :: draw(const std::vector<SampleType>& v, 
+    OutputCountType d) {
+
 }
 
+void NetworkGraph :: draw(const std::vector<SampleType>& v) {
+    draw(v, 0);
+}
+
+
+void NetworkGraph :: pipe() {
+    // this uses c-style file pointers to as these are what we get out of popen; must convert std::string to c string for usage by fprint
+    FILE* gp;
+    gp = popen("gnuplot -persist", "w");
+    if (gp == NULL) throw std::domain_error("popen failed");
+    fprintf(gp, "%s", _stream.str().c_str()); // must use format to avoid error
+    // pclose will wait for termination
+    if (pclose(gp) == -1) throw std::domain_error("pclose failed");
+}
+
+
+
+
+
+
+
 } // end namespace aw
+
+
+
 
 
 
