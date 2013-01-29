@@ -261,7 +261,7 @@ class Generator {
     //! Return the the number of matrix dimensions
     OutputCountType get_output_count() const {return _output_count;};
 
-    //! Return the the matrix size
+    //! Return the the matrix size, or the total number of samples used for all frames at all outputs.
     FrameSizeType get_matrix_size() const {return _matrix_size;};
     
     //! Get the average value of all matrix values. 
@@ -273,12 +273,8 @@ class Generator {
     //! Return a Boolean if this Generator has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
 	
-    //! Return the the frame size. The frame size is always at or greater than the common frame size. 
+    //! Return the the frame size, the number of samples per output matrix. The frame size is always at or greater than the common frame size. 
     MatrixSizeType get_frame_size() const {return _frame_size;};	
-
-	//! Get frames per _output_count
-    MatrixSizeType get_frames_per_dimension() const {return _frame_size / 
-															_output_count;};	
 
 	//! Get the sampling rate. 
     MatrixSizeType get_sampling_rate() const {return _sampling_rate;};	
@@ -314,14 +310,14 @@ class Generator {
 	// loading/writing to matrix ..............................................    
 	
     //! Load the matrix into a passed-in vector. The vector is cleared before loading. 
-    void write_output_to_vector(VSampleType& vst) const;
+    void write_matrix_to_vector(VSampleType& vst) const;
 
     //! Write out all outpout to the provided file path. If this is a BufferFile, this can be used to write an audio file.
     virtual void write_output_to_fp(const std::string& fp, 
                                     OutputCountType d=0) const;
 	
 	//! Set the matrix from an array. 
-	void set_output_from_array(SampleType* v, MatrixSizeType s, 
+	void set_matrix_from_array(SampleType* v, MatrixSizeType s, 
 							OutputCountType ch, bool interleaved=true);
 								
 	//! Set the matrix (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. 
@@ -460,7 +456,7 @@ class BufferFile: public Generator {
 	//! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
     virtual void render(RenderCountType f);	
 			
-    //! Write to an audio file to given the ouput file path. The optional OutputCountType argument can be used to specify a single _output_count of many to write. If OutputCountType is 0, all dimensions are written.
+    //! Write to an audio file to given the ouput file path. The optional OutputCountType argument can be used to specify a single _output_count of many to write. If OutputCountType is 0, all outputs are written.
     virtual void write_output_to_fp(const std::string& fp, 
                                     OutputCountType d=0) const;
         

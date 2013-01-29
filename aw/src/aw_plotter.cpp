@@ -198,8 +198,7 @@ void NetworkGraph :: pipe() {
 // edge [color=grey];
 // ranksep="1.5 equally";
 // size="8,8";
-// 
-// 
+
 // genA [label =   "<doc> \<genA@3@2\{x,y,z\}\> \
 //                | <in0> in:0  \
 //                | <in1> in:1  \
