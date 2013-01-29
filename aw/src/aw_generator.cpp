@@ -221,6 +221,7 @@ void Generator :: _reset_inputs() {
 }
 
 void Generator :: _sum_inputs() {
+    // this is inlined in render() calls
     // note that this is nearly identical to Add :: render(); here we store the results in _summed_inputs, not in matrix; we also do not render inputs
     ParameterIndexType i;
     FrameSizeType k;
@@ -280,7 +281,7 @@ SampleType Generator :: get_matrix_average() const {
 }
 
 SampleType Generator :: get_output_average(OutputCountType d) const {
-    // this does output and whole matrix averaging.
+    // this does single output and whole matrix averaging.
     // if d is zero, get all frames/channels, otherwise, just get rquested dimension (i.e., 2d gets vector pos 1
 	if (d > _output_count) {
 		throw std::invalid_argument("a dimension greater than the number available has been requested");
@@ -316,9 +317,8 @@ SampleType Generator :: get_output_average(OutputCountType d) const {
 }
 
 
-
-// should be protected
 void Generator :: _set_frame_size(FrameSizeType f) {
+    // protected
     // only change if different; assume already created
 	if (!_frame_size_is_resizable) {
 		throw std::domain_error("this generator does not support frame size setting");
@@ -334,7 +334,7 @@ void Generator :: _set_frame_size(FrameSizeType f) {
     // when we set the dimension, should we set it for inputs?
 }
 
-// protected
+
 void Generator :: _set_output_count(OutputCountType d) {
 	// this public method is not used during Generator::__init__
     // only change if different; assume already created
@@ -417,11 +417,10 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
     }
 }
 
-
 void Generator :: plot_output() {
 	TimeDomainGraph p;
 	VSampleType v;
-	write_output_to_vector(v); // load matrix into this vecotr
+	write_matrix_to_vector(v); // load matrix into this vecotr
 	p.draw(v, get_output_count());
 	p.pipe(); // pipe to gnu plot
 }
@@ -431,8 +430,7 @@ void Generator :: plot_output() {
 //..............................................................................
 // loading and writing matrix
 
-// write matrix
-void Generator :: write_output_to_vector(VSampleType& vst) const {
+void Generator :: write_matrix_to_vector(VSampleType& vst) const {
     vst.clear(); // may not be necessary, but insures consistancy
     vst.reserve(_matrix_size);
     for (MatrixSizeType i=0; i<_matrix_size; ++i) {
@@ -441,23 +439,21 @@ void Generator :: write_output_to_vector(VSampleType& vst) const {
 }
 
 
-// write matrix
 void Generator :: write_output_to_fp(const std::string& fp, 
                                     OutputCountType d) const {
     throw std::domain_error("not implemented on base class");                                    
 }
 
 
-// set matrix
-void Generator :: set_output_from_array(SampleType* v, MatrixSizeType s, 
+void Generator :: set_matrix_from_array(SampleType* v, MatrixSizeType s, 
 								OutputCountType ch, bool interleaved){
+    // low level method of a raw array as input; need size; assum non-interleaved
 	// caller is responsible for releasing called array
 	if (s < 1) {
 		throw std::domain_error(
             "the supplied vector must have size greater than 0");
 	}	
     
-	// TODO: add method to do both of these at the same time: set_frame_size_and_or_dimension
 	bool reset_needed(true); 
 	if (_frame_size_is_resizable) {
 		// frame size is the number of outpuots divided by channel
@@ -477,7 +473,7 @@ void Generator :: set_output_from_array(SampleType* v, MatrixSizeType s,
 		ch = _output_count;
 	}
 	
-//    std::cout << "set_output_from_array: ch: " << (int)ch << " s: " << s << " matrix size: " << get_matrix_size() << " frame size: " << get_frame_size() << " out_to_matrix_offset[0]] " << (int)out_to_matrix_offset[0] << "out_to_matrix_offset[1]] " << (int)out_to_matrix_offset[1]  << std::endl;
+//    std::cout << "set_matrix_from_array: ch: " << (int)ch << " s: " << s << " matrix size: " << get_matrix_size() << " frame size: " << get_frame_size() << " out_to_matrix_offset[0]] " << (int)out_to_matrix_offset[0] << "out_to_matrix_offset[1]] " << (int)out_to_matrix_offset[1]  << std::endl;
     
 	// assuming interleaved source to non-inter dest
 	OutputCountType j(0);
@@ -510,7 +506,7 @@ void Generator :: set_output_from_vector(const VSampleType& vst,
     for (MatrixSizeType i=0; i<s; ++i) {
 		v[i] = vst[i];
 	}
-	set_output_from_array(v, s, ch, interleaved);
+	set_matrix_from_array(v, s, ch, interleaved);
 	// clean up temporary vector 
 	delete[] v;
 		
@@ -777,7 +773,6 @@ void Add :: init() {
     
     // set value; will call _update_for_new_slot    
     set_slot_by_index(0, 1);
-    
 }
 
 
@@ -789,7 +784,7 @@ void Add :: _update_for_new_slot() {
     }
 	// set ouptuts
 	_set_output_count(static_cast<OutputCountType>(outs));
-    // reset inputs
+    // reset inputs, dropping all contained input connections; 
     _clear_input_parameter_types();
     std::stringstream s;
     aw::ParameterTypeValueShared pt;    
@@ -865,7 +860,8 @@ void BufferFile :: init() {
     aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
                                        aw::ParameterTypeValue);
     pt1->set_instance_name("Inputs");
-    _register_input_parameter_type(pt1);	
+    _register_input_parameter_type(pt1);
+    	
     // register some slots: 
     aw::ParameterTypeDurationShared so1 = aw::ParameterTypeDurationShared(new 
 										   aw::ParameterTypeDuration);
@@ -879,6 +875,29 @@ void BufferFile :: _update_for_new_slot() {
 	_set_frame_size(_slots[0]->matrix[0] * _sampling_rate * get_output_count());
 }
 
+// TODO: have buffer take a slot for channels
+//void Add :: _update_for_new_slot() {
+//    // this is a small int; might overflow of trying to create large number of outs
+//    OutputCountType outs = _slots[0]->matrix[0];
+//    if (outs <= 0) {
+//        throw std::invalid_argument("outputs must be greater than or equal to zero");
+//    }
+//	// set ouptuts
+//	_set_output_count(static_cast<OutputCountType>(outs));
+//    // reset inputs, dropping all contained input connections; 
+//    _clear_input_parameter_types();
+//    std::stringstream s;
+//    aw::ParameterTypeValueShared pt;    
+//    // set inputs; this will clear any existing connections
+//    for (OutputCountType i=0; i<outs; ++i) {
+//        pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+//        s.str(""); // clears contents; not the same as .clear()
+//        s << "Opperands " << i+1;
+//        pt->set_instance_name(s.str());
+//        _register_input_parameter_type(pt);        
+//    }    
+//}
+
 
 void BufferFile :: render(RenderCountType f) {
 	// render count must be ignored; instead, we render until we have filled our buffer; this means that the components will have a higher counter than render; need to be reset at beginning and end
@@ -891,7 +910,7 @@ void BufferFile :: render(RenderCountType f) {
 	FrameSizeType input_frame_size = _inputs[0][0].first->get_frame_size();
 	
 	// assume that all inputs have the saem init frame size
-	RenderCountType render_cycles_max = get_frames_per_dimension() / input_frame_size;
+	RenderCountType render_cycles_max = get_frame_size() / input_frame_size;
 	RenderCountType render_count(0);
 	
 	MatrixSizeType i(0);		
@@ -935,7 +954,7 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
         dims = out_to_matrix_offset; //copy         
         count = get_matrix_size();        
     } 
-    else { // just write a single dim specified 
+    else { // just write the single dim specified 
         OutputCountType dPos = d - 1;
         if (dPos >= out_to_matrix_offset.size()) {
             // this should not happen due to check above
@@ -958,14 +977,16 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
     MatrixSizeType i(0);
     MatrixSizeType j(0);
     
+    FrameSizeType frameSize = get_frame_size();
+    VFrameSizeType::const_iterator p;
+    VFrameSizeType::const_iterator p_end(dims.end());
     // interleave dimensions if more than one requested
     // iterate over frame size; for each frame, we will write that many dimensiosn
-    for (i = 0; i < get_frame_size(); ++i) {
-        for (VFrameSizeType::const_iterator p = dims.begin(); 
-            p != dims.end(); ++p) {
+    for (i = 0; i < frameSize; ++i) {
+        for (p = dims.begin(); p != p_end; ++p) {
             // if we are stereo, for each frame point we write two points, one at each offset position
             v[j] = matrix[i + (*p)];
-            ++j;
+            ++j; // abs position
         }
     }
     // TODO: j should equal count, check
@@ -986,7 +1007,7 @@ void BufferFile :: set_output_from_fp(const std::string& fp) {
     double* v = new double[s]; // why not use SampleType instaed of double
     sh.readf(v, sh.frames());
     // this call will resize frame/dim
-    set_output_from_array(v, s, sh.channels());
+    set_matrix_from_array(v, s, sh.channels());
     delete[] v;
 
 }

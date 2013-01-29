@@ -158,200 +158,170 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
     // TODO: this is  good candidate for graphoz .dot writing
 
 }
-//
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
-//	// test auto constant creation when adding a sample type
-//    
-//	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
-//    
-//    // this will automatically create constant Generators
-//	g3->add_input_by_index(0, 11);
-//	g3->add_input_by_index(0, 20);
-//	
-//	g3->render(200);
-//	//g3->print_output();
-//	//g3->print_inputs(true);
-//	
-//    BOOST_CHECK_CLOSE(g3->matrix[0], 31, .0000001);
-//
-//}
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
-//	// test auto constant creation when adding a sample type
-//    
-//	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-//							aw::Generator::ID_Constant, 2);
-//	g1->set_input_by_index(0, 2); 							
-//	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
-//							aw::Generator::ID_Constant, 3);	
-//	g2->set_input_by_index(0, 3); 							
-//							
-//	// make a 1 dimensional adder
-//	aw::GeneratorShared g3 = aw::Generator::make_with_dimension(
-//							aw::Generator::ID_Add, 1);
-//	// add opperands
-//	g3->set_input_by_index(0, g1); 							
-//	g3->add_input_by_index(0, g2); 							
-//		
-//	// must expand to 3d
-//    BOOST_CHECK_EQUAL(g3->get_output_count(), 3);
-//
-//	g3->render(1);	
-//	//g3->print_inputs();
-//	//g3->print_output();
-//	
-//	// this results are based on non-interleaved matrix presentation 
-//	// sum in dims 1 and 2 are first two opperands
-//    BOOST_CHECK_CLOSE(g3->matrix[0], 5, .0000001);
-//	// at 2 dim boundary
-//    BOOST_CHECK_CLOSE(g3->matrix[0+(g3->get_frame_size())], 5, .0000001);
-//	// at 3 dim boundary value is different because mixed dim of inputs
-//    BOOST_CHECK_CLOSE(g3->matrix[0+(g3->get_frame_size()*2)], 3, .0000001);
-//
-//}
-//
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
-//	// test auto constant creation when adding a sample type
-//    
-//	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
-//
-//    // this will automatically create constant Generators
-//	g1->add_input_by_index(0, 1.5);
-//	g1->add_input_by_index(0, 1.2);
-//	
-//    BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
-//    
-//	g1->render(50);
-//	//g1->print_output();
-//	//g1->print_inputs(true);
-//	
-//    BOOST_CHECK_CLOSE(g1->matrix[0], 2.7, .0000001);
-//
-//}
-//
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
-//	// test auto constant creation when adding a sample type
-//    
-//	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
-//
-//    // this will automatically create constant Generators
-//	g1->add_input_by_index(0, 3.5);
-//	g1->add_input_by_index(0, 9.2);
-//	
-//    BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
-//    BOOST_CHECK_EQUAL(g1->get_dimension_dyanmics(), aw::Generator::DD_ResizableFreely);
-//    BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), false);
-//    BOOST_REQUIRE_THROW(g1->_set_frame_size(30), std::domain_error);
-//    
-//    
-//	g1->render(20);
-//	//g1->print_output();
-//	
-//    BOOST_CHECK_CLOSE(g1->matrix[0], 12.7, .0000001);
-//	// this based on defaults and might change
-//    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);
-//	
-//    g1->_set_output_count(4); // calls resize and reset
-//	g1->render(20);
-//	//g1->print_output();
-//	//g1->print_inputs();
-//    
-//    BOOST_CHECK_EQUAL(g1->get_output_count(), 4);
-//	// this based on defaults and might change
-//    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 256);
-//	
-//	// change frame size
-//
-//}
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_config_1) {
-//    // a simple way to get and pass defaults s
-//	aw::GeneratorConfigShared gc1 = aw::GeneratorConfig::make_default();
-//    
-//    // 64 is a default for testing
-//    BOOST_CHECK_EQUAL(gc1->get_init_frame_size(), 64);
-//
-//
-//	// see if we can get the default-created Environment
-//	aw::EnvironmentShared e = gc1->get_environment();
-//
-//	std::string match("test.aif");
-//	std::string fp = e->get_fp_temp("test.aif");
-//	std::cout << fp << std::endl;
-//	BOOST_CHECK_EQUAL(fp.compare(fp.length() - match.length(), 
-//					match.length(), 
-//					match), 0);	
-//
-//
-//}
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_config_2) {
-//
-//
-//}
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_resize_2) {
-//	// test auto constant creation when adding a sample type
-//
-//	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
-//                            aw::Generator::ID_Constant, 1);
-//	g2->add_input_by_index(0, 3);
-//    g2->_set_output_count(2); // set to a higher _output_count
-//    
-//	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-//                            aw::Generator::ID_Add, 1);
-//	g1->add_input_by_index(0, 1);
-//    BOOST_CHECK_EQUAL(g1->get_output_count(), 1);    
-//    // adding a 2d gen should cause this to grow
-//	g1->add_input_by_index(0, g2); 
-//    // now this is 2d	
-//    BOOST_CHECK_EQUAL(g1->get_output_count(), 2);
-//	
-//
-//    g1->render(1);
-//    BOOST_CHECK_CLOSE(g1->matrix[0], 4, .0000001);
-//    
-//    // test loading matrix to passed in vector 
-//    aw::Generator::VSampleType v1; 
-//    g1->write_output_to_vector(v1);
-//    BOOST_CHECK_EQUAL(v1.size(), 128);
-//    BOOST_CHECK_CLOSE(v1[0], 4, .0000001);
-//        
-//
-//}
-//
-//
-//
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
-//	// test auto constant creation when adding a sample type
-//    
-//	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-//							aw::Generator::ID_BufferFile, 1);
-//    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
-//    BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
-//    BOOST_CHECK_EQUAL(g1->get_dimension_dyanmics(), aw::Generator::DD_ResizableFreely);
-//
-//	g1->_set_frame_size(743);
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 743);
-//    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 743);
+
+BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
+	// test auto constant creation when adding a sample type
+    
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
+    
+    // this will automatically create constant Generators
+	g3->add_input_by_index(0, 11);
+	g3->add_input_by_index(0, 20);
+	
+	g3->render(200);
+	//g3->print_output();
+	//g3->print_inputs(true);
+	
+    BOOST_CHECK_CLOSE(g3->matrix[0], 31, .0000001);
+
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
+	// test auto constant creation when adding a sample type
+    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+	g1->set_input_by_index(0, 2); 							
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);	
+	g2->set_input_by_index(0, 3); 							
+							
+	// make a 1 dimensional adder
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
+	// add opperands
+	g3->set_input_by_index(0, g1); 							
+	g3->add_input_by_index(0, g2); 							
+		
+	// stays the same
+    BOOST_CHECK_EQUAL(g3->get_output_count(), 1);
+
+	g3->render(1);	
+	//g3->print_inputs();
+	//g3->print_output();
+	
+	// this results are based on non-interleaved matrix presentation 
+	// sum in dims 1 and 2 are first two opperands
+    BOOST_CHECK_CLOSE(g3->matrix[0], 5, .0000001);
+
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
+    // floating point addition
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+
+    // this will automatically create constant Generators
+	g1->add_input_by_index(0, 1.5);
+	g1->add_input_by_index(0, 1.2);
+	
+    BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
+    
+	g1->render(50);
+	//g1->print_output();
+	//g1->print_inputs(true);
+	
+    BOOST_CHECK_CLOSE(g1->matrix[0], 2.7, .0000001);
+
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
+	// test auto constant creation when adding a sample type
+    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+
+    // this will automatically create constant Generators
+	g1->add_input_by_index(0, 3.5);
+	g1->add_input_by_index(0, 9.2);
+	
+    BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), false);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);    
+    
+    // BOOST_REQUIRE_THROW(g1->_set_frame_size(30), std::domain_error);
+
+    // slots will chane inputs and output
+    g1->set_slot_by_index(0, 3);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 3);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 192);
+
+	g1->add_input_by_index(0, 1);
+	g1->add_input_by_index(0, 2);
+	g1->add_input_by_index(1, 10);
+	g1->add_input_by_index(1, 11);
+	g1->add_input_by_index(2, 101);
+	g1->add_input_by_index(2, 102);
+
+	g1->render(20);
+    
+    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[0]], 3, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[1]], 21, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[2]], 203, .0000001);
+
+
+    g1->set_slot_by_index(0, 5);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 5);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 320);
+
+    // inputs are cleared when resizing happens, we can add new ones
+	g1->add_input_by_index(0, 3);
+	g1->add_input_by_index(0, 4);
+	g1->add_input_by_index(1, 30);
+	g1->add_input_by_index(1, 31);
+    
+	g1->render(2);    
+
+    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[0]], 7, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[1]], 61, .0000001);
+
+    g1->set_slot_by_index(0, 1);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 1);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);
+
+    // input at index 1 is not available now
+    BOOST_REQUIRE_THROW(g1->add_input_by_index(1, 4), std::invalid_argument);
+
+    
+	g1->add_input_by_index(0, 3.5);
+	g1->add_input_by_index(0, 9.2);
+    
+	g1->render(20);
+	//g1->print_output();
+	
+    BOOST_CHECK_CLOSE(g1->matrix[0], 12.7, .0000001);
+	// this based on defaults and might change
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);
+	
+    g1->set_slot_by_index(0, 4);
+	g1->render(20);
+	//g1->print_output();
+	//g1->print_inputs();
+    
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 4);
+	// this based on defaults and might change
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 256);
+	
+	// change frame size
+
+}
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
+	// test auto constant creation when adding a sample type
+    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
+    
+    // TODO: this sets the frame size for all chnanels in seconds; this will be slot 1, as slot 2 will be channels
+    g1->set_slot_by_index(0, 1.5);
+    
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 66150);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 66150);
 //	
 //	g1->_set_frame_size(34);
 //    BOOST_CHECK_EQUAL(g1->get_frame_size(), 34);	
@@ -359,8 +329,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 //
 //
 //	// 2d version
-//	aw::GeneratorShared g2 = aw::Generator::make_with_dimension(
-//							aw::Generator::ID_BufferFile, 2);
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_BufferFile);
+    
 //	g2->_set_frame_size(200);
 //    BOOST_CHECK_EQUAL(g2->get_frame_size(), 200);
 //    BOOST_CHECK_EQUAL(g2->get_matrix_size(), 400);
@@ -368,13 +338,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 //	g2->_set_frame_size(40);
 //    BOOST_CHECK_EQUAL(g2->get_frame_size(), 40);
 //    BOOST_CHECK_EQUAL(g2->get_matrix_size(), 80);
-//	// cannot do this
-//	
-//    
-//}
-//
-//
-//
+	// cannot do this
+}
+
+
+
 //BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
 //	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
 //							aw::Generator::ID_BufferFile, 1);
