@@ -466,7 +466,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
 	g1->add_input_by_index(0, g2);
 	
-	// for one redner cycle of the buffer, we render inputs until we fill the frame
+	// for one render cycle of the buffer, we render inputs until we fill the frame
 	// need to time this generation 
 	g1->render(1); 
 	//g1->plot_output();
