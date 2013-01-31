@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 2641);
     BOOST_CHECK_EQUAL(g1->get_matrix_size(), 2641);
     
-    //g1->plot_output();
+    //g1->plot_matrix();
 	
     BOOST_CHECK_CLOSE(g1->get_matrix_average(), 0.16651, .001);
     
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
     BOOST_CHECK_EQUAL(g1->get_output_count(), 1);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 888);
     BOOST_CHECK_EQUAL(g1->get_matrix_size(), 888); // we only read in one channel
-    // g1->plot_output();
+    // g1->plot_matrix();
     BOOST_CHECK_CLOSE(g1->get_output_average(1),  0.460886, .0001);
 
 	// set to two channels
@@ -368,7 +368,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
     BOOST_CHECK_EQUAL(g1->get_output_count(), 2);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 888);	
     BOOST_CHECK_EQUAL(g1->get_matrix_size(), 1776);
-    // g1->plot_output();
+    // g1->plot_matrix();
 	
     ////// check one dim at a time
     ////// left is all pos, right is all neg
@@ -447,9 +447,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	
-	std::cerr << std::string(80, '-') << std::endl;
-	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
-
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
 
 	// changing the slot calls overridden _update_for_new_slot(), resizes frame size
@@ -469,9 +466,56 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	// for one render cycle of the buffer, we render inputs until we fill the frame
 	// need to time this generation 
 	g1->render(1); 
-	//g1->plot_output();
+	//g1->plot_matrix();
+	BOOST_CHECK_EQUAL(g1->matrix[0], 0);
+	// TODO: why are these values not found
+	//BOOST_CHECK_CLOSE(g1->matrix[11025], 1, .001);
+	//BOOST_CHECK_CLOSE(g1->matrix[11026], 0, .001);
 	
 }
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
+	
+	std::cerr << std::string(80, '-') << std::endl;
+	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	// create two channel buffer
+	g1->set_slot_by_index(0, 2);
+	// for one second
+	g1->set_slot_by_index(1, 1.0);
+		
+	// create 
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g2->add_input_by_index(0, 4); // a constant frequency
+	
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g3->add_input_by_index(0, 12); // a constant frequency
+
+	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
+	g1->add_input_by_index(0, g2);
+	g1->add_input_by_index(1, g3);
+	
+	// for one render cycle of the buffer, we render inputs until we fill the frame
+	// need to time this generation 
+	g1->render(1); // render count here meaningless
+	//g1->plot_matrix();
+	
+	// last sample should be at 1 for both
+	// g1->print_output();  TODO: add numbers to define range
+	int p;
+	for (int i=0; i < 50; ++i) {
+		p = 0 + g1->out_to_matrix_offset[0] + i;
+		std::cout << p << ":  " << g1->matrix[p] << std::endl;
+	}
+	//BOOST_CHECK_CLOSE(g1->matrix[44098 + g1->out_to_matrix_offset[0]], 1, .001);
+	//BOOST_CHECK_CLOSE(g1->matrix[44099 + g1->out_to_matrix_offset[1]], 1, .001);
+	
+}
+
+
+
 
 
 

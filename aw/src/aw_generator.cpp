@@ -417,7 +417,7 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
     }
 }
 
-void Generator :: plot_output() {
+void Generator :: plot_matrix() {
 	TimeDomainGraph p;
 	VSampleType v;
 	write_matrix_to_vector(v); // load matrix into this vecotr
@@ -925,22 +925,21 @@ void BufferFile :: render(RenderCountType f) {
 	
 	// how many render cycles to fill our frame size
 	RenderCountType render_cycles_max = get_frame_size() / cfs;
-	RenderCountType render_count(0); // this is the sub-render count
+	RenderCountType rc(0); // this is the sub-render count
 	MatrixSizeType i(0);
 	OutputCountType j(0);
-	OutputCountType out_count(get_output_count()) // out is always same as in count
+	OutputCountType out_count(get_output_count()); // out is always same as in count
 	
 	// ignore render count for now; just fill buffer
-    while (render_count < render_cycles_max) {
-        _render_inputs(render_count);		
+    while (rc < render_cycles_max) {
+        _render_inputs(rc);		
 		_sum_inputs();
 		for (i=0; i < cfs; ++i) {
 			for (j=0; j<out_count; ++j) { // iter over inputs/outputs
-				matrix[i + (render_count * cfs) + out_to_matrix_offset[j]] = \
-						_summed_inputs[j][i];
+				matrix[i + (rc * cfs) + out_to_matrix_offset[j]] = _summed_inputs[j][i];
 			}
 		}
-		render_count++;
+		rc++;
     }
 	// we reset after to retrun components to starting state in case someone else uses this later. 	
 	_reset_inputs(); 
