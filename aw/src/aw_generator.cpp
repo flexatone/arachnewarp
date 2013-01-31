@@ -925,21 +925,23 @@ void BufferFile :: render(RenderCountType f) {
 	
 	// how many render cycles to fill our frame size
 	RenderCountType render_cycles_max = get_frame_size() / cfs;
-	RenderCountType render_count(0);
-	
-	MatrixSizeType i(0);		
+	RenderCountType render_count(0); // this is the sub-render count
+	MatrixSizeType i(0);
+	OutputCountType j(0);
+	OutputCountType out_count(get_output_count()) // out is always same as in count
 	
 	// ignore render count for now; just fill buffer
     while (render_count < render_cycles_max) {
         _render_inputs(render_count);		
 		_sum_inputs();
-		// TODO need to handle multidemsional inputs
 		for (i=0; i < cfs; ++i) {
-			matrix[i + (render_count * cfs)] = _summed_inputs[0][i];
+			for (j=0; j<out_count; ++j) { // iter over inputs/outputs
+				matrix[i + (render_count * cfs) + out_to_matrix_offset[j]] = \
+						_summed_inputs[j][i];
+			}
 		}
 		render_count++;
     }
-
 	// we reset after to retrun components to starting state in case someone else uses this later. 	
 	_reset_inputs(); 
 	
@@ -1072,18 +1074,15 @@ void Phasor :: render(RenderCountType f) {
     while (_render_count < f) {
         // calling render inputs updates the matrix of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);
-		
 		// get a vector  for each input summing accross all dimensions
 		_sum_inputs();
 		
 		for (i=0; i < fs; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
 			_sum_frequency = _summed_inputs[_input_index_frequency][i];
-
 			// we might dither this to increase accuracy over time; we floor+.5 to get an int period for now; period must not be zero or 1 (div by zero)
 			_period_samples = floor((_sampling_rate / 
 							frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
-
 			// add amp increment to previous amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
 			_amp = _amp_prev + (1.0 / (_period_samples - 1));
 			// if amp is at or above 1, set to zero
