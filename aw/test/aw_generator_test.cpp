@@ -313,184 +313,165 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 	// test auto constant creation when adding a sample type
     
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
-    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);
-    BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 44100);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
     BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
     
-    // TODO: this sets the frame size for all chnanels in seconds; this will be slot 1, as slot 2 will be channels
-    g1->set_slot_by_index(0, 1.5);
+    // changing duration to two seconds
+    g1->set_slot_by_index(1, 2); 
     
-    BOOST_CHECK_EQUAL(g1->get_frame_size(), 66150);
-    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 66150);
-//	
-//	g1->_set_frame_size(34);
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 34);	
-//    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 34);
-//
-//
-//	// 2d version
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_BufferFile);
-    
-//	g2->_set_frame_size(200);
-//    BOOST_CHECK_EQUAL(g2->get_frame_size(), 200);
-//    BOOST_CHECK_EQUAL(g2->get_matrix_size(), 400);
-//
-//	g2->_set_frame_size(40);
-//    BOOST_CHECK_EQUAL(g2->get_frame_size(), 40);
-//    BOOST_CHECK_EQUAL(g2->get_matrix_size(), 80);
-	// cannot do this
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 88200);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 88200);
+
+	// set number of channels; duration is still 2
+    g1->set_slot_by_index(0, 3); 
+	BOOST_CHECK_EQUAL(g1->get_output_count(), 3);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 88200);	
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 264600);
+	
+	// duration of .5 sec, one ouput
+    g1->set_slot_by_index(1, .5); 
+    g1->set_slot_by_index(0, 1); 
+	BOOST_CHECK_EQUAL(g1->get_output_count(), 1);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 22050);	
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 22050);	
+
 }
 
 
 
-//BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
-//	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-//							aw::Generator::ID_BufferFile, 1);
-//	// testing setting the matrix from a file path
-//	
-//    std::string s("../test/12518-sk1Kick.aif");
-//    g1->set_output_from_fp(s);
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 2641);
-//    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 2641);
-//    
-//    //g1->plot_output_to_temp_fp();
-////    
-////    // just checking that averae values are approximate
-////    //std::cout << g1->get_matrix_average() << std::endl;
-//    BOOST_CHECK_CLOSE(g1->get_matrix_average(), 0.16651, .001);
-////    //g1->print_output();
-//    
-//    std::string s2("../test/testStereo1.aif");
-//    g1->set_output_from_fp(s2);
-//    
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 888);
-//    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 1776);
-//    // check one dim at a time
-//    // left is all pos, right is all neg
-//    BOOST_CHECK_CLOSE(g1->get_output_average(1),  0.460886, .0001);
-//    BOOST_CHECK_CLOSE(g1->get_output_average(2), -0.484650, .0001);
-//    
-//    BOOST_CHECK_CLOSE(g1->get_output_average(0), -0.011881922816371,  .001);
-//    //g1->plot_output_to_temp_fp();
-//    
-//}
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {    
-//	aw::GeneratorShared g1 = aw::Generator::make_with_dimension(
-//							aw::Generator::ID_BufferFile, 1);
-//	// test round trip file reading and writing; this is good for valgrind testing as we have to create dyanmic vectors for temporary storage
-//	
-//    std::string s("../test/12518-sk1Kick.aif");
-//    g1->set_output_from_fp(s);	
-//    g1->write_output_to_fp("testOutput.aif");	
-//}
-//
-//
-//
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {    
-//	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
-//    
-//    // this will automatically create constant Generators
-//	//g1->add_input_by_index(0, 5512.5);
-//
-//	// this is an eq of 4 samples
-//	//g1->add_input_by_index(0, 11025.0); 
-//	g1->add_input_by_index(0, 5512.5); // 8 samples
-//	g1->render(1);
-//	// cycle is 8 samples long
-//    BOOST_CHECK_CLOSE(g1->matrix[0], 0, .00001);
-//    BOOST_CHECK_CLOSE(g1->matrix[4], .57142857, .00001);	
-//    BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
-//    BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
-//	
-//	g1->print_output();
-//	
-//	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
-//	g2->add_input_by_index(0, 11025.5); // 8 samples
-//	g2->render(1);	
-//    BOOST_CHECK_CLOSE(g2->matrix[0], 0, .00001);
-//    BOOST_CHECK_CLOSE(g2->matrix[1], 0.333333333, .00001);
-//    BOOST_CHECK_CLOSE(g2->matrix[2], 0.666666666, .00001);
-//    BOOST_CHECK_CLOSE(g2->matrix[3], 1, .00001);
-//    BOOST_CHECK_CLOSE(g2->matrix[4], 0, .00001);
-//	
-//
-//	// this will raise an exception because Phasor is defined as DD_FixedMono, and can only be created with an matrix dimensionality of 1	
-//    BOOST_REQUIRE_THROW(aw::Generator::make_with_dimension(aw::Generator::ID_Phasor, 2), 
-//						std::invalid_argument);
-//
-//
-//}
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
-//	// test summing if inputs for frequency
-//    
-//	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
-//    
-//    // 5512.5 / 2 == 2206.25
-//	g1->add_input_by_index(0, 2756.25); //
-//	
-//	// TODO: add a multidimensional Constant here to make sure that it does not break anything. 
-//	g1->add_input_by_index(0, 2756.25); //	
-//	g1->render(1);
-//	// cycle is 8 samples long
-//    BOOST_CHECK_CLOSE(g1->matrix[0], 0, .00001);
-//    BOOST_CHECK_CLOSE(g1->matrix[4], .57142857, .00001);	
-//    BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
-//    BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
-//	
-//	g1->print_output();
-//
-//
-//}
-//
-//
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
-//	
-//	std::cerr << std::string(80, '-') << std::endl;
-//	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
-//
-//	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
-//
-//	// changing the slot calls overridden _update_for_new_slot(), resizes frame size
-//	g1->set_slot_by_index(0, 20.0); // 20 second buffer
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 882000);
-//
-//	g1->set_slot_by_index(0, 1.0); // 1 second buffer
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
-//	
-//	g1->set_slot_by_index(0, 5.0); // 5 second buffer
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 220500);
-//	
-//	// create 
-//	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
-//    // 5512.5 / 2 == 2206.25
-//	g2->add_input_by_index(0, 2756.25); // a constant frequency
-//	
-//	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
-//	g1->add_input_by_index(0, g2);
-//    BOOST_CHECK_EQUAL(g1->get_frame_size(), 220500);
-//	
-//	g1->render(1); // count deso not amtter here, as will render to fill frame size
-//	
-//	
-//}
-//
-//
-//
-//
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	// testing setting the matrix from a file path
+	
+    std::string s("../test/12518-sk1Kick.aif");
+    g1->set_matrix_from_fp(s);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 2641);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 2641);
+    
+    //g1->plot_output();
+	
+    BOOST_CHECK_CLOSE(g1->get_matrix_average(), 0.16651, .001);
+    
+    std::string s2("../test/testStereo1.aif");
+    g1->set_matrix_from_fp(s2);
+    
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 1);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 888);
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 888); // we only read in one channel
+    // g1->plot_output();
+    BOOST_CHECK_CLOSE(g1->get_output_average(1),  0.460886, .0001);
+
+	// set to two channels
+    g1->set_slot_by_index(0, 2); 
+    g1->set_matrix_from_fp(s2);
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 2);
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 888);	
+    BOOST_CHECK_EQUAL(g1->get_matrix_size(), 1776);
+    // g1->plot_output();
+	
+    ////// check one dim at a time
+    ////// left is all pos, right is all neg
+    BOOST_CHECK_CLOSE(g1->get_output_average(1),  0.460886, .0001);
+    BOOST_CHECK_CLOSE(g1->get_output_average(2), -0.484650, .0001);
+    
+    BOOST_CHECK_CLOSE(g1->get_output_average(0), -0.011881922816371,  .001);
+    
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	// test round trip file reading and writing; this is good for valgrind testing as we have to create dyanmic vectors for temporary storage
+    std::string s("../test/12518-sk1Kick.aif");
+    g1->set_matrix_from_fp(s);	
+    g1->write_output_to_fp("testOutput.aif");	
+}
 
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+    
+    // this will automatically create constant Generators
+	//g1->add_input_by_index(0, 5512.5);
+
+	// this is an eq of 4 samples
+	//g1->add_input_by_index(0, 11025.0); 
+	g1->add_input_by_index(0, 5512.5); // 8 samples
+	g1->render(1);
+	// cycle is 8 samples long
+    BOOST_CHECK_CLOSE(g1->matrix[0], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[4], .57142857, .00001);	
+    BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
+	
+	g1->print_output();
+	
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+	g2->add_input_by_index(0, 11025.5); // 8 samples
+	g2->render(1);	
+    BOOST_CHECK_CLOSE(g2->matrix[0], 0, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[1], 0.333333333, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[2], 0.666666666, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[3], 1, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[4], 0, .00001);
+	
+
+
+}
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
+	// test summing if inputs for frequency
+    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+    
+    // 5512.5 / 2 == 2206.25
+	g1->add_input_by_index(0, 2756.25); //	
+	g1->add_input_by_index(0, 2756.25); //	
+	g1->render(1);
+	// cycle is 8 samples long
+    BOOST_CHECK_CLOSE(g1->matrix[0], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[4], .57142857, .00001);	
+    BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
+	
+	g1->print_output();
+
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
+	
+	std::cerr << std::string(80, '-') << std::endl;
+	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+
+	// changing the slot calls overridden _update_for_new_slot(), resizes frame size
+	g1->set_slot_by_index(1, 20.0); // 20 second buffer
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 882000);
+
+	g1->set_slot_by_index(1, 1.0); // 1 second buffer
+    BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
+		
+	// create 
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g2->add_input_by_index(0, 4); // a constant frequency
+	
+	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
+	g1->add_input_by_index(0, g2);
+	
+	// for one redner cycle of the buffer, we render inputs until we fill the frame
+	// need to time this generation 
+	g1->render(1); 
+	//g1->plot_output();
+	
+}
 
 
 

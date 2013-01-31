@@ -276,6 +276,10 @@ class Generator {
     //! Return the the frame size, the number of samples per output matrix. The frame size is always at or greater than the common frame size. 
     MatrixSizeType get_frame_size() const {return _frame_size;};	
 
+	//! Return the common frame size derived from the stored shared Environment. If this Generator has resizable frames, this may not be the same as the current frame size. 
+    MatrixSizeType get_common_frame_size() const {
+			return _environment->get_common_frame_size();};	
+
 	//! Get the sampling rate. 
     MatrixSizeType get_sampling_rate() const {return _sampling_rate;};	
 
@@ -321,12 +325,12 @@ class Generator {
 							OutputCountType ch, bool interleaved=true);
 								
 	//! Set the matrix (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. 
-	void set_output_from_vector(const VSampleType& vst, 
+	void set_matrx_from_vector(const VSampleType& vst, 
 								OutputCountType ch, bool interleaved=true);
 
 
     //! If we are in a BufferFile class, this method loads a complete file path to an audio file into the outpout of this Generator. 
-    virtual void set_output_from_fp(const std::string& fp);
+    virtual void set_matrix_from_fp(const std::string& fp);
 
 
 	// inputs and slots ........................................................    
@@ -356,11 +360,13 @@ class Generator {
     virtual void add_input_by_index(ParameterIndexType i, SampleType v);
   
 	// slot ..............................................................    	
-    //! Directly set a parameter given an index. This will remove/erase any parameter on this slot. 	
-    virtual void set_slot_by_index(ParameterIndexType i, GeneratorShared gs);
+    //! Directly set a parameter given an index. This will remove/erase any parameter on this slot. The update parameter permits disabling updating a slot, useful during initial configuration. 
+    virtual void set_slot_by_index(ParameterIndexType i, GeneratorShared gs, 
+									bool update=true);
     
 	//! Overridden to handle a constant. 
-    virtual void set_slot_by_index(ParameterIndexType i, SampleType v);
+    virtual void set_slot_by_index(ParameterIndexType i, SampleType v, 
+									bool update=true);
 
 };
 
@@ -461,7 +467,7 @@ class BufferFile: public Generator {
                                     OutputCountType d=0) const;
         
     //! Set the matrix of this Generator to the content of an audio file. This overridden method makes the usage of libsndfile to read in a file. 
-    virtual void set_output_from_fp(const std::string& fp);
+    virtual void set_matrix_from_fp(const std::string& fp);
         
 };
 
