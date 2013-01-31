@@ -447,58 +447,59 @@ void Generator :: write_output_to_fp(const std::string& fp,
 
 void Generator :: set_matrix_from_array(SampleType* v, MatrixSizeType s, 
 								OutputCountType ch, bool interleaved){
-    // low level method of a raw array as input; need size; assum non-interleaved
+    // low level method of a raw array as input; need size;
 	// caller is responsible for releasing called array
+	// we will read in only as many channels as we currently have as outputs
 	if (s < 1) {
 		throw std::domain_error(
             "the supplied vector must have size greater than 0");
 	}	
     
 	bool reset_needed(true); 
+	// if possible, we will resize the frame size; outs will not be changed
 	if (_frame_size_is_resizable) {
 		// frame size is the number of outpuots divided by channel
 		_set_frame_size(s/ch);
 		reset_needed = false;
 	}
-        
 	// must reset values to zero (if not done above) as s may be smaller than outputsize, and we would get mixed content
 	if (reset_needed) reset(); 
 
-	// if we did not resize dimensions, limit at max
-	if (s > _matrix_size) {
-		s = _matrix_size;
-	}
-	// if we did not resize dimensions, limit at max
+	// determine how many outputs to read; try to take all unless greater than output
+	OutputCountType out_count_to_take(ch);
 	if (ch > _output_count) {
-		ch = _output_count;
+		out_count_to_take = _output_count;
 	}
-	
-//    std::cout << "set_matrix_from_array: ch: " << (int)ch << " s: " << s << " matrix size: " << get_matrix_size() << " frame size: " << get_frame_size() << " out_to_matrix_offset[0]] " << (int)out_to_matrix_offset[0] << "out_to_matrix_offset[1]] " << (int)out_to_matrix_offset[1]  << std::endl;
-    
-	// assuming interleaved source to non-inter dest
+	    
+	// assuming interleaved source to non-interleved destination; audio inputs are normally interleaved
 	OutputCountType j(0);
-	MatrixSizeType i(0);
-	MatrixSizeType k(0);
+	MatrixSizeType i(0); // for each sample in source
+	MatrixSizeType k(0); // for each sample we write
 	
 	// we will never run over larger area than matrix size, s is less than matrix; we also must not run over v, so we must iterate by s. 
     while (i < s) {
-		// step over dimensions
+		// step over channels in source
 		for (j=0; j<ch; ++j) {
-			// i+j maybe greater than s; and not caught above
-			if (i >= s) break;
-	        matrix[k+out_to_matrix_offset[j]] = v[i];
+			//if (i >= s) break; // dont overflow matrix
+			if (j >= out_count_to_take) {
+				i += 1;				
+				continue; // dont write more than we can take				
+			}
+			// can check here if write pos in matrix is out of bounds
+	        matrix[k + out_to_matrix_offset[j]] = v[i];
 			//std::cout << i << std::endl;
 			i += 1;
 		}
-		k += 1; // will only reach total/ch
-    }
+		k += 1; // increment only once for each bundle of channel infor written
+	}
 }
 
 
-// RENAME: set matrix from vector
-void Generator :: set_output_from_vector(const VSampleType& vst, 
+void Generator :: set_matrx_from_vector(const VSampleType& vst, 
 								OutputCountType ch, bool interleaved) {
+	// this is set metrix as we will try to set all channels available
     // size is a long; cast ot std::tr1::uint32_t
+	// we trasfer the contents of the vector to an array
 	MatrixSizeType s = static_cast<MatrixSizeType>(vst.size());
 	// pack this in an array for reuse of the same function
     SampleType* v = new SampleType[s];
@@ -507,14 +508,13 @@ void Generator :: set_output_from_vector(const VSampleType& vst,
 		v[i] = vst[i];
 	}
 	set_matrix_from_array(v, s, ch, interleaved);
-	// clean up temporary vector 
+	// clean up temporary array 
 	delete[] v;
-		
 }
 
 
 // set matrix form fp
-void Generator :: set_output_from_fp(const std::string& fp) {
+void Generator :: set_matrix_from_fp(const std::string& fp) {
     // vitual method overridden in BufferFile (so as to localize use of libsndfile
     // an exception to call on base class
     throw std::domain_error("not implemented on base class");
@@ -581,8 +581,8 @@ void Generator :: set_input_by_index(ParameterIndexType i, SampleType v){
 void Generator :: add_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
     if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
-        throw std::invalid_argument("Parameter index is not available.");                                        
-    }
+        throw std::invalid_argument("Parameter index is not available.");
+	}
     // adding additiona, with a generator
     GenSharedOutPair gsop(gs, 0); // TEMPORARY until we accept more args      
     _inputs[i].push_back(gsop);    
@@ -606,23 +606,30 @@ void Generator :: add_input_by_index(ParameterIndexType i, SampleType v){
 
 //..............................................................................
 // public slot control 
-void Generator :: set_slot_by_index(ParameterIndexType i, GeneratorShared gs){
-    // if zero, none are set; current value is next available slot for registering
+void Generator :: set_slot_by_index(ParameterIndexType i, GeneratorShared gs, 
+									bool update){
+    // if zero, none are set; current value is next available slot for registering]
+	// updat defaults to true in header	
     if (_slot_parameter_count <= 0 or i >= _slot_parameter_count) {
+        throw std::invalid_argument("Slot index is not available.");		
     }        
     _slots[i] = gs; // direct assignment; replaces default if not there
-    // store in advance the matrix size of the input    
-    _update_for_new_slot();
+    // store in advance the matrix size of the input 
+	if (update) {
+		_update_for_new_slot();
+	}
 }
 
-void Generator :: set_slot_by_index(ParameterIndexType i, SampleType v){
+void Generator :: set_slot_by_index(ParameterIndexType i, SampleType v, 
+									bool update){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
+	// updat defaults to true in header
 	aw::GeneratorShared c = aw::ConstantShared(
 							new aw::Constant(_environment));
     c->init();
     c->set_input_by_index(0, v); // this will call Constant::reset()
-    set_slot_by_index(i, c); // call overloaded
+    set_slot_by_index(i, c, update); // call overloaded
 	// _update_for_new_slot called in set_slot_by_index
 }
 
@@ -857,46 +864,54 @@ void BufferFile :: init() {
     // call base init, allocates and resets()
     Generator::init();    
     // register some parameters:
-    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
-                                       aw::ParameterTypeValue);
-    pt1->set_instance_name("Inputs");
-    _register_input_parameter_type(pt1);
+	// created with slots
+	
+    //aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
+                                       //aw::ParameterTypeValue);
+    //pt1->set_instance_name("Inputs");
+    //_register_input_parameter_type(pt1);
     	
     // register some slots: 
-    aw::ParameterTypeDurationShared so1 = aw::ParameterTypeDurationShared(new 
+    // register slots
+    aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
+										   aw::ParameterTypeChannels);
+    so1->set_instance_name("Channels");
+	_register_slot_parameter_type(so1);
+    set_slot_by_index(0, 1, false); // false so as to not update until dur is set
+	
+    aw::ParameterTypeDurationShared so2 = aw::ParameterTypeDurationShared(new 
 										   aw::ParameterTypeDuration);
-    so1->set_instance_name("Duration in seconds");
-	_register_slot_parameter_type(so1);	
+    so2->set_instance_name("Duration in seconds");
+	_register_slot_parameter_type(so2);
+    // set value; will call _update_for_new_slot    
+    set_slot_by_index(1, 1, true); // one second, update now 
+	
 }
 
 void BufferFile :: _update_for_new_slot() {
-	// dimensions already set to largest found in inputs
-	// set frame size based on slot 1; mult sr by seconds requested
-	_set_frame_size(_slots[0]->matrix[0] * _sampling_rate * get_output_count());
+	// slot 0: channels
+    // this is a small int; might overflow of trying to create large number of outs
+    OutputCountType outs = _slots[0]->matrix[0];
+    if (outs <= 0) {
+        throw std::invalid_argument("outputs must be greater than or equal to zero");
+    }
+	// set ouptuts
+	_set_output_count(static_cast<OutputCountType>(outs));
+    // reset inputs, dropping all contained input connections; 
+    _clear_input_parameter_types();
+    std::stringstream s;
+    aw::ParameterTypeValueShared pt;    
+    // set inputs; this will clear any existing connections
+    for (OutputCountType i=0; i<outs; ++i) {
+        pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        s.str(""); // clears contents; not the same as .clear()
+        s << "Input " << i+1;
+        pt->set_instance_name(s.str());
+        _register_input_parameter_type(pt);        
+    }
+	// slot 1: duration 	
+	_set_frame_size(_slots[1]->matrix[0] * _sampling_rate);
 }
-
-// TODO: have buffer take a slot for channels
-//void Add :: _update_for_new_slot() {
-//    // this is a small int; might overflow of trying to create large number of outs
-//    OutputCountType outs = _slots[0]->matrix[0];
-//    if (outs <= 0) {
-//        throw std::invalid_argument("outputs must be greater than or equal to zero");
-//    }
-//	// set ouptuts
-//	_set_output_count(static_cast<OutputCountType>(outs));
-//    // reset inputs, dropping all contained input connections; 
-//    _clear_input_parameter_types();
-//    std::stringstream s;
-//    aw::ParameterTypeValueShared pt;    
-//    // set inputs; this will clear any existing connections
-//    for (OutputCountType i=0; i<outs; ++i) {
-//        pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
-//        s.str(""); // clears contents; not the same as .clear()
-//        s << "Opperands " << i+1;
-//        pt->set_instance_name(s.str());
-//        _register_input_parameter_type(pt);        
-//    }    
-//}
 
 
 void BufferFile :: render(RenderCountType f) {
@@ -905,29 +920,24 @@ void BufferFile :: render(RenderCountType f) {
 	// must reset; might advance to particular render count
 	_reset_inputs(); 
 	
-	// TODO Is there a better way to get input frame size?
-	// Need a get smalles from size calculation pre-done
-	FrameSizeType input_frame_size = _inputs[0][0].first->get_frame_size();
+	// we assume that all inputs have the same frame size as standard frame size
+	FrameSizeType cfs = get_common_frame_size();
 	
-	// assume that all inputs have the saem init frame size
-	RenderCountType render_cycles_max = get_frame_size() / input_frame_size;
+	// how many render cycles to fill our frame size
+	RenderCountType render_cycles_max = get_frame_size() / cfs;
 	RenderCountType render_count(0);
 	
 	MatrixSizeType i(0);		
 	
 	// ignore render count for now; just fill buffer
     while (render_count < render_cycles_max) {
-
         _render_inputs(render_count);		
 		_sum_inputs();
-		
-		// TODO need to handle multidemsional inputs to dom outputs
-		for (i=0; i < input_frame_size; ++i) {
-			matrix[i + (render_count * input_frame_size)] = _summed_inputs[0][i];
+		// TODO need to handle multidemsional inputs
+		for (i=0; i < cfs; ++i) {
+			matrix[i + (render_count * cfs)] = _summed_inputs[0][i];
 		}
-		
 		render_count++;
-		
     }
 
 	// we reset after to retrun components to starting state in case someone else uses this later. 	
@@ -937,10 +947,10 @@ void BufferFile :: render(RenderCountType f) {
 
 void BufferFile :: write_output_to_fp(const std::string& fp, 
                                     OutputCountType d) const {
-    // default is d is 0
+    // default is d is 0, which is all 
     // if want ch 2 of stereo, d is 2
     if (d > get_output_count()) {
-        // this should not happend due to check above
+		throw std::invalid_argument("dimension greater than that supported is requested");
     }
     // can select format here
 	int format = SF_FORMAT_AIFF | SF_FORMAT_PCM_16;
@@ -951,17 +961,13 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
     OutputCountType reqDim(1); // one if requested a specific dim
     if (d==0) {
         reqDim = get_output_count(); // number of dims
-        dims = out_to_matrix_offset; //copy         
+        dims = out_to_matrix_offset; //copy entire vector     
         count = get_matrix_size();        
     } 
     else { // just write the single dim specified 
-        OutputCountType dPos = d - 1;
-        if (dPos >= out_to_matrix_offset.size()) {
-            // this should not happen due to check above
-            throw std::invalid_argument("requested dimension is greater than that supported");
-        }
+        OutputCountType dPos = d - 1; // if request dim 2, want offset for 1
         dims.push_back(out_to_matrix_offset[dPos]);    
-        count = get_frame_size();
+        count = get_frame_size(); // only need one frame
     }
 
     FrameSizeType sr(_sampling_rate);
@@ -995,14 +1001,14 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
     
 }
 
-void BufferFile :: set_output_from_fp(const std::string& fp) {
+void BufferFile :: set_matrix_from_fp(const std::string& fp) {
     // vitual method overridden in BufferFile (so as to localize use of libsndfile
     // an exception to call on base class
-    std::cout << *this << ": set_output_from_fp" << std::endl;
+    std::cout << *this << ": set_matrix_from_fp" << std::endl;
 
     // libsndfile nomenclature is different than used here: For a sound file with only one channel, a frame is the same as a item (ie a single sample) while for multi channel sound files, a single frame contains a single item for each channel.
 	SndfileHandle sh(fp);
-    // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array
+    // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array; ideally we would pass in our matrix directly
     MatrixSizeType s =  static_cast<MatrixSizeType>(sh.frames() * sh.channels());
     double* v = new double[s]; // why not use SampleType instaed of double
     sh.readf(v, sh.frames());
@@ -1072,27 +1078,19 @@ void Phasor :: render(RenderCountType f) {
 		
 		for (i=0; i < fs; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
-						
-			// iterate over vector of Generators, get matrix value only for first dimension for now; 
-			
 			_sum_frequency = _summed_inputs[_input_index_frequency][i];
 
-			// we might dither this to increase accuracy over time
+			// we might dither this to increase accuracy over time; we floor+.5 to get an int period for now; period must not be zero or 1 (div by zero)
 			_period_samples = floor((_sampling_rate / 
 							frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
-			// sample period must not be 0 or 1
 
-			// add amp increment to previou amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
+			// add amp increment to previous amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
 			_amp = _amp_prev + (1.0 / (_period_samples - 1));
-
 			// if amp is at or above 1, set to zero
-			if (_amp > 1) {
-				_amp = 0.0;
-			}
+			if (_amp > 1) _amp = 0.0;
 			_amp_prev = _amp;
 			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
 			matrix[i] = _amp;
-			
 		}
 		// can use out_to_matrix_offset; stores index position of start of each dimension		        
         _render_count += 1;

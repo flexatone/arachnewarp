@@ -74,7 +74,7 @@ bool test_3() {
 		v.push_back(i % 5);
 	}
 	
-	g1->set_output_from_vector(v, 3); // declare 2d
+	g1->set_matrx_from_vector(v, 3); // declare 2d
 	g1->print_output();
     //g1->plot_output();
     return true;
@@ -85,7 +85,7 @@ bool test_4() {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
     // set channels to 1
     std::string s("12518-sk1Kick.aif");
-    g1->set_output_from_fp(s);	
+    g1->set_matrix_from_fp(s);	
     g1->write_output_to_fp("testOutput.aif");	
     
     //g1->plot_output();
