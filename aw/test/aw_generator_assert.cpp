@@ -58,7 +58,7 @@ bool test_2() {
 //    g2->render(10);
 //	g2->print_output();
 //	
-    //g2->plot_output();
+    //g2->plot_matrix();
     return true;
 
 }
@@ -76,7 +76,7 @@ bool test_3() {
 	
 	g1->set_matrx_from_vector(v, 3); // declare 2d
 	g1->print_output();
-    //g1->plot_output();
+    //g1->plot_matrix();
     return true;
 
 }
@@ -88,7 +88,7 @@ bool test_4() {
     g1->set_matrix_from_fp(s);	
     g1->write_output_to_fp("testOutput.aif");	
     
-    //g1->plot_output();
+    //g1->plot_matrix();
 	return true;
 }
 

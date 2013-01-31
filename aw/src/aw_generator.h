@@ -308,7 +308,7 @@ class Generator {
 
 
     //! Plot the matrix by piping it to gnuplot using a subprocess. 
-	void plot_output();
+	void plot_matrix();
 
 
 	// loading/writing to matrix ..............................................    
