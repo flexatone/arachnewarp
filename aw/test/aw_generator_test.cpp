@@ -465,7 +465,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	
 	// for one render cycle of the buffer, we render inputs until we fill the frame
 	// need to time this generation 
-	g1->render(1); 
+	//g1->render(1); 
 	//g1->plot_matrix();
 	BOOST_CHECK_EQUAL(g1->matrix[0], 0);
 	// TODO: why are these values not found
