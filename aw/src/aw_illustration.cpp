@@ -1,4 +1,5 @@
-
+#ifndef _AW_ILLUSTRATION_H_
+#define _AW_ILLUSTRATION_H_
 
 #include <cstdio> // for popen and related 
 
@@ -7,33 +8,38 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "aw_plotter.h"
+#include "aw_illustration.h"
+#include "aw_generator.h"
 
 namespace aw {
 
 
 //------------------------------------------------------------------------------
-Plotter :: Plotter() {}
+Illustration :: Illustration() {}
 
-Plotter :: ~Plotter() {}
+Illustration :: ~Illustration() {}
 
-void Plotter :: draw(const std::vector<SampleType>& v, OutputCountType d) {
+//void Illustration :: draw(const std::vector<SampleType>& v, OutputCountType d) {
+//    throw std::invalid_argument("not implemented");
+//}
+//
+//void Illustration :: draw(const std::vector<SampleType>& v) {
+//    throw std::invalid_argument("not implemented");
+//}
+
+void Illustration :: draw(GeneratorShared g) {
     throw std::invalid_argument("not implemented");
 }
 
-void Plotter :: draw(const std::vector<SampleType>& v) {
+void Illustration :: pipe() {
     throw std::invalid_argument("not implemented");
 }
 
-void Plotter :: pipe() {
-    throw std::invalid_argument("not implemented");
-}
-
-void Plotter :: print() {
+void Illustration :: print() {
     std::cout << _stream.str() << std::endl;
 }
 
-void Plotter :: write(const std::string& fp) {
+void Illustration :: write(const std::string& fp) {
     std::ofstream f; // for writing, need out file stream
     f.open(fp.c_str()); //  std::ios::in
     f << _stream.str() << std::endl;
@@ -50,7 +56,7 @@ TimeDomainGraph :: TimeDomainGraph() {}
 
 TimeDomainGraph :: ~TimeDomainGraph() {}
 
-void TimeDomainGraph :: draw(const std::vector<SampleType>& v, 
+void TimeDomainGraph :: draw_vector(const std::vector<SampleType>& v, 
     OutputCountType d) {
     // d is the output count in the vector
 
@@ -128,9 +134,17 @@ set rmargin screen 0.98 " << std::endl;
 }
 
 
-void TimeDomainGraph :: draw(const std::vector<SampleType>& v) {
-    draw(v, 0);
+//void TimeDomainGraph :: draw(const std::vector<SampleType>& v) {
+//    draw(v, 0);
+//}
+
+void TimeDomainGraph :: draw(GeneratorShared g) {    
+	Generator::VSampleType v;
+	g->write_matrix_to_vector(v); // load matrix into this vecotr
+    draw_vector(v, g->get_output_count());
+    
 }
+
 
 
 void TimeDomainGraph :: pipe() {
@@ -150,14 +164,20 @@ NetworkGraph :: NetworkGraph() {}
 
 NetworkGraph :: ~NetworkGraph() {}
 
-void NetworkGraph :: draw(const std::vector<SampleType>& v, 
-    OutputCountType d) {
+//void NetworkGraph :: draw(const std::vector<SampleType>& v, 
+//    OutputCountType d) {
+//
+//}
+//
+//void NetworkGraph :: draw(const std::vector<SampleType>& v) {
+//    draw(v, 0);
+//}
 
+
+void NetworkGraph :: draw(GeneratorShared g) {    
+    
 }
 
-void NetworkGraph :: draw(const std::vector<SampleType>& v) {
-    draw(v, 0);
-}
 
 
 void NetworkGraph :: pipe() {
@@ -177,6 +197,7 @@ void NetworkGraph :: pipe() {
 
 
 } // end namespace aw
+#endif // ends _AW_ILLUSTRATION_H_
 
 
 

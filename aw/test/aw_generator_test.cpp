@@ -1,4 +1,4 @@
-// g++ -I ../src aw_generator_test.cpp ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_plotter.cpp -DSTAND_ALONE -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -g -o aw_generator_test
+// g++ -I ../src  aw_generator_test.cpp ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp -DSTAND_ALONE -l boost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -g -o aw_generator_test
 
 // -std=c++0x
 

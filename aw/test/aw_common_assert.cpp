@@ -9,15 +9,16 @@
 #include <iostream>
 #include <cassert>
 
+
+bool test_1();
 bool test_1() {
     // gets a boost path object
     std::string test = std::string(aw::get_fp_home());
     std::cout << test << std::endl;
 
-
     aw::Environment e;
     
-    std::cout << e.get_fp_temp() << std::endl;
+    std::cout << e.get_fp_temp("name.txt") << std::endl;
     
     return true;
 }

@@ -1,4 +1,4 @@
-// g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_plotter.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
+// g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
 
 
 #include <cassert>

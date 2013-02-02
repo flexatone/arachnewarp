@@ -9,6 +9,7 @@
 
 //#include <memory> # only with -std=c++0x
 // #include <boost/shared_ptr.hpp>
+// <boost/enable_shared_from_this.hpp>
 #include <tr1/memory>
 
 #include "aw_common.h"
@@ -103,7 +104,7 @@ class ParameterTypeChannels: public ParameterType {
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 //! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the matrix, a table of one frame for each output. Clients of the generator freely read from the matrix array, given the matrix itself and precalculated out_to_matrix_offset values. 
-class Generator {
+class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
     public://-------------------------------------------------------------------    
     // public typedefs

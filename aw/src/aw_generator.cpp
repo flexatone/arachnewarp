@@ -9,7 +9,7 @@
 
 
 #include "aw_generator.h"
-#include "aw_plotter.h"
+#include "aw_illustration.h"
 
 
 
@@ -419,9 +419,9 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
 
 void Generator :: plot_matrix() {
 	TimeDomainGraph p;
-	VSampleType v;
-	write_matrix_to_vector(v); // load matrix into this vecotr
-	p.draw(v, get_output_count());
+//	VSampleType v;
+//	write_matrix_to_vector(v); // load matrix into this vecotr
+	p.draw(shared_from_this());
 	p.pipe(); // pipe to gnu plot
 }
 

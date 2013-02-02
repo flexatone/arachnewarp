@@ -1,4 +1,4 @@
-// g++ aw_generator_perf.cpp aw_generator.cpp aw_common.cpp aw_timer.cpp aw_plotter.cpp -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_perf
+// g++ aw_generator_perf.cpp aw_generator.cpp aw_common.cpp aw_timer.cpp aw_illustration.cpp -lboost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_perf
 
 #include <cassert>
 
