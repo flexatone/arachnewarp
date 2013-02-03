@@ -291,6 +291,15 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Reset all parameters, and zero out the matrix array.
     virtual void reset();
 	
+    
+	// info strings .............................................................    
+    
+    //! Get a unique identifier for this Generator.
+    std::string get_label_address() const;
+    
+    //! Get a complete label for this generator.
+    std::string get_label() const;
+    
 	//! Output stream friend function: returns the name of the Generator. 
 	friend std::ostream& operator<<(std::ostream& matrix, const Generator& g);
     
@@ -300,7 +309,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 	// display ................................................................    
     //! Print the matrix buffer for all dimensions at the current sample.
-    void print_output();
+    void print_matrix();
 
     //! Print the the hierarchical list of all input values. This is virtual because Constant must print inputs in as different way. No other generator should need to specialize. 
     virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
@@ -311,6 +320,9 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
     //! Plot the matrix by piping it to gnuplot using a subprocess. 
 	void plot_matrix();
+
+    //! Create a graphiz illustration. 
+	void illustrate_network();
 
 
 	// loading/writing to matrix ..............................................    

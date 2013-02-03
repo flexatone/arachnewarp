@@ -359,15 +359,28 @@ void Generator :: reset() {
 //..............................................................................
 // display methods
 
+std::string Generator :: get_label_address() const {
+    std::stringstream s;
+    // get address of self, dereferenced
+    s << "Gen::" << _class_name << "{" << &(*this) << "}"; 
+    return s.str();
+} 
+
+std::string Generator :: get_label() const {
+    std::stringstream s;
+    s << "<" << get_label_address() << 
+        " out:" <<  static_cast<int>(_output_count) << 
+    ">";    
+    return s.str();
+} 
+
 std::ostream& operator<<(std::ostream& ostream, const Generator& g) {
     // replace with static cast
-    ostream << "<Gen: " << g._class_name << " @" << 
-        static_cast<int>(g._output_count) << ">";
+    ostream << g.get_label();
     return ostream; 
 }
 
-// RENAME: print marix
-void Generator :: print_output() {
+void Generator :: print_matrix() {
     // provide name of generator first by dereferencing this
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
     
@@ -383,10 +396,10 @@ void Generator :: print_output() {
 
 void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
     //std::cout << "recurse_level: " << (int)recurse_level << std::endl;
-    
     std::string space1 = std::string(recurse_level*INDENT_SIZE, ' ');
     std::string space2 = std::string((recurse_level+1)*INDENT_SIZE, ' '); 
     std::string space3 = std::string((recurse_level+2)*INDENT_SIZE, ' '); 
+
     std::cout << space1 << *this << " Inputs:" << std::endl;
 
     VGenSharedOutPair :: const_iterator j;
@@ -413,13 +426,25 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
     }
 }
 
+
+// illustrate matrix
 void Generator :: plot_matrix() {
 	TimeDomainGraph p;
-//	VSampleType v;
-//	write_matrix_to_vector(v); // load matrix into this vecotr
+    // pass a version this instancea as a Shared Pointer
 	p.draw(shared_from_this());
 	p.pipe(); // pipe to gnu plot
 }
+
+void Generator :: illustrate_network() {
+	NetworkGraph p;
+    // pass a version this instancea as a Shared Pointer
+	p.draw(shared_from_this());
+    p.print();
+	//p.pipe(); // pipe to gnu plot
+}
+
+
+
 
 
 

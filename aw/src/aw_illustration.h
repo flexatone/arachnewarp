@@ -26,11 +26,6 @@ class Illustration {
 
     public://-------------------------------------------------------------------
     //! Write the data to the stringstream. 
-//    virtual void draw(const std::vector<SampleType>& v);
-//    
-//    virtual void draw(const std::vector<SampleType>& v, OutputCountType d);
-
-    //! Replace all other overrdies with this
     virtual void draw(const GeneratorShared g);
 
 
@@ -63,15 +58,9 @@ class TimeDomainGraph : public Illustration{
     virtual void draw_vector(const std::vector<SampleType>& v, 
     OutputCountType d=1);
 
-
-    //! Write the plot to internal storage, given a vector of data and a _output_count. The data is assumed to be adjacent, not interleaved.     
+    //! Write the plot of the generator.     
     virtual void draw(const GeneratorShared g);
-
     
-//    virtual void draw(const std::vector<SampleType>& v, OutputCountType d); 
-//
-//    virtual void draw(const std::vector<SampleType>& v); 
-
     //! Pipe the the plot to gnuplot directly.
     virtual void pipe();
     
@@ -83,6 +72,12 @@ class TimeDomainGraph : public Illustration{
 class NetworkGraph;
 typedef std::tr1::shared_ptr<NetworkGraph> NetworkGraphShared;
 class NetworkGraph : public Illustration{
+
+    private://------------------------------------------------------------------
+    
+    //! Recursive functino for adding description of a Generator.
+    void _draw_generator(const GeneratorShared g);
+
     
     public://-------------------------------------------------------------------
 
@@ -90,14 +85,9 @@ class NetworkGraph : public Illustration{
     
     virtual ~NetworkGraph();
     
+    //! Draw the generator.
     virtual void draw(const GeneratorShared g);
     
-
-    //! Write the plot to internal storage, given a vector of data and a _output_count. The data is assumed to be adjacent, not interleaved. 
-//    virtual void draw(const std::vector<SampleType>& v, OutputCountType d); 
-//
-//    virtual void draw(const std::vector<SampleType>& v); 
-
     //! Pipe the the plot to gnuplot directly.
     virtual void pipe();
     

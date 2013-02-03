@@ -46,6 +46,33 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_1) {
 
 BOOST_AUTO_TEST_CASE(aw_illustration_test_2) {
 	std::cout << "running aw_illustration_test_2" << std::endl;
+    
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	// create two channel buffer
+	g1->set_slot_by_index(0, 2);
+	// for five second
+	g1->set_slot_by_index(1, 5.0);
+		
+	// create 
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g2->add_input_by_index(0, 4); // a constant frequency
+	
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g3->add_input_by_index(0, 12); // a constant frequency
+
+	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g3->add_input_by_index(0, -2); // a constant frequency
+
+	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
+	g1->add_input_by_index(0, g2);
+	g1->add_input_by_index(1, g3);
+	g1->add_input_by_index(1, g4);
+    
+    
+    g1->illustrate_network();
+
+	
+    
 }
 
 

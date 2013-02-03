@@ -29,7 +29,7 @@ int main() {
 	g2->render(689);
     std::cout << "total time for 1 second of audio: " << t2 << std::endl;
     
-	//g2->print_output();
+	//g2->print_matrix();
 
     
 }
