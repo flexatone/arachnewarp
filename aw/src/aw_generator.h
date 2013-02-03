@@ -188,7 +188,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     std::tr1::unordered_map<ParameterIndexType, 
                             ParameterTypeShared> _slot_parameter_type;		
 	
-	//! For render call, we sum all inputs up to the highest _output_count available in the input and store that in a Vector of sample types.
+	//! For render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types.
+    // TODO: possibly replace this with a raw array; problem with this is that when registering inputs we will resize for each opperation; would need to register inputs all at once to avoid destroying/creating a matrix like structure. 
 	VVSampleType _summed_inputs;
 	
 

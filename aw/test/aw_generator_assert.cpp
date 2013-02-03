@@ -1,4 +1,4 @@
-// g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
+// g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
 
 
 #include <cassert>
@@ -6,6 +6,7 @@
 
 #include "aw_generator.h"
 #include "aw_common.h"
+#include "aw_timer.h"
 
 
 
@@ -93,12 +94,53 @@ bool test_4() {
 }
 
 
+bool test_5() {
+	std::cerr << std::string(80, '-') << std::endl;
+	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	// create two channel buffer
+	g1->set_slot_by_index(0, 2);
+	// for five second
+	g1->set_slot_by_index(1, 5.0);
+		
+	// create 
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g2->add_input_by_index(0, 4); // a constant frequency
+	
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g3->add_input_by_index(0, 12); // a constant frequency
+
+	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g3->add_input_by_index(0, -2); // a constant frequency
+
+	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
+	g1->add_input_by_index(0, g2);
+	g1->add_input_by_index(1, g3);
+	g1->add_input_by_index(1, g4);
+	
+    
+    aw::Timer t("rendering buffer");
+    t.start();
+    
+	// for one render cycle of the buffer, we render inputs until we fill the frame
+	// need to time this generation 
+	g1->render(1); // render count here meaningless
+	//g1->plot_matrix();
+    t.stop();
+    std::cout << "total time: " << t << std::endl;
+    
+    return true;
+    
+
+}
+
 int main() {
 	// TODO: read command line args to support selecting test by name
 
     //assert(test_1() && test_2() && test_3());
 	
-	test_4();
+	test_5();
     
 }
 

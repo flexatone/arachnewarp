@@ -145,8 +145,6 @@ void TimeDomainGraph :: draw(GeneratorShared g) {
     
 }
 
-
-
 void TimeDomainGraph :: pipe() {
     // this uses c-style file pointers to as these are what we get out of popen; must convert std::string to c string for usage by fprint
     FILE* gp;
@@ -156,8 +154,6 @@ void TimeDomainGraph :: pipe() {
     // pclose will wait for termination
     if (pclose(gp) == -1) throw std::domain_error("pclose failed");
 }
-
-
 
 
 NetworkGraph :: NetworkGraph() {}
