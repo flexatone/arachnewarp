@@ -504,11 +504,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 	
 	// last sample should be at 1 for both
 	// g1->print_output();  TODO: add numbers to define range
-	int p;
-	for (int i=0; i < 50; ++i) {
-		p = 0 + g1->out_to_matrix_offset[0] + i;
-		std::cout << p << ":  " << g1->matrix[p] << std::endl;
-	}
+//	int p;
+//	for (int i=0; i < 50; ++i) {
+//		p = 0 + g1->out_to_matrix_offset[0] + i;
+//		std::cout << p << ":  " << g1->matrix[p] << std::endl;
+//	}
 	//BOOST_CHECK_CLOSE(g1->matrix[44098 + g1->out_to_matrix_offset[0]], 1, .001);
 	//BOOST_CHECK_CLOSE(g1->matrix[44099 + g1->out_to_matrix_offset[1]], 1, .001);
 	

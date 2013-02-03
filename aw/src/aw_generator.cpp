@@ -159,13 +159,12 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     // store a vector in the position to accept inputs
     VGenSharedOutPair vInner;  
     _inputs.push_back(vInner); // extr copy made here
-    
-    // add vector to matrix size as well 
-//    VFrameSize vSizeInner;  
-//    _inputs_frame_size.push_back(vSizeInner);
-	
+    	
 	VSampleType vSampleTypeInner;
 	_summed_inputs.push_back(vSampleTypeInner);
+    // must do this after pushing_back, as makes a copy
+    // resize to store initialzied values and use like an array
+    _summed_inputs[_input_parameter_count].resize(get_common_frame_size(), 0.0);    
     _input_parameter_count += 1;
 }
 
@@ -179,7 +178,7 @@ void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
 	// called in derived init()
 	// set dictionary directly
     _slot_parameter_type[_slot_parameter_count] = pts;		
-	_slots.push_back(GeneratorShared()); // store empoty to hold position
+	_slots.push_back(GeneratorShared()); // store empty to hold position
     _slot_parameter_count += 1;
     
 }
@@ -198,13 +197,14 @@ void Generator :: _render_inputs(RenderCountType f) {
     // this is "pulling" lower-level values up to date
     // this seems somewhat wasteful as in most cases we just will be advancing by 1 more than the previous frame count value 
     // this is inlined in the header
-    VGenSharedOutPair :: const_iterator j; // vector of generators    
+    ParameterIndexType j;
+    ParameterIndexType gen_count_at_input(0);
     for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
         // inputs are a vector of Generators
-        for (j=_inputs[i].begin(); j!=_inputs[i].end(); ++j) {
+        gen_count_at_input = _inputs[i].size();        
+        for (j=0; j<gen_count_at_input; ++j) {
             // this is a pair of shared generator, matrix index
-            // we just render the generator; do not care about which matrix we are looking at until later; will not render multiple times for multiple calls because of the render count id. 
-            (*j).first->render(f);
+            _inputs[i][j].first->render(f);
         }
     }
 }
@@ -230,18 +230,13 @@ void Generator :: _sum_inputs() {
     ParameterIndexType gen_count_at_input(0);    
     OutputCountType out(0);
 
-    // we only read and/or sum up to our own frame size
-    FrameSizeType frameSize(get_frame_size());
-        
+    // when reading inputs, we must assume they are teh common frame size, not necessarily our frame size (like when we are a buffer)
+    FrameSizeType frameSize(get_common_frame_size());
 	SampleType sum(0);
     
 	// iterate over each input parameter type
     for (i=0; i<_input_parameter_count; ++i) {
-		_summed_inputs[i].clear();
-		// only call reserve() if necessary
-		if (_summed_inputs[i].capacity() != frameSize) {
-			_summed_inputs[i].reserve(frameSize);
-        }
+        // do not need to _summed_inputs[i].clear(), as we are repalcing with a new SampleTyple sum; _summed_inputs[i].capacity() == frameSize due to reserving in _register_input_parameter_type
         gen_count_at_input = _inputs[i].size();        
 		// for each frame, read across all input
 		for (k=0; k < frameSize; ++k) {
@@ -255,8 +250,9 @@ void Generator :: _sum_inputs() {
                     k + _inputs[i][j].first->out_to_matrix_offset[out]
                 ];
 			}
-			// sum of all gens at this frame
-			_summed_inputs[i].push_back(sum);
+			// sum of all gens at this sample frame
+            // do not push_back, as has been resized; assign
+            _summed_inputs[i][k] = sum;
 		}
 	}
 }
@@ -924,7 +920,10 @@ void BufferFile :: render(RenderCountType f) {
 	FrameSizeType cfs = get_common_frame_size();
 	
 	// how many render cycles to fill our frame size
-	RenderCountType render_cycles_max = get_frame_size() / cfs;
+	RenderCountType render_cycles_max = floor(get_frame_size() / 
+                                    static_cast<SampleType>(cfs));
+    //std::cout << "render_cycles_max: " << render_cycles_max  << std::endl;
+    
 	RenderCountType rc(0); // this is the sub-render count
 	MatrixSizeType i(0);
 	OutputCountType j(0);
