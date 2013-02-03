@@ -21,11 +21,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     aw::EnvironmentShared e = aw::Environment::make();
 	aw::Generator g1 = aw::Generator(e);
     g1.init();
-	g1.print_output();
+	g1.print_matrix();
 	g1.render(1); // can call directly on object
-	g1.print_output();
+	g1.print_matrix();
 	g1.render(3); // will render twice, moving to 3
-	g1.print_output();
+	g1.print_matrix();
     
         
     // this has no parameters so should raise exception on trying to set or add
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     BOOST_CHECK_CLOSE(g2->matrix[0], 0, .0000001);
 	
 	g2->render(4);
-	g2->print_output();
+	g2->print_matrix();
 	// check default
 
     BOOST_CHECK_EQUAL(g2->get_output_count(), 1);
@@ -76,9 +76,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     
 	// set a constant value
 	g3.set_input_by_index(0, 29);
-	//g3.print_output();
+	//g3.print_matrix();
 	g3.render(4);
-	//g3.print_output();
+	//g3.print_matrix();
     BOOST_CHECK_CLOSE(g3.matrix[0], 29, .0000001);
     // check that we addition occurs with two constant inputs
 	g3.add_input_by_index(0, 1);
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
 	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
 
 	g1->set_input_by_index(0, 2);
-	//g1->print_output();
+	//g1->print_matrix();
 	g2->set_input_by_index(0, 3);
 	
 	// need to set first, so as to clear out the old one
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
     g3->print_inputs(true);
 	
 	g3->render(1);
-//	//g3->print_output();
+//	//g3->print_matrix();
 	g3->render(8);
 //	
     BOOST_CHECK_CLOSE(g1->matrix[0], 2, .0000001);	
@@ -141,9 +141,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 	//g3->print_inputs();
 	
 	g3->render(1);
-	//g3->print_output();
+	//g3->print_matrix();
 	g3->render(8);
-	//g3->print_output();
+	//g3->print_matrix();
 
 	//g3->print_inputs(true);
     BOOST_CHECK_CLOSE(g3->matrix[0], 33, .0000001);
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
 	g3->add_input_by_index(0, 20);
 	
 	g3->render(200);
-	//g3->print_output();
+	//g3->print_matrix();
 	//g3->print_inputs(true);
 	
     BOOST_CHECK_CLOSE(g3->matrix[0], 31, .0000001);
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
 
 	g3->render(1);	
 	//g3->print_inputs();
-	//g3->print_output();
+	//g3->print_matrix();
 	
 	// this results are based on non-interleaved matrix presentation 
 	// sum in dims 1 and 2 are first two opperands
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
     BOOST_CHECK_EQUAL(g1->get_class_name(), "Add");
     
 	g1->render(50);
-	//g1->print_output();
+	//g1->print_matrix();
 	//g1->print_inputs(true);
 	
     BOOST_CHECK_CLOSE(g1->matrix[0], 2.7, .0000001);
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	g1->add_input_by_index(0, 9.2);
     
 	g1->render(20);
-	//g1->print_output();
+	//g1->print_matrix();
 	
     BOOST_CHECK_CLOSE(g1->matrix[0], 12.7, .0000001);
 	// this based on defaults and might change
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	
     g1->set_slot_by_index(0, 4);
 	g1->render(20);
-	//g1->print_output();
+	//g1->print_matrix();
 	//g1->print_inputs();
     
     BOOST_CHECK_EQUAL(g1->get_output_count(), 4);
@@ -406,7 +406,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
     BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
     BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
 	
-	g1->print_output();
+	g1->print_matrix();
 	
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
 	g2->add_input_by_index(0, 11025.5); // 8 samples
@@ -438,7 +438,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
     BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
     BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
 	
-	g1->print_output();
+	g1->print_matrix();
 
 }
 
@@ -503,7 +503,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 	//g1->plot_matrix();
 	
 	// last sample should be at 1 for both
-	// g1->print_output();  TODO: add numbers to define range
+	// g1->print_matrix();  TODO: add numbers to define range
 //	int p;
 //	for (int i=0; i < 50; ++i) {
 //		p = 0 + g1->out_to_matrix_offset[0] + i;

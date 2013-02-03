@@ -160,20 +160,42 @@ NetworkGraph :: NetworkGraph() {}
 
 NetworkGraph :: ~NetworkGraph() {}
 
-//void NetworkGraph :: draw(const std::vector<SampleType>& v, 
-//    OutputCountType d) {
-//
-//}
-//
-//void NetworkGraph :: draw(const std::vector<SampleType>& v) {
-//    draw(v, 0);
-//}
+
+void NetworkGraph :: _draw_generator(GeneratorShared g) {
+
+    // TODO: need to escape braches in label
+    
+    // _stream.str("");         
+    _stream << g->get_label_address() << " [";
+    
+    _stream << "label = \"<doc>  " << g->get_label() << std::endl;
+    
+    // iterate over inputs
+    _stream << " | <in0> in:0 " << std::endl;
+        
+    // iterate over outputs
+    _stream << " | <out0> out:0 " << std::endl;
+    
+    _stream << "\"];" << std::endl;
+    
+    // connect all inputs to this as an output
+}
 
 
 void NetworkGraph :: draw(GeneratorShared g) {    
+    _stream.str("");     
+    _stream << "\
+ digraph G {                    \n\
+ splines=curved;                \n\
+ node [shape=record, fontname=Arial, fontsize=12];  \n\
+ edge [color=grey];             \n\
+ ranksep=\"1.5 equally\";       \n\
+ size=\"8,8\";                  " << std::endl;    
+ 
+    _draw_generator(g);
+    _stream << "}" << std::endl;
     
 }
-
 
 
 void NetworkGraph :: pipe() {
@@ -206,15 +228,6 @@ void NetworkGraph :: pipe() {
 
 
 // dot -Tpdf test.dot -o test.pdf
-
-// digraph G {
-// //splines=curved;
-// splines=curved;
-// // shape = box
-// node [shape=record, fontname=Arial, fontsize=12];
-// edge [color=grey];
-// ranksep="1.5 equally";
-// size="8,8";
 
 // genA [label =   "<doc> \<genA@3@2\{x,y,z\}\> \
 //                | <in0> in:0  \
