@@ -170,35 +170,38 @@ NetworkGraph :: ~NetworkGraph() {}
 
 void NetworkGraph :: _draw_generator(GeneratorShared g) {
 
-    // TODO: need to escape braches in label
+    // TODO: need to escape in doc: {}<>
     
-    // _stream.str("");         
-    _stream << g->get_label_address() << " [";
+    // do not need to escape :: in labels
     
+    // this has to be used as the id tag for this gen, 
+    _stream << g->get_name_address() << " [";
+    
+    // the label is verbos, and describes i/o
     _stream << "label = \"<doc>  " << g->get_label() << std::endl;
     
     // iterate over inputs
-    _stream << " | <in0> in:0 " << std::endl;
+    _stream << " | <in0> in::0 " << std::endl;
         
     // iterate over outputs
-    _stream << " | <out0> out:0 " << std::endl;
+    _stream << " | <out0> out::0 " << std::endl;
     
     _stream << "\"];" << std::endl;
     
-    // connect all inputs to this as an output
+    // connect all inputs to this as an output, using  g->get_name_address()
 }
 
 
 void NetworkGraph :: draw(GeneratorShared g) {    
     _stream.str("");     
     _stream << "\
- digraph G {                    \n\
- splines=curved;                \n\
- node [shape=record, fontname=Arial, fontsize=12];  \n\
- edge [color=grey];             \n\
- ranksep=\"1.5 equally\";       \n\
- size=\"8,8\";                  " << std::endl;    
+ digraph G { \n\
+ node [shape=record, fontname=Courier, fontsize=12]; \n\
+ edge [color=grey]; \n\
+ ranksep=\"1.5 equally\"; \n\
+ size=\"8,8\"; " << std::endl;    
  
+
     _draw_generator(g);
     _stream << "}" << std::endl;
     
@@ -229,12 +232,8 @@ void NetworkGraph :: pipe() {
 
 
 
-
-
-
-
-
 // dot -Tpdf test.dot -o test.pdf
+
 
 // genA [label =   "<doc> \<genA@3@2\{x,y,z\}\> \
 //                | <in0> in:0  \

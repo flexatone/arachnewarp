@@ -293,8 +293,11 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	
     
 	// info strings .............................................................    
+
+    //! Get the name and address for this Generator, as a single string. 
+    std::string get_name_address() const;
     
-    //! Get a unique identifier for this Generator.
+    //! Get the name and addres for this Generator, labeling th ename with Gen and wrapping the address in braces. 
     std::string get_label_address() const;
     
     //! Get a complete label for this generator.
