@@ -359,6 +359,13 @@ void Generator :: reset() {
 //..............................................................................
 // display methods
 
+std::string Generator :: get_name_address() const {
+    std::stringstream s;
+    // get address of self, dereferenced, without delimiters
+    s << _class_name << &(*this); 
+    return s.str();
+} 
+
 std::string Generator :: get_label_address() const {
     std::stringstream s;
     // get address of self, dereferenced
@@ -370,7 +377,7 @@ std::string Generator :: get_label() const {
     std::stringstream s;
     s << "<" << get_label_address() << 
         " out:" <<  static_cast<int>(_output_count) << 
-    ">";    
+        ">";    
     return s.str();
 } 
 
