@@ -303,9 +303,12 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Get a complete label for this generator.
     std::string get_label() const;
     
-	//! Output stream friend function: returns the name of the Generator. 
-	friend std::ostream& operator<<(std::ostream& matrix, const Generator& g);
+	//! Output stream friend function: returns the label of the Generator. 
+	friend std::ostream& operator<<(std::ostream& ostream, const Generator& g);
     
+	//! Output stream friend function: returns the label of the GeneratorShared.     
+	friend std::ostream& operator<<(std::ostream& ostream, const GeneratorShared g);
+
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
@@ -333,7 +336,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Load the matrix into a passed-in vector. The vector is cleared before loading. 
     void write_matrix_to_vector(VSampleType& vst) const;
 
-    //! Write out all outpout to the provided file path. If this is a BufferFile, this can be used to write an audio file.
+    //! Write out all outpout to the provided file path. If this is a Buffer, this can be used to write an audio file.
     virtual void write_output_to_fp(const std::string& fp, 
                                     OutputCountType d=0) const;
 	
@@ -346,7 +349,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 								OutputCountType ch, bool interleaved=true);
 
 
-    //! If we are in a BufferFile class, this method loads a complete file path to an audio file into the outpout of this Generator. 
+    //! If we are in a Buffer class, this method loads a complete file path to an audio file into the outpout of this Generator. 
     virtual void set_matrix_from_fp(const std::string& fp);
 
 
@@ -365,8 +368,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 
 	// inputs ..............................................................    
-    //! Get a vector of GeneratorShared for an input, given the input index. This should be a copy of the vector, and is thus slow.
-    VGenSharedOutPair get_inputs_by_index(ParameterIndexType i);
+    //! Get a vector of GeneratorShared for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
+    virtual VGenSharedOutPair get_input_gen_shared_by_index(ParameterIndexType i);
     
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     virtual void set_input_by_index(ParameterIndexType i, 
@@ -407,7 +410,7 @@ class Constant: public Generator {
 
 
     public://-------------------------------------------------------------------
-//    explicit Constant();
+
 	explicit Constant(EnvironmentShared);
     ~Constant();
     
@@ -419,6 +422,9 @@ class Constant: public Generator {
 	
 	//! This derived function is necessary to handle displaying internal input components.
 	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
+
+	//! As Constant does not compose any Generators even though it has an input defined, this overridden method must return an empty vector.     
+    virtual VGenSharedOutPair get_input_gen_shared_by_index(ParameterIndexType i);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.
     virtual void set_input_by_index(ParameterIndexType i, GeneratorShared gs);    
@@ -463,19 +469,19 @@ class Add: public Generator {
 
 
 //==============================================================================
-//! A BufferFile has the ability to load its matrix array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in matrix. 
-class BufferFile;
-typedef std::tr1::shared_ptr<BufferFile> BufferFileShared;
-class BufferFile: public Generator {
+//! A Buffer has the ability to load its matrix array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in matrix. 
+class Buffer;
+typedef std::tr1::shared_ptr<Buffer> BufferShared;
+class Buffer: public Generator {
 
     protected://-----------------------------------------------------------------
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
 
     public://-------------------------------------------------------------------
-    explicit BufferFile(EnvironmentShared);
+    explicit Buffer(EnvironmentShared);
 	
-    ~BufferFile();
+    ~Buffer();
 
     virtual void init();    
 	

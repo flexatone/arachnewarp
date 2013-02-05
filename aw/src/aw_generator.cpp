@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <cmath>
 
-// needed for BufferFile
+// needed for Buffer
 #include <sndfile.hh>
 
 
@@ -69,7 +69,7 @@ GeneratorShared  Generator :: make(GeneratorID q){
         g = AddShared(new Add(e));    
     }
     else if (q == ID_BufferFile) {
-        g = BufferFileShared(new BufferFile(e));    
+        g = BufferShared(new Buffer(e));    
     }	
     else if (q == ID_Phasor) {
         g = PhasorShared(new Phasor(e));    
@@ -382,8 +382,12 @@ std::string Generator :: get_label() const {
 } 
 
 std::ostream& operator<<(std::ostream& ostream, const Generator& g) {
-    // replace with static cast
     ostream << g.get_label();
+    return ostream; 
+}
+
+std::ostream& operator<<(std::ostream& ostream, const GeneratorShared g) {
+    ostream << g->get_label(); // get from shared pointer
     return ostream; 
 }
 
@@ -447,7 +451,7 @@ void Generator :: illustrate_network() {
     // pass a version this instancea as a Shared Pointer
 	p.draw(shared_from_this());
     p.print();
-	//p.pipe(); // pipe to gnu plot
+	p.pipe(); // pipe to gnu plot
 }
 
 
@@ -543,7 +547,7 @@ void Generator :: set_matrx_from_vector(const VSampleType& vst,
 
 // set matrix form fp
 void Generator :: set_matrix_from_fp(const std::string& fp) {
-    // vitual method overridden in BufferFile (so as to localize use of libsndfile
+    // vitual method overridden in Buffer (so as to localize use of libsndfile
     // an exception to call on base class
     throw std::domain_error("not implemented on base class");
 
@@ -576,11 +580,12 @@ ParameterIndexType Generator :: get_slot_index_from_parameter_name(
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
 
-Generator::VGenSharedOutPair Generator :: get_inputs_by_index(ParameterIndexType i) {
+Generator::VGenSharedOutPair Generator :: get_input_gen_shared_by_index(
+										  ParameterIndexType i) {
     if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
-        throw std::invalid_argument("Parameter index is not available.");                                        
+        throw std::invalid_argument("Parameter index is not available.");		
     }
-    // TODO: chekc that this is copying: this will copy
+    // NOTE: this is copying all contents
     Generator::VGenSharedOutPair post(_inputs[i]);
     return post;
 }
@@ -702,7 +707,6 @@ void Constant :: init() {
                                        aw::ParameterTypeValue);
     pt1->set_instance_name("Constant numerical value");
     _register_input_parameter_type(pt1);
-    
     // do not define any slots (would require an internal Constant)  
     // _we store one value for each "gen" assigned to input  
     _values.push_back(0);           
@@ -751,6 +755,16 @@ void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
 void Constant :: render(RenderCountType f) {
     // do nothing, as matrix is already set
     _render_count = f;
+}
+
+
+Generator::VGenSharedOutPair Constant :: get_input_gen_shared_by_index(
+										  ParameterIndexType i) {
+								
+	// overridden virtual method
+    // return an empty vector for clients to iterate over
+    Generator::VGenSharedOutPair post;
+    return post;
 }
 
 void Constant :: set_input_by_index(ParameterIndexType i, GeneratorShared gs) {
@@ -884,20 +898,20 @@ void Add :: render(RenderCountType f) {
 
 
 //------------------------------------------------------------------------------
-BufferFile :: BufferFile(EnvironmentShared e) 
+Buffer :: Buffer(EnvironmentShared e) 
 	// must initialize base class with passed arg
 	: Generator(e) {
-	_class_name = "BufferFile";
-	// this is the unique difference of the BufferFile class 
+	_class_name = "Buffer";
+	// this is the unique difference of the Buffer class 
     _frame_size_is_resizable = true;
 }
 
-BufferFile :: ~BufferFile() {
+Buffer :: ~Buffer() {
 }
 
-void BufferFile :: init() {
+void Buffer :: init() {
     // the int routie must configure the names and types of parameters
-    std::cout << *this << " BufferFile::init()" << std::endl;
+    std::cout << *this << " Buffer::init()" << std::endl;
     // call base init, allocates and resets()
     Generator::init();    
     // register some parameters:
@@ -925,7 +939,7 @@ void BufferFile :: init() {
 	
 }
 
-void BufferFile :: _update_for_new_slot() {
+void Buffer :: _update_for_new_slot() {
 	// slot 0: channels
     // this is a small int; might overflow of trying to create large number of outs
     OutputCountType outs = _slots[0]->matrix[0];
@@ -951,7 +965,7 @@ void BufferFile :: _update_for_new_slot() {
 }
 
 
-void BufferFile :: render(RenderCountType f) {
+void Buffer :: render(RenderCountType f) {
 	// render count must be ignored; instead, we render until we have filled our buffer; this means that the components will have a higher counter than render; need to be reset at beginning and end
 
 	// must reset; might advance to particular render count
@@ -986,7 +1000,7 @@ void BufferFile :: render(RenderCountType f) {
 	
 }
 
-void BufferFile :: write_output_to_fp(const std::string& fp, 
+void Buffer :: write_output_to_fp(const std::string& fp, 
                                     OutputCountType d) const {
     // default is d is 0, which is all 
     // if want ch 2 of stereo, d is 2
@@ -1042,8 +1056,8 @@ void BufferFile :: write_output_to_fp(const std::string& fp,
     
 }
 
-void BufferFile :: set_matrix_from_fp(const std::string& fp) {
-    // vitual method overridden in BufferFile (so as to localize use of libsndfile
+void Buffer :: set_matrix_from_fp(const std::string& fp) {
+    // vitual method overridden in Buffer (so as to localize use of libsndfile
     // an exception to call on base class
     std::cout << *this << ": set_matrix_from_fp" << std::endl;
 
