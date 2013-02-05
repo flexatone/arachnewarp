@@ -576,6 +576,15 @@ ParameterIndexType Generator :: get_slot_index_from_parameter_name(
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
 
+Generator::VGenSharedOutPair Generator :: get_inputs_by_index(ParameterIndexType i) {
+    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+        throw std::invalid_argument("Parameter index is not available.");                                        
+    }
+    // TODO: chekc that this is copying: this will copy
+    Generator::VGenSharedOutPair post(_inputs[i]);
+    return post;
+}
+
 void Generator :: set_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
     // if zero, none are set; current value is next available slot for registering

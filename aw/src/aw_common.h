@@ -30,7 +30,7 @@ typedef double SampleType; // sample value type
 //! The size of a single frame (or vector), or the number of samples processed per computation cycle. This is a very large integer as we might need to accomodate loading in large audio files as a single frame. 
 typedef std::tr1::uint32_t FrameSizeType;
 
-//! Output size. Was uint16_t, but for handling files was increased to uint32_t. In general, the matrix is the frame size times the number of outputs, so matrix is always greater than or equal to frame size. 
+//! Output size. Was uint16_t, but for handling audio files was increased to uint32_t. In general, the matrix is the frame size times the number of outputs, so matrix is always greater than or equal to frame size. 
 typedef std::tr1::uint32_t MatrixSizeType;
 
 // _output_count probably never more than 200!
@@ -60,14 +60,17 @@ std::tr1::uint8_t const INDENT_SIZE(2);
 
 
 // functions ===================================================================
+
+//! Escape one or more characters privided by a string and a single prefix. Changes are made in place to the passed in string. 
+void escape(std::string& str, const std::string& replace_targets, 
+        const std::string& prefix);
+
+
 //! Print an arry of SampleType of size type FrameSizeType.
 void print(SampleType* out, FrameSizeType size);
 
 //! Return the users home directory as a const char pointer. This is what is returned by low-level calls, and is thus returned here to reduce creating temporary objects.
 const char* get_fp_home();
-
-//std::string gen_id_to_name(GeneratorID q);
-//GeneratorID gen_name_to_id(const std::string& q);
 
 
 //! Frequency values might swing through zero, or exceed Nyquist. This inline function solves this problem by returning a minimum number of zero is hit.

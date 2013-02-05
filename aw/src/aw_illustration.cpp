@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <fstream>
 #include <stdexcept>
+#include <vector>
 
 #include "aw_illustration.h"
 #include "aw_generator.h"
@@ -168,32 +169,70 @@ NetworkGraph :: NetworkGraph() {}
 NetworkGraph :: ~NetworkGraph() {}
 
 
-void NetworkGraph :: _draw_generator(GeneratorShared g) {
+void NetworkGraph :: _draw_generator(GeneratorShared g) {    
 
-    // TODO: need to escape in doc: {}<>
-    
-    // do not need to escape :: in labels
-    
-    // this has to be used as the id tag for this gen, 
+    // get_name_address is the id tag for this gen: no spaces or bad chars
     _stream << g->get_name_address() << " [";
     
     // the label is verbos, and describes i/o
-    _stream << "label = \"<doc>  " << g->get_label() << std::endl;
+    // create a doc segment of the box
+    std::string label = g->get_label();
+    escape(label, "{}<>", "\\");
+    _stream << "label = \"<doc>  " << label << std::endl;
+    
     
     // iterate over inputs
-    _stream << " | <in0> in::0 " << std::endl;
-        
+    ParameterIndexType pos(0);
+    for (pos=0; pos < g->get_input_count(); ++pos) {
+        _stream << " | <in" << static_cast<int>(pos) << 
+                    "> in::" << static_cast<int>(pos) << std::endl;
+    }        
     // iterate over outputs
-    _stream << " | <out0> out::0 " << std::endl;
+    for (pos=0; pos < g->get_output_count(); ++pos) {
+        _stream << " | <out" << static_cast<int>(pos) << 
+                    "> out::" << static_cast<int>(pos) << std::endl;
+    }
     
-    _stream << "\"];" << std::endl;
+    Generator::VGenSharedOutPair g_ins;
+    // show connections
+    // get input tag, lable that out to this in
+    for (pos=0; pos < g->get_input_count(); ++pos) {    
     
+        // a vector of gen shared/ out number pairs
+        g_ins = g->get_inputs_by_index(pos);
+        OutputCountType g_ins_out_pos(0);
+        GeneratorShared g_in;
+        
+        Generator::VGenSharedOutPair::const_iterator j;
+        for (j=g_ins.begin(); j != g_ins.end(); ++j) {
+            g_ins_out_pos = (*j).second;
+            g_in = (*j).first;  
+
+            // "genA":out0:s -> "genB":in0:n;
+            // show from input to this gen at this input
+            _stream << "\"" << g_in->get_name_address() << "\":";
+            _stream << "out" << static_cast<int>(g_ins_out_pos) << ":s";
+            _stream << " -> ";
+            _stream << "\"" << g->get_name_address() << "\":";
+            _stream << "in" << static_cast<int>(pos) << ":n";
+            _stream << ";" << std::endl; // close line        
+        }
+        
+        // recurse on each gen; TODO: does no yet work. 
+        //_draw_generator(g_in);
+        
+    }    
+    _stream << "\"];" << std::endl;    
     // connect all inputs to this as an output, using  g->get_name_address()
 }
 
 
+
+
+
 void NetworkGraph :: draw(GeneratorShared g) {    
     _stream.str("");     
+    // header
     _stream << "\
  digraph G { \n\
  node [shape=record, fontname=Courier, fontsize=12]; \n\
@@ -201,8 +240,9 @@ void NetworkGraph :: draw(GeneratorShared g) {
  ranksep=\"1.5 equally\"; \n\
  size=\"8,8\"; " << std::endl;    
  
-
+    // add each generator recursively
     _draw_generator(g);
+    // close the header
     _stream << "}" << std::endl;
     
 }
