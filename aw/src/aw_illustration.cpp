@@ -169,8 +169,11 @@ NetworkGraph :: NetworkGraph() {}
 NetworkGraph :: ~NetworkGraph() {}
 
 
-void NetworkGraph :: _draw_generator(GeneratorShared g) {    
-
+void NetworkGraph :: _draw_generator(GeneratorShared g) {
+	if (!g) { // if we get an empty pointer
+		// could aternatively just return as a base case of recursion
+	    throw std::invalid_argument("the GeneratoreShared is empty");
+	}	
     // get_name_address is the id tag for this gen: no spaces or bad chars
     _stream << g->get_name_address() << " [";
     
@@ -178,28 +181,32 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
     // create a doc segment of the box
     std::string label = g->get_label();
     escape(label, "{}<>", "\\");
-    _stream << "label = \"<doc>  " << label << std::endl;
-    
+    _stream << "label = \"<doc>  " << label << " ";
     
     // iterate over inputs
     ParameterIndexType pos(0);
     for (pos=0; pos < g->get_input_count(); ++pos) {
         _stream << " | <in" << static_cast<int>(pos) << 
-                    "> in::" << static_cast<int>(pos) << std::endl;
+                    "> in::" << static_cast<int>(pos) << " "; // << std::endl;
     }        
     // iterate over outputs
     for (pos=0; pos < g->get_output_count(); ++pos) {
         _stream << " | <out" << static_cast<int>(pos) << 
-                    "> out::" << static_cast<int>(pos) << std::endl;
+                    "> out::" << static_cast<int>(pos) << " "; // << std::endl;
     }
+	// end the definition of the label/node
+    _stream << "\"];" << std::endl;    
     
+    // next, define connections
     Generator::VGenSharedOutPair g_ins;
     // show connections
     // get input tag, lable that out to this in
+
     for (pos=0; pos < g->get_input_count(); ++pos) {    
-    
         // a vector of gen shared/ out number pairs
-        g_ins = g->get_inputs_by_index(pos);
+        g_ins = g->get_input_gen_shared_by_index(pos);
+		//std::cout << g << " g_ins:" << g_ins.size() << std::endl;
+	
         OutputCountType g_ins_out_pos(0);
         GeneratorShared g_in;
         
@@ -211,18 +218,16 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
             // "genA":out0:s -> "genB":in0:n;
             // show from input to this gen at this input
             _stream << "\"" << g_in->get_name_address() << "\":";
-            _stream << "out" << static_cast<int>(g_ins_out_pos) << ":s";
+            _stream << "out" << static_cast<int>(g_ins_out_pos) << ":s"; // south
             _stream << " -> ";
             _stream << "\"" << g->get_name_address() << "\":";
-            _stream << "in" << static_cast<int>(pos) << ":n";
+            _stream << "in" << static_cast<int>(pos) << ":n"; // to north
             _stream << ";" << std::endl; // close line        
-        }
-        
-        // recurse on each gen; TODO: does no yet work. 
-        //_draw_generator(g_in);
-        
+			
+			// recurse on each gen; this only advances if g_ins has length (not the cast when dealing with a constant)
+			_draw_generator(g_in);
+        }                
     }    
-    _stream << "\"];" << std::endl;    
     // connect all inputs to this as an output, using  g->get_name_address()
 }
 
@@ -234,12 +239,12 @@ void NetworkGraph :: draw(GeneratorShared g) {
     _stream.str("");     
     // header
     _stream << "\
- digraph G { \n\
- node [shape=record, fontname=Courier, fontsize=12]; \n\
- edge [color=grey]; \n\
- ranksep=\"1.5 equally\"; \n\
- size=\"8,8\"; " << std::endl;    
- 
+digraph G { \n\
+dpi = 300; \n\
+node [shape=record, fontname=Courier, fontsize=12]; \n\
+edge [color=grey]; \n\
+ranksep=\"1.5 equally\"; \n\
+size=\"8,8\"; " << std::endl;    
     // add each generator recursively
     _draw_generator(g);
     // close the header
@@ -251,7 +256,10 @@ void NetworkGraph :: draw(GeneratorShared g) {
 void NetworkGraph :: pipe() {
     // this uses c-style file pointers to as these are what we get out of popen; must convert std::string to c string for usage by fprint
     FILE* gp;
-    gp = popen("gnuplot -persist", "w");
+	// dot -Tpdf test.dot -o test.pdf	
+    //gp = popen("dot -Tpng | display", "w");
+    gp = popen("dot -Tpdf -o dot.pdf", "w");
+	
     if (gp == NULL) throw std::domain_error("popen failed");
     fprintf(gp, "%s", _stream.str().c_str()); // must use format to avoid error
     // pclose will wait for termination
@@ -272,7 +280,7 @@ void NetworkGraph :: pipe() {
 
 
 
-// dot -Tpdf test.dot -o test.pdf
+
 
 
 // genA [label =   "<doc> \<genA@3@2\{x,y,z\}\> \
