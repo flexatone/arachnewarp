@@ -19,6 +19,31 @@
 namespace aw {
 
 
+void escape(std::string& str, const std::string& replace_targets, 
+                              const std::string& prefix) {
+    // replace a string by character; all passed in by reference
+    std::string::const_iterator i;
+    std::stringstream s; 
+    std::string replace;
+    size_t pos;
+    for (i=replace_targets.begin(); i!=replace_targets.end(); ++i) {
+        //std::cout << "here: " << *i << std::endl;
+        // do replacement
+        pos = 0;
+        // get a replacemetn string for *i
+        s.str(""); 
+        s << prefix << *i;
+        replace = s.str();
+
+        while((pos=str.find(*i, pos)) != std::string::npos) {
+            // target is always of length 1
+            str.replace(pos, 1, replace);
+            pos += replace.length(); // replacement is of various length
+        }
+    }
+}
+
+
 //==============================================================================
 // display
 

@@ -47,8 +47,17 @@ BOOST_AUTO_TEST_CASE(aw_common_test2) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_common_test3) {
+	//std::cout << "running aw_common_test 1" << std::endl;
 
+    std::string in("<a test {34}>");
 
+    aw::escape(in, "<>{}", "\\");
+
+    BOOST_CHECK_EQUAL(in, "\\<a test \\{34\\}\\>");
+
+        
+}
 
 
 

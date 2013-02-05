@@ -117,8 +117,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     typedef std::vector<FrameSizeType> VFrameSize;
     typedef std::vector<VFrameSize> VVFrameSize;
 
-    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the matrix number, starting from zero, to be read. 
-    typedef std::pair<GeneratorShared, MatrixSizeType> GenSharedOutPair;
+    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/matrix number, starting from zero, to be read from in that input.  
+    typedef std::pair<GeneratorShared, OutputCountType> GenSharedOutPair;
     typedef std::vector<GenSharedOutPair> VGenSharedOutPair;
     typedef std::vector<VGenSharedOutPair> VVGenSharedOutPair;
 
@@ -364,7 +364,10 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     ParameterIndexType get_slot_index_from_parameter_name(const std::string& s);	
 
 
-	// input ..............................................................    
+	// inputs ..............................................................    
+    //! Get a vector of GeneratorShared for an input, given the input index. This should be a copy of the vector, and is thus slow.
+    VGenSharedOutPair get_inputs_by_index(ParameterIndexType i);
+    
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     virtual void set_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs);
