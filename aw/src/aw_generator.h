@@ -103,7 +103,7 @@ class ParameterTypeChannels: public ParameterType {
 //==============================================================================   
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
-//! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the matrix, a table of one frame for each output. Clients of the generator freely read from the matrix array, given the matrix itself and precalculated out_to_matrix_offset values. 
+//! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the matrix, a table of one frame for each output. Clients of the generator freely read from the matrix vector. 
 class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
     public://-------------------------------------------------------------------    
@@ -113,6 +113,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     
 	typedef std::vector<SampleType> VSampleType;
 	typedef std::vector<VSampleType> VVSampleType;
+
+    typedef std::vector<OutputCountType> VOutputCount;
 		
     typedef std::vector<FrameSizeType> VFrameSize;
     typedef std::vector<VFrameSize> VVFrameSize;
@@ -189,17 +191,16 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
                             ParameterTypeShared> _slot_parameter_type;		
 	
 	//! For render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types.
-    // TODO: possibly replace this with a raw array; problem with this is that when registering inputs we will resize for each opperation; would need to register inputs all at once to avoid destroying/creating a matrix like structure. 
 	VVSampleType _summed_inputs;
 	
 
     public://-------------------------------------------------------------------
         
     //! A linear array of samples, which may include multiple dimensions (e.g. channels) placed in series. This might be private, but for performance this is presently public: no function call is required to read from it. To read from 
-    SampleType* matrix;	
+    VVSampleType matrix;	
     
 	//! A vector of frame offsets, to be used when iterating over _output_count and incorporating non-interleaved presentation of the matrix. This must be updated after every resizing, as _output_count and frame size may have changed. This is public so that Generator clients can quickly read from matrix without a function call. 
-	VFrameSizeType out_to_matrix_offset;     
+	//VFrameSizeType out_to_matrix_offset;     
 
     // =========================================================================
     // methods =================================================================
@@ -211,7 +212,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	
     protected://----------------------------------------------------------------
 		
-    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and _inputs is given a blank vector for appending to. 
+    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
     void _register_input_parameter_type(ParameterTypeShared pts);
 
     //! Remove all inputs; used by slots that dynamically chagne inputs and outputs; all existing inputs will remain. 
