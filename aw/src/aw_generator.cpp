@@ -191,6 +191,7 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
 	_summed_inputs.push_back(vSampleTypeInner);
     // must do this after pushing_back, as makes a copy
     // resize to store initialzied values and use like an array
+    // could user reserve here
     _summed_inputs[_input_parameter_count].resize(get_common_frame_size(), 0.0);    
     _input_parameter_count += 1;
 }
