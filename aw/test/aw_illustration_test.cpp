@@ -4,7 +4,7 @@
 #define BOOST_TEST_DYN_LINK
 #ifdef STAND_ALONE
 #   define BOOST_TEST_MODULE main
-#endif
+#endif  
 #include <boost/test/unit_test.hpp>
 
 

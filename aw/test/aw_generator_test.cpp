@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 
 	aw::GeneratorShared g2 = aw::GeneratorShared(new aw::Generator(e));
     g2->init();
-    BOOST_CHECK_CLOSE(g2->matrix[0], 0, .0000001);
+    BOOST_CHECK_CLOSE(g2->matrix[0][0], 0, .0000001);
 	
 	g2->render(4);
 	g2->print_matrix();
@@ -79,11 +79,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
 	//g3.print_matrix();
 	g3.render(4);
 	//g3.print_matrix();
-    BOOST_CHECK_CLOSE(g3.matrix[0], 29, .0000001);
+    BOOST_CHECK_CLOSE(g3.matrix[0][0], 29, .0000001);
     // check that we addition occurs with two constant inputs
 	g3.add_input_by_index(0, 1);
 	g3.render(4);
-    BOOST_CHECK_CLOSE(g3.matrix[0], 30, .0000001);
+    BOOST_CHECK_CLOSE(g3.matrix[0][0], 30, .0000001);
 }
 
 
@@ -110,9 +110,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
 //	//g3->print_matrix();
 	g3->render(8);
 //	
-    BOOST_CHECK_CLOSE(g1->matrix[0], 2, .0000001);	
-    BOOST_CHECK_CLOSE(g2->matrix[0], 3, .0000001);	
-    BOOST_CHECK_CLOSE(g3->matrix[0], 5, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][0], 2, .0000001);	
+    BOOST_CHECK_CLOSE(g2->matrix[0][0], 3, .0000001);	
+    BOOST_CHECK_CLOSE(g3->matrix[0][0], 5, .0000001);
 
 }
 
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 	//g3->print_matrix();
 
 	//g3->print_inputs(true);
-    BOOST_CHECK_CLOSE(g3->matrix[0], 33, .0000001);
+    BOOST_CHECK_CLOSE(g3->matrix[0][0], 33, .0000001);
 
     // will create three channels, clear all existing input
     g3->set_slot_by_index(0, 3);
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
 	//g3->print_matrix();
 	//g3->print_inputs(true);
 	
-    BOOST_CHECK_CLOSE(g3->matrix[0], 31, .0000001);
+    BOOST_CHECK_CLOSE(g3->matrix[0][0], 31, .0000001);
 
 }
 
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
 	
 	// this results are based on non-interleaved matrix presentation 
 	// sum in dims 1 and 2 are first two opperands
-    BOOST_CHECK_CLOSE(g3->matrix[0], 5, .0000001);
+    BOOST_CHECK_CLOSE(g3->matrix[0][0], 5, .0000001);
 
 }
 
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
 	//g1->print_matrix();
 	//g1->print_inputs(true);
 	
-    BOOST_CHECK_CLOSE(g1->matrix[0], 2.7, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][0], 2.7, .0000001);
 
 }
 
@@ -254,9 +254,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 
 	g1->render(20);
     
-    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[0]], 3, .0000001);
-    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[1]], 21, .0000001);
-    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[2]], 203, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][0], 3, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[1][0], 21, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[2][0], 203, .0000001);
 
 
     g1->set_slot_by_index(0, 5);
@@ -272,8 +272,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
     
 	g1->render(2);    
 
-    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[0]], 7, .0000001);
-    BOOST_CHECK_CLOSE(g1->matrix[g1->out_to_matrix_offset[1]], 61, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][0], 7, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[1][0], 61, .0000001);
 
     g1->set_slot_by_index(0, 1);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 64);
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	g1->render(20);
 	//g1->print_matrix();
 	
-    BOOST_CHECK_CLOSE(g1->matrix[0], 12.7, .0000001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][0], 12.7, .0000001);
 	// this based on defaults and might change
     BOOST_CHECK_EQUAL(g1->get_matrix_size(), 64);
 	
@@ -401,21 +401,21 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 	g1->add_input_by_index(0, 5512.5); // 8 samples
 	g1->render(1);
 	// cycle is 8 samples long
-    BOOST_CHECK_CLOSE(g1->matrix[0], 0, .00001);
-    BOOST_CHECK_CLOSE(g1->matrix[4], .57142857, .00001);	
-    BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
-    BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][0], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][4], .57142857, .00001);	
+    BOOST_CHECK_CLOSE(g1->matrix[0][7], 1, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][8], 0, .00001);
 	
 	g1->print_matrix();
 	
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
 	g2->add_input_by_index(0, 11025.5); // 8 samples
 	g2->render(1);	
-    BOOST_CHECK_CLOSE(g2->matrix[0], 0, .00001);
-    BOOST_CHECK_CLOSE(g2->matrix[1], 0.333333333, .00001);
-    BOOST_CHECK_CLOSE(g2->matrix[2], 0.666666666, .00001);
-    BOOST_CHECK_CLOSE(g2->matrix[3], 1, .00001);
-    BOOST_CHECK_CLOSE(g2->matrix[4], 0, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[0][0], 0, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[0][1], 0.333333333, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[0][2], 0.666666666, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[0][3], 1, .00001);
+    BOOST_CHECK_CLOSE(g2->matrix[0][4], 0, .00001);
 	
 
 
@@ -433,10 +433,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 	g1->add_input_by_index(0, 2756.25); //	
 	g1->render(1);
 	// cycle is 8 samples long
-    BOOST_CHECK_CLOSE(g1->matrix[0], 0, .00001);
-    BOOST_CHECK_CLOSE(g1->matrix[4], .57142857, .00001);	
-    BOOST_CHECK_CLOSE(g1->matrix[7], 1, .00001);
-    BOOST_CHECK_CLOSE(g1->matrix[8], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][0], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][4], .57142857, .00001);	
+    BOOST_CHECK_CLOSE(g1->matrix[0][7], 1, .00001);
+    BOOST_CHECK_CLOSE(g1->matrix[0][8], 0, .00001);
 	
 	g1->print_matrix();
 
@@ -467,7 +467,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	// need to time this generation 
 	//g1->render(1); 
 	//g1->plot_matrix();
-	BOOST_CHECK_EQUAL(g1->matrix[0], 0);
+	BOOST_CHECK_EQUAL(g1->matrix[0][0], 0);
 	// TODO: why are these values not found
 	//BOOST_CHECK_CLOSE(g1->matrix[11025], 1, .001);
 	//BOOST_CHECK_CLOSE(g1->matrix[11026], 0, .001);
