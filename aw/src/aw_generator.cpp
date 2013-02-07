@@ -88,11 +88,11 @@ GeneratorShared  Generator :: make(GeneratorID q){
 Generator :: Generator(EnvironmentShared e) 
 	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
 	: _class_name("Generator"), 
-	_output_count(1), // always init to 1; can change in init
+	_output_count(0), // always init to 1; can change in init
 	_frame_size(1), // set in init; 
-	_matrix_size(1), // will be updated after resizing
-    _input_parameter_count(0), 	
-    _slot_parameter_count(0), 	
+	_outputs_size(0), // will be updated after resizing
+    _input_count(0), 	
+    _slot_count(0), 	
     
 	_environment(e), // replace with Environment
     
@@ -102,14 +102,14 @@ Generator :: Generator(EnvironmentShared e)
 
     _frame_size_is_resizable(false), 	
     _render_count(0) {
-	//matrix(NULL) {
+	//outputs(NULL) {
     //std::cout << "Generator (1 arg): Constructor" << std::endl;
 }
 
 Generator :: ~Generator() {
     // deconstructor 
     // if gen was not initialized, do not delete
-    //if (matrix != NULL) delete[] matrix;
+    //if (outputs != NULL) delete[] outputs;
 }
 
 void Generator :: init() {
@@ -117,71 +117,67 @@ void Generator :: init() {
     _frame_size = _environment->get_common_frame_size();    
     _sampling_rate = _environment->get_sampling_rate();
 	_nyquist = _sampling_rate / 2; // let floor
+    	
+	// by default, set one output
+    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
+                                       aw::ParameterTypeValue);
+    pt1->set_instance_name("Generator default output");
+    _register_output_parameter_type(pt1);	
     
-    // since this might be called more than once in the life of an object, need to repare storage units that are general set in the init() routine
-    _input_parameter_type.clear();
-    _inputs.clear();
-    _input_parameter_count = 0;
-    
-    // _register_input_parameter_type is called to add inputs here
-	// cant use _set_output_count() here because we compare to the value _output_count and only change if it is different; thus, here we must manually set for the initial size. 
-    _resize_matrix();
-    reset(); // zero matrix; zero frame count
 }
 
 //..............................................................................
 // private methods
-void Generator :: _resize_matrix() {
-    // _matrix_size is set here, memory is allocated
-    // std::cout << *this << " Generator::_resize_matrix()" << std::endl;
-    // must delete if set to something else
-    //if (matrix != NULL) delete[] matrix;
+void Generator :: _resize_outputs() {
     // size is always dim * _frame_size
     // only do this once to avoid repeating
-    _matrix_size = _output_count * _frame_size;
+    _outputs_size = _output_count * _frame_size;
     
     OutputCountType i;
     VVSampleType::iterator j; // not a const       
     
     // add output vectors if necessary
-    if (matrix.size() < _output_count) {
+    if (outputs.size() < _output_count) {
         // if size is 2, need 4, iter 2, 3 to get 4
-        for (i=matrix.size(); i< _output_count; ++i) {
+        for (i=outputs.size(); i< _output_count; ++i) {
             VSampleType vs;
-            matrix.push_back(vs);
+            outputs.push_back(vs);
         }
     }     
-    else if (matrix.size() > _output_count) {
-        j = matrix.begin();
-        matrix.erase(j+_output_count, j+matrix.size());
+    else if (outputs.size() > _output_count) {
+        j = outputs.begin();
+        outputs.erase(j+_output_count, j+outputs.size());
     }
     
-    assert(matrix.size() == _output_count);
+    assert(outputs.size() == _output_count);
     
-    // reserve each component
-    for (j=matrix.begin(); j!=matrix.end(); ++j) {
-        (*j).reserve(_frame_size);
+    // reserve each component; might set value as well to 0
+	// must be sure all have the same _frame_size
+    for (j=outputs.begin(); j!=outputs.end(); ++j) {
+		// this will also set all values to 0.0
+		(*j).reserve(_frame_size);
     }
+	// reset to set all values to zero and reset render count
+	reset();
     
-	// alloc!
-//    matrix = new SampleType[_matrix_size];
-//    // check that alloc was sucesful
-//    if (matrix == NULL) {
-//        throw std::bad_alloc();    
-//    }
-//	// whenever this called, need to update out_to_matrix_offset; this is done once per resizing for efficiency
-//	out_to_matrix_offset.clear();
-//	out_to_matrix_offset.reserve(_output_count);
-//	for (OutputCountType d=0; d<_output_count; ++d) {
-//		out_to_matrix_offset.push_back(d * _frame_size);
-//	}
+}
 
+void Generator :: _register_output_parameter_type(ParameterTypeShared pts) {
+	// called in derived init() to setup a output types; this does not preprae storage ; 
+    _output_parameter_type[_output_count] = pts;
+    _output_count += 1;
+	_resize_outputs(); // will use _output_count value
+}
+
+void Generator :: _clear_output_parameter_types() {
+    _output_count = 0;
+    outputs.clear();
 }
 
 void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
 	// called in derived init() to setup a input types and prepare storage
     // storing in an unordered map
-    _input_parameter_type[_input_parameter_count] = pts;
+    _input_parameter_type[_input_count] = pts;
 
     // store a vector in the position to accept inputs
     VGenSharedOutPair vInner;  
@@ -192,12 +188,13 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     // must do this after pushing_back, as makes a copy
     // resize to store initialzied values and use like an array
     // could user reserve here
-    _summed_inputs[_input_parameter_count].resize(get_common_frame_size(), 0.0);    
-    _input_parameter_count += 1;
+	SampleType n(0);	
+    _summed_inputs[_input_count].resize(get_common_frame_size(), n);    
+    _input_count += 1;
 }
 
 void Generator :: _clear_input_parameter_types() {
-    _input_parameter_count = 0;
+    _input_count = 0;
     _inputs.clear();
     _summed_inputs.clear();
 }
@@ -205,14 +202,12 @@ void Generator :: _clear_input_parameter_types() {
 void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
 	// called in derived init()
 	// set dictionary directly
-    _slot_parameter_type[_slot_parameter_count] = pts;		
+    _slot_parameter_type[_slot_count] = pts;		
 	_slots.push_back(GeneratorShared()); // store empty to hold position
-    _slot_parameter_count += 1;
+    _slot_count += 1;
     
 }
 
-void Generator :: _update_for_new_input() {
-}
 
 void Generator :: _update_for_new_slot() {
 }
@@ -225,11 +220,11 @@ void Generator :: _render_inputs(RenderCountType f) {
     // this is inlined in the header
     ParameterIndexType j;
     ParameterIndexType gen_count_at_input(0);
-    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
+    for (ParameterIndexType i = 0; i<_input_count; ++i) {
         // inputs are a vector of Generators
         gen_count_at_input = _inputs[i].size();        
         for (j=0; j<gen_count_at_input; ++j) {
-            // this is a pair of shared generator, matrix index
+            // this is a pair of shared generator, outputs index
             _inputs[i][j].first->render(f);
         }
     }
@@ -237,7 +232,7 @@ void Generator :: _render_inputs(RenderCountType f) {
 
 void Generator :: _reset_inputs() {
     VGenSharedOutPair :: const_iterator j; // vector of generators    
-    for (ParameterIndexType i = 0; i<_input_parameter_count; ++i) {
+    for (ParameterIndexType i = 0; i<_input_count; ++i) {
         // inputs are a vector of Generators
         for (j=_inputs[i].begin(); j!=_inputs[i].end(); ++j) {
             // this is a shared generator
@@ -248,7 +243,7 @@ void Generator :: _reset_inputs() {
 
 void Generator :: _sum_inputs() {
     // this is inlined in render() calls
-    // note that this is nearly identical to Add :: render(); here we store the results in _summed_inputs, not in matrix; we also do not render inputs
+    // note that this is nearly identical to Add :: render(); here we store the results in _summed_inputs, not in outputs; we also do not render inputs
     ParameterIndexType i;
     FrameSizeType k;
     ParameterIndexType j;
@@ -261,7 +256,7 @@ void Generator :: _sum_inputs() {
 	SampleType sum(0);
     
 	// iterate over each input parameter type
-    for (i=0; i<_input_parameter_count; ++i) {
+    for (i=0; i<_input_count; ++i) {
         // do not need to _summed_inputs[i].clear(), as we are repalcing with a new SampleTyple sum; _summed_inputs[i].capacity() == frameSize due to reserving in _register_input_parameter_type
         gen_count_at_input = _inputs[i].size();        
 		// for each frame, read across all input
@@ -270,10 +265,10 @@ void Generator :: _sum_inputs() {
 			// now iterate over each gen in this input
 			for (j=0; j<gen_count_at_input; ++j) {
                 out = _inputs[i][j].second;            
-				sum += _inputs[i][j].first->matrix[out][k];
+				sum += _inputs[i][j].first->outputs[out][k];
                                 
 				// the value out @k and sum it into position k
-//				sum += _inputs[i][j].first->matrix[
+//				sum += _inputs[i][j].first->outputs[
 //                    // read from this frame plus the offset for out defined; 
 //                    k + _inputs[i][j].first->out_to_matrix_offset[out]
 //                ];
@@ -296,24 +291,24 @@ void Generator :: render(RenderCountType f) {
 
 //..............................................................................
 
-SampleType Generator :: get_matrix_average() const {
+SampleType Generator :: get_outputs_average() const {
     SampleType sum(0);
     for (OutputCountType i=0; i<_output_count; ++i) {
         for (FrameSizeType j=0; j < _frame_size; ++j) {
-            sum += fabs(matrix[i][j]);
+            sum += fabs(outputs[i][j]);
         }
     }
-    return sum / _matrix_size;
+    return sum / _outputs_size;
 }
 
 SampleType Generator :: get_output_average(OutputCountType d) const {
-    // this does single output and whole matrix averaging.
+    // this does single output and whole outputs averaging.
     // if d is zero, get all frames/channels, otherwise, just get rquested dimension (i.e., 2d gets vector pos 1
 	if (d > _output_count) {
 		throw std::invalid_argument("a dimension greater than the number available has been requested");
 	}	
     VOutputCount dims; 
-    MatrixSizeType count(0); 
+    OutputSizeType count(0); 
     OutputCountType p;
     
 	if (d == 0) {
@@ -321,7 +316,7 @@ SampleType Generator :: get_output_average(OutputCountType d) const {
         for (p=0; p<_output_count; ++p) {
             dims.push_back(p);
         }
-        count = _matrix_size; // will be complete size
+        count = _outputs_size; // will be complete size
     }
     else {
         // need to request from 1 less than submitted positio, as dim 0 is the first dimension; we know tha td is greater tn zero
@@ -330,7 +325,7 @@ SampleType Generator :: get_output_average(OutputCountType d) const {
             // this should not happend due to check above
             throw std::invalid_argument("requested dimension is greater than that supported");
         }
-        // just store the start position in the matrix for the dimension requested
+        // just store the start position in the outputs for the dimension requested
         dims.push_back(dPos);
         count = _frame_size; // will be one frame size
     }
@@ -339,7 +334,7 @@ SampleType Generator :: get_output_average(OutputCountType d) const {
     for (VOutputCount::const_iterator i=dims.begin(); i!=dims.end(); ++i) {
         // from start of dim to 1 less than frame plus start
         for (FrameSizeType j=0; j < _frame_size; ++j) {
-            sum += matrix[*i][j];
+            sum += outputs[*i][j];
         }
     }
     return sum / count; // cast count to 
@@ -354,29 +349,26 @@ void Generator :: _set_frame_size(FrameSizeType f) {
 	}	
 	if (f == 0) {
 		throw std::invalid_argument("a frame size of 0 is not supported");
-	}		
-    if (f != _frame_size) {
-        _frame_size = f;
-        _resize_matrix(); // _matrix_size is set here with dimension
-        reset(); // must reset values to zero 
-    }
-    // when we set the dimension, should we set it for inputs?
-}
-
-
-void Generator :: _set_output_count(OutputCountType d) {
-	// this public method is not used during Generator::__init__
-    // only change if different; assume already created
-	if (d == 0) {
-		throw std::invalid_argument("a dimension of 0 is not supported");
 	}	
-    if (d != _output_count) {
-        _output_count = d;
-        _resize_matrix(); // _matrix_size is set here with dimension
-        reset(); // must reset values to zero 
-    }
+	// must always set and resize, as our output number might be different
+	_frame_size = f;
+	_resize_outputs(); // _outputs_size is set here with dimension
+	reset(); // must reset values to zero 
     // when we set the dimension, should we set it for inputs?
 }
+
+
+//void Generator :: _set_output_count(OutputCountType d) {
+	//// this public method is not used during Generator::__init__
+    //// only change if different; assume already created
+	//if (d == 0) {
+		//throw std::invalid_argument("a dimension of 0 is not supported");
+	//}	
+	//_output_count = d;
+	//_resize_outputs(); // _outputs_size is set here with dimension
+	//reset(); // must reset values to zero 
+    //// when we set the dimension, should we set it for inputs?
+//}
 
 void Generator :: reset() {
 
@@ -385,7 +377,7 @@ void Generator :: reset() {
     SampleType n(0);
     for (i=0; i<_output_count; ++i) {
         for (j=0; j < _frame_size; ++j) {
-            matrix[i][j] = n;
+            outputs[i][j] = n;
         }
     }
     // always reset render count?
@@ -429,7 +421,7 @@ std::ostream& operator<<(std::ostream& ostream, const GeneratorShared g) {
     return ostream; 
 }
 
-void Generator :: print_matrix() {
+void Generator :: print_outputs() {
     // provide name of generator first by dereferencing this
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
     
@@ -440,7 +432,7 @@ void Generator :: print_matrix() {
     for (i=0; i<_output_count; ++i) {
         std::cout << std::endl << space1;            
         for (j=0; j < _frame_size; ++j) {
-            std::cout << std::setprecision(8) << matrix[i][j] << '|';
+            std::cout << std::setprecision(8) << outputs[i][j] << '|';
         }
     }
     std::cout << std::endl;
@@ -481,8 +473,8 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
 }
 
 
-// illustrate matrix
-void Generator :: plot_matrix() {
+// illustrate outputs
+void Generator :: illustrate_outputs() {
 	TimeDomainGraph p;
     // pass a version this instancea as a Shared Pointer
 	p.draw(shared_from_this());
@@ -503,37 +495,30 @@ void Generator :: illustrate_network() {
 
 
 //..............................................................................
-// loading and writing matrix
+// loading and writing outputs
 
-void Generator :: write_matrix_to_vector(VSampleType& vst) const {
+void Generator :: write_outputs_to_vector(VSampleType& vst) const {
     // writing out to a flat vector
     
     vst.clear(); // may not be necessary, but insures consistancy
-    vst.reserve(_matrix_size);
-//    for (MatrixSizeType i=0; i<_matrix_size; ++i) {
-//        vst.push_back(matrix[i]); 
-//    }
-    
+    vst.reserve(_outputs_size);    
     OutputCountType i;
     FrameSizeType j;
-    MatrixSizeType n(0);
+    OutputSizeType n(0);
     for (i=0; i<_output_count; ++i) {
         for (j=0; j < _frame_size; ++j) {
-            vst[n] = matrix[i][j];
+            vst[n] = outputs[i][j];
             ++n;
         }
-    }
-    
+    }    
 }
-
 
 void Generator :: write_output_to_fp(const std::string& fp, 
                                     OutputCountType d) const {
-    throw std::domain_error("not implemented on base class");                                    
+    throw std::domain_error("not implemented on base class");
 }
 
-
-void Generator :: set_matrix_from_array(SampleType* v, MatrixSizeType s, 
+void Generator :: set_outputs_from_array(SampleType* v, OutputSizeType s, 
 								OutputCountType ch, bool interleaved){
     // low level method of a raw array as input; need size;
 	// caller is responsible for releasing called array
@@ -561,21 +546,21 @@ void Generator :: set_matrix_from_array(SampleType* v, MatrixSizeType s,
 	    
 	// assuming interleaved source to non-interleved destination; audio inputs are normally interleaved
 	OutputCountType j(0);
-	MatrixSizeType i(0); // for each sample in source
-	MatrixSizeType k(0); // for each sample we write
+	OutputSizeType i(0); // for each sample in source
+	OutputSizeType k(0); // for each sample we write
 	
-	// we will never run over larger area than matrix size, s is less than matrix; we also must not run over v, so we must iterate by s. 
+	// we will never run over larger area than outputs size, s is less than outputs; we also must not run over v, so we must iterate by s. 
     while (i < s) {
 		// step over channels in source
 		for (j=0; j<ch; ++j) {
-			//if (i >= s) break; // dont overflow matrix
+			//if (i >= s) break; // dont overflow outputs
 			if (j >= out_count_to_take) {
 				i += 1;				
 				continue; // dont write more than we can take				
 			}
-			// can check here if write pos in matrix is out of bounds
-	        //matrix[k + out_to_matrix_offset[j]] = v[i];
-            matrix[j][k] = v[i];
+			// can check here if write pos in outputs is out of bounds
+	        //outputs[k + out_to_matrix_offset[j]] = v[i];
+            outputs[j][k] = v[i];
 			//std::cout << i << std::endl;
 			i += 1;
 		}
@@ -583,27 +568,25 @@ void Generator :: set_matrix_from_array(SampleType* v, MatrixSizeType s,
 	}
 }
 
-
-void Generator :: set_matrx_from_vector(const VSampleType& vst, 
+void Generator :: set_outputs_from_vector(const VSampleType& vst, 
 								OutputCountType ch, bool interleaved) {
-	// this is set matrix as we will try to set all channels available
+	// this is set outputs as we will try to set all channels available
     // size is a long; cast ot std::tr1::uint32_t
 	// we trasfer the contents of the vector to an array
-	MatrixSizeType s = static_cast<MatrixSizeType>(vst.size());
+	OutputSizeType s = static_cast<OutputSizeType>(vst.size());
 	// pack this in an array for reuse of the same function
     SampleType* v = new SampleType[s];
 	// cant use iterator b/c need number
-    for (MatrixSizeType i=0; i<s; ++i) {
+    for (OutputSizeType i=0; i<s; ++i) {
 		v[i] = vst[i];
 	}
-	set_matrix_from_array(v, s, ch, interleaved);
+	set_outputs_from_array(v, s, ch, interleaved);
 	// clean up temporary array 
 	delete[] v;
 }
 
-
-// set matrix form fp
-void Generator :: set_matrix_from_fp(const std::string& fp) {
+// set outputs form fp
+void Generator :: set_outputs_from_fp(const std::string& fp) {
     // vitual method overridden in Buffer (so as to localize use of libsndfile
     // an exception to call on base class
     throw std::domain_error("not implemented on base class");
@@ -639,7 +622,7 @@ ParameterIndexType Generator :: get_slot_index_from_parameter_name(
 
 Generator::VGenSharedOutPair Generator :: get_input_gen_shared_by_index(
 										  ParameterIndexType i) {
-    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+    if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");		
     }
     // NOTE: this is copying all contents
@@ -650,7 +633,7 @@ Generator::VGenSharedOutPair Generator :: get_input_gen_shared_by_index(
 void Generator :: set_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
     // if zero, none are set; current value is next available slot for registering
-    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+    if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }        
     // this removes all stored values
@@ -660,9 +643,8 @@ void Generator :: set_input_by_index(ParameterIndexType i,
     // TEMPORARY until we assign outputs via set
     GenSharedOutPair gsop(gs, 0);  
     _inputs[i].push_back(gsop);    
-    // store in advance the matrix size of the input
-    // _inputs_frame_size[i].push_back(gs->get_matrix_size());
-    _update_for_new_input();
+    // store in advance the outputs size of the input
+    // _inputs_frame_size[i].push_back(gs->get_outputs_size());
 }
 
 void Generator :: set_input_by_index(ParameterIndexType i, SampleType v){
@@ -674,20 +656,18 @@ void Generator :: set_input_by_index(ParameterIndexType i, SampleType v){
     //std::cout << "Generator :: set_input_by_index(" << std::endl;    
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c); // call overloaded
-	// do not call _update_for_new_input here b/c called in set_input_by_index
 }
 
 
 void Generator :: add_input_by_index(ParameterIndexType i, 
                                         GeneratorShared gs){
-    if (_input_parameter_count <= 0 or i >= _input_parameter_count) {
+    if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
     // adding additiona, with a generator
     GenSharedOutPair gsop(gs, 0); // TEMPORARY until we accept more args      
     _inputs[i].push_back(gsop);    
-    //_inputs_frame_size[i].push_back(gs->get_matrix_size());    
-    _update_for_new_input();
+    //_inputs_frame_size[i].push_back(gs->get_outputs_size());    
 }
 
 void Generator :: add_input_by_index(ParameterIndexType i, SampleType v){
@@ -700,7 +680,6 @@ void Generator :: add_input_by_index(ParameterIndexType i, SampleType v){
     c->init();
     c->set_input_by_index(0, v); // this will call Constant::reset()
     add_input_by_index(i, c); // other overloaded
-	// do not call _update_for_new_input here b/c called in set_input_by_index
 }
 
 
@@ -710,11 +689,11 @@ void Generator :: set_slot_by_index(ParameterIndexType i, GeneratorShared gs,
 									bool update){
     // if zero, none are set; current value is next available slot for registering]
 	// updat defaults to true in header	
-    if (_slot_parameter_count <= 0 or i >= _slot_parameter_count) {
+    if (_slot_count <= 0 or i >= _slot_count) {
         throw std::invalid_argument("Slot index is not available.");		
     }        
     _slots[i] = gs; // direct assignment; replaces default if not there
-    // store in advance the matrix size of the input 
+    // store in advance the outputs size of the input 
 	if (update) {
 		_update_for_new_slot();
 	}
@@ -753,30 +732,33 @@ Constant :: Constant(EnvironmentShared e)
 Constant :: ~Constant() {
 }
 
-// the int routie must configure the names and types of parameters
 void Constant :: init() {
     //std::cout << *this << " Constant::init()" << std::endl;
     // resize and reset after setting parameters
     // this will call the virtual reset 
     Generator::init();
-    
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+	
     // register some parameters
     aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
                                        aw::ParameterTypeValue);
     pt1->set_instance_name("Constant numerical value");
+    _register_output_parameter_type(pt1);	
     _register_input_parameter_type(pt1);
+	
+	assert(get_output_count() == 1);
     // do not define any slots (would require an internal Constant)  
     // _we store one value for each "gen" assigned to input  
     _values.push_back(0);           
 }
 
 void Constant :: reset() {
-    // need overidden reset because have to transfer stored value to the matrix array; normal reset sets the matrix to zer. 
+    // need overidden reset because have to transfer stored value to the outputs array; normal reset sets the outputs to zer. 
     //std::cout << *this << " Constant::reset()" << std::endl;
-    // sum values first, then reseset all matrix to values
+    // sum values first, then reseset all outputs to values
     SampleType v(0);
     VSampleType :: const_iterator k;
-    // sum stored values to find how matrix should be represented
+    // sum stored values to find how outputs should be represented
     for (k = _values.begin(); k!=_values.end(); ++k) {
         v += *k;
     }
@@ -788,14 +770,14 @@ void Constant :: reset() {
     
     for (i=0; i<outs; ++i) {
         for (j=0; j < frames; ++j) {
-            matrix[i][j] = v;
+            outputs[i][j] = v;
         }
     }
     
     // do not need to partion by diminsons
-//    MatrixSizeType m_len(get_matrix_size()); 
-//    for (MatrixSizeType i=0; i<m_len; ++i) {
-//        matrix[i] = v; // set to the value
+//    OutputSizeType m_len(get_outputs_size()); 
+//    for (OutputSizeType i=0; i<m_len; ++i) {
+//        outputs[i] = v; // set to the value
 //    }
     // always reset frame count?
     _render_count = 0;
@@ -823,14 +805,13 @@ void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
 }
 
 void Constant :: render(RenderCountType f) {
-    // do nothing, as matrix is already set
+    // do nothing, as outputs is already set
     _render_count = f;
 }
 
 
 Generator::VGenSharedOutPair Constant :: get_input_gen_shared_by_index(
 										  ParameterIndexType i) {
-								
 	// overridden virtual method
     // return an empty vector for clients to iterate over
     Generator::VGenSharedOutPair post;
@@ -885,35 +866,28 @@ void Add :: init() {
     // the int routie must configure the names and types of parameters
     std::cout << *this << " Add::init()" << std::endl;
     // call base init, allocates and resets()
-    Generator::init();    
-    // register some parameters: done entirely with slots
-//    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
-//                                       aw::ParameterTypeValue);
-//    pt1->set_instance_name("Opperands 1");
-//    _register_input_parameter_type(pt1);
+    Generator::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
     
     // register slots
     aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
 										   aw::ParameterTypeChannels);
     so1->set_instance_name("Channels");
-    // this will set the 
 	_register_slot_parameter_type(so1);	// create deafult constant, update
-    
-    // set value; will call _update_for_new_slot    
+    // set value to 1; will call _update_for_new_slot    
     set_slot_by_index(0, 1);
 }
 
 
 void Add :: _update_for_new_slot() {
     // this is a small int; might overflow of trying to create large number of outs
-    OutputCountType outs = static_cast<OutputCountType>(_slots[0]->matrix[0][0]);
+    OutputCountType outs = static_cast<OutputCountType>(_slots[0]->outputs[0][0]);
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
-	// set ouptuts
-	_set_output_count(outs);
-    // reset inputs, dropping all contained input connections; 
+    _clear_output_parameter_types();	
     _clear_input_parameter_types();
+	
     std::stringstream s;
     aw::ParameterTypeValueShared pt;    
     // set inputs; this will clear any existing connections
@@ -922,8 +896,12 @@ void Add :: _update_for_new_slot() {
         s.str(""); // clears contents; not the same as .clear()
         s << "Opperands " << i+1;
         pt->set_instance_name(s.str());
+		// we can use the same pt for both i/o
+	    _register_output_parameter_type(pt);			
         _register_input_parameter_type(pt);        
-    }    
+    }
+	assert(get_output_count() == outs);
+	assert(get_input_count() == outs);	
 }
 
 
@@ -936,11 +914,10 @@ void Add :: render(RenderCountType f) {
 
     ParameterIndexType gen_count_at_input(0);
     OutputCountType out(0);
-    
     FrameSizeType frameSize(get_frame_size());
         
     while (_render_count < f) {
-        // calling render inputs updates the matrix of all inputs by calling their render functions; after doing so, the outputs are ready for reading
+        // calling render inputs updates the outputs of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);
         
         // for each parameter input we have an output
@@ -952,15 +929,14 @@ void Add :: render(RenderCountType f) {
                 // add across for each Gen found in this input
                 for (j=0; j<gen_count_at_input; ++j) {
                     out = _inputs[i][j].second;
-                    //_sum_opperands += _inputs[i][j].first->matrix[
+                    //_sum_opperands += _inputs[i][j].first->outputs[
                         // read from this frame plus the offset for out defined; 
 //                        k + _inputs[i][j].first->out_to_matrix_offset[out]
 //                        ];
-                    _sum_opperands += _inputs[i][j].first->matrix[out][k];
-                    
+                    _sum_opperands += _inputs[i][j].first->outputs[out][k];
                 }
                 // store in out channel for each input
-                matrix[i][k] = _sum_opperands;
+                outputs[i][k] = _sum_opperands;
             }
 		}
         _render_count += 1;
@@ -983,17 +959,11 @@ Buffer :: ~Buffer() {
 
 void Buffer :: init() {
     // the int routie must configure the names and types of parameters
-    std::cout << *this << " Buffer::init()" << std::endl;
+    // std::cout << *this << " Buffer::init()" << std::endl;
     // call base init, allocates and resets()
     Generator::init();    
-    // register some parameters:
-	// created with slots
-	
-    //aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
-                                       //aw::ParameterTypeValue);
-    //pt1->set_instance_name("Inputs");
-    //_register_input_parameter_type(pt1);
-    	
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+
     // register some slots: 
     // register slots
     aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
@@ -1014,26 +984,36 @@ void Buffer :: init() {
 void Buffer :: _update_for_new_slot() {
 	// slot 0: channels
     // this is a small int; might overflow of trying to create large number of outs
-    OutputCountType outs = _slots[0]->matrix[0][0];
+    OutputCountType outs = static_cast<OutputCountType>(_slots[0]->outputs[0][0]);
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
-	// set ouptuts
-	_set_output_count(static_cast<OutputCountType>(outs));
-    // reset inputs, dropping all contained input connections; 
+	
+    // reset i/o, dropping all contained input connections; 
     _clear_input_parameter_types();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+	
     std::stringstream s;
-    aw::ParameterTypeValueShared pt;    
+    aw::ParameterTypeValueShared pt_i;
+    aw::ParameterTypeValueShared pt_o;    	
     // set inputs; this will clear any existing connections
     for (OutputCountType i=0; i<outs; ++i) {
-        pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        pt_i = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
         s.str(""); // clears contents; not the same as .clear()
         s << "Input " << i+1;
-        pt->set_instance_name(s.str());
-        _register_input_parameter_type(pt);        
+        pt_i->set_instance_name(s.str());
+        _register_input_parameter_type(pt_i);        
+		
+        pt_o = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        s.str(""); // clears contents; not the same as .clear()
+        s << "Output " << i+1;
+        pt_o->set_instance_name(s.str());
+		_register_output_parameter_type(pt_o);
     }
+	assert(get_output_count() == outs);
+	assert(get_input_count() == outs);	
 	// slot 1: duration 	
-	_set_frame_size(_slots[1]->matrix[0][0] * _sampling_rate);
+	_set_frame_size(_slots[1]->outputs[0][0] * _sampling_rate);
 }
 
 
@@ -1052,7 +1032,7 @@ void Buffer :: render(RenderCountType f) {
     //std::cout << "render_cycles_max: " << render_cycles_max  << std::endl;
     
 	RenderCountType rc(0); // this is the sub-render count
-	MatrixSizeType i(0);
+	OutputSizeType i(0);
 	OutputCountType j(0);
 	OutputCountType out_count(get_output_count()); // out is always same as in count
 	
@@ -1062,8 +1042,8 @@ void Buffer :: render(RenderCountType f) {
 		_sum_inputs();
 		for (i=0; i < cfs; ++i) {
 			for (j=0; j<out_count; ++j) { // iter over inputs/outputs
-				//matrix[i + (rc * cfs) + out_to_matrix_offset[j]] = _summed_inputs[j][i];
-				matrix[j][i + (rc * cfs)] = _summed_inputs[j][i];                
+				//outputs[i + (rc * cfs) + out_to_matrix_offset[j]] = _summed_inputs[j][i];
+				outputs[j][i + (rc * cfs)] = _summed_inputs[j][i];                
 			}
 		}
 		rc++;
@@ -1084,7 +1064,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
 	int format = SF_FORMAT_AIFF | SF_FORMAT_PCM_16;
                                     
     VOutputCount dims; 
-    MatrixSizeType count(0);
+    OutputSizeType count(0);
     OutputCountType p;    
     
     OutputCountType reqDim(1); // one if requested a specific dim
@@ -1094,7 +1074,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
         for (p=0; p<get_output_count(); ++p) {
             dims.push_back(p);
         }        
-        count = get_matrix_size();        
+        count = get_outputs_size();        
     } 
     else { // just write the single dim specified 
         OutputCountType dPos = d - 1; // if request dim 2, want offset for 1
@@ -1113,8 +1093,8 @@ void Buffer :: write_output_to_fp(const std::string& fp,
 	if (not v) {
         throw std::bad_alloc();    
     }
-    MatrixSizeType i(0);
-    MatrixSizeType j(0);
+    OutputSizeType i(0);
+    OutputSizeType j(0);
     
     FrameSizeType frameSize = get_frame_size();
 //    VFrameSizeType::const_iterator p;
@@ -1124,7 +1104,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
     for (i = 0; i < frameSize; ++i) {
         for (VOutputCount::const_iterator p = dims.begin(); p != dims.end(); ++p) {
             // if we are stereo, for each frame point we write two points, one at each offset position
-            v[j] = matrix[*p][i];
+            v[j] = outputs[*p][i];
             ++j; // abs position
         }
     }
@@ -1134,19 +1114,19 @@ void Buffer :: write_output_to_fp(const std::string& fp,
     
 }
 
-void Buffer :: set_matrix_from_fp(const std::string& fp) {
+void Buffer :: set_outputs_from_fp(const std::string& fp) {
     // vitual method overridden in Buffer (so as to localize use of libsndfile
     // an exception to call on base class
-    std::cout << *this << ": set_matrix_from_fp" << std::endl;
+    // std::cout << *this << ": set_outputs_from_fp" << std::endl;
 
     // libsndfile nomenclature is different than used here: For a sound file with only one channel, a frame is the same as a item (ie a single sample) while for multi channel sound files, a single frame contains a single item for each channel.
 	SndfileHandle sh(fp);
-    // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array; ideally we would pass in our matrix directly
-    MatrixSizeType s =  static_cast<MatrixSizeType>(sh.frames() * sh.channels());
+    // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array; ideally we would pass in our outputs directly
+    OutputSizeType s =  static_cast<OutputSizeType>(sh.frames() * sh.channels());
     double* v = new double[s]; // why not use SampleType instaed of double
     sh.readf(v, sh.frames());
-    // this call will resize frame/dim
-    set_matrix_from_array(v, s, sh.channels());
+    // this call will resize frame if necessary
+    set_outputs_from_array(v, s, sh.channels());
     delete[] v;
 
 }
@@ -1172,8 +1152,10 @@ Phasor :: ~Phasor() {
 
 void Phasor :: init() {
     // the int routie must configure the names and types of parameters
-    std::cout << *this << " Phasor::init()" << std::endl;
-    Generator::init();    
+    // std::cout << *this << " Phasor::init()" << std::endl;
+    Generator::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+	
     // register some parameters
     aw::ParameterTypeFrequencyShared pt1 = aw::ParameterTypeFrequencyShared(new 
                                        aw::ParameterTypeFrequency);
@@ -1186,6 +1168,13 @@ void Phasor :: init() {
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;	
+	
+	// register outoupt
+    aw::ParameterTypeValueShared pt3 = aw::ParameterTypeValueShared(new 
+                                       aw::ParameterTypeValue);
+    pt3->set_instance_name("Output");
+    _register_output_parameter_type(pt3);	
+	
 }
 
 
@@ -1196,14 +1185,14 @@ void Phasor :: render(RenderCountType f) {
 
 	// must access _frame_size ; each render is a frame worth
 	// this does not need to be done each render call, but if so, ensure continuity
-	MatrixSizeType fs = get_frame_size();
+	OutputSizeType fs = get_frame_size();
 	// this is the abs positoin in this frame
 	//_abs_sample_pos = f * fs; 		
 	// this is the relative postion in this frame
-	MatrixSizeType i(0);
+	OutputSizeType i(0);
 	
     while (_render_count < f) {
-        // calling render inputs updates the matrix of all inputs by calling their render functions; after doing so, the outputs are ready for reading
+        // calling render inputs updates the outputs of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);
 		// get a vector  for each input summing accross all dimensions
 		_sum_inputs();
@@ -1220,7 +1209,7 @@ void Phasor :: render(RenderCountType f) {
 			if (_amp > 1) _amp = 0.0;
 			_amp_prev = _amp;
 			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
-			matrix[0][i] = _amp;
+			outputs[0][i] = _amp;
             // TODO: set impulse on second output channle
 		}
         _render_count += 1;

@@ -33,13 +33,11 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_1) {
 	}
 	aw::OutputCountType d(2);
 
-    // need to get an matrix directory from common
     std::string fp("plot.plt");
     
     BOOST_REQUIRE_THROW(p.draw_vector(v, 0), std::invalid_argument);
     
 	p.draw_vector(v, d);
-    // p.pipe(); // remove comment to test generated matrix
     //p.print();
     //p.write(fp); 
 }
