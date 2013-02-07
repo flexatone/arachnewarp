@@ -1,4 +1,4 @@
-// g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -o aw_generator_assert
+// g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -O3 -o aw_generator_assert
 
 
 #include <cassert>
@@ -28,7 +28,7 @@ bool test_1() {
     g1->add_input_by_index(0, 20.5);
     g1->render(100);
     g1->print_inputs(true);
-    g1->print_matrix();
+    g1->print_outputs();
 
 	return true;
 }
@@ -47,19 +47,9 @@ bool test_2() {
 	g2->add_input_by_index(0, -5);
 	    
 	g2->render(50);
-	g2->print_matrix();
+	g2->print_outputs();
 	g2->print_inputs(true);
 	
-//    g2->_set_output_count(3);
-//	assert(g2->matrix[0] == 0.0);
-//	g2->print_matrix(); // matrix has been reset to zero
-//    
-//    // we need to re-renter to get matrix
-//    // problem, however, is lower-level gens only have default dimensionality
-//    g2->render(10);
-//	g2->print_matrix();
-//	
-    //g2->plot_matrix();
     return true;
 
 }
@@ -75,9 +65,9 @@ bool test_3() {
 		v.push_back(i % 5);
 	}
 	
-	g1->set_matrx_from_vector(v, 3); // declare 2d
-	g1->print_matrix();
-    //g1->plot_matrix();
+	g1->set_outputs_from_vector(v, 3); // declare 2d
+	g1->print_outputs();
+    //g1->illustrate_outputs();
     return true;
 
 }
@@ -86,10 +76,10 @@ bool test_4() {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
     // set channels to 1
     std::string s("12518-sk1Kick.aif");
-    g1->set_matrix_from_fp(s);	
+    g1->set_outputs_from_fp(s);	
     g1->write_output_to_fp("testOutput.aif");	
     
-    //g1->plot_matrix();
+    //g1->illustrate_outputs();
 	return true;
 }
 
@@ -126,9 +116,14 @@ bool test_5() {
 	// for one render cycle of the buffer, we render inputs until we fill the frame
 	// need to time this generation 
 	g1->render(1); // render count here meaningless
-	//g1->plot_matrix();
+	//g1->illustrate_outputs();
     t.stop();
     std::cout << "total time: " << t << std::endl;
+	
+	// on ubuntu w/o optimization, array impl: 60-70 msec, 
+	// on ubuntu w optimization, array impl: 0-10 msec, 
+	// on ubuntu w optimization, vector impl: 0-10 msec, slightly favoring 10, 
+	// on ubuntu w/o optimization, vector impl: 60 msec, 
     
     return true;
     

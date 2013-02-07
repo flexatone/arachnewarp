@@ -141,7 +141,7 @@ set rmargin screen 0.98 " << std::endl;
 
 void TimeDomainGraph :: draw(GeneratorShared g) {    
 	Generator::VSampleType v;
-	g->write_matrix_to_vector(v); // load matrix into this vecotr
+	g->write_outputs_to_vector(v); // load outputs into this vecotr
     draw_vector(v, g->get_output_count());
     
 }
@@ -269,60 +269,7 @@ void NetworkGraph :: pipe() {
 
 
 
-
-
-
 } // end namespace aw
 #endif // ends _AW_ILLUSTRATION_H_
-
-
-
-
-
-
-
-
-
-// genA [label =   "<doc> \<genA@3@2\{x,y,z\}\> \
-//                | <in0> in:0  \
-//                | <in1> in:1  \
-//                | <in2> in:2  \
-//                | <out0> out:0  \
-//                | <out1> out:1  \
-//                | <out2> out:2  \
-//             "];
-// 
-// genB [label =   "<doc> \<genB@2@2\{x,y,z\}\> \
-//                | <in0> in:0  \
-//                | <in1> in:1  \
-//                | <out0> out:0  \
-//                | <out1> out:1  \
-//                | <slot0> slot:1  \
-//             "];
-// 
-// genC [label =   "<doc> \<genC@2@1\{x,y,z\}\> \
-//                | <in0> in:0  \
-//                | <in1> in:1  \
-//                | <out0> out:0  \
-//             "];
-// 
-// 
-// 
-// "genA":out0:s -> "genB":in0:n;
-// "genA":out1:s -> "genB":in1:n;
-// "genA":out2:s -> "genB":in1:n;
-// "genA":out2:s -> "genB":in0:n;
-// 
-// "genB":out0:s -> "genC":in0:n;
-// "genB":out1:s -> "genC":in1:n;
-// 
-// "genC":out0:s -> "genA":in0:n;
-// 
-// }
-// 
-
-
-
-
 
 

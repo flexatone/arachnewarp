@@ -36,7 +36,7 @@ class ParameterType {
     virtual ~ParameterType();
 
 	//! Output stream processor.
-	friend std::ostream& operator<<(std::ostream& matrix, const ParameterType& pt);
+	friend std::ostream& operator<<(std::ostream& outputs, const ParameterType& pt);
 
     //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Generator and may not be the same even if its the same ParameterType subclass. 
     void set_instance_name(const std::string& s) {_instance_name = s;};
@@ -103,7 +103,7 @@ class ParameterTypeChannels: public ParameterType {
 //==============================================================================   
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
-//! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the matrix, a table of one frame for each output. Clients of the generator freely read from the matrix vector. 
+//! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. 
 class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
     public://-------------------------------------------------------------------    
@@ -116,15 +116,15 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
     typedef std::vector<OutputCountType> VOutputCount;
 		
-    typedef std::vector<FrameSizeType> VFrameSize;
-    typedef std::vector<VFrameSize> VVFrameSize;
+    // typedef std::vector<FrameSizeType> VFrameSize;
+    // typedef std::vector<VFrameSize> VVFrameSize;
 
-    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/matrix number, starting from zero, to be read from in that input.  
+    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.  
     typedef std::pair<GeneratorShared, OutputCountType> GenSharedOutPair;
     typedef std::vector<GenSharedOutPair> VGenSharedOutPair;
     typedef std::vector<VGenSharedOutPair> VVGenSharedOutPair;
 
-    //! A vector of GeneratorShared instances used for slots. Slots do not yet need to define matrix number; generatlly assume that we use the first matrix?
+    //! A vector of GeneratorShared instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
     typedef std::vector<GeneratorShared> VGenShared;
     
     // enums    
@@ -145,16 +145,16 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
     OutputCountType _output_count;
     
-	//! The size of each frame for each _output_count as stored in the matrix. 
-    FrameSizeType _frame_size; // if changed, need to rebuild matrix	
+	//! The size of each frame for each _output_count as stored in the outputs. 
+    FrameSizeType _frame_size; // if changed, need to rebuild outputs	
     
-	//! The _matrix_size is derived from frame _output_count times the _frame_size. 
-    MatrixSizeType _matrix_size;
+	//! The _outputs_size is derived from frame _output_count times the _frame_size. 
+    OutputSizeType _outputs_size;
     
     //! Number of input parameters used by this Generator. More than one Generator can reside in each slot. 
-    ParameterIndexType _input_parameter_count;    
+    ParameterIndexType _input_count;    
 	//! Number of slots used by this Generator. One Generator can reside in each slot. 
-    ParameterIndexType _slot_parameter_count;    
+    ParameterIndexType _slot_count;    
 
 	//! Store the Envrionment instance. 
     EnvironmentShared _environment;
@@ -162,10 +162,10 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     protected://----------------------------------------------------------------
 	
 	//! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
-	MatrixSizeType _sampling_rate;
+	OutputSizeType _sampling_rate;
 	
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
-	MatrixSizeType _nyquist;
+	OutputSizeType _nyquist;
 		
     //! Define if this Generator has resizable frame size. Most generators do not have have resizable frame size; only some (like a Buffer) do.
     bool _frame_size_is_resizable; // TODO: make private?	
@@ -177,11 +177,11 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     std::tr1::unordered_map<ParameterIndexType, 
                             ParameterTypeShared> _input_parameter_type;	
 		
-    //! A std::vector of vectors of GeneratorsShared / matrix id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
+    //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenSharedOutPair _inputs;
-	
-    // Store and update the matrix sizes of all inputs (a vector for each parameter type, and an MatrixSizeType for each value therein); this only needs to be updated when resizing has happened in the inputs. This needs to be accessed in subclass render routines, so will be protected for now.
-//    VVFrameSize _inputs_frame_size;	
+    
+	//! For each render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types. This is done to make render() methods cleaner and remove redundancy.
+	VVSampleType _summed_inputs;    
     
 	//! A std::vector of GeneratorsShared that are used for configuration of this Generator. 
 	VGenShared _slots;
@@ -190,29 +190,29 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     std::tr1::unordered_map<ParameterIndexType, 
                             ParameterTypeShared> _slot_parameter_type;		
 	
-	//! For render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types.
-	VVSampleType _summed_inputs;
 	
+    //! We store a ParameterTypeShared for each defined output, telling us what it is.
+    std::tr1::unordered_map<ParameterIndexType, 
+                            ParameterTypeShared> _output_parameter_type;		
+		
 
     public://-------------------------------------------------------------------
         
     //! A linear array of samples, which may include multiple dimensions (e.g. channels) placed in series. This might be private, but for performance this is presently public: no function call is required to read from it. To read from 
-    VVSampleType matrix;	
+    VVSampleType outputs;	
     
-	//! A vector of frame offsets, to be used when iterating over _output_count and incorporating non-interleaved presentation of the matrix. This must be updated after every resizing, as _output_count and frame size may have changed. This is public so that Generator clients can quickly read from matrix without a function call. 
-	//VFrameSizeType out_to_matrix_offset;     
 
     // =========================================================================
     // methods =================================================================
 	
     private://------------------------------------------------------------------   	
 	
-    //! Resize the matrix vector. Always called during init and also by _set_output_count. Will remove an exisiting array.
-    void _resize_matrix();    
+    //! Resize the outputs vector. Always called when registering an output or changing frame size.
+    void _resize_outputs();    
 	
     protected://----------------------------------------------------------------
 		
-    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_parameter_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
+    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
     void _register_input_parameter_type(ParameterTypeShared pts);
 
     //! Remove all inputs; used by slots that dynamically chagne inputs and outputs; all existing inputs will remain. 
@@ -221,9 +221,12 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	//! Called by Generators during init() to configure the slot parameters found in this Generator.
     void _register_slot_parameter_type(ParameterTypeShared pts);
 
-    //! Call this everytime a new input has been added. Does necessary and may resize this generator. This should not be called in render(). Pre-fetches all the matrix sizes of all inputs. These are stored in _inputs_frame_size.
-    void _update_for_new_input();
+	//! Define an output. This calls _resize_outputs().
+    void _register_output_parameter_type(ParameterTypeShared pts);
 
+    //! Remove all outputs; used by slots that dynamically change inputs and outputs; all existing inputs will remain. 
+    void _clear_output_parameter_types();
+	
 	//! Call this every time a new slot has been added or changed. This is necessarily virtual as subclasses need to handle their slots in their own way. 
 	virtual void _update_for_new_slot();
     
@@ -235,11 +238,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     
 	//! Call reset on all inputs. 
 	void _reset_inputs();
-    
-    //! Method for resizing based on dimesion. Calls _resize_matrix only if necessary. This method is not called at init(), and thus represets any post-init change to _output_count size, such as that based on changes in input _output_count size. 
-    void _set_output_count(OutputCountType d);    
-    	
-    //! Public method for resizing based on frame size. Calls _resize_matrix only if necessary. 
+        	
+    //! Public method for resizing based on frame size. Calls _resize_outputs only if necessary. 
     void _set_frame_size(FrameSizeType f);    
     
     
@@ -257,39 +257,39 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called. 
     virtual void init();    
 
-    //! Return a Boolean if this Generator has resizable matrix
+    //! Return a Boolean if this Generator has resizable outputs
 //    DimensionDynamics get_dimension_dyanmics() const {return _dimension_dynamics;};
     
 
-    //! Return the the number of matrix dimensions
+    //! Return the the number of outputs dimensions
     OutputCountType get_output_count() const {return _output_count;};
 
-    //! Return the the matrix size, or the total number of samples used for all frames at all outputs.
-    FrameSizeType get_matrix_size() const {return _matrix_size;};
+    //! Return the the outputs size, or the total number of samples used for all frames at all outputs.
+    FrameSizeType get_outputs_size() const {return _outputs_size;};
     
-    //! Get the average value of all matrix values. 
-    SampleType get_matrix_average() const;
+    //! Get the average value of all outputs values. 
+    SampleType get_outputs_average() const;
 
-    //! Get the average of single _output_count of matrix. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
+    //! Get the average of single _output_count of outputs. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
     SampleType get_output_average(OutputCountType d) const;
 
     //! Return a Boolean if this Generator has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
 	
-    //! Return the the frame size, the number of samples per output matrix. The frame size is always at or greater than the common frame size. 
-    MatrixSizeType get_frame_size() const {return _frame_size;};	
+    //! Return the the frame size, the number of samples per output outputs. The frame size is always at or greater than the common frame size. 
+    OutputSizeType get_frame_size() const {return _frame_size;};	
 
 	//! Return the common frame size derived from the stored shared Environment. If this Generator has resizable frames, this may not be the same as the current frame size. 
-    MatrixSizeType get_common_frame_size() const {
+    OutputSizeType get_common_frame_size() const {
 			return _environment->get_common_frame_size();};	
 
 	//! Get the sampling rate. 
-    MatrixSizeType get_sampling_rate() const {return _sampling_rate;};	
+    OutputSizeType get_sampling_rate() const {return _sampling_rate;};	
 
 	//! Get the nyquist frequency. 
-    MatrixSizeType get_nyquist() const {return _nyquist;};	
+    OutputSizeType get_nyquist() const {return _nyquist;};	
 
-    //! Reset all parameters, and zero out the matrix array.
+    //! Reset all parameters, and zero out the outputs array.
     virtual void reset();
 	
     
@@ -315,8 +315,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 
 	// display ................................................................    
-    //! Print the matrix buffer for all dimensions at the current sample.
-    void print_matrix();
+    //! Print the outputs buffer for all dimensions at the current sample.
+    void print_outputs();
 
     //! Print the the hierarchical list of all input values. This is virtual because Constant must print inputs in as different way. No other generator should need to specialize. 
     virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
@@ -325,41 +325,41 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     virtual void render(RenderCountType f); 
 
 
-    //! Plot the matrix by piping it to gnuplot using a subprocess. 
-	void plot_matrix();
+    //! Plot the outputs by piping it to gnuplot using a subprocess. 
+	void illustrate_outputs();
 
     //! Create a graphiz illustration. 
 	void illustrate_network();
 
 
-	// loading/writing to matrix ..............................................    
+	// loading/writing to outputs ..............................................    
 	
-    //! Load the matrix into a passed-in vector. The vector is cleared before loading. 
-    void write_matrix_to_vector(VSampleType& vst) const;
+    //! Load the outputs into a passed-in vector. The vector is cleared before loading. 
+    void write_outputs_to_vector(VSampleType& vst) const;
 
     //! Write out all outpout to the provided file path. If this is a Buffer, this can be used to write an audio file.
     virtual void write_output_to_fp(const std::string& fp, 
                                     OutputCountType d=0) const;
 	
-	//! Set the matrix from an array. 
-	void set_matrix_from_array(SampleType* v, MatrixSizeType s, 
+	//! Set the outputs from an array. 
+	void set_outputs_from_array(SampleType* v, OutputSizeType s, 
 							OutputCountType ch, bool interleaved=true);
 								
-	//! Set the matrix (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. 
-	void set_matrx_from_vector(const VSampleType& vst, 
+	//! Set the outputs (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. 
+	void set_outputs_from_vector(const VSampleType& vst, 
 								OutputCountType ch, bool interleaved=true);
 
 
     //! If we are in a Buffer class, this method loads a complete file path to an audio file into the outpout of this Generator. 
-    virtual void set_matrix_from_fp(const std::string& fp);
+    virtual void set_outputs_from_fp(const std::string& fp);
 
 
 	// inputs and slots ........................................................    
     //! Return the number of inputs; this is not the same as the number of Generators, as each input may have 1 or more Generators
-    ParameterIndexType get_input_count() {return _input_parameter_count;};
+    ParameterIndexType get_input_count() {return _input_count;};
 
     //! Return the number of slots. There is only one Generator per slot. 
-    ParameterIndexType get_slot_count() {return _slot_parameter_count;};
+    ParameterIndexType get_slot_count() {return _slot_count;};
 
 	//! Return the parameter index for a named parameter.
     ParameterIndexType get_input_index_from_parameter_name(const std::string& s);
@@ -400,7 +400,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 
 //==============================================================================
-//! A Generator that returns a constant value, or fills its matrix vector with the same vale for all frames. 
+//! A Generator that returns a constant value, or fills its outputs vector with the same vale for all frames. 
 class Constant;
 typedef std::tr1::shared_ptr<Constant> ConstantShared;
 class Constant: public Generator {
@@ -418,7 +418,7 @@ class Constant: public Generator {
     virtual void init();	
     virtual void reset();
 	
-	//! This overridden method needs only increment the _render_count, as the matrix array is set when reset() is called. 
+	//! This overridden method needs only increment the _render_count, as the outputs array is set when reset() is called. 
     virtual void render(RenderCountType f); 	
 	
 	//! This derived function is necessary to handle displaying internal input components.
@@ -470,7 +470,7 @@ class Add: public Generator {
 
 
 //==============================================================================
-//! A Buffer has the ability to load its matrix array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in matrix. 
+//! A Buffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
 class Buffer;
 typedef std::tr1::shared_ptr<Buffer> BufferShared;
 class Buffer: public Generator {
@@ -493,35 +493,10 @@ class Buffer: public Generator {
     virtual void write_output_to_fp(const std::string& fp, 
                                     OutputCountType d=0) const;
         
-    //! Set the matrix of this Generator to the content of an audio file. This overridden method makes the usage of libsndfile to read in a file. 
-    virtual void set_matrix_from_fp(const std::string& fp);
+    //! Set the outputs of this Generator to the content of an audio file. This overridden method makes the usage of libsndfile to read in a file. 
+    virtual void set_outputs_from_fp(const std::string& fp);
         
 };
-
-
-
-//==============================================================================
-//! A Recorder writes its inputs to a Buffer. 
-/*class Recorder;*/
-/*typedef std::tr1::shared_ptr<Recorder> RecorderShared;*/
-/*class Recorder: public Generator {*/
-
-    /*public://-------------------------------------------------------------------*/
-    /*explicit Recorder(GeneratorConfigShared);*/
-	
-    /*~Recorder();*/
-
-    /*virtual void init();    */
-		
-    /*//! Write the contents recoreded to an audio file. This works by calling the same method on the Buffer stored in the slot. */
-    /*virtual void write_output_to_fp(const std::string& fp, */
-                                    /*OutputCountType d=0) const;*/
-        
-	/*//! Rendering does not write to matrix, but instead writes to the slot-stored Buffer. */
-    /*virtual void render(RenderCountType f);        */
-/*};*/
-
-
 
 
 
