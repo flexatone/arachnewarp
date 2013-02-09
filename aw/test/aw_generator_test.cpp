@@ -272,9 +272,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	g1->add_input_by_index(1, 31);
     
 	g1->render(2);    
-
-	std::cout << "HERE! 0: " << g1->outputs[0][0] << std::endl;
-	std::cout << "HERE! 1: " << g1->outputs[1][0] << std::endl;
 	
     BOOST_CHECK_CLOSE(g1->outputs[0][0], 7, .0000001);
     BOOST_CHECK_CLOSE(g1->outputs[1][0], 61, .0000001);
@@ -410,7 +407,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
     BOOST_CHECK_CLOSE(g1->outputs[0][7], 1, .00001);
     BOOST_CHECK_CLOSE(g1->outputs[0][8], 0, .00001);
 	
-	g1->print_outputs();
+	//g1->print_outputs();
 	
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
 	g2->add_input_by_index(0, 11025.5); // 8 samples
@@ -442,7 +439,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
     BOOST_CHECK_CLOSE(g1->outputs[0][7], 1, .00001);
     BOOST_CHECK_CLOSE(g1->outputs[0][8], 0, .00001);
 	
-	g1->print_outputs();
+	// g1->print_outputs();
 
 }
 
@@ -488,33 +485,34 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	// for one second
-	g1->set_slot_by_index(1, 1.0);
+	g1->set_slot_by_index(1, .01); // 441 samples
 		
 	// create 
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
-	g2->add_input_by_index(0, 4); // a constant frequency
+	g2->add_input_by_index(0, 2); // a constant frequency, period of 22050
 	
 	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
-	g3->add_input_by_index(0, 12); // a constant frequency
+	g3->add_input_by_index(0, 4410); // a constant frequency, period of 10 
 
 	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
 	g1->add_input_by_index(0, g2);
 	g1->add_input_by_index(1, g3);
 	
+        
 	// for one render cycle of the buffer, we render inputs until we fill the frame
 	// need to time this generation 
 	g1->render(1); // render count here meaningless
 	//g1->illustrate_outputs();
 	
+    BOOST_CHECK_EQUAL(g1->outputs[0].size(), 441);
+    
+
+	g1->print_outputs(0, 100);      
 	// last sample should be at 1 for both
-	// g1->print_outputs();  TODO: add numbers to define range
-//	int p;
-//	for (int i=0; i < 50; ++i) {
-//		p = 0 + g1->out_to_matrix_offset[0] + i;
-//		std::cout << p << ":  " << g1->outputs[p] << std::endl;
-//	}
-	//BOOST_CHECK_CLOSE(g1->outputs[44098 + g1->out_to_matrix_offset[0]], 1, .001);
-	//BOOST_CHECK_CLOSE(g1->outputs[44099 + g1->out_to_matrix_offset[1]], 1, .001);
+	g1->print_outputs(g1->outputs[0].size()-100, 0);  
+    
+	//BOOST_CHECK_CLOSE(g1->outputs[0][4409], 1, .001);
+	//BOOST_CHECK_CLOSE(g1->outputs[0][11025], 0, .001);
 	
 }
 
