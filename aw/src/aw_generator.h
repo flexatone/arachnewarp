@@ -315,8 +315,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 
 	// display ................................................................    
-    //! Print the outputs buffer for all dimensions at the current sample.
-    void print_outputs();
+    //! Print the outputs buffer for all dimensions at the current render count. The optional start/end values can specify vaules within the frame range
+    void print_outputs(FrameSizeType start=0, FrameSizeType end=0);
 
     //! Print the the hierarchical list of all input values. This is virtual because Constant must print inputs in as different way. No other generator should need to specialize. 
     virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);

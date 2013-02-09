@@ -151,11 +151,12 @@ void Generator :: _resize_outputs() {
     
     assert(outputs.size() == _output_count);
     
+    SampleType n(0);
     // reserve each component; might set value as well to 0
 	// must be sure all have the same _frame_size
     for (j=outputs.begin(); j!=outputs.end(); ++j) {
 		// this will also set all values to 0.0
-		(*j).reserve(_frame_size);
+		(*j).resize(_frame_size, n);
     }
 	// reset to set all values to zero and reset render count
 	reset();
@@ -265,13 +266,7 @@ void Generator :: _sum_inputs() {
 			// now iterate over each gen in this input
 			for (j=0; j<gen_count_at_input; ++j) {
                 out = _inputs[i][j].second;            
-				sum += _inputs[i][j].first->outputs[out][k];
-                                
-				// the value out @k and sum it into position k
-//				sum += _inputs[i][j].first->outputs[
-//                    // read from this frame plus the offset for out defined; 
-//                    k + _inputs[i][j].first->out_to_matrix_offset[out]
-//                ];
+				sum += _inputs[i][j].first->outputs[out][k];                                
 			}
 			// sum of all gens at this sample frame
             // do not push_back, as has been resized; assign
@@ -421,17 +416,25 @@ std::ostream& operator<<(std::ostream& ostream, const GeneratorShared g) {
     return ostream; 
 }
 
-void Generator :: print_outputs() {
+void Generator :: print_outputs(FrameSizeType start, FrameSizeType end) {
     // provide name of generator first by dereferencing this
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
     
-    std::cout << *this << " Output frame @" << _render_count << ": ";
         
+    if (end == 0 || end < start) {
+        end = _frame_size;
+    }
+    if (start > end) {
+        start = 0;
+    }
+    
+    std::cout << *this << " Output rc{" << _render_count << "} f{" << start << "-" << end << "}: ";
+    
     OutputCountType i;
     FrameSizeType j;
     for (i=0; i<_output_count; ++i) {
         std::cout << std::endl << space1;            
-        for (j=0; j < _frame_size; ++j) {
+        for (j=start; j < end; ++j) {
             std::cout << std::setprecision(8) << outputs[i][j] << '|';
         }
     }
@@ -501,16 +504,17 @@ void Generator :: write_outputs_to_vector(VSampleType& vst) const {
     // writing out to a flat vector
     
     vst.clear(); // may not be necessary, but insures consistancy
-    vst.reserve(_outputs_size);    
+    vst.resize(_outputs_size, SampleType(0));    
     OutputCountType i;
     FrameSizeType j;
     OutputSizeType n(0);
+            
     for (i=0; i<_output_count; ++i) {
-        for (j=0; j < _frame_size; ++j) {
+        for (j=0; j < _frame_size; ++j) {        
             vst[n] = outputs[i][j];
-            ++n;
+            n += 1;
         }
-    }    
+    }
 }
 
 void Generator :: write_output_to_fp(const std::string& fp, 
@@ -1025,27 +1029,33 @@ void Buffer :: render(RenderCountType f) {
 	
 	// we assume that all inputs have the same frame size as standard frame size
 	FrameSizeType cfs = get_common_frame_size();
+    FrameSizeType fs = get_frame_size();
 	
 	// how many render cycles to fill our frame size
-	RenderCountType render_cycles_max = floor(get_frame_size() / 
-                                    static_cast<SampleType>(cfs));
+//	RenderCountType render_cycles_max = floor(get_frame_size() / 
+//                                    static_cast<SampleType>(cfs));
     //std::cout << "render_cycles_max: " << render_cycles_max  << std::endl;
     
-	RenderCountType rc(0); // this is the sub-render count
+	RenderCountType rc(0); // must start with request for frame 1
 	OutputSizeType i(0);
 	OutputCountType j(0);
-	OutputCountType out_count(get_output_count()); // out is always same as in count
-	
+	OutputCountType out_count(get_output_count()); // out is always same as in 
+	RenderCountType pos(0);
+    
 	// ignore render count for now; just fill buffer
-    while (rc < render_cycles_max) {
-        _render_inputs(rc);		
+    while (true) {
+        _render_inputs(rc+1); // render count must start at 1
 		_sum_inputs();
 		for (i=0; i < cfs; ++i) {
+            pos = i + (rc * cfs); // where we write in the buffer
+            if (pos >= fs) break; // we end when we are full
+            
 			for (j=0; j<out_count; ++j) { // iter over inputs/outputs
 				//outputs[i + (rc * cfs) + out_to_matrix_offset[j]] = _summed_inputs[j][i];
-				outputs[j][i + (rc * cfs)] = _summed_inputs[j][i];                
+				outputs[j][pos] = _summed_inputs[j][i];                
 			}
 		}
+        if (pos >= fs) break; // we end when we are full        
 		rc++;
     }
 	// we reset after to retrun components to starting state in case someone else uses this later. 	
@@ -1203,17 +1213,24 @@ void Phasor :: render(RenderCountType f) {
 			// we might dither this to increase accuracy over time; we floor+.5 to get an int period for now; period must not be zero or 1 (div by zero)
 			_period_samples = floor((_sampling_rate / 
 							frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
+                     
 			// add amp increment to previous amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
-			_amp = _amp_prev + (1.0 / (_period_samples - 1));
+			_amp = _amp_prev + (1.0 / 
+                            static_cast<SampleType>((_period_samples - 1)));
 			// if amp is at or above 1, set to zero
-			if (_amp > 1) _amp = 0.0;
+            // TODO: need to formalize this min gap
+			if (_amp > 1.00001) _amp = 0.0;
 			_amp_prev = _amp;
 			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
 			outputs[0][i] = _amp;
             // TODO: set impulse on second output channle
 		}
+        
+        //std::cout << "_period_samples: " << _period_samples << std::endl;
+        
         _render_count += 1;
-    }    
+    }
+    
 }
 
 

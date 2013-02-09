@@ -174,6 +174,8 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
 		// could aternatively just return as a base case of recursion
 	    throw std::invalid_argument("the GeneratoreShared is empty");
 	}	
+    std::cout << "HERE: " << g << std::endl;
+    
     // get_name_address is the id tag for this gen: no spaces or bad chars
     _stream << g->get_name_address() << " [";
     
