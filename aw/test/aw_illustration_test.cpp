@@ -57,9 +57,10 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_2) {
 	
 	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
 	g3->add_input_by_index(0, 12); // a constant frequency
+	g3->add_input_by_index(0, -2); // a constant frequency
 
 	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Phasor);    
-	g3->add_input_by_index(0, -2); // a constant frequency
+	g4->add_input_by_index(0, 3); // a constant frequency
 
 	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
 	g1->add_input_by_index(0, g2);

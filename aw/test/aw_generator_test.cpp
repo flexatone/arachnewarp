@@ -507,9 +507,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
     BOOST_CHECK_EQUAL(g1->outputs[0].size(), 441);
     
 
-	g1->print_outputs(0, 100);      
+	//g1->print_outputs(0, 100);      
 	// last sample should be at 1 for both
-	g1->print_outputs(g1->outputs[0].size()-100, 0);  
+	//g1->print_outputs(g1->outputs[0].size()-100, 0);  
     
 	//BOOST_CHECK_CLOSE(g1->outputs[0][4409], 1, .001);
 	//BOOST_CHECK_CLOSE(g1->outputs[0][11025], 0, .001);

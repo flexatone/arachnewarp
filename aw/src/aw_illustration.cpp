@@ -174,7 +174,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
 		// could aternatively just return as a base case of recursion
 	    throw std::invalid_argument("the GeneratoreShared is empty");
 	}	
-    std::cout << "HERE: " << g << std::endl;
+    // std::cout << "HERE: " << g << std::endl;
     
     // get_name_address is the id tag for this gen: no spaces or bad chars
     _stream << g->get_name_address() << " [";
@@ -184,9 +184,14 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
     std::string label = g->get_label();
     escape(label, "{}<>", "\\");
     _stream << "label = \"<doc>  " << label << " ";
-    
-    // iterate over inputs
-    ParameterIndexType pos(0);
+
+    ParameterIndexType pos(0);    
+    // iterate over slots
+    for (pos=0; pos < g->get_slot_count(); ++pos) {
+        _stream << " | <x" << static_cast<int>(pos) << 
+                    "> x::" << static_cast<int>(pos) << " "; // << std::endl;
+    }
+    // iterate over inputs    
     for (pos=0; pos < g->get_input_count(); ++pos) {
         _stream << " | <in" << static_cast<int>(pos) << 
                     "> in::" << static_cast<int>(pos) << " "; // << std::endl;
@@ -201,19 +206,40 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
     
     // next, define connections
     Generator::VGenSharedOutPair g_ins;
-    // show connections
-    // get input tag, lable that out to this in
 
+    GeneratorShared g_slot;
+    Generator::VGenSharedOutPair::const_iterator k;
+
+    for (pos=0; pos < g->get_slot_count(); ++pos) {    
+        // a single gen shared for this position
+        g_slot = g->get_slot_gen_shared_at_index(pos);  
+        // show from name to this gen at this slot
+        _stream << "\"" << g_slot->get_name_address() << "\":";
+        // out is not defined!
+        _stream << "doc" << ":s"; // south
+        _stream << " -> ";
+        _stream << "\"" << g->get_name_address() << "\":";
+        _stream << "x" << static_cast<int>(pos) << ":n"; // to north
+        // TODO: specify different grey shade
+        _stream << " [color=black];" << std::endl; // close line        
+        // recurse on each gen
+        _draw_generator(g_slot);
+    }    
+
+    OutputCountType g_ins_out_pos(0);
+    GeneratorShared g_in;
+    Generator::VGenSharedOutPair::const_iterator j;
+
+    // show connections by describing inputs
+    // iter over each input position
     for (pos=0; pos < g->get_input_count(); ++pos) {    
-        // a vector of gen shared/ out number pairs
+        // a vector of gen shared/ out number pairs for this position
         g_ins = g->get_input_gen_shared_by_index(pos);
-		//std::cout << g << " g_ins:" << g_ins.size() << std::endl;
-	
-        OutputCountType g_ins_out_pos(0);
-        GeneratorShared g_in;
         
-        Generator::VGenSharedOutPair::const_iterator j;
-        for (j=g_ins.begin(); j != g_ins.end(); ++j) {
+        std::cout << g << " g_ins:" << g_ins.size() << std::endl;
+	
+        // for each input position, iter over all connections to gens at outputs
+        for (j = g_ins.begin(); j != g_ins.end(); ++j) {
             g_ins_out_pos = (*j).second;
             g_in = (*j).first;  
 
