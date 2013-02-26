@@ -400,8 +400,9 @@ std::string Generator :: get_label_address() const {
 std::string Generator :: get_label() const {
     std::stringstream s;
     s << "<" << get_label_address() << 
-        " i{" <<  static_cast<int>(_output_count) << "}" <<    
-        "o{" <<  static_cast<int>(_output_count) << "}" << 
+        " x{" << static_cast<int>(_slot_count) << "}" <<     
+        "i{" << static_cast<int>(_input_count) << "}" <<    
+        "o{" << static_cast<int>(_output_count) << "}" <<         
         ">";    
     return s.str();
 } 
@@ -717,8 +718,13 @@ void Generator :: set_slot_by_index(ParameterIndexType i, SampleType v,
 }
 
 
-
-
+GeneratorShared Generator :: get_slot_gen_shared_at_index(
+										  ParameterIndexType i) {
+    if (_slot_count <= 0 or i >= _slot_count) {
+        throw std::invalid_argument("Parameter index is not available.");		
+    }
+    return _slots[i];
+}
 
 
 

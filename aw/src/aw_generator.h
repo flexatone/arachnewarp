@@ -183,7 +183,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	//! For each render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types. This is done to make render() methods cleaner and remove redundancy.
 	VVSampleType _summed_inputs;    
     
-	//! A std::vector of GeneratorsShared that are used for configuration of this Generator. 
+	//! A std::vector of GeneratorsShared that are used for configuration of this Generator. Unlike inputs, only one Generator can occupy a slot position. Example: a buffer has a slot for duration of that buffer. It is not yet decided if generators in slots shold be rendered. Further, which output of the generator slot is alos not yet assigned.
 	VGenShared _slots;
 	
 	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
@@ -391,6 +391,9 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	//! Overridden to handle a constant. 
     virtual void set_slot_by_index(ParameterIndexType i, SampleType v, 
 									bool update=true);
+
+    //! Return the single gen at this slot position (not a vector, like inputs).
+    virtual GeneratorShared get_slot_gen_shared_at_index(ParameterIndexType i);
 
 };
 
