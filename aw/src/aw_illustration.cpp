@@ -168,6 +168,8 @@ NetworkGraph :: NetworkGraph() {}
 
 NetworkGraph :: ~NetworkGraph() {}
 
+// grpahiz colors can be found here:
+// http://www.graphviz.org/doc/info/colors.html
 
 void NetworkGraph :: _draw_generator(GeneratorShared g) {
 	if (!g) { // if we get an empty pointer
@@ -221,7 +223,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
         _stream << "\"" << g->get_name_address() << "\":";
         _stream << "x" << static_cast<int>(pos) << ":n"; // to north
         // TODO: specify different grey shade
-        _stream << " [color=black];" << std::endl; // close line        
+        _stream << " [color=honeydew3];" << std::endl; // close line        
         // recurse on each gen
         _draw_generator(g_slot);
     }    
@@ -250,7 +252,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
             _stream << " -> ";
             _stream << "\"" << g->get_name_address() << "\":";
             _stream << "in" << static_cast<int>(pos) << ":n"; // to north
-            _stream << ";" << std::endl; // close line        
+            _stream << " [color=darkslategray];" << std::endl; // close line        
 			
 			// recurse on each gen; this only advances if g_ins has length (not the cast when dealing with a constant)
 			_draw_generator(g_in);
@@ -262,14 +264,14 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
 
 
 
-
 void NetworkGraph :: draw(GeneratorShared g) {    
+    // color is the the color of the outline of the box-shape
     _stream.str("");     
     // header
     _stream << "\
 digraph G { \n\
 dpi = 300; \n\
-node [shape=record, fontname=Courier, fontsize=12]; \n\
+node [shape=record, style=filled, color=grey16, fillcolor=lemonchiffon4, fontcolor=lemonchiffon1, fontsize=10, fontname=Courier, fontsize=10]; \n\
 edge [color=grey]; \n\
 ranksep=\"1.5 equally\"; \n\
 size=\"8,8\"; " << std::endl;    

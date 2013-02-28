@@ -5,6 +5,9 @@
 #include <vector>
 #include <string>
 #include <utility> // has pair
+
+#include <tr1/functional>
+
 #include <tr1/unordered_map>
 
 //#include <memory> # only with -std=c++0x
@@ -132,6 +135,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     enum GeneratorID {
         ID_Constant,    
         ID_Add,
+        ID_Multiply,        
         ID_BufferFile,		
         ID_Phasor,				
     };
@@ -446,15 +450,18 @@ class Constant: public Generator {
 };
 
 //==============================================================================
-//! An adder sums all Generators across all dimensions at its single operand input.
+//! An add or mix, summing all Generators across all dimensions at its single input.
 class Add;
 typedef std::tr1::shared_ptr<Add> AddShared;
 class Add: public Generator {
 
-    private://------------------------------------------------------------------
-    SampleType _sum_opperands;
+    protected://------------------------------------------------------------------
+    SampleType _n_opperands;
+    //! Iniitial value in iterative operations.
+    SampleType _n_opperands_init;
 
-//    protected://-----------------------------------------------------------------
+    std::tr1::function<SampleType(SampleType, SampleType)> _op;
+
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
 
@@ -468,6 +475,26 @@ class Add: public Generator {
 	//! Render addition. 
     virtual void render(RenderCountType f); 	
 };
+
+
+
+//==============================================================================
+//! A mult sums all Generators across all dimensions at its single operand input. Derives from Add, as all operators will 
+class Multiply;
+typedef std::tr1::shared_ptr<Multiply> MultiplyShared;
+class Multiply: public Add {
+
+    public://-------------------------------------------------------------------
+    explicit Multiply(EnvironmentShared);
+	
+    virtual void init();    
+
+	//! Render addition. 
+    virtual void render(RenderCountType f); 	
+};
+
+
+
 
 
 
