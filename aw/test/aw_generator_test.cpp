@@ -478,7 +478,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 	
-	std::cerr << std::string(80, '-') << std::endl;
 	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
 
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
@@ -518,6 +517,24 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_multiply_1) {
+
+	std::cerr << std::string(80, '-') << std::endl;
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
+    // sets channels
+    g1->set_slot_by_index(0, 1);
+    
+    g1->add_input_by_index(0, 3);
+    g1->add_input_by_index(0, 2);
+    
+    g1->print_inputs();
+    g1->render(2);
+    
+	BOOST_CHECK_CLOSE(g1->outputs[0][0], 6, .001);
+    
+
+    
+}
 
 
 

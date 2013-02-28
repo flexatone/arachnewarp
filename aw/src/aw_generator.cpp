@@ -6,6 +6,8 @@
 #include <vector>
 #include <cassert>
 
+#include <functional>
+
 // needed for Buffer
 #include <sndfile.hh>
 
@@ -70,6 +72,9 @@ GeneratorShared  Generator :: make(GeneratorID q){
     else if (q == ID_Add) {
         g = AddShared(new Add(e));    
     }
+    else if (q == ID_Multiply) {
+        g = AddShared(new Multiply(e));    
+    }    
     else if (q == ID_BufferFile) {
         g = BufferShared(new Buffer(e));    
     }	
@@ -864,7 +869,7 @@ void Constant :: add_input_by_index(ParameterIndexType i, SampleType v){
 Add :: Add(EnvironmentShared e) 
 	// must initialize base class with passed arg
 	: Generator(e), 
-	_sum_opperands(0) { // end intitializer list
+	_n_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;		
 	_class_name = "Add"; 
 }
@@ -874,10 +879,11 @@ Add :: ~Add() {
 
 void Add :: init() {
     // the int routie must configure the names and types of parameters
-    std::cout << *this << " Add::init()" << std::endl;
+    // std::cout << *this << " ::init()" << std::endl;
     // call base init, allocates and resets()
     Generator::init();
-    _clear_output_parameter_types(); // must clear the default set by Gen init
+    // must clear the default set by Gen init because slot will set directly    
+    _clear_output_parameter_types();
     
     // register slots
     aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
@@ -935,23 +941,74 @@ void Add :: render(RenderCountType f) {
             gen_count_at_input = _inputs[i].size();
             // step through each frame             
             for (k=0; k < frameSize; ++k) {
-                _sum_opperands = 0; // declared in class
+                _n_opperands = 0; // declared in class
                 // add across for each Gen found in this input
                 for (j=0; j<gen_count_at_input; ++j) {
                     out = _inputs[i][j].second;
-                    //_sum_opperands += _inputs[i][j].first->outputs[
-                        // read from this frame plus the offset for out defined; 
-//                        k + _inputs[i][j].first->out_to_matrix_offset[out]
-//                        ];
-                    _sum_opperands += _inputs[i][j].first->outputs[out][k];
+                    _n_opperands += _inputs[i][j].first->outputs[out][k];
                 }
                 // store in out channel for each input
-                outputs[i][k] = _sum_opperands;
+                outputs[i][k] = _n_opperands;
             }
 		}
         _render_count += 1;
     }    
 }
+
+
+
+
+//------------------------------------------------------------------------------
+Multiply :: Multiply(EnvironmentShared e) 
+	// must initialize base class with passed arg
+	: Add(e) {
+	_class_name = "Multiply";  // override what is set in Add
+}
+
+
+void Multiply :: init() {
+    Add::init();
+}
+
+
+void Multiply :: render(RenderCountType f) {
+    std::cout << *this << "::render()" << std::endl;
+    
+    ParameterIndexType i;
+    ParameterIndexType input_count(get_input_count());
+    FrameSizeType k;
+    ParameterIndexType j;    
+
+    ParameterIndexType gen_count_at_input(0);
+    OutputCountType out(0);
+    FrameSizeType frameSize(get_frame_size());
+        
+    while (_render_count < f) {    
+        _render_inputs(f);        
+        // for each parameter input we have an output
+        for (i = 0; i < input_count; ++i) {
+            gen_count_at_input = _inputs[i].size();
+            // step through each frame             
+            for (k=0; k < frameSize; ++k) {
+                _n_opperands = 1; // declared in class, init to 1!
+                // add across for each Gen found in this input
+                for (j=0; j<gen_count_at_input; ++j) {
+                    out = _inputs[i][j].second;
+                    // only diff with addition
+                    _n_opperands *= _inputs[i][j].first->outputs[out][k];
+                }
+                // store in out channel for each input
+                outputs[i][k] = _n_opperands;
+            }
+		}
+        _render_count += 1;
+    }    
+}
+
+
+
+
+
 
 
 
