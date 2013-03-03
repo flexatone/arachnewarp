@@ -871,7 +871,8 @@ Add :: Add(EnvironmentShared e)
 	: Generator(e), 
 	_n_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;		
-	_class_name = "Add"; 
+	_class_name = "Add";	
+	//_op = std::tr1::function::plus<SampleType>(SampleType, SampleType);
 }
 
 Add :: ~Add() {
@@ -1242,7 +1243,7 @@ void Phasor :: init() {
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;	
 	
-	// register outoupt
+	// register output
     aw::ParameterTypeValueShared pt3 = aw::ParameterTypeValueShared(new 
                                        aw::ParameterTypeValue);
     pt3->set_instance_name("Output");
@@ -1275,11 +1276,11 @@ void Phasor :: render(RenderCountType f) {
 			_sum_frequency = _summed_inputs[_input_index_frequency][i];
 			// we might dither this to increase accuracy over time; we floor+.5 to get an int period for now; period must not be zero or 1 (div by zero)
 			_period_samples = floor((_sampling_rate / 
-							frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
+					frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
                      
 			// add amp increment to previous amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
-			_amp = _amp_prev + (1.0 / 
-                            static_cast<SampleType>((_period_samples - 1)));
+			_amp = _amp_prev + (1.0 / static_cast<SampleType>(
+					(_period_samples - 1)));
 			// if amp is at or above 1, set to zero
             // TODO: need to formalize this min gap
 			if (_amp > 1.00001) _amp = 0.0;
@@ -1288,9 +1289,7 @@ void Phasor :: render(RenderCountType f) {
 			outputs[0][i] = _amp;
             // TODO: set impulse on second output channle
 		}
-        
-        //std::cout << "_period_samples: " << _period_samples << std::endl;
-        
+        //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
     }
     

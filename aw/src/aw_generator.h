@@ -460,7 +460,8 @@ class Add: public Generator {
     //! Iniitial value in iterative operations.
     SampleType _n_opperands_init;
 
-    std::tr1::function<SampleType(SampleType, SampleType)> _op;
+	// return type (arg1, arg2 type)
+    std::tr1::function<SampleType (SampleType, SampleType)> _op;
 
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
