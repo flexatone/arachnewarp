@@ -6,7 +6,7 @@
 #include <vector>
 #include <cassert>
 
-#include <functional>
+#include <tr1/functional>
 
 // needed for Buffer
 #include <sndfile.hh>
