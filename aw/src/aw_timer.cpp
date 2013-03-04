@@ -32,8 +32,6 @@ double Timer :: _get_ms_difference(std::clock_t start, std::clock_t end) const {
     return std::difftime(end, start) / 1000.0;
 }
 
-
-
 std::ostream& operator<<(std::ostream& ostream, const Timer& t) {
     // get time difference but do not stop
     double dif(0);
@@ -49,4 +47,4 @@ std::ostream& operator<<(std::ostream& ostream, const Timer& t) {
 
     
     
-}
+} // namespace aw
