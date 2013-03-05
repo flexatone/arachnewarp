@@ -518,8 +518,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_multiply_1) {
-
-	std::cerr << std::string(80, '-') << std::endl;
+    // test basic multiplication
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
     // sets channels
     g1->set_slot_by_index(0, 1);
@@ -532,12 +531,60 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_1) {
     
 	BOOST_CHECK_CLOSE(g1->outputs[0][0], 6, .001);
     
+    g1->add_input_by_index(0, 20);
+    g1->render(3);
 
+	BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
     
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
+    // multy channel multiplication
+    
+	std::cerr << std::string(80, '-') << std::endl;
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
+    
+    g1->set_slot_by_index(0, 3);
+    
+    g1->illustrate_network();
+	//g1->illustrate_outputs();
 
+}
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
+    // test basic multiplication
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+    // sets channels    
+    g1->add_input_by_index(0, 2.5);
+
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+    // sets channels    
+    g2->add_input_by_index(0, 13);
+    g2->render(1);
+    g2->illustrate_outputs();
+
+
+    aw::GeneratorShared g3a = aw::Generator::make(aw::Generator::ID_Add);
+    g3a->add_input_by_index(0, g1);
+    g3a->add_input_by_index(0, g2);
+    
+        
+    // TODO: not working yet
+    //g3a->render(1);
+    //g3a->illustrate_outputs();
+    
+    
+    aw::GeneratorShared g3b = g1 + g2;
+    //g3b->illustrate_network();
+    
+    
+	// BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
+    
+}
 
 
 

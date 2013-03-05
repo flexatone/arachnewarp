@@ -6,7 +6,7 @@
 #include <string>
 #include <utility> // has pair
 
-#include <tr1/functional>
+// #include <tr1/functional>
 
 #include <tr1/unordered_map>
 
@@ -399,8 +399,25 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Return the single gen at this slot position (not a vector, like inputs).
     virtual GeneratorShared get_slot_gen_shared_at_index(ParameterIndexType i);
 
+
+	// operators ..............................................................    	
+//    GeneratorShared operator+(GeneratorShared other) const;
+//
+//    GeneratorShared operator*(GeneratorShared other) const;
+
 };
 
+
+// operators ...................................................................	
+inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
+    GeneratorShared g = Generator::make(Generator::ID_Add);
+    // can look and find min of (this.out_count, other.out_count)
+    g->set_slot_by_index(0, 1); // just one channel?
+    g->add_input_by_index(0, lhs);
+    g->add_input_by_index(0, rhs);
+    return g;
+} 
+	
 
 
 
@@ -460,8 +477,8 @@ class Add: public Generator {
     //! Iniitial value in iterative operations.
     SampleType _n_opperands_init;
 
-	// return type (arg1, arg2 type)
-    std::tr1::function<SampleType (SampleType, SampleType)> _op;
+    // it seems like this should be const somehow; not sure about performanc implications
+    char _op_switch;
 
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
@@ -490,8 +507,6 @@ class Multiply: public Add {
 	
     virtual void init();    
 
-	//! Render addition. 
-    virtual void render(RenderCountType f); 	
 };
 
 

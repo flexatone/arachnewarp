@@ -6,7 +6,7 @@
 #include <vector>
 #include <cassert>
 
-#include <tr1/functional>
+// #include <tr1/functional>
 
 // needed for Buffer
 #include <sndfile.hh>
@@ -494,7 +494,7 @@ void Generator :: illustrate_network() {
 	NetworkGraph p;
     // pass a version this instancea as a Shared Pointer
 	p.draw(shared_from_this());
-    p.print();
+    //p.print();
 	p.pipe(); // pipe to gnu plot
 }
 
@@ -731,7 +731,27 @@ GeneratorShared Generator :: get_slot_gen_shared_at_index(
     return _slots[i];
 }
 
+//..............................................................................
+// opperators
 
+//GeneratorShared Generator :: operator+(GeneratorShared other) const {
+//    GeneratorShared g = make(ID_Add);
+//    // can look and find min of (this.out_count, other.out_count)
+//    g->set_slot_by_index(0, 1); // just one channel?
+//    g->set_input_by_index(0, shared_from_this());
+//    g->set_input_by_index(0, other);
+//    return g;
+//}
+
+
+//GeneratorShared Generator :: operator*(GeneratorShared other) const {
+//    GeneratorShared g = make(ID_Multiply);
+//    // can look and find min of (this.out_count, other.out_count)
+//    g->set_slot_by_index(0, 1); // just one channel?
+//    g->set_input_by_index(0, shared_from_this());
+//    g->set_input_by_index(0, other);
+//    return g;
+//}
 
 
 
@@ -872,6 +892,9 @@ Add :: Add(EnvironmentShared e)
 	_n_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;		
 	_class_name = "Add";	
+    _op_switch = '+';
+    _n_opperands_init = 0; // must be 1
+    // this approach was too slow, even when optimized    
 	//_op = std::tr1::function::plus<SampleType>(SampleType, SampleType);
 }
 
@@ -942,11 +965,15 @@ void Add :: render(RenderCountType f) {
             gen_count_at_input = _inputs[i].size();
             // step through each frame             
             for (k=0; k < frameSize; ++k) {
-                _n_opperands = 0; // declared in class
+                _n_opperands = _n_opperands_init; // declared in class
                 // add across for each Gen found in this input
                 for (j=0; j<gen_count_at_input; ++j) {
                     out = _inputs[i][j].second;
-                    _n_opperands += _inputs[i][j].first->outputs[out][k];
+                    if (_op_switch == '+') {
+                        _n_opperands += _inputs[i][j].first->outputs[out][k];
+                    } else if (_op_switch == '*') {
+                        _n_opperands *= _inputs[i][j].first->outputs[out][k];                    
+                    }
                 }
                 // store in out channel for each input
                 outputs[i][k] = _n_opperands;
@@ -964,48 +991,48 @@ Multiply :: Multiply(EnvironmentShared e)
 	// must initialize base class with passed arg
 	: Add(e) {
 	_class_name = "Multiply";  // override what is set in Add
+    _op_switch = '*';
+    _n_opperands_init = 1; // must be 1    
 }
-
 
 void Multiply :: init() {
-    Add::init();
+    Add::init(); // must call base init; calls Generator::init()
 }
 
-
-void Multiply :: render(RenderCountType f) {
-    std::cout << *this << "::render()" << std::endl;
-    
-    ParameterIndexType i;
-    ParameterIndexType input_count(get_input_count());
-    FrameSizeType k;
-    ParameterIndexType j;    
-
-    ParameterIndexType gen_count_at_input(0);
-    OutputCountType out(0);
-    FrameSizeType frameSize(get_frame_size());
-        
-    while (_render_count < f) {    
-        _render_inputs(f);        
-        // for each parameter input we have an output
-        for (i = 0; i < input_count; ++i) {
-            gen_count_at_input = _inputs[i].size();
-            // step through each frame             
-            for (k=0; k < frameSize; ++k) {
-                _n_opperands = 1; // declared in class, init to 1!
-                // add across for each Gen found in this input
-                for (j=0; j<gen_count_at_input; ++j) {
-                    out = _inputs[i][j].second;
-                    // only diff with addition
-                    _n_opperands *= _inputs[i][j].first->outputs[out][k];
-                }
-                // store in out channel for each input
-                outputs[i][k] = _n_opperands;
-            }
-		}
-        _render_count += 1;
-    }    
-}
-
+//void Multiply :: render(RenderCountType f) {
+//    std::cout << *this << "::render()" << std::endl;
+//    
+//    ParameterIndexType i;
+//    ParameterIndexType input_count(get_input_count());
+//    FrameSizeType k;
+//    ParameterIndexType j;    
+//
+//    ParameterIndexType gen_count_at_input(0);
+//    OutputCountType out(0);
+//    FrameSizeType frameSize(get_frame_size());
+//        
+//    while (_render_count < f) {    
+//        _render_inputs(f);        
+//        // for each parameter input we have an output
+//        for (i = 0; i < input_count; ++i) {
+//            gen_count_at_input = _inputs[i].size();
+//            // step through each frame             
+//            for (k=0; k < frameSize; ++k) {
+//                _n_opperands = 1; // declared in class, init to 1!
+//                // add across for each Gen found in this input
+//                for (j=0; j<gen_count_at_input; ++j) {
+//                    out = _inputs[i][j].second;
+//                    // only diff with addition
+//                    _n_opperands *= _inputs[i][j].first->outputs[out][k];
+//                }
+//                // store in out channel for each input
+//                outputs[i][k] = _n_opperands;
+//            }
+//		}
+//        _render_count += 1;
+//    }    
+//}
+//
 
 
 
