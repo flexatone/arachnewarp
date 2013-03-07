@@ -135,8 +135,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     enum GeneratorID {
         ID_Constant,    
         ID_Add,
-        ID_Multiply,        
-        ID_BufferFile,		
+        ID_Multiply,                      
+        ID_Buffer,		
         ID_Phasor,				
     };
         
@@ -374,21 +374,25 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 	// inputs ..............................................................    
     //! Get a vector of GeneratorShared for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
-    virtual VGenSharedOutPair get_input_gen_shared_by_index(ParameterIndexType i);
+    virtual VGenSharedOutPair get_input_gen_shared_by_index(
+            ParameterIndexType i);
     
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     virtual void set_input_by_index(ParameterIndexType i, 
-                                        GeneratorShared gs);
-    virtual void set_input_by_index(ParameterIndexType i, SampleType v);
+            GeneratorShared gs, OutputCountType pos=0);
+                                        
+    virtual void set_input_by_index(ParameterIndexType i, SampleType v,
+            OutputCountType pos=0);
 
     //! Add a multiple input at this parameter. 
     virtual void add_input_by_index(ParameterIndexType i, 
-                                        GeneratorShared gs);
+            GeneratorShared gs, OutputCountType pos=0);
 
-    virtual void add_input_by_index(ParameterIndexType i, SampleType v);
+    virtual void add_input_by_index(ParameterIndexType i, SampleType v, 
+            OutputCountType pos=0);
   
 	// slot ..............................................................    	
-    //! Directly set a parameter given an index. This will remove/erase any parameter on this slot. The update parameter permits disabling updating a slot, useful during initial configuration. 
+    //! Directly set a parameter to a slot given an index. This will remove/erase any parameter on this slot. The update parameter permits disabling updating a slot, useful during initial configuration. 
     virtual void set_slot_by_index(ParameterIndexType i, GeneratorShared gs, 
 									bool update=true);
     
@@ -403,7 +407,6 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	// operators ..............................................................    	
 //    GeneratorShared operator+(GeneratorShared other) const;
 //
-//    GeneratorShared operator*(GeneratorShared other) const;
 
 };
 
@@ -417,7 +420,25 @@ inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
     g->add_input_by_index(0, rhs);
     return g;
 } 
+
+
+inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
+    GeneratorShared g = Generator::make(Generator::ID_Multiply);
+    // can look and find min of (this.out_count, other.out_count)
+    g->set_slot_by_index(0, 1); // just one channel?
+    g->add_input_by_index(0, lhs);
+    g->add_input_by_index(0, rhs);
+    return g;
+} 
 	
+// TODO: provide overrides with SampleType args for either left/right: do we really need three methods for each operator then?
+
+// TODO: define a connect function that uses << or >> 
+// e.g., g1 >> g2 : makes g1 an input of g2
+
+
+
+
 
 
 
@@ -452,16 +473,16 @@ class Constant: public Generator {
     virtual VGenSharedOutPair get_input_gen_shared_by_index(ParameterIndexType i);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.
-    virtual void set_input_by_index(ParameterIndexType i, GeneratorShared gs);    
+    virtual void set_input_by_index(ParameterIndexType i, GeneratorShared gs, OutputCountType pos=0);    
                                         
     //! Set value as a SampleType value.
-	virtual void set_input_by_index(ParameterIndexType i, SampleType v);
+	virtual void set_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos=0);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.    
-    virtual void add_input_by_index(ParameterIndexType i, GeneratorShared gs);    
+    virtual void add_input_by_index(ParameterIndexType i, GeneratorShared gs, OutputCountType pos=0);    
                                         
     //! Add value as a SampleType value.                                        
-	virtual void add_input_by_index(ParameterIndexType i, SampleType v);
+	virtual void add_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos=0);
     
     
 };

@@ -57,7 +57,7 @@ bool test_2() {
 bool test_3() {
 	// can create the table subclass
     
-   	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+   	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
     // set channels to 3
     
 	aw::Generator::VSampleType v;
@@ -73,7 +73,7 @@ bool test_3() {
 }
 
 bool test_4() {
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
     // set channels to 1
     std::string s("12518-sk1Kick.aif");
     g1->set_outputs_from_fp(s);	
@@ -88,7 +88,7 @@ bool test_5() {
 	std::cerr << std::string(80, '-') << std::endl;
 	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
 
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	// for five second

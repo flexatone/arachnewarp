@@ -75,7 +75,7 @@ GeneratorShared  Generator :: make(GeneratorID q){
     else if (q == ID_Multiply) {
         g = AddShared(new Multiply(e));    
     }    
-    else if (q == ID_BufferFile) {
+    else if (q == ID_Buffer) {
         g = BufferShared(new Buffer(e));    
     }	
     else if (q == ID_Phasor) {
@@ -631,56 +631,57 @@ ParameterIndexType Generator :: get_slot_index_from_parameter_name(
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
 
 Generator::VGenSharedOutPair Generator :: get_input_gen_shared_by_index(
-										  ParameterIndexType i) {
+                        ParameterIndexType i) {
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");		
     }
-    // NOTE: this is copying all contents
+    // NOTE: this is copying all contents, but probably not a problem b/c just shared pointers
     Generator::VGenSharedOutPair post(_inputs[i]);
     return post;
 }
 
 void Generator :: set_input_by_index(ParameterIndexType i, 
-                                        GeneratorShared gs){
+                                    GeneratorShared gs, OutputCountType pos){
     // if zero, none are set; current value is next available slot for registering
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");                                        
-    }        
+    }
+    if (pos >= gs->get_output_count()) {
+        throw std::invalid_argument("position exceeds output count on passed input");    
+    }    
     // this removes all stored values
-    _inputs[i].clear();
-//    _inputs_frame_size[i].clear();
-    
-    // TEMPORARY until we assign outputs via set
-    GenSharedOutPair gsop(gs, 0);  
+    _inputs[i].clear();    
+    GenSharedOutPair gsop(gs, pos);  
     _inputs[i].push_back(gsop);    
-    // store in advance the outputs size of the input
-    // _inputs_frame_size[i].push_back(gs->get_outputs_size());
 }
 
-void Generator :: set_input_by_index(ParameterIndexType i, SampleType v){
+void Generator :: set_input_by_index(ParameterIndexType i, SampleType v, 
+        OutputCountType pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
 	aw::GeneratorShared c = aw::ConstantShared(
 							new aw::Constant(_environment));
     c->init();
-    //std::cout << "Generator :: set_input_by_index(" << std::endl;    
     c->set_input_by_index(0, v); // this will call Constant::reset()
-    set_input_by_index(i, c); // call overloaded
+    set_input_by_index(i, c, pos); // call overloaded
 }
 
 
 void Generator :: add_input_by_index(ParameterIndexType i, 
-                                        GeneratorShared gs){
+        GeneratorShared gs, OutputCountType pos){
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
+    if (pos >= gs->get_output_count()) {
+        throw std::invalid_argument("position exceeds output count on passed input");    
+    }
     // adding additiona, with a generator
-    GenSharedOutPair gsop(gs, 0); // TEMPORARY until we accept more args      
+    GenSharedOutPair gsop(gs, pos); // TEMPORARY until we accept more args      
     _inputs[i].push_back(gsop);    
-    //_inputs_frame_size[i].push_back(gs->get_outputs_size());    
 }
 
-void Generator :: add_input_by_index(ParameterIndexType i, SampleType v){
+void Generator :: add_input_by_index(ParameterIndexType i, SampleType v, 
+        OutputCountType pos){
     // adding additional as a constant value
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
@@ -689,7 +690,7 @@ void Generator :: add_input_by_index(ParameterIndexType i, SampleType v){
 							new aw::Constant(_environment));
     c->init();
     c->set_input_by_index(0, v); // this will call Constant::reset()
-    add_input_by_index(i, c); // other overloaded
+    add_input_by_index(i, c, pos); // other overloaded
 }
 
 
@@ -733,19 +734,10 @@ GeneratorShared Generator :: get_slot_gen_shared_at_index(
 
 //..............................................................................
 // opperators
+// some opperators are defined in header as inline 
 
 //GeneratorShared Generator :: operator+(GeneratorShared other) const {
 //    GeneratorShared g = make(ID_Add);
-//    // can look and find min of (this.out_count, other.out_count)
-//    g->set_slot_by_index(0, 1); // just one channel?
-//    g->set_input_by_index(0, shared_from_this());
-//    g->set_input_by_index(0, other);
-//    return g;
-//}
-
-
-//GeneratorShared Generator :: operator*(GeneratorShared other) const {
-//    GeneratorShared g = make(ID_Multiply);
 //    // can look and find min of (this.out_count, other.out_count)
 //    g->set_slot_by_index(0, 1); // just one channel?
 //    g->set_input_by_index(0, shared_from_this());
@@ -853,11 +845,11 @@ Generator::VGenSharedOutPair Constant :: get_input_gen_shared_by_index(
     return post;
 }
 
-void Constant :: set_input_by_index(ParameterIndexType i, GeneratorShared gs) {
+void Constant :: set_input_by_index(ParameterIndexType i, GeneratorShared gs, OutputCountType pos) {
     throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
 }
 
-void Constant :: set_input_by_index(ParameterIndexType i, SampleType v){
+void Constant :: set_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos){
     if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
@@ -868,11 +860,11 @@ void Constant :: set_input_by_index(ParameterIndexType i, SampleType v){
 }
 
 void Constant :: add_input_by_index(ParameterIndexType i, 
-                                    GeneratorShared gs) {
+                                    GeneratorShared gs, OutputCountType pos) {
     throw std::invalid_argument("invalid to add a GeneratoreShared as a value to a Constatn");
 }
 
-void Constant :: add_input_by_index(ParameterIndexType i, SampleType v){
+void Constant :: add_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos){
     if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
@@ -998,42 +990,6 @@ Multiply :: Multiply(EnvironmentShared e)
 void Multiply :: init() {
     Add::init(); // must call base init; calls Generator::init()
 }
-
-//void Multiply :: render(RenderCountType f) {
-//    std::cout << *this << "::render()" << std::endl;
-//    
-//    ParameterIndexType i;
-//    ParameterIndexType input_count(get_input_count());
-//    FrameSizeType k;
-//    ParameterIndexType j;    
-//
-//    ParameterIndexType gen_count_at_input(0);
-//    OutputCountType out(0);
-//    FrameSizeType frameSize(get_frame_size());
-//        
-//    while (_render_count < f) {    
-//        _render_inputs(f);        
-//        // for each parameter input we have an output
-//        for (i = 0; i < input_count; ++i) {
-//            gen_count_at_input = _inputs[i].size();
-//            // step through each frame             
-//            for (k=0; k < frameSize; ++k) {
-//                _n_opperands = 1; // declared in class, init to 1!
-//                // add across for each Gen found in this input
-//                for (j=0; j<gen_count_at_input; ++j) {
-//                    out = _inputs[i][j].second;
-//                    // only diff with addition
-//                    _n_opperands *= _inputs[i][j].first->outputs[out][k];
-//                }
-//                // store in out channel for each input
-//                outputs[i][k] = _n_opperands;
-//            }
-//		}
-//        _render_count += 1;
-//    }    
-//}
-//
-
 
 
 
