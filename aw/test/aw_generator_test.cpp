@@ -21,11 +21,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     aw::EnvironmentShared e = aw::Environment::make();
 	aw::Generator g1 = aw::Generator(e);
     g1.init();
-	g1.print_outputs();
+	//g1.print_outputs();
 	g1.render(1); // can call directly on object
-	g1.print_outputs();
+	//g1.print_outputs();
 	g1.render(3); // will render twice, moving to 3
-	g1.print_outputs();
+	//g1.print_outputs();
     
         
     // this has no parameters so should raise exception on trying to set or add
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 	// test auto constant creation when adding a sample type
     
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
     BOOST_CHECK_EQUAL(g1->get_outputs_size(), 44100);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
     BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
@@ -342,7 +342,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
 	// testing setting the outputs from a file path
 	
     std::string s("../test/12518-sk1Kick.aif");
@@ -382,7 +382,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {    
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
 	// test round trip file reading and writing; this is good for valgrind testing as we have to create dyanmic vectors for temporary storage
     std::string s("../test/12518-sk1Kick.aif");
     g1->set_outputs_from_fp(s);	
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
 
 	// changing the slot calls overridden _update_for_new_slot(), resizes frame size
 	g1->set_slot_by_index(1, 20.0); // 20 second buffer
@@ -480,7 +480,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 	
 	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
 
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_BufferFile);
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	// for one second
@@ -558,19 +558,44 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
     // test basic multiplication
 
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
-    // sets channels    
-    g1->add_input_by_index(0, 2.5);
+    g1->add_input_by_index(0, 4);
 
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
-    // sets channels    
-    g2->add_input_by_index(0, 13);
-    g2->render(1);
-    g2->illustrate_outputs();
+    g2->add_input_by_index(0, 8);
 
 
-    aw::GeneratorShared g3a = aw::Generator::make(aw::Generator::ID_Add);
-    g3a->add_input_by_index(0, g1);
-    g3a->add_input_by_index(0, g2);
+    aw::GeneratorShared g3a = g1 * g2;    
+
+//    aw::GeneratorShared g3a = aw::Generator::make(aw::Generator::ID_Multiply);
+//    g3a->add_input_by_index(0, g1);
+//    g3a->add_input_by_index(0, g2);
+
+    //g3a->print_outputs();
+
+
+	aw::GeneratorShared gr = aw::Generator::make(aw::Generator::ID_Buffer);
+	// create two channel buffer
+	gr->set_slot_by_index(0, 1);
+	// for one second
+	gr->set_slot_by_index(1, 1);
+        
+    gr->set_input_by_index(0, g3a);
+    gr->render(1);
+
+    // the increment here 5512.5, so there is some error
+	BOOST_CHECK_CLOSE(gr->outputs[0][5512], .5, .001);
+	BOOST_CHECK_CLOSE(gr->outputs[0][11025], 0, .001);
+	BOOST_CHECK_CLOSE(gr->outputs[0][16537+1], .5, .1);
+    
+	BOOST_CHECK_CLOSE(gr->outputs[0][22050], 0, .001);
+	BOOST_CHECK_CLOSE(gr->outputs[0][27562+2], .5, .1);
+    
+	BOOST_CHECK_CLOSE(gr->outputs[0][33075], 0, .001);
+	BOOST_CHECK_CLOSE(gr->outputs[0][38587+3], .5, .1);
+
+
+//    gr->illustrate_outputs();
+//    gr->illustrate_network();
     
         
     // TODO: not working yet
@@ -578,7 +603,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
     //g3a->illustrate_outputs();
     
     
-    aw::GeneratorShared g3b = g1 + g2;
+    //aw::GeneratorShared g3b = g1 + g2;
     //g3b->illustrate_network();
     
     
