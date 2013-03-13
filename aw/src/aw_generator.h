@@ -473,16 +473,20 @@ class Constant: public Generator {
     virtual VGenSharedOutPair get_input_gen_shared_by_index(ParameterIndexType i);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.
-    virtual void set_input_by_index(ParameterIndexType i, GeneratorShared gs, OutputCountType pos=0);    
+    virtual void set_input_by_index(ParameterIndexType i, GeneratorShared gs, 
+            OutputCountType pos=0);    
                                         
     //! Set value as a SampleType value.
-	virtual void set_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos=0);
+	virtual void set_input_by_index(ParameterIndexType i, SampleType v, 
+            OutputCountType pos=0);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.    
-    virtual void add_input_by_index(ParameterIndexType i, GeneratorShared gs, OutputCountType pos=0);    
+    virtual void add_input_by_index(ParameterIndexType i, GeneratorShared gs, 
+            OutputCountType pos=0);    
                                         
     //! Add value as a SampleType value.                                        
-	virtual void add_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos=0);
+	virtual void add_input_by_index(ParameterIndexType i, SampleType v, 
+            OutputCountType pos=0);
     
     
 };

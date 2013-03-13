@@ -676,7 +676,7 @@ void Generator :: add_input_by_index(ParameterIndexType i,
         throw std::invalid_argument("position exceeds output count on passed input");    
     }
     // adding additiona, with a generator
-    GenSharedOutPair gsop(gs, pos); // TEMPORARY until we accept more args      
+    GenSharedOutPair gsop(gs, pos);     
     _inputs[i].push_back(gsop);    
 }
 
