@@ -539,21 +539,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_1) {
 }
 
 
-BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
-    // multy channel multiplication
-    
-	std::cerr << std::string(80, '-') << std::endl;
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
-    
-    g1->set_slot_by_index(0, 3);
-    
-    g1->illustrate_network();
-	//g1->illustrate_outputs();
-
-}
-
-
-
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
     // test basic multiplication
 
@@ -592,26 +577,51 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
     
 	BOOST_CHECK_CLOSE(gr->outputs[0][33075], 0, .001);
 	BOOST_CHECK_CLOSE(gr->outputs[0][38587+3], .5, .1);
-
-
-//    gr->illustrate_outputs();
-//    gr->illustrate_network();
-    
         
-    // TODO: not working yet
-    //g3a->render(1);
-    //g3a->illustrate_outputs();
-    
-    
-    //aw::GeneratorShared g3b = g1 + g2;
-    //g3b->illustrate_network();
-    
-    
-	// BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
-    
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
+    // multy channel multiplication
+    
+	std::cerr << std::string(80, '-') << std::endl;
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
+    
+    // three channel
+    g1->set_slot_by_index(0, 3);
+    
+    g1->add_input_by_index(0, 4, 0);
+    g1->add_input_by_index(0, 2, 0); // 8
+
+    g1->add_input_by_index(1, -3, 0);
+    g1->add_input_by_index(1, 4, 0); // -12
+
+    g1->add_input_by_index(2, 10, 0);
+    g1->add_input_by_index(2, 11, 0); // 110
+    
+    
+    g1->render(1);
+	BOOST_CHECK_CLOSE(g1->outputs[0][0], 8, .001);    
+	BOOST_CHECK_CLOSE(g1->outputs[1][0], -12, .001);    
+	BOOST_CHECK_CLOSE(g1->outputs[2][0], 110, .001);    
+    
+    // sum each of three outputs of g1
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    // set g2 to receive g1 from each of its outputs
+    g2->add_input_by_index(0, g1, 0);
+    g2->add_input_by_index(0, g1, 1);
+    g2->add_input_by_index(0, g1, 2);
+       
+    g2->render(2);
+    // TODO: not getting right value
+	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 106, .001);
+      
+    // TODO: this network is creating extra connections
+    //g2->illustrate_network();
+	//g1->illustrate_outputs();
+    
+
+}
 
 
 
