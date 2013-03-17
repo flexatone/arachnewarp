@@ -7,6 +7,7 @@
 
 #include <tr1/cstdint> // has uint32_t
 #include <tr1/memory>
+#include <tr1/unordered_map>
 
 #include <boost/filesystem.hpp>
 #include <boost/exception/all.hpp>
@@ -34,7 +35,7 @@ typedef std::tr1::uint32_t FrameSizeType;
 typedef std::tr1::uint32_t OutputSizeType;
 
 // _output_count probably never more than 200!
-//! An unisigned integer describing the number of dimensions for a Generator. 
+//! An unisigned integer describing the number of inputs or outputs for a Generator. 
 typedef std::tr1::uint8_t OutputCountType; 
 
 //! A vector of frame size types. This is used for offsets into the outputs.
@@ -46,8 +47,17 @@ typedef std::tr1::uint8_t UINT8;
 //! An unsigned integer for each Generator that counts the number of frames that have passed; this number needs to be very large and overflow gracefully. 
 typedef std::tr1::uint64_t RenderCountType; 
 
-//! An unisnged integer to represent the position of an input parameter. Assumed ot never have more thean 200 parameter inputs for a Generator. 
+//! An unisnged integer to represent the position of an input parameter, i.e., an input or output position. Assumed ot never have more thean 200 parameter inputs for a Generator. 
 typedef std::tr1::uint8_t ParameterIndexType; 
+
+
+// TODO: replace with a SharedGenerator: but, we need a SharedGenerator to be hashable, which requires us to extend std::hash or similar
+//! A mapping of a String to bool. 
+typedef std::tr1::unordered_map<std::string, bool> MapStringBool;
+
+//! The shared pointer version of MapStringParameterIndexPairToBool.
+typedef std::tr1::shared_ptr<MapStringBool> SharedMapStringBool;
+
 
 SampleType  const PI(3.14159265358979323846264338);
 SampleType const PI2(3.14159265358979323846264338*2.0);

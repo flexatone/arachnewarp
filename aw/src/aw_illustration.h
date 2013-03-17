@@ -76,7 +76,7 @@ class NetworkGraph : public Illustration{
     private://------------------------------------------------------------------
     
     //! Recursive functino for adding description of a Generator.
-    void _draw_generator(const GeneratorShared g);
+    void _draw_generator(const GeneratorShared g, SharedMapStringBool memo);
 
     
     public://-------------------------------------------------------------------

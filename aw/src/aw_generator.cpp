@@ -11,7 +11,6 @@
 // needed for Buffer
 #include <sndfile.hh>
 
-
 #include "aw_generator.h"
 #include "aw_illustration.h"
 
@@ -961,6 +960,7 @@ void Add :: render(RenderCountType f) {
                 // add across for each Gen found in this input
                 for (j=0; j<gen_count_at_input; ++j) {
                     out = _inputs[i][j].second;
+                    //std::cout << _inputs[i][j].first << " got output: " << (int)out << " value: " << _inputs[i][j].first->outputs[out][k] <<  std::endl;
                     if (_op_switch == '+') {
                         _n_opperands += _inputs[i][j].first->outputs[out][k];
                     } else if (_op_switch == '*') {
