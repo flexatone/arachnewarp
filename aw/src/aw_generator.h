@@ -122,6 +122,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     // typedef std::vector<FrameSizeType> VFrameSize;
     // typedef std::vector<VFrameSize> VVFrameSize;
 
+    // TODO: OutputCountType should be ParameterIndexType
     //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.  
     typedef std::pair<GeneratorShared, OutputCountType> GenSharedOutPair;
     typedef std::vector<GenSharedOutPair> VGenSharedOutPair;
@@ -135,7 +136,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     enum GeneratorID {
         ID_Constant,    
         ID_Add,
-        ID_Multiply,                      
+        ID_Multiply,   
         ID_Buffer,		
         ID_Phasor,				
     };
@@ -146,7 +147,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     std::string _class_name;
 
     private://------------------------------------------------------------------
-    //! Store the number of dimensions, similar to channels, that this Generator is currently set up with. 
+    // TODO: should be ParameterIndexType
+    //! Store the number of outputs, similar to channels, that this Generator is currently set up with. 
     OutputCountType _output_count;
     
 	//! The size of each frame for each _output_count as stored in the outputs. 
@@ -299,13 +301,13 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     
 	// info strings .............................................................    
 
-    //! Get the name and address for this Generator, as a single string. 
+    //! Get the name and address (memory start) for this Generator, as a single string.
     std::string get_name_address() const;
     
-    //! Get the name and addres for this Generator, labeling th ename with Gen and wrapping the address in braces. 
+    //! Get the name and addres for this Generator, labeling the name with "Gen" and wrapping the address in braces. This is used for a more readable presentation.
     std::string get_label_address() const;
     
-    //! Get a complete label for this generator.
+    //! Get a complete label for this generator. This includes the get_label_address() presentation, alongwith the input and output count. 
     std::string get_label() const;
     
 	//! Output stream friend function: returns the label of the Generator. 

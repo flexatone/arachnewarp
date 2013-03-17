@@ -601,9 +601,16 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
     
     
     g1->render(1);
-	BOOST_CHECK_CLOSE(g1->outputs[0][0], 8, .001);    
+	BOOST_CHECK_CLOSE(g1->outputs[0][0], 8, .001);
+    // note that outpout number start at 1
+	BOOST_CHECK_CLOSE(g1->get_output_average(1), 8, .0001);
+      
 	BOOST_CHECK_CLOSE(g1->outputs[1][0], -12, .001);    
-	BOOST_CHECK_CLOSE(g1->outputs[2][0], 110, .001);    
+	BOOST_CHECK_CLOSE(g1->get_output_average(2), -12, .0001);
+    
+	BOOST_CHECK_CLOSE(g1->outputs[2][0], 110, .001);
+	BOOST_CHECK_CLOSE(g1->get_output_average(3), 110, .0001);
+        
     
     // sum each of three outputs of g1
     aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
@@ -613,10 +620,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
     g2->add_input_by_index(0, g1, 2);
        
     g2->render(2);
-    // TODO: not getting right value
-	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 106, .001);
+
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 106, .001);
+	BOOST_CHECK_CLOSE(g2->get_output_average(0), 106, .0001);
       
-    // TODO: this network is creating extra connections
     //g2->illustrate_network();
 	//g1->illustrate_outputs();
     

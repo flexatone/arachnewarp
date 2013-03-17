@@ -129,7 +129,7 @@ set rmargin screen 0.98 " << std::endl;
         for (FrameSizeType i=frameSize*(dStep-1); i<frameSize*dStep; ++i) {
             _stream << std::setprecision(8) << v[i] << std::endl;
         }
-        _stream << "e" << std::endl; // show end of data        
+        _stream << "e" << std::endl; // show end of data
     }
     _stream << "unset multiplot\n" << "pause -1\n" << std::endl;
 }
@@ -171,7 +171,8 @@ NetworkGraph :: ~NetworkGraph() {}
 // grpahiz colors can be found here:
 // http://www.graphviz.org/doc/info/colors.html
 
-void NetworkGraph :: _draw_generator(GeneratorShared g) {
+void NetworkGraph :: _draw_generator(GeneratorShared g, 
+        SharedMapStringBool memo) {
 	if (!g) { // if we get an empty pointer
 		// could aternatively just return as a base case of recursion
 	    throw std::invalid_argument("the GeneratoreShared is empty");
@@ -208,7 +209,6 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
     
     // next, define connections
     Generator::VGenSharedOutPair g_ins;
-
     GeneratorShared g_slot;
     Generator::VGenSharedOutPair::const_iterator k;
 
@@ -225,7 +225,8 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
         // TODO: specify different grey shade
         _stream << " [color=honeydew3];" << std::endl; // close line        
         // recurse on each gen
-        _draw_generator(g_slot);
+        // TODO: do we need to look at memo here before writing?
+        _draw_generator(g_slot, memo);
     }    
 
     OutputCountType g_ins_out_pos(0);
@@ -238,8 +239,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
         // a vector of gen shared/ out number pairs for this position
         g_ins = g->get_input_gen_shared_by_index(pos);
         
-        std::cout << g << " g_ins:" << g_ins.size() << std::endl;
-	
+        //std::cout << g << " g_ins:" << g_ins.size() << std::endl;
         // for each input position, iter over all connections to gens at outputs
         for (j = g_ins.begin(); j != g_ins.end(); ++j) {
             g_ins_out_pos = (*j).second;
@@ -255,7 +255,12 @@ void NetworkGraph :: _draw_generator(GeneratorShared g) {
             _stream << " [color=darkslategray];" << std::endl; // close line        
 			
 			// recurse on each gen; this only advances if g_ins has length (not the cast when dealing with a constant)
-			_draw_generator(g_in);
+
+            if (memo->count(g_in->get_name_address()) == 0) {
+                (*memo)[g_in->get_name_address()] = false;
+                _draw_generator(g_in, memo);
+                (*memo)[g_in->get_name_address()] = true;
+            }
         }                
     }    
     // connect all inputs to this as an output, using  g->get_name_address()
@@ -274,9 +279,14 @@ dpi = 300; \n\
 node [shape=record, style=filled, color=grey16, fillcolor=lemonchiffon4, fontcolor=lemonchiffon1, fontsize=10, fontname=Courier, fontsize=10]; \n\
 edge [color=grey]; \n\
 ranksep=\"1.5 equally\"; \n\
-size=\"8,8\"; " << std::endl;    
+size=\"8,8\"; " << std::endl;
+
     // add each generator recursively
-    _draw_generator(g);
+    // need to store diction of encountered 
+    
+    SharedMapStringBool memo = SharedMapStringBool(new MapStringBool);
+    //SharedMapStringBool memo = SharedMapStringBool();
+    _draw_generator(g, memo);
     // close the header
     _stream << "}" << std::endl;
     
