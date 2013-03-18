@@ -10,15 +10,13 @@
 #include <tr1/unordered_map>
 
 #include <boost/filesystem.hpp>
-#include <boost/exception/all.hpp>
-
+#include <boost/exception/all.hpp> // needed for filesystem?
 
 //! @file
 //! The ArachneWarp namespace, including all components of the system.
 namespace aw {
 
 //enumerations =================================================================
-
 
 //typedefs =====================================================================
 
