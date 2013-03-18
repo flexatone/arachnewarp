@@ -551,13 +551,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
 
     aw::GeneratorShared g3a = g1 * g2;    
 
-//    aw::GeneratorShared g3a = aw::Generator::make(aw::Generator::ID_Multiply);
-//    g3a->add_input_by_index(0, g1);
-//    g3a->add_input_by_index(0, g2);
-
-    //g3a->print_outputs();
-
-
 	aw::GeneratorShared gr = aw::Generator::make(aw::Generator::ID_Buffer);
 	// create two channel buffer
 	gr->set_slot_by_index(0, 1);
@@ -626,11 +619,55 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
       
     //g2->illustrate_network();
 	//g1->illustrate_outputs();
-    
 
 }
 
 
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_2) {
+    // test basic multiplication
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+    g1->set_input_by_index(0, 4);
+    aw::GeneratorShared g2 = g1 + 2;    
+    g2->render(1);
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 6, .001);
+
+
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Constant);
+    g3->set_input_by_index(0, 100);
+    aw::GeneratorShared g4 = 2 + g3;    
+    g4->render(1);
+	BOOST_CHECK_CLOSE(g4->outputs[0][0], 102, .001);
+        
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
+    // test basic multiplication
+
+    aw::GeneratorShared g1a = aw::Generator::make(aw::Generator::ID_Constant);
+    g1a->set_input_by_index(0, 4);
+
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    g2->set_input_by_index(0, 7);
+
+    g1a >> g2;
+
+    g2->render(1);
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 11, .001);
+       
+    aw::GeneratorShared g1b = aw::Generator::make(aw::Generator::ID_Constant);
+    g1b->set_input_by_index(0, 12.5);
+
+    // can add another input to g2 
+    g1b >> g2;
+
+    g2->render(2);
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 23.5, .001);
+
+}
 
 
 

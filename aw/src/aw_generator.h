@@ -405,15 +405,25 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Return the single gen at this slot position (not a vector, like inputs).
     virtual GeneratorShared get_slot_gen_shared_at_index(ParameterIndexType i);
 
-
-	// operators ..............................................................    	
-//    GeneratorShared operator+(GeneratorShared other) const;
-//
-
 };
 
 
-// operators ...................................................................	
+// functions on GeneratorShared ....................................................
+//! Parsimonious connection: connect the min of a and b in straight connections.
+
+// a >> b >> c
+inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {
+    // TODO: get min of lhs out and rhs in, match as many in parallel as possible
+    rhs->add_input_by_index(0, lhs, 0);
+    return rhs;
+}
+
+
+
+
+
+
+// operator + .....................................................................	
 inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
     GeneratorShared g = Generator::make(Generator::ID_Add);
     // can look and find min of (this.out_count, other.out_count)
@@ -423,6 +433,26 @@ inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
     return g;
 } 
 
+inline GeneratorShared operator+(GeneratorShared lhs, SampleType rhs) {
+    GeneratorShared g = Generator::make(Generator::ID_Add);
+    // can look and find min of (this.out_count, other.out_count)
+    g->set_slot_by_index(0, 1); // just one channel?
+    g->add_input_by_index(0, lhs);
+    g->add_input_by_index(0, rhs);
+    return g;
+} 
+
+inline GeneratorShared operator+(SampleType lhs, GeneratorShared rhs) {
+    GeneratorShared g = Generator::make(Generator::ID_Add);
+    // can look and find min of (this.out_count, other.out_count)
+    g->set_slot_by_index(0, 1); // just one channel?
+    g->add_input_by_index(0, lhs);
+    g->add_input_by_index(0, rhs);
+    return g;
+} 
+
+
+// operator * ..................................................................... 
 
 inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
     GeneratorShared g = Generator::make(Generator::ID_Multiply);
@@ -434,11 +464,6 @@ inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
 } 
 	
 // TODO: provide overrides with SampleType args for either left/right: do we really need three methods for each operator then?
-
-// TODO: define a connect function that uses << or >> 
-// e.g., g1 >> g2 : makes g1 an input of g2
-
-
 
 
 
