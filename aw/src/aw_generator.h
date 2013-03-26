@@ -137,7 +137,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
         ID_Constant,    
         ID_Add,
         ID_Multiply,   
-        ID_Buffer,		
+        ID_Buffer,
         ID_Phasor,				
     };
         
@@ -147,16 +147,17 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     std::string _class_name;
 
     private://------------------------------------------------------------------
-    // TODO: should be ParameterIndexType
+    // Rename OutputCountType as OutputIndexType
     //! Store the number of outputs, similar to channels, that this Generator is currently set up with. 
     OutputCountType _output_count;
     
-	//! The size of each frame for each _output_count as stored in the outputs. 
+	//! The size of each frame for each _output_count as stored in the outputs vector. 
     FrameSizeType _frame_size; // if changed, need to rebuild outputs	
     
-	//! The _outputs_size is derived from frame _output_count times the _frame_size. 
+	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputSizeType is expected to store size up to long multichannel audio files.
     OutputSizeType _outputs_size;
     
+    // TODO: use InputIndexType ParameterIndexType 
     //! Number of input parameters used by this Generator. More than one Generator can reside in each slot. 
     ParameterIndexType _input_count;    
 	//! Number of slots used by this Generator. One Generator can reside in each slot. 
@@ -166,8 +167,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     EnvironmentShared _environment;
 	
     protected://----------------------------------------------------------------
-	
-	//! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
+    
+    //! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
 	OutputSizeType _sampling_rate;
 	
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
@@ -176,7 +177,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Define if this Generator has resizable frame size. Most generators do not have have resizable frame size; only some (like a Buffer) do.
     bool _frame_size_is_resizable; // TODO: make private?	
                             
-    //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. 
+    //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. RenderCountType must be the largest integer available.
     RenderCountType _render_count;
 	
     //! The main storage for ParameterTypeShared instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
@@ -261,11 +262,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     virtual ~Generator();
     
     //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called. 
-    virtual void init();    
-
-    //! Return a Boolean if this Generator has resizable outputs
-//    DimensionDynamics get_dimension_dyanmics() const {return _dimension_dynamics;};
-    
+    virtual void init();        
 
     //! Return the the number of outputs dimensions
     OutputCountType get_output_count() const {return _output_count;};
@@ -374,6 +371,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     ParameterIndexType get_slot_index_from_parameter_name(const std::string& s);	
 
 
+    // TODO: must check for duplicated connections and silently skip them; 
+    
 	// inputs ..............................................................    
     //! Get a vector of GeneratorShared for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
     virtual VGenSharedOutPair get_input_gen_shared_by_index(
@@ -409,19 +408,52 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 
 // functions on GeneratorShared ....................................................
-//! Parsimonious connection: connect the min of a and b in straight connections.
-
-// a >> b >> c
-inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {
-    // TODO: get min of lhs out and rhs in, match as many in parallel as possible
-    rhs->add_input_by_index(0, lhs, 0);
+//! Parsimonious connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
+inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs, 
+        ParameterIndexType start=0, ParameterIndexType count=0) {
+    // connect from left to right, so from lhs to rhs
+    // lhs is above rhs in downard flow
+    // get min of lhs out and rhs in, match as many in parallel as possible
+    
+    ParameterIndexType availLen = std::min(
+            lhs->get_output_count(), rhs->get_input_count());
+    if (start >= availLen) {
+        // the last available index is availLen -1
+		throw std::domain_error(
+            "the start exceedes the range of min in/out");                
+    }
+    
+    // count of 0 takes as much as possible; this may be too much given various starts, but in looping we have an alternative exit branch
+    if (count == 0) {
+        count = availLen;
+    }
+    
+    ParameterIndexType i;    
+    for (i = start; i != (start+count); ++i) {
+        // count may be greater than avialLen and not be an error; just take as much as possible
+        if (i >= availLen) break;
+        // in, gen, out of that gen
+        // we use add_* so we can do this repeatedly on the same position through multiple calls
+        rhs->add_input_by_index(i, lhs, i);
+    }
     return rhs;
 }
 
 
+// TODO: test these
+
+// Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
+inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {
+    return connect(lhs, rhs);
+}
+
+// Connect only the first output of lhs to first input of rhs.
+inline GeneratorShared operator>(GeneratorShared lhs, GeneratorShared rhs) {
+    return connect(lhs, rhs, 0, 1);
+}
 
 
-
+// TODO: use connect()
 
 // operator + .....................................................................	
 inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {

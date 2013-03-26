@@ -644,6 +644,54 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_2) {
 }
 
 
+BOOST_AUTO_TEST_CASE(connect_f_1) {
+
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+    g1->set_input_by_index(0, 3.5);
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    
+    // this is g1 to g2
+    g2 = aw::connect(g1, g2);
+    g2->render(1);
+    
+    BOOST_CHECK_CLOSE(g2->outputs[0][0], 3.5, .0001);
+    
+    aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Constant);
+    g4->set_input_by_index(0, 6.5);
+    
+    // g4 to g2
+    g2 = aw::connect(g4, g2);    
+    g2->render(2);
+    BOOST_CHECK_CLOSE(g2->outputs[0][0], 10.0, .0001);
+}
+
+BOOST_AUTO_TEST_CASE(connect_f_2) {
+    // test multiple connections in parallel
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    g1->set_slot_by_index(0, 3); // three channels
+    g1->set_input_by_index(0, 10);
+    g1->set_input_by_index(1, 200);
+    g1->set_input_by_index(2, 4000);
+          
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    g2->set_slot_by_index(0, 3); // three channels          
+    g2->set_input_by_index(0, 34);
+    g2->set_input_by_index(1, 105);
+    g2->set_input_by_index(2, 2110);
+          
+
+    // g1 into g2
+    g2 = aw::connect(g1, g2);
+
+    g2->render(1);
+    //g2->illustrate_network();
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[1][0], 305, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[2][0], 6110, .001);
+    
+    
+}
+
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
     // test basic multiplication
 
@@ -661,7 +709,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
     aw::GeneratorShared g1b = aw::Generator::make(aw::Generator::ID_Constant);
     g1b->set_input_by_index(0, 12.5);
 
-    // can add another input to g2 
+    // can connect another input to g2 
     g1b >> g2;
 
     g2->render(2);
