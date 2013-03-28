@@ -48,10 +48,6 @@ void Illustration :: write(const std::string& fp) {
 }
 
 
-
-
-
-
 //------------------------------------------------------------------------------
 TimeDomainGraph :: TimeDomainGraph() {}
 
@@ -161,6 +157,17 @@ void TimeDomainGraph :: pipe() {
 
 
 
+// Static dictionary returns
+std::string ColorDictionary::get(Generator::GeneratorID gid){
+    if (gid == Generator::ID_Constant) {
+        return "lightsteelblue3";
+    }
+    else {
+        return "slategray4";
+    }
+}
+
+
 
 
 //------------------------------------------------------------------------------
@@ -192,7 +199,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
     // iterate over slots
     for (pos=0; pos < g->get_slot_count(); ++pos) {
         _stream << " | <x" << static_cast<int>(pos) << 
-                    "> x::" << static_cast<int>(pos) << " "; // << std::endl;
+                    "> s::" << static_cast<int>(pos) << " "; // << std::endl;
     }
     // iterate over inputs    
     for (pos=0; pos < g->get_input_count(); ++pos) {
@@ -205,7 +212,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
                     "> out::" << static_cast<int>(pos) << " "; // << std::endl;
     }
 	// end the definition of the label/node
-    _stream << "\"];" << std::endl;    
+    _stream << "\" fillcolor=\"" << ColorDictionary::get(g->get_gid()) << "\"];" << std::endl;    
     
     // next, define connections
     Generator::VGenSharedOutPair g_ins;
@@ -222,7 +229,6 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
         _stream << " -> ";
         _stream << "\"" << g->get_name_address() << "\":";
         _stream << "x" << static_cast<int>(pos) << ":n"; // to north
-        // TODO: specify different grey shade
         _stream << " [color=honeydew3];" << std::endl; // close line        
         // recurse on each gen
         // TODO: do we need to look at memo here before writing?
@@ -231,8 +237,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
 
     OutputCountType g_ins_out_pos(0);
     GeneratorShared g_in;
-    Generator::VGenSharedOutPair::const_iterator j;
-
+    Generator::VGenSharedOutPair::const_iterator j; 
     // show connections by describing inputs
     // iter over each input position
     for (pos=0; pos < g->get_input_count(); ++pos) {    
@@ -255,7 +260,6 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
             _stream << " [color=darkslategray];" << std::endl; // close line        
 			
 			// recurse on each gen; this only advances if g_ins has length (not the cast when dealing with a constant)
-
             if (memo->count(g_in->get_name_address()) == 0) {
                 (*memo)[g_in->get_name_address()] = false;
                 _draw_generator(g_in, memo);

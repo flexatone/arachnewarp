@@ -68,6 +68,15 @@ class TimeDomainGraph : public Illustration{
 
 
 
+// A mapping form generator id to a color string. 
+class ColorDictionary {
+    public://-------------------------------------------------------------------
+    static std::string get(Generator::GeneratorID gid);
+};
+
+
+
+
 //! An interface to Graphiz writing.
 class NetworkGraph;
 typedef std::tr1::shared_ptr<NetworkGraph> NetworkGraphShared;

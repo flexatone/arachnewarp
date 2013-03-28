@@ -685,12 +685,42 @@ BOOST_AUTO_TEST_CASE(connect_f_2) {
 
     g2->render(1);
     //g2->illustrate_network();
+    // we are connecting each of three values independently
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
 	BOOST_CHECK_CLOSE(g2->outputs[1][0], 305, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[2][0], 6110, .001);
+}
+
+
+BOOST_AUTO_TEST_CASE(connect_f_3) {
+    // test multiple connections in parallel
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    g1->set_slot_by_index(0, 3); // three channels
+    g1->set_input_by_index(0, 10);
+    g1->set_input_by_index(1, 200);
+    g1->set_input_by_index(2, 4000);
+          
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    g2->set_slot_by_index(0, 3); // three channels          
+    g2->set_input_by_index(0, 34);
+    g2->set_input_by_index(1, 105);
+    g2->set_input_by_index(2, 2110);
+          
+
+    // connect from o/i 2, 1 length
+    g2 = aw::connect(g1, g2, 2, 1);
+
+    g2->render(1);
+    //g2->illustrate_network();
+    // only o2 gets the added values
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 34, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[1][0], 105, .001);
 	BOOST_CHECK_CLOSE(g2->outputs[2][0], 6110, .001);
     
     
 }
+
+
 
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
     // test basic multiplication
@@ -717,6 +747,66 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
 
 }
 
+
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_4) {
+    // test single and double connections
+
+    // test multiple connections in parallel
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    g1->set_slot_by_index(0, 3); // three channels
+    g1->set_input_by_index(0, 10);
+    g1->set_input_by_index(1, 200);
+    g1->set_input_by_index(2, 4000);
+          
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    g2->set_slot_by_index(0, 3); // three channels          
+    g2->set_input_by_index(0, 34);
+    g2->set_input_by_index(1, 105);
+    g2->set_input_by_index(2, 2110);
+          
+
+    // connect all of 1 to all fo 2
+    g1 >> g2;
+
+    g2->render(1);
+    g2->illustrate_network();
+    // only o2 gets the added values
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[1][0], 305, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[2][0], 6110, .001);
+
+}
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_5) {
+    // test single and double connections
+
+    // test multiple connections in parallel
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    g1->set_slot_by_index(0, 3); // three channels
+    g1->set_input_by_index(0, 10);
+    g1->set_input_by_index(1, 200);
+    g1->set_input_by_index(2, 4000);
+          
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    g2->set_slot_by_index(0, 3); // three channels          
+    g2->set_input_by_index(0, 34);
+    g2->set_input_by_index(1, 105);
+    g2->set_input_by_index(2, 2110);
+          
+
+    // connect first o/i of each
+    g1 > g2;
+
+    g2->render(1);
+    g2->illustrate_network();
+    // only o2 gets the added values
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[1][0], 105, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[2][0], 2110, .001);
+
+}
 
 
 

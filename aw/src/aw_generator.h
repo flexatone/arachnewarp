@@ -146,6 +146,9 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! The name of the class. This is set during the class constructor by the derived class, and thus needs to be protected.
     std::string _class_name;
 
+    //! Public generator id, can be used for class matching. 
+    GeneratorID _gid;
+
     private://------------------------------------------------------------------
     // Rename OutputCountType as OutputIndexType
     //! Store the number of outputs, similar to channels, that this Generator is currently set up with. 
@@ -282,6 +285,11 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Return the the frame size, the number of samples per output outputs. The frame size is always at or greater than the common frame size. 
     OutputSizeType get_frame_size() const {return _frame_size;};	
 
+    //! Return a copy of the environment shared pointer.
+    EnvironmentShared get_environment() const {
+        return _environment; 
+    };
+    
 	//! Return the common frame size derived from the stored shared Environment. If this Generator has resizable frames, this may not be the same as the current frame size. 
     OutputSizeType get_common_frame_size() const {
 			return _environment->get_common_frame_size();};	
@@ -316,8 +324,10 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
+    GeneratorID get_gid() const {return _gid;};
 
-	// display ................................................................    
+
+	// display ..   ..............................................................    
     //! Print the outputs buffer for all dimensions at the current render count. The optional start/end values can specify vaules within the frame range
     void print_outputs(FrameSizeType start=0, FrameSizeType end=0);
 
@@ -413,21 +423,18 @@ inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs,
         ParameterIndexType start=0, ParameterIndexType count=0) {
     // connect from left to right, so from lhs to rhs
     // lhs is above rhs in downard flow
-    // get min of lhs out and rhs in, match as many in parallel as possible
-    
+    // get min of lhs out and rhs in, match as many in parallel as possible    
     ParameterIndexType availLen = std::min(
             lhs->get_output_count(), rhs->get_input_count());
     if (start >= availLen) {
         // the last available index is availLen -1
 		throw std::domain_error(
             "the start exceedes the range of min in/out");                
-    }
-    
+    }    
     // count of 0 takes as much as possible; this may be too much given various starts, but in looping we have an alternative exit branch
     if (count == 0) {
         count = availLen;
-    }
-    
+    }    
     ParameterIndexType i;    
     for (i = start; i != (start+count); ++i) {
         // count may be greater than avialLen and not be an error; just take as much as possible
@@ -440,7 +447,21 @@ inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs,
 }
 
 
-// TODO: test these
+// TODO: test this
+
+//! Assign SampleValue directly as an input to one or more inputs on rhs GeneratorShared.
+inline GeneratorShared connect(SampleType lhs, GeneratorShared rhs, 
+        ParameterIndexType start=0, ParameterIndexType count=0) {        
+    // TODO: pass in envrionment with make alternative
+    // set environment from lhs
+	GeneratorShared g_lhs = Generator::make(Generator::ID_Constant);
+    g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
+    return aw::connect(g_lhs, rhs); // will return rhs
+}
+
+
+
+// TOOD: override for SampleValue to permit setting and creating constants when on lhs
 
 // Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
 inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {

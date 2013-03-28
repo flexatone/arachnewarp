@@ -92,6 +92,7 @@ GeneratorShared  Generator :: make(GeneratorID q){
 Generator :: Generator(EnvironmentShared e) 
 	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
 	: _class_name("Generator"), 
+    //gid(-1), // want this to not match any known value
 	_output_count(0), // always init to 1; can change in init
 	_frame_size(1), // set in init; 
 	_outputs_size(0), // will be updated after resizing
@@ -480,7 +481,6 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
     }
 }
 
-
 // illustrate outputs
 void Generator :: illustrate_outputs() {
 	TimeDomainGraph p;
@@ -493,12 +493,9 @@ void Generator :: illustrate_network() {
 	NetworkGraph p;
     // pass a version this instancea as a Shared Pointer
 	p.draw(shared_from_this());
-    //p.print();
+    //p.print(); // for debugging
 	p.pipe(); // pipe to gnu plot
 }
-
-
-
 
 
 
@@ -753,6 +750,7 @@ Constant :: Constant(EnvironmentShared e)
 	// must initialize base class with passed arg
 	: Generator(e) {
 	_class_name = "Constant"; 
+    _gid = ID_Constant;
 }
 
 Constant :: ~Constant() {
@@ -883,6 +881,7 @@ Add :: Add(EnvironmentShared e)
 	_n_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;		
 	_class_name = "Add";	
+    _gid = ID_Add;    
     _op_switch = '+';
     _n_opperands_init = 0; // must be 1
     // this approach was too slow, even when optimized    
@@ -983,6 +982,7 @@ Multiply :: Multiply(EnvironmentShared e)
 	// must initialize base class with passed arg
 	: Add(e) {
 	_class_name = "Multiply";  // override what is set in Add
+    _gid = ID_Multiply;            
     _op_switch = '*';
     _n_opperands_init = 1; // must be 1    
 }
@@ -1001,6 +1001,7 @@ Buffer :: Buffer(EnvironmentShared e)
 	// must initialize base class with passed arg
 	: Generator(e) {
 	_class_name = "Buffer";
+    _gid = ID_Buffer;        
 	// this is the unique difference of the Buffer class 
     _frame_size_is_resizable = true;
 }
@@ -1202,6 +1203,7 @@ Phasor :: Phasor(EnvironmentShared e)
 		//_period_start_sample_pos(0)
 	{
 	_class_name = "Phasor"; 
+    _gid = ID_Phasor;
 }
 
 Phasor :: ~Phasor() {
