@@ -124,18 +124,46 @@ bool test_5() {
 	// on ubuntu w optimization, array impl: 0-10 msec, 
 	// on ubuntu w optimization, vector impl: 0-10 msec, slightly favoring 10, 
 	// on ubuntu w/o optimization, vector impl: 60 msec, 
+        
+    // on macos w optimization, 22.25 msec    
+    return true;
+}
+
+
+
+bool test_6() {
+    // testing reassignemnt through connect for memory management
+    
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    g1->set_slot_by_index(0, 3); // three channels
+    g1->set_input_by_index(0, 10);
+    g1->set_input_by_index(1, 200);
+    g1->set_input_by_index(2, 4000);
+          
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    g2->set_slot_by_index(0, 3); // three channels          
+    g2->set_input_by_index(0, 34);
+    g2->set_input_by_index(1, 105);
+    g2->set_input_by_index(2, 2110);
+          
+    // g1 into g2
+    g2 = aw::connect(g1, g2);
+
+    g2->render(1);
     
     return true;
-    
-
 }
+
+
+
 
 int main() {
 	// TODO: read command line args to support selecting test by name
 
-    //assert(test_1() && test_2() && test_3());
+    assert(test_1() && test_2() && test_3() 
+            && test_4() && test_5() && test_6());
 	
-	test_5();
+	// test_6();
     
 }
 
