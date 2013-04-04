@@ -60,8 +60,24 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_1) {
 
 	aw::ParameterTypeShared pt2 = aw::ParameterType::make(aw::ParameterType::ID_Phase);
 	BOOST_CHECK_EQUAL(pt2->get_class_name(), "ParameterTypePhase");
+
 	pt2->set_instance_name("degree of spin");
 	BOOST_CHECK_EQUAL(pt2->get_instance_name(), "degree of spin");
+
+	aw::ParameterTypeShared pt3 = aw::ParameterType::make(aw::ParameterType::ID_Value);
+	BOOST_CHECK_EQUAL(pt3->get_class_name(), "ParameterTypeValue");
+
+	aw::ParameterTypeShared pt4 = aw::ParameterType::make(aw::ParameterType::ID_Frequency);
+	BOOST_CHECK_EQUAL(pt4->get_class_name(), "ParameterTypeFrequency");
+
+
+	aw::ParameterTypeShared pt5 = aw::ParameterType::make(aw::ParameterType::ID_Duration);
+	BOOST_CHECK_EQUAL(pt5->get_class_name(), "ParameterTypeDuration");
+
+	aw::ParameterTypeShared pt6 = aw::ParameterType::make(aw::ParameterType::ID_Channels);
+	BOOST_CHECK_EQUAL(pt6->get_class_name(), "ParameterTypeChannels");
+
+
 }
 
 
