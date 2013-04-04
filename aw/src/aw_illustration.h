@@ -28,7 +28,6 @@ class Illustration {
     //! Write the data to the stringstream. 
     virtual void draw(const GeneratorShared g);
 
-
     //! Pipe the the plot to gnuplot directly.
     virtual void pipe();
 
@@ -38,7 +37,6 @@ class Illustration {
         
     //! Write the plot to a file given by the file path argument. 
     void write(const std::string& fp);
-
 };
 
 
@@ -87,7 +85,6 @@ class NetworkGraph : public Illustration{
     //! Recursive functino for adding description of a Generator.
     void _draw_generator(const GeneratorShared g, SharedMapStringBool memo);
 
-    
     public://-------------------------------------------------------------------
 
     explicit NetworkGraph();
@@ -101,9 +98,6 @@ class NetworkGraph : public Illustration{
     virtual void pipe();
     
 };
-
-
-
 
 
 
