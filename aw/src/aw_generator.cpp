@@ -18,8 +18,33 @@
 
 namespace aw {
 
-//==============================================================================
+//=============================================================================
 // ParameterType
+
+ParameterTypeShared ParameterType :: make(ParameterTypeID q){
+    ParameterTypeShared p;
+    // just get defailt environment
+    if (q == ID_Value) {
+        p = ParameterTypeValueShared(new ParameterTypeValue);
+    }
+    else if (q == ID_Frequency) {
+        p = ParameterTypeFrequencyShared(new ParameterTypeFrequency);    
+    }
+    else if (q == ID_Duration) {
+        p = ParameterTypeDurationShared(new ParameterTypeDuration);    
+    }    
+    else if (q == ID_Phase) {
+        p = ParameterTypePhaseShared(new ParameterTypePhase);    
+    }   
+    else if (q == ID_Channels) {
+        p = ParameterTypeChannelsShared(new ParameterTypeChannels);    
+    }
+    else {
+        throw std::invalid_argument("no matching ParaameterTypeID: " + q);
+    }
+    return p;
+}
+
 ParameterType :: ParameterType() {
     _class_name = "ParameterType";
 }
@@ -32,39 +57,36 @@ std::ostream& operator<<(std::ostream& ostream, const ParameterType& pt) {
     return ostream; 
 }
 
-
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 ParameterTypeValue :: ParameterTypeValue() {
     _class_name = "ParameterTypeValue";
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 ParameterTypeFrequency :: ParameterTypeFrequency() {
     _class_name = "ParameterTypeFrequency";
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 ParameterTypeDuration :: ParameterTypeDuration() {
     _class_name = "ParameterTypeDuration";
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 ParameterTypePhase :: ParameterTypePhase() {
     _class_name = "ParameterTypePhase";
 }
-//------------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 ParameterTypeChannels :: ParameterTypeChannels() {
     _class_name = "ParameterTypeChannels";
 }
 
 
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 GeneratorShared  Generator :: make_with_environment(GeneratorID q, 
-            EnvironmentShared e){                        
+            EnvironmentShared e) {                        
     GeneratorShared g;    
     if (q == ID_Constant) {
         g = ConstantShared(new Constant(e));
@@ -84,19 +106,19 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
     else {
         throw std::invalid_argument("no matching GeneratorID: " + q);
     }
-    // automatically call init; this will call subclass init, which calls baseclass init
+    // call subclass init, which calls baseclass init
     g->init();
     return g;
 }
 
 
 GeneratorShared  Generator :: make(GeneratorID q){
-	// just get defailt vaules
+	// just get defailt environment
     EnvironmentShared e = EnvironmentShared(new Environment);
     return make_with_environment(q, e);
 }
 
-//..............................................................................
+//.............................................................................
 Generator :: Generator(EnvironmentShared e) 
 	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
 	: _class_name("Generator"), 
@@ -119,9 +141,6 @@ Generator :: Generator(EnvironmentShared e)
 }
 
 Generator :: ~Generator() {
-    // deconstructor 
-    // if gen was not initialized, do not delete
-    //if (outputs != NULL) delete[] outputs;
 }
 
 void Generator :: init() {
@@ -132,13 +151,13 @@ void Generator :: init() {
     	
 	// by default, set one output
     aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
-                                       aw::ParameterTypeValue);
+            aw::ParameterTypeValue);
     pt1->set_instance_name("Generator default output");
     _register_output_parameter_type(pt1);	
     
 }
 
-//..............................................................................
+//.............................................................................
 // private methods
 void Generator :: _resize_outputs() {
     // size is always dim * _frame_size
@@ -900,9 +919,7 @@ Add :: ~Add() {
 }
 
 void Add :: init() {
-    // the int routie must configure the names and types of parameters
-    // std::cout << *this << " ::init()" << std::endl;
-    // call base init, allocates and resets()
+    // the int routine must configure the names and types of parameters
     Generator::init();
     // must clear the default set by Gen init because slot will set directly    
     _clear_output_parameter_types();

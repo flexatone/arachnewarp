@@ -52,10 +52,16 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 }	
 
 
-BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
+BOOST_AUTO_TEST_CASE(aw_parameter_type_test_1) {
 	// testing creation
 	aw::ParameterTypeShared pt1 = aw::ParameterTypeShared(new 
                                     aw::ParameterType);
+	BOOST_CHECK_EQUAL(pt1->get_class_name(), "ParameterType");
+
+	aw::ParameterTypeShared pt2 = aw::ParameterType::make(aw::ParameterType::ID_Phase);
+	BOOST_CHECK_EQUAL(pt2->get_class_name(), "ParameterTypePhase");
+	pt2->set_instance_name("degree of spin");
+	BOOST_CHECK_EQUAL(pt2->get_instance_name(), "degree of spin");
 }
 
 

@@ -7,12 +7,8 @@
 #include <utility> // has pair
 
 // #include <tr1/functional>
-
 #include <tr1/unordered_map>
-
 //#include <memory> # only with -std=c++0x
-// #include <boost/shared_ptr.hpp>
-// <boost/enable_shared_from_this.hpp>
 #include <tr1/memory>
 
 #include "aw_common.h"
@@ -20,22 +16,42 @@
 namespace aw {
 
 
-//==============================================================================
+//=============================================================================
 class ParameterType;
+
 //! Shared ParameterType. 
 typedef std::tr1::shared_ptr<ParameterType> ParameterTypeShared;
+
 //! The ParameterType, based on subclass definition, defines the meaning of an input slot that can be filled by a Generator. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage of a Generator. 
 class ParameterType {
-    protected://----------------------------------------------------------------
+    public://------------------------------------------------------------------
+
+    enum ParameterTypeID {
+        ID_Value,
+        ID_Frequency, // rename Rate
+        ID_Duration,
+        ID_Phase,
+        ID_Channels,
+    };
+
+    static ParameterTypeShared make(ParameterTypeID);
+
+
+    protected://---------------------------------------------------------------
+    //! Class name set on creation. 
     std::string _class_name;
+
+    //! The name of the parameter in the context of a specific generator. 
     std::string _instance_name;
-    // for specific instances we can define what the rate or sample value means 
+
+    //! Additional description in the context of the assigned-to generator. 
     std::string _description; 
 
     // can also define, for a particular instance, an expected context; that is, if fq is required, this can be defined here. then, when given another generator at a different context, conversion can happen?
 	
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit ParameterType();
+
     virtual ~ParameterType();
 
 	//! Output stream processor.
@@ -43,6 +59,8 @@ class ParameterType {
 
     //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Generator and may not be the same even if its the same ParameterType subclass. 
     void set_instance_name(const std::string& s) {_instance_name = s;};
+
+    std::string get_class_name() const {return _class_name;};
 
     //! Return the name as a string. 
     std::string get_instance_name() const {return _instance_name;};
@@ -54,7 +72,7 @@ class ParameterTypeValue;
 typedef std::tr1::shared_ptr<ParameterTypeValue> ParameterTypeValueShared;
 //! A subclass of ParameterType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
 class ParameterTypeValue: public ParameterType {
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit ParameterTypeValue();
 };
 
@@ -63,7 +81,7 @@ class ParameterTypeFrequency;
 typedef std::tr1::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyShared;
 //! A subclass of ParameterType that specifies a frequency; this is assumed presently to be in Hertz.
 class ParameterTypeFrequency: public ParameterType {
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit ParameterTypeFrequency();
 };
 
@@ -71,17 +89,16 @@ class ParameterTypeDuration;
 typedef std::tr1::shared_ptr<ParameterTypeDuration> ParameterTypeDurationShared;
 //! A subclass of ParameterType that specifies a duration in seconds.
 class ParameterTypeDuration: public ParameterType {
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit ParameterTypeDuration();
 };
-
 
 // TODO: phase can be provided in floating point values or degrees; figure out how to handle this
 class ParameterTypePhase;
 typedef std::tr1::shared_ptr<ParameterTypePhase> ParameterTypePhaseShared;
 //! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
 class ParameterTypePhase: public ParameterType {
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit ParameterTypePhase();
 };
 
@@ -91,25 +108,20 @@ class ParameterTypeChannels;
 typedef std::tr1::shared_ptr<ParameterTypeChannels> ParameterTypeChannelsShared;
 //! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
 class ParameterTypeChannels: public ParameterType {
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit ParameterTypeChannels();
 };
 
 
 
 
-
-
-
-
-
-//==============================================================================   
+//=============================================================================
 class Generator;
 typedef std::tr1::shared_ptr<Generator> GeneratorShared;
 //! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. 
 class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
-    public://-------------------------------------------------------------------    
+    public://--------------------------=---------------------------------------
     // public typedefs
 	//! A mapping of index number
     typedef std::tr1::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
@@ -169,7 +181,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	//! Store the Envrionment instance. 
     EnvironmentShared _environment;
 	
-    protected://----------------------------------------------------------------
+    protected://---------------------------------------------------------------
     
     //! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
 	OutputSizeType _sampling_rate;
@@ -206,21 +218,21 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
                             ParameterTypeShared> _output_parameter_type;		
 		
 
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
         
     //! A linear array of samples, which may include multiple dimensions (e.g. channels) placed in series. This might be private, but for performance this is presently public: no function call is required to read from it. To read from 
     VVSampleType outputs;	
     
 
-    // =========================================================================
-    // methods =================================================================
+    // ========================================================================
+    // methods ================================================================
 	
-    private://------------------------------------------------------------------   	
+    private://-----------------------------------------------------------------   	
 	
     //! Resize the outputs vector. Always called when registering an output or changing frame size.
     void _resize_outputs();    
 	
-    protected://----------------------------------------------------------------
+    protected://---------------------------------------------------------------
 		
     //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
     void _register_input_parameter_type(ParameterTypeShared pts);
@@ -253,7 +265,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     void _set_frame_size(FrameSizeType f);    
     
     
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     //! Factory for Generators using a provided EnvironmentShared. 
     static GeneratorShared make_with_environment(GeneratorID q, 
             EnvironmentShared e);
@@ -262,7 +274,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     static GeneratorShared make(GeneratorID);
 
 
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
 	//! Main constructor that takes a generator config. 
     explicit Generator(EnvironmentShared e);
     
@@ -308,7 +320,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     virtual void reset();
 	
     
-	// info strings .............................................................    
+	// info strings ...........................................................    
 
     //! Get the name and address (memory start) for this Generator, as a single string.
     std::string get_name_address() const;
@@ -331,7 +343,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     GeneratorID get_gid() const {return _gid;};
 
 
-	// display ..   ..............................................................    
+	// display ...............................................................    
     //! Print the outputs buffer for all dimensions at the current render count. The optional start/end values can specify vaules within the frame range
     void print_outputs(FrameSizeType start=0, FrameSizeType end=0);
 
@@ -349,7 +361,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	void illustrate_network();
 
 
-	// loading/writing to outputs ..............................................    
+	// loading/writing to outputs .............................................    
 	
     //! Load the outputs into a passed-in vector. The vector is cleared before loading. 
     void write_outputs_to_vector(VSampleType& vst) const;
@@ -371,7 +383,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     virtual void set_outputs_from_fp(const std::string& fp);
 
 
-	// inputs and slots ........................................................    
+	// inputs and slots ......................................................    
     //! Return the number of inputs; this is not the same as the number of Generators, as each input may have 1 or more Generators
     ParameterIndexType get_input_count() {return _input_count;};
 
@@ -421,7 +433,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 };
 
 
-// functions on GeneratorShared ....................................................
+// functions on GeneratorShared ...............................................
 //! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
 inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs, 
         ParameterIndexType start=0, ParameterIndexType count=0) {
@@ -463,7 +475,7 @@ inline GeneratorShared connect(SampleType lhs, GeneratorShared rhs,
 
 
 
-// operator >> .................................................................	
+// operator >> ...............................................................
 
 //! Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
 inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {
@@ -475,7 +487,7 @@ inline GeneratorShared operator>>(SampleType lhs, GeneratorShared rhs) {
     return connect(lhs, rhs);
 }
 
-// operator > ..................................................................	
+// operator > ................................................................
 
 //! Connect only the first output of lhs to first input of rhs.
 inline GeneratorShared operator>(GeneratorShared lhs, GeneratorShared rhs) {
@@ -489,7 +501,7 @@ inline GeneratorShared operator>(SampleType lhs, GeneratorShared rhs) {
 
 
 
-// operator + ..................................................................	
+// operator + .................................................................
 
 //! Connect two generators into another generator given by the passed in GeneratorID.
 inline GeneratorShared connect_parallel(GeneratorShared lhs, GeneratorShared rhs, 
@@ -541,7 +553,7 @@ inline GeneratorShared operator+(SampleType lhs, GeneratorShared rhs) {
 } 
 
 
-// operator * .................................................................. 
+// operator * .................................................................
 
 inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
     GeneratorShared g = Generator::make_with_environment(Generator::ID_Multiply, 
@@ -561,18 +573,18 @@ inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
 
 
 
-//==============================================================================
+//=============================================================================
 //! A Generator that returns a constant value, or fills its outputs vector with the same vale for all frames. 
 class Constant;
 typedef std::tr1::shared_ptr<Constant> ConstantShared;
 class Constant: public Generator {
 
-    private://------------------------------------------------------------------
+    private://-----------------------------------------------------------------
 	//! Storage for the internal constant values. This is an array because we want to support a similar interface of applying multiple values to a single input parameter. 
     VSampleType _values;
 
 
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
 
 	explicit Constant(EnvironmentShared);
     ~Constant();
@@ -608,13 +620,13 @@ class Constant: public Generator {
     
 };
 
-//==============================================================================
+//=============================================================================
 //! An add or mix, summing all Generators across all dimensions at its single input.
 class Add;
 typedef std::tr1::shared_ptr<Add> AddShared;
 class Add: public Generator {
 
-    protected://------------------------------------------------------------------
+    protected://---------------------------------------------------------------
     SampleType _n_opperands;
     //! Iniitial value in iterative operations.
     SampleType _n_opperands_init;
@@ -625,7 +637,7 @@ class Add: public Generator {
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
 
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit Add(EnvironmentShared);
 	
     ~Add();
@@ -638,13 +650,13 @@ class Add: public Generator {
 
 
 
-//==============================================================================
+//=============================================================================
 //! A mult sums all Generators across all dimensions at its single operand input. Derives from Add, as all operators will 
 class Multiply;
 typedef std::tr1::shared_ptr<Multiply> MultiplyShared;
 class Multiply: public Add {
 
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit Multiply(EnvironmentShared);
 	
     virtual void init();    
@@ -657,17 +669,17 @@ class Multiply: public Add {
 
 
 
-//==============================================================================
+//=============================================================================
 //! A Buffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
 class Buffer;
 typedef std::tr1::shared_ptr<Buffer> BufferShared;
 class Buffer: public Generator {
 
-    protected://-----------------------------------------------------------------
+    protected://---------------------------------------------------------------
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
 
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit Buffer(EnvironmentShared);
 	
     ~Buffer();
@@ -690,14 +702,14 @@ class Buffer: public Generator {
 
 
 
-//==============================================================================
+//=============================================================================
 //! The phasor has a ramp from 0 to 1 for each _output_count defined. Only the first _output_count of multiple dimensional inputs is used. 
 
 class Phasor;
 typedef std::tr1::shared_ptr<Phasor> PhasorShared;
 class Phasor: public Generator {
 
-    private://------------------------------------------------------------------
+    private://-----------------------------------------------------------------
     ParameterIndexType _input_index_frequency;    
     ParameterIndexType _input_index_phase;    
 	
@@ -712,7 +724,7 @@ class Phasor: public Generator {
 	
 	RenderCountType _period_samples;		
 
-    public://-------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit Phasor(EnvironmentShared);
 	
     ~Phasor();
