@@ -60,10 +60,11 @@ ParameterTypeChannels :: ParameterTypeChannels() {
 
 
 
-GeneratorShared  Generator :: make(GeneratorID q){
-	// just get defailt vaules
-    EnvironmentShared e = EnvironmentShared(new Environment);
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
+GeneratorShared  Generator :: make_with_environment(GeneratorID q, 
+            EnvironmentShared e){                        
     GeneratorShared g;    
     if (q == ID_Constant) {
         g = ConstantShared(new Constant(e));
@@ -88,6 +89,13 @@ GeneratorShared  Generator :: make(GeneratorID q){
     return g;
 }
 
+
+GeneratorShared  Generator :: make(GeneratorID q){
+	// just get defailt vaules
+    EnvironmentShared e = EnvironmentShared(new Environment);
+    return make_with_environment(q, e);
+}
+
 //..............................................................................
 Generator :: Generator(EnvironmentShared e) 
 	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
@@ -97,8 +105,7 @@ Generator :: Generator(EnvironmentShared e)
 	_frame_size(1), // set in init; 
 	_outputs_size(0), // will be updated after resizing
     _input_count(0), 	
-    _slot_count(0), 	
-    
+    _slot_count(0), 	    
 	_environment(e), // replace with Environment
     
 	// protected ...
@@ -665,6 +672,7 @@ void Generator :: set_input_by_index(ParameterIndexType i, SampleType v,
 
 void Generator :: add_input_by_index(ParameterIndexType i, 
         GeneratorShared gs, OutputCountType pos){
+    // pos is the output of the generator to connect into the specified input
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
