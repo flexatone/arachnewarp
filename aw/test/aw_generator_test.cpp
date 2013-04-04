@@ -809,6 +809,45 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_5) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_6) {
+
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);    
+    // connect two constants to g1
+    aw::connect(20, g1);
+    aw::connect(11, g1);
+    g1->render(1);
+	BOOST_CHECK_CLOSE(g1->outputs[0][0], 31, .001);
+
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);    
+    23.5 >> g2;
+    100.5 >> g2;
+    g2->render(1);
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 124.0, .001);
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

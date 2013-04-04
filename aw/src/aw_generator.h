@@ -254,7 +254,11 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     
     
     public://-------------------------------------------------------------------
-    //! Factory for all Generators. This creates a Generator, and calls its init() method. 
+    //! Factory for Generators using a provided EnvironmentShared. 
+    static GeneratorShared make_with_environment(GeneratorID q, 
+            EnvironmentShared e);
+
+    //! Factory for all Generators with by generator ID alone. This creates a GeneratorShared, and calls its init() method.     
     static GeneratorShared make(GeneratorID);
 
 
@@ -418,7 +422,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 
 // functions on GeneratorShared ....................................................
-//! Parsimonious connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
+//! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
 inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs, 
         ParameterIndexType start=0, ParameterIndexType count=0) {
     // connect from left to right, so from lhs to rhs
@@ -447,38 +451,68 @@ inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs,
 }
 
 
-// TODO: test this
-
 //! Assign SampleValue directly as an input to one or more inputs on rhs GeneratorShared.
 inline GeneratorShared connect(SampleType lhs, GeneratorShared rhs, 
         ParameterIndexType start=0, ParameterIndexType count=0) {        
-    // TODO: pass in envrionment with make alternative
     // set environment from lhs
-	GeneratorShared g_lhs = Generator::make(Generator::ID_Constant);
+	GeneratorShared g_lhs = Generator::make_with_environment(
+            Generator::ID_Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
     return aw::connect(g_lhs, rhs); // will return rhs
 }
 
 
 
-// TOOD: override for SampleValue to permit setting and creating constants when on lhs
+// operator >> .................................................................	
 
-// Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
+//! Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
 inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {
     return connect(lhs, rhs);
 }
 
-// Connect only the first output of lhs to first input of rhs.
+//! Connect a SampleType, making it into a constant.
+inline GeneratorShared operator>>(SampleType lhs, GeneratorShared rhs) {
+    return connect(lhs, rhs);
+}
+
+// operator > ..................................................................	
+
+//! Connect only the first output of lhs to first input of rhs.
 inline GeneratorShared operator>(GeneratorShared lhs, GeneratorShared rhs) {
     return connect(lhs, rhs, 0, 1);
 }
 
+//! Connect a SampleType. 
+inline GeneratorShared operator>(SampleType lhs, GeneratorShared rhs) {
+    return connect(lhs, rhs, 0, 1);
+}
 
-// TODO: use connect()
 
-// operator + .....................................................................	
+
+// operator + ..................................................................	
+
+//! Connect two generators into another generator given by the passed in GeneratorID.
+inline GeneratorShared connect_parallel(GeneratorShared lhs, GeneratorShared rhs, 
+        Generator::GeneratorID gid) {
+    // get lesser of outputs, then create an add with taht many slots
+    ParameterIndexType j = std::min(lhs->get_output_count(), 
+            rhs->get_output_count());
+    // use the passed in gen id, this is usuall ID_Add, ID_Multiply
+    GeneratorShared g = Generator::make_with_environment(gid, 
+            lhs->get_environment());
+    g->set_slot_by_index(0, rhs);
+
+    ParameterIndexType i;
+    for (i = 0; i != j; ++i) {
+        g->add_input_by_index(i, lhs, i);
+        g->add_input_by_index(i, rhs, i);        
+    }
+    return g;
+}
+
 inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
-    GeneratorShared g = Generator::make(Generator::ID_Add);
+    GeneratorShared g = Generator::make_with_environment(Generator::ID_Add, 
+            lhs->get_environment());
     // can look and find min of (this.out_count, other.out_count)
     g->set_slot_by_index(0, 1); // just one channel?
     g->add_input_by_index(0, lhs);
@@ -487,7 +521,8 @@ inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
 } 
 
 inline GeneratorShared operator+(GeneratorShared lhs, SampleType rhs) {
-    GeneratorShared g = Generator::make(Generator::ID_Add);
+    GeneratorShared g = Generator::make_with_environment(Generator::ID_Add, 
+            lhs->get_environment());
     // can look and find min of (this.out_count, other.out_count)
     g->set_slot_by_index(0, 1); // just one channel?
     g->add_input_by_index(0, lhs);
@@ -496,7 +531,8 @@ inline GeneratorShared operator+(GeneratorShared lhs, SampleType rhs) {
 } 
 
 inline GeneratorShared operator+(SampleType lhs, GeneratorShared rhs) {
-    GeneratorShared g = Generator::make(Generator::ID_Add);
+    GeneratorShared g = Generator::make_with_environment(Generator::ID_Add, 
+            rhs->get_environment());
     // can look and find min of (this.out_count, other.out_count)
     g->set_slot_by_index(0, 1); // just one channel?
     g->add_input_by_index(0, lhs);
@@ -505,10 +541,11 @@ inline GeneratorShared operator+(SampleType lhs, GeneratorShared rhs) {
 } 
 
 
-// operator * ..................................................................... 
+// operator * .................................................................. 
 
 inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
-    GeneratorShared g = Generator::make(Generator::ID_Multiply);
+    GeneratorShared g = Generator::make_with_environment(Generator::ID_Multiply, 
+            lhs->get_environment());
     // can look and find min of (this.out_count, other.out_count)
     g->set_slot_by_index(0, 1); // just one channel?
     g->add_input_by_index(0, lhs);
