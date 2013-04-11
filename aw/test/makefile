@@ -12,9 +12,10 @@ PATH_TO_BIN = ../bin/
 
 # the -c option only compiles, producing object files
 # this is for basic compiling to .o files
-CFLAGS=-I $(PATH_TO_SRC) -l boost_filesystem -l boost_system -c -Wall
+CFLAGS=-I $(PATH_TO_SRC) -c -Wall 
+
 # this is the text ececutable
-CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -l boost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -g
+CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -l sndfile -Wall -g
 
 
 $(PATH_TO_BIN)aw_common.o: $(PATH_TO_SRC)aw_common.h $(PATH_TO_SRC)aw_common.cpp
