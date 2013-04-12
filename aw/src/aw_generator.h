@@ -435,7 +435,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 // functions on GeneratorShared ...............................................
 //! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
-inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs, 
+inline GeneratorShared connect_serial(GeneratorShared lhs, GeneratorShared rhs, 
         ParameterIndexType start=0, ParameterIndexType count=0) {
     // connect from left to right, so from lhs to rhs
     // lhs is above rhs in downard flow
@@ -463,14 +463,14 @@ inline GeneratorShared connect(GeneratorShared lhs, GeneratorShared rhs,
 }
 
 
-//! Assign SampleValue directly as an input to one or more inputs on rhs GeneratorShared.
-inline GeneratorShared connect(SampleType lhs, GeneratorShared rhs, 
+//! Assign SampleValue (after being converted to a Constant) directly as an input to one or more inputs on rhs GeneratorShared.
+inline GeneratorShared connect_serial(SampleType lhs, GeneratorShared rhs, 
         ParameterIndexType start=0, ParameterIndexType count=0) {        
     // set environment from lhs
 	GeneratorShared g_lhs = Generator::make_with_environment(
             Generator::ID_Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
-    return aw::connect(g_lhs, rhs); // will return rhs
+    return aw::connect_serial(g_lhs, rhs); // will return rhs
 }
 
 
@@ -479,41 +479,46 @@ inline GeneratorShared connect(SampleType lhs, GeneratorShared rhs,
 
 //! Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
 inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {
-    return connect(lhs, rhs);
+    return connect_serial(lhs, rhs);
 }
 
 //! Connect a SampleType, making it into a constant.
 inline GeneratorShared operator>>(SampleType lhs, GeneratorShared rhs) {
-    return connect(lhs, rhs);
+    return connect_serial(lhs, rhs);
 }
 
 // operator > ................................................................
 
 //! Connect only the first output of lhs to first input of rhs.
 inline GeneratorShared operator>(GeneratorShared lhs, GeneratorShared rhs) {
-    return connect(lhs, rhs, 0, 1);
+    return connect_serial(lhs, rhs, 0, 1);
 }
 
 //! Connect a SampleType. 
 inline GeneratorShared operator>(SampleType lhs, GeneratorShared rhs) {
-    return connect(lhs, rhs, 0, 1);
+    return connect_serial(lhs, rhs, 0, 1);
 }
 
 
 
 // operator + .................................................................
 
-//! Connect two generators into another generator given by the passed in GeneratorID.
-inline GeneratorShared connect_parallel(GeneratorShared lhs, GeneratorShared rhs, 
+//! Connect two generators as inputs into another generator, where that generator is given by the passed in GeneratorID.
+inline GeneratorShared connect_parallel(
+        GeneratorShared lhs, 
+        GeneratorShared rhs, 
         Generator::GeneratorID gid) {
-    // get lesser of outputs, then create an add with taht many slots
+    
+    // get lesser of outputs between the two, then create an add with that many slots
     ParameterIndexType j = std::min(lhs->get_output_count(), 
             rhs->get_output_count());
-    // use the passed in gen id, this is usuall ID_Add, ID_Multiply
+    // use the passed in gen id, this is usually ID_Add, ID_Multiply
     GeneratorShared g = Generator::make_with_environment(gid, 
             lhs->get_environment());
-    g->set_slot_by_index(0, rhs);
+    // the returned Generator needs to support multiple channels; these are set as slow 0
+    g->set_slot_by_index(0, j);
 
+    // try to conect as many in to out as possible for each gen
     ParameterIndexType i;
     for (i = 0; i != j; ++i) {
         g->add_input_by_index(i, lhs, i);
@@ -522,51 +527,64 @@ inline GeneratorShared connect_parallel(GeneratorShared lhs, GeneratorShared rhs
     return g;
 }
 
+//! Variant with sample type as left-hand side.
+inline GeneratorShared connect_parallel(
+        SampleType lhs, 
+        GeneratorShared rhs, 
+        Generator::GeneratorID gid) {
+    GeneratorShared g_lhs = Generator::make_with_environment(
+            Generator::ID_Constant, rhs->get_environment());
+    g_lhs->set_input_by_index(0, lhs); 
+    GeneratorShared g = aw::connect_parallel(g_lhs, rhs, gid);
+    return g;
+}
+
+//! Variant with sample type as right-hand side.
+inline GeneratorShared connect_parallel(
+        GeneratorShared lhs, 
+        SampleType rhs, 
+        Generator::GeneratorID gid) {
+    GeneratorShared g_rhs = Generator::make_with_environment(
+            Generator::ID_Constant, lhs->get_environment());
+    g_rhs->set_input_by_index(0, rhs); 
+    GeneratorShared g = aw::connect_parallel(lhs, g_rhs, gid);
+    return g;
+}
+
+
+
+// operator + .................................................................
 inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
-    GeneratorShared g = Generator::make_with_environment(Generator::ID_Add, 
-            lhs->get_environment());
-    // can look and find min of (this.out_count, other.out_count)
-    g->set_slot_by_index(0, 1); // just one channel?
-    g->add_input_by_index(0, lhs);
-    g->add_input_by_index(0, rhs);
+    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Add);
     return g;
 } 
 
 inline GeneratorShared operator+(GeneratorShared lhs, SampleType rhs) {
-    GeneratorShared g = Generator::make_with_environment(Generator::ID_Add, 
-            lhs->get_environment());
-    // can look and find min of (this.out_count, other.out_count)
-    g->set_slot_by_index(0, 1); // just one channel?
-    g->add_input_by_index(0, lhs);
-    g->add_input_by_index(0, rhs);
+    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Add);    
     return g;
 } 
 
 inline GeneratorShared operator+(SampleType lhs, GeneratorShared rhs) {
-    GeneratorShared g = Generator::make_with_environment(Generator::ID_Add, 
-            rhs->get_environment());
-    // can look and find min of (this.out_count, other.out_count)
-    g->set_slot_by_index(0, 1); // just one channel?
-    g->add_input_by_index(0, lhs);
-    g->add_input_by_index(0, rhs);
+    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Add);    
     return g;
 } 
 
 
 // operator * .................................................................
-
 inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
-    GeneratorShared g = Generator::make_with_environment(Generator::ID_Multiply, 
-            lhs->get_environment());
-    // can look and find min of (this.out_count, other.out_count)
-    g->set_slot_by_index(0, 1); // just one channel?
-    g->add_input_by_index(0, lhs);
-    g->add_input_by_index(0, rhs);
+    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
     return g;
 } 
-	
-// TODO: provide overrides with SampleType args for either left/right: do we really need three methods for each operator then?
 
+inline GeneratorShared operator*(GeneratorShared lhs, SampleType rhs) {
+    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+    return g;
+} 
+
+inline GeneratorShared operator*(SampleType lhs, GeneratorShared rhs) {
+    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+    return g;
+} 
 
 
 

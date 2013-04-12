@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 0, .0000001);
 	
 	g2->render(4);
-	g2->print_outputs();
+	//g2->print_outputs();
 	// check default
 
     BOOST_CHECK_EQUAL(g2->get_output_count(), 1);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     aw::EnvironmentShared e = aw::Environment::make();
 	aw::Constant g3(e);
     g3.init();
-    g3.print_inputs();
+    //g3.print_inputs();
 
     BOOST_CHECK_EQUAL(g3.get_input_count(), 1);
     BOOST_CHECK_EQUAL(g3.get_input_index_from_parameter_name("Constant numerical value"), 0);
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
     BOOST_REQUIRE_THROW(g3->set_input_by_index(1, 23), std::invalid_argument);
     BOOST_REQUIRE_THROW(g3->set_input_by_index(-1, 23), std::invalid_argument);
     
-    g3->print_inputs(true);
+    //g3->print_inputs(true);
 	
 	g3->render(1);
 //	//g3->print_outputs();
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
     BOOST_CHECK_EQUAL(g3->get_input_count(), 3);
     BOOST_CHECK_EQUAL(g3->get_slot_count(), 1);
     
-	g3->print_inputs();
+	//g3->print_inputs();
     
     // TODO: this is  good candidate for graphoz .dot writing
 
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_1) {
     g1->add_input_by_index(0, 3);
     g1->add_input_by_index(0, 2);
     
-    g1->print_inputs();
+    //g1->print_inputs();
     g1->render(2);
     
 	BOOST_CHECK_CLOSE(g1->outputs[0][0], 6, .001);
@@ -599,7 +599,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
     // multy channel multiplication
     
-	std::cerr << std::string(80, '-') << std::endl;
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
     
     // three channel
@@ -673,7 +672,7 @@ BOOST_AUTO_TEST_CASE(connect_f_1) {
     aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
     
     // this is g1 to g2
-    g2 = aw::connect(g1, g2);
+    g2 = aw::connect_serial(g1, g2);
     g2->render(1);
     
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 3.5, .0001);
@@ -682,7 +681,7 @@ BOOST_AUTO_TEST_CASE(connect_f_1) {
     g4->set_input_by_index(0, 6.5);
     
     // g4 to g2
-    g2 = aw::connect(g4, g2);    
+    g2 = aw::connect_serial(g4, g2);    
     g2->render(2);
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 10.0, .0001);
 }
@@ -703,11 +702,11 @@ BOOST_AUTO_TEST_CASE(connect_f_2) {
           
 
     // g1 into g2
-    g2 = aw::connect(g1, g2);
+    g2 = aw::connect_serial(g1, g2);
 
     g2->render(1);
     //g2->illustrate_network();
-    // we are connecting each of three values independently
+    // we are connect_serial each of three values independently
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
 	BOOST_CHECK_CLOSE(g2->outputs[1][0], 305, .001);
 	BOOST_CHECK_CLOSE(g2->outputs[2][0], 6110, .001);
@@ -730,7 +729,7 @@ BOOST_AUTO_TEST_CASE(connect_f_3) {
           
 
     // connect from o/i 2, 1 length
-    g2 = aw::connect(g1, g2, 2, 1);
+    g2 = aw::connect_serial(g1, g2, 2, 1);
 
     g2->render(1);
     //g2->illustrate_network();
@@ -834,9 +833,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_5) {
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_6) {
 
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);    
-    // connect two constants to g1
-    aw::connect(20, g1);
-    aw::connect(11, g1);
+    // connect two constants to g1b
+    aw::connect_serial(20, g1);
+    aw::connect_serial(11, g1);
     g1->render(1);
 	BOOST_CHECK_CLOSE(g1->outputs[0][0], 31, .001);
 
@@ -849,6 +848,37 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_6) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_7) {
+    // test basic multiplication
+	std::cerr << std::string(80, '-') << std::endl;
+
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+    g1->set_input_by_index(0, 4);
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);
+    g2->set_input_by_index(0, 7);
+
+    aw::GeneratorShared g10 = g1 + g2; 
+    //g10->illustrate_network();   
+    g10->render(1);
+	BOOST_CHECK_CLOSE(g10->outputs[0][0], 11, .00001);
+
+
+    aw::GeneratorShared g11 = g1 + g2 * 10; 
+    //g10->illustrate_network();   
+    g11->render(1);
+	BOOST_CHECK_CLOSE(g11->outputs[0][0], 74, .00001);
+
+
+
+    aw::GeneratorShared g12 = 10 * g1 + .5; 
+    //g10->illustrate_network();   
+    g12->render(1);
+	BOOST_CHECK_CLOSE(g12->outputs[0][0], 40.5, .00001);
+
+
+	        
+}
 
 
 
