@@ -39,6 +39,9 @@ ParameterTypeShared ParameterType :: make(ParameterTypeID q){
     else if (q == ID_Channels) {
         p = ParameterTypeChannelsShared(new ParameterTypeChannels);    
     }
+    else if (q == ID_Trigger) {
+        p = ParameterTypeTriggerShared(new ParameterTypeTrigger);    
+    }    
     else {
         throw std::invalid_argument("no matching ParaameterTypeID: " + q);
     }
@@ -80,6 +83,11 @@ ParameterTypePhase :: ParameterTypePhase() {
 //-----------------------------------------------------------------------------
 ParameterTypeChannels :: ParameterTypeChannels() {
     _class_name = "ParameterTypeChannels";
+}
+
+//-----------------------------------------------------------------------------
+ParameterTypeTrigger :: ParameterTypeTrigger() {
+    _class_name = "ParameterTypeTrigger";
 }
 
 
@@ -1243,25 +1251,27 @@ void Phasor :: init() {
 	
     // register some parameters
     aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Frequency);
-                                       
+            aw::ParameterType::ID_Frequency);                                       
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
     aw::ParameterTypeShared pt2 = aw::ParameterType::make( 
             aw::ParameterType::ID_Phase);
-
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;	
 	
-	// register output
+	// register outputs
     aw::ParameterTypeShared pt3 = aw::ParameterType::make( 
             aw::ParameterType::ID_Value);
-
     pt3->set_instance_name("Output");
     _register_output_parameter_type(pt3);	
+
+    aw::ParameterTypeShared pt4 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Trigger);
+    pt4->set_instance_name("Trigger");
+    _register_output_parameter_type(pt4);	
 	
 }
 
@@ -1270,7 +1280,6 @@ void Phasor :: render(RenderCountType f) {
 	// given a frequency and a sample rate, we can calculate the number of samples per cycle
 	// 1 / fq is time in seconds
 	// sr is samples per sec
-
 	// must access _frame_size ; each render is a frame worth
 	// this does not need to be done each render call, but if so, ensure continuity
 	OutputSizeType fs = get_frame_size();
@@ -1297,17 +1306,94 @@ void Phasor :: render(RenderCountType f) {
 					(_period_samples - 1)));
 			// if amp is at or above 1, set to zero
             // TODO: need to formalize this min gap
-			if (_amp > 1.00001) _amp = 0.0;
-			_amp_prev = _amp;
+			if (_amp > 1.00001) {
+                _amp = 0.0;
+                outputs[1][i] = 1; // set trigger           
+            }
+            else {
+                outputs[1][i] = 0; // set trigger  
+            }
 			//std::cout << "i" << i << " : _amp " << _amp << std::endl;
-			outputs[0][i] = _amp;
-            // TODO: set impulse on second output channle
+			outputs[0][i] = _amp;            
+			_amp_prev = _amp;
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
     }
     
 }
+
+
+
+
+//------------------------------------------------------------------------------
+Sine :: Sine(EnvironmentShared e) 
+	// must initialize base class with passed arg
+	: Generator(e),
+		_amp(0),
+		_amp_prev(1) // init amp previous to 1 so to force reset to 0 on start
+		//_period_start_sample_pos(0)
+	{
+	_class_name = "Sine"; 
+    _gid = ID_Sine;
+}
+
+Sine :: ~Sine() {
+}
+
+void Sine :: init() {
+    // the int routie must configure the names and types of parameters
+    // std::cout << *this << " Phasor::init()" << std::endl;
+    Generator::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+	
+    // register some parameters
+    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Frequency);                                       
+    pt1->set_instance_name("Frequency");
+    _register_input_parameter_type(pt1);
+	_input_index_frequency = 0;
+	
+    aw::ParameterTypeShared pt2 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Phase);
+    pt2->set_instance_name("Phase");
+    _register_input_parameter_type(pt2);	
+	_input_index_phase = 1;	
+	
+	// register output
+    aw::ParameterTypeShared pt3 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Value);
+    pt3->set_instance_name("Output");
+    _register_output_parameter_type(pt3);	
+	
+}
+
+
+void Sine :: render(RenderCountType f) {
+	OutputSizeType fs = get_frame_size();
+	OutputSizeType i(0);
+	
+    while (_render_count < f) {
+        _render_inputs(f);
+		_sum_inputs();
+		
+		for (i=0; i < fs; ++i) {
+			_sum_frequency = _summed_inputs[_input_index_frequency][i];
+			_period_samples = floor((_sampling_rate / 
+					frequency_limiter(_sum_frequency, _nyquist)) + 0.5);                     
+			_amp = _amp_prev + (1.0 / static_cast<SampleType>(
+					(_period_samples - 1)));
+			if (_amp > 1.00001) _amp = 0.0;
+			_amp_prev = _amp;
+			outputs[0][i] = _amp;
+		}
+        //std::cout << "_period_samples: " << _period_samples << std::endl;        
+        _render_count += 1;
+    }
+    
+}
+
+
 
 
 

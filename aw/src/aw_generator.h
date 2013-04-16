@@ -26,20 +26,23 @@ typedef std::tr1::shared_ptr<ParameterType> ParameterTypeShared;
 class ParameterType {
     public://------------------------------------------------------------------
 
+    //! Identifiers for Parameter types. 
     enum ParameterTypeID {
         ID_Value,
         ID_Frequency, // rename Rate
         ID_Duration,
         ID_Phase,
         ID_Channels,
+        ID_Trigger
     };
 
+    //! Primary constructor static method for creating share Parameter types. 
     static ParameterTypeShared make(ParameterTypeID);
-
 
     protected://---------------------------------------------------------------
     //! Class name set on creation. 
     std::string _class_name;
+    static const char _class_name_alt[];
 
     //! The name of the parameter in the context of a specific generator. 
     std::string _instance_name;
@@ -112,6 +115,15 @@ class ParameterTypeChannels: public ParameterType {
     explicit ParameterTypeChannels();
 };
 
+//! An impulse or trigger, or a single sample at 1. 
+class ParameterTypeTrigger;
+typedef std::tr1::shared_ptr<ParameterTypeTrigger> ParameterTypeTriggerShared;
+//! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
+class ParameterTypeTrigger: public ParameterType {
+    public://------------------------------------------------------------------
+    explicit ParameterTypeTrigger();
+};
+
 
 
 
@@ -150,7 +162,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
         ID_Add,
         ID_Multiply,   
         ID_Buffer,
-        ID_Phasor,				
+        ID_Phasor,
+        ID_Sine,        				
     };
         
 		
@@ -474,7 +487,6 @@ inline GeneratorShared connect_serial(SampleType lhs, GeneratorShared rhs,
 }
 
 
-
 // operator >> ...............................................................
 
 //! Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
@@ -498,7 +510,6 @@ inline GeneratorShared operator>(GeneratorShared lhs, GeneratorShared rhs) {
 inline GeneratorShared operator>(SampleType lhs, GeneratorShared rhs) {
     return connect_serial(lhs, rhs, 0, 1);
 }
-
 
 
 // operator + .................................................................
@@ -724,7 +735,6 @@ class Buffer: public Generator {
 
 //=============================================================================
 //! The phasor has a ramp from 0 to 1 for each _output_count defined. Only the first _output_count of multiple dimensional inputs is used. 
-
 class Phasor;
 typedef std::tr1::shared_ptr<Phasor> PhasorShared;
 class Phasor: public Generator {
@@ -742,7 +752,7 @@ class Phasor: public Generator {
 	SampleType _amp;
 	SampleType _amp_prev;		
 	
-	RenderCountType _period_samples;		
+	RenderCountType _period_samples;
 
     public://------------------------------------------------------------------
     explicit Phasor(EnvironmentShared);
@@ -755,6 +765,39 @@ class Phasor: public Generator {
     virtual void render(RenderCountType f);
 };
 
+
+
+
+//=============================================================================
+//! A pure (calculated) sine wave. The sine has a ramp from -1 to 1 for each _output_count defined.
+class Sine;
+typedef std::tr1::shared_ptr<Sine> SineShared;
+class Sine: public Generator {
+
+    private://-----------------------------------------------------------------
+    ParameterIndexType _input_index_frequency;    
+    ParameterIndexType _input_index_phase;    
+	
+    SampleType _sum_frequency;
+    SampleType _sum_phase;	
+	
+	// state variables used for wave calc
+	//SampleType _period_seconds;
+	SampleType _amp;
+	SampleType _amp_prev;		
+	
+	RenderCountType _period_samples;		
+
+    public://------------------------------------------------------------------
+    explicit Sine(EnvironmentShared);
+	
+    ~Sine();
+
+    virtual void init();    
+		
+	//! Render the pure sine.. 
+    virtual void render(RenderCountType f);
+};
 
 
 
