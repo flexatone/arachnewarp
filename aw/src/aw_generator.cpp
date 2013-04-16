@@ -149,9 +149,8 @@ void Generator :: init() {
     _sampling_rate = _environment->get_sampling_rate();
 	_nyquist = _sampling_rate / 2; // let floor
     	
-	// by default, set one output
-    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
-            aw::ParameterTypeValue);
+    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Value);
     pt1->set_instance_name("Generator default output");
     _register_output_parameter_type(pt1);	
     
@@ -681,9 +680,8 @@ void Generator :: set_input_by_index(ParameterIndexType i, SampleType v,
         OutputCountType pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
-	aw::GeneratorShared c = aw::ConstantShared(
-							new aw::Constant(_environment));
-    c->init();
+    aw::GeneratorShared c = aw::Generator::make_with_environment(ID_Constant, 
+            _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c, pos); // call overloaded
 }
@@ -709,9 +707,8 @@ void Generator :: add_input_by_index(ParameterIndexType i, SampleType v,
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
 	// pass the EnvironmentShared to inner Generator 
-	aw::GeneratorShared c = aw::ConstantShared(
-							new aw::Constant(_environment));
-    c->init();
+    aw::GeneratorShared c = aw::Generator::make_with_environment(ID_Constant, 
+            _environment);    
     c->set_input_by_index(0, v); // this will call Constant::reset()
     add_input_by_index(i, c, pos); // other overloaded
 }
@@ -738,9 +735,8 @@ void Generator :: set_slot_by_index(ParameterIndexType i, SampleType v,
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
 	// updat defaults to true in header
-	aw::GeneratorShared c = aw::ConstantShared(
-							new aw::Constant(_environment));
-    c->init();
+    aw::GeneratorShared c = aw::Generator::make_with_environment(ID_Constant, 
+            _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_slot_by_index(i, c, update); // call overloaded
 	// _update_for_new_slot called in set_slot_by_index
@@ -791,8 +787,10 @@ void Constant :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
-                                       aw::ParameterTypeValue);
+//    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
+//                                       aw::ParameterTypeValue);
+    aw::ParameterTypeShared pt1 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
     pt1->set_instance_name("Constant numerical value");
     _register_output_parameter_type(pt1);	
     _register_input_parameter_type(pt1);
@@ -924,9 +922,9 @@ void Add :: init() {
     // must clear the default set by Gen init because slot will set directly    
     _clear_output_parameter_types();
     
-    // register slots
-    aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
-										   aw::ParameterTypeChannels);
+    aw::ParameterTypeShared so1 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Channels);
+                                           
     so1->set_instance_name("Channels");
 	_register_slot_parameter_type(so1);	// create deafult constant, update
     // set value to 1; will call _update_for_new_slot    
@@ -944,10 +942,11 @@ void Add :: _update_for_new_slot() {
     _clear_input_parameter_types();
 	
     std::stringstream s;
-    aw::ParameterTypeValueShared pt;    
+    aw::ParameterTypeShared pt;    
     // set inputs; this will clear any existing connections
     for (OutputCountType i=0; i<outs; ++i) {
-        pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        //pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        pt = aw::ParameterType::make(aw::ParameterType::ID_Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Opperands " << i+1;
         pt->set_instance_name(s.str());
@@ -1043,14 +1042,14 @@ void Buffer :: init() {
 
     // register some slots: 
     // register slots
-    aw::ParameterTypeChannelsShared so1 = aw::ParameterTypeChannelsShared(new 
-										   aw::ParameterTypeChannels);
+    aw::ParameterTypeShared so1 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Channels);                                           
     so1->set_instance_name("Channels");
 	_register_slot_parameter_type(so1);
     set_slot_by_index(0, 1, false); // false so as to not update until dur is set
-	
-    aw::ParameterTypeDurationShared so2 = aw::ParameterTypeDurationShared(new 
-										   aw::ParameterTypeDuration);
+	    
+    aw::ParameterTypeShared so2 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Duration);
     so2->set_instance_name("Duration in seconds");
 	_register_slot_parameter_type(so2);
     // set value; will call _update_for_new_slot    
@@ -1074,14 +1073,16 @@ void Buffer :: _update_for_new_slot() {
     aw::ParameterTypeValueShared pt_i;
     aw::ParameterTypeValueShared pt_o;    	
     // set inputs; this will clear any existing connections
-    for (OutputCountType i=0; i<outs; ++i) {
-        pt_i = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+    for (OutputCountType i=0; i<outs; ++i) {        
+        aw::ParameterTypeShared pt_i = aw::ParameterType::make( 
+                aw::ParameterType::ID_Value);        
         s.str(""); // clears contents; not the same as .clear()
         s << "Input " << i+1;
         pt_i->set_instance_name(s.str());
         _register_input_parameter_type(pt_i);        
 		
-        pt_o = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        aw::ParameterTypeShared pt_o = aw::ParameterType::make( 
+                aw::ParameterType::ID_Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Output " << i+1;
         pt_o->set_instance_name(s.str());
@@ -1241,21 +1242,24 @@ void Phasor :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypeFrequencyShared pt1 = aw::ParameterTypeFrequencyShared(new 
-                                       aw::ParameterTypeFrequency);
+    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Frequency);
+                                       
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    aw::ParameterTypePhaseShared pt2 = aw::ParameterTypePhaseShared(new 
-                                       aw::ParameterTypePhase);
+    aw::ParameterTypeShared pt2 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Phase);
+
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;	
 	
 	// register output
-    aw::ParameterTypeValueShared pt3 = aw::ParameterTypeValueShared(new 
-                                       aw::ParameterTypeValue);
+    aw::ParameterTypeShared pt3 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Value);
+
     pt3->set_instance_name("Output");
     _register_output_parameter_type(pt3);	
 	
