@@ -77,6 +77,9 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_1) {
 	aw::ParameterTypeShared pt6 = aw::ParameterType::make(aw::ParameterType::ID_Channels);
 	BOOST_CHECK_EQUAL(pt6->get_class_name(), "ParameterTypeChannels");
 
+	aw::ParameterTypeShared pt7 = aw::ParameterType::make(aw::ParameterType::ID_Trigger);
+	BOOST_CHECK_EQUAL(pt7->get_class_name(), "ParameterTypeTrigger");
+
 
 }
 
@@ -425,11 +428,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 	g1->render(1);
 	// cycle is 8 samples long
     BOOST_CHECK_CLOSE(g1->outputs[0][0], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->outputs[1][0], 1, .00001); // trigger 
     BOOST_CHECK_CLOSE(g1->outputs[0][4], .57142857, .00001);	
     BOOST_CHECK_CLOSE(g1->outputs[0][7], 1, .00001);
     BOOST_CHECK_CLOSE(g1->outputs[0][8], 0, .00001);
 	
 	//g1->print_outputs();
+    //g1->illustrate_outputs();
 	
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
 	g2->add_input_by_index(0, 11025.5); // 8 samples
@@ -439,7 +444,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
     BOOST_CHECK_CLOSE(g2->outputs[0][2], 0.666666666, .00001);
     BOOST_CHECK_CLOSE(g2->outputs[0][3], 1, .00001);
     BOOST_CHECK_CLOSE(g2->outputs[0][4], 0, .00001);
-	
+    BOOST_CHECK_CLOSE(g2->outputs[1][4], 1, .00001); // trigger 	
 
 
 }
@@ -460,6 +465,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
     BOOST_CHECK_CLOSE(g1->outputs[0][4], .57142857, .00001);	
     BOOST_CHECK_CLOSE(g1->outputs[0][7], 1, .00001);
     BOOST_CHECK_CLOSE(g1->outputs[0][8], 0, .00001);
+    BOOST_CHECK_CLOSE(g1->outputs[1][8], 1, .00001); // trigger
 	
 	// g1->print_outputs();
 
