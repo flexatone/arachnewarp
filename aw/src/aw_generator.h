@@ -586,7 +586,9 @@ inline GeneratorShared operator*(SampleType lhs, GeneratorShared rhs) {
     return g;
 } 
 
-
+// Alternative opperators:
+// |, || set slots
+// & set output buffer directly
 
 
 
