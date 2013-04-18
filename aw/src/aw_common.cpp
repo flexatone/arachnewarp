@@ -21,7 +21,7 @@ namespace aw {
 
 void escape(std::string& str, const std::string& replace_targets, 
                               const std::string& prefix) {
-    // replace a string by character; all passed in by reference
+    // replace a string by character; all passed in by reference; this is used in writing dot files for graphiz
     std::string::const_iterator i;
     std::stringstream s; 
     std::string replace;
@@ -77,6 +77,19 @@ const char* get_fp_home() {
     }
     return homeDir; // will get converted
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -881,11 +881,54 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_7) {
     //g10->illustrate_network();   
     g12->render(1);
 	BOOST_CHECK_CLOSE(g12->outputs[0][0], 40.5, .00001);
-
-
 	        
 }
 
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_sine_1) {
+    // test basic multiplication
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
+
+    // one cycle for 4 samples
+    11025 >> g1;
+    //g1->set_input_by_index(0, 22050);        
+    g1->render(1);
+    //g1->illustrate_outputs();
+	BOOST_CHECK_CLOSE(g1->outputs[0][0], 0, .00001);
+	BOOST_CHECK_CLOSE(g1->outputs[0][1], 1, .00001);
+	BOOST_CHECK_SMALL(g1->outputs[0][2], .001);
+	BOOST_CHECK_CLOSE(g1->outputs[0][3], -1, .00001);
+	BOOST_CHECK_SMALL(g1->outputs[0][4], .001);
+    
+    
+	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
+    
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
+
+	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	gbuf->set_slot_by_index(0, 2);
+	gbuf->set_slot_by_index(1, .5); // one half second of buffer
+
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Sine);
+
+    // one cycle for 4 samples
+    4 >> g1;
+    12 >> g2;
+    //g1->set_input_by_index(0, 22050);        
+
+	gbuf->add_input_by_index(0, g1);
+	gbuf->add_input_by_index(1, g2);
+
+	gbuf->render(1); // render count here meaningless
+
+    //gbuf->illustrate_outputs();
+	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
+    
+}
 
 
 
