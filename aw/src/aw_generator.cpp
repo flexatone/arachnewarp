@@ -111,8 +111,11 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
     else if (q == ID_Phasor) {
         g = PhasorShared(new Phasor(e));    
     }
+    else if (q == ID_Sine) {
+        g = SineShared(new Sine(e));    
+    }    
     else {
-        throw std::invalid_argument("no matching GeneratorID: " + q);
+        throw std::invalid_argument("no matching GeneratorID");
     }
     // call subclass init, which calls baseclass init
     g->init();
@@ -1112,12 +1115,7 @@ void Buffer :: render(RenderCountType f) {
 	// we assume that all inputs have the same frame size as standard frame size
 	FrameSizeType cfs = get_common_frame_size();
     FrameSizeType fs = get_frame_size();
-	
-	// how many render cycles to fill our frame size
-//	RenderCountType render_cycles_max = floor(get_frame_size() / 
-//                                    static_cast<SampleType>(cfs));
-    //std::cout << "render_cycles_max: " << render_cycles_max  << std::endl;
-    
+	    
 	RenderCountType rc(0); // must start with request for frame 1
 	OutputSizeType i(0);
 	OutputCountType j(0);
@@ -1189,8 +1187,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
     OutputSizeType j(0);
     
     FrameSizeType frameSize = get_frame_size();
-//    VFrameSizeType::const_iterator p;
-//    VFrameSizeType::const_iterator p_end(dims.end());
+
     // interleave dimensions if more than one requested
     // iterate over frame size; for each frame, we will write that many dimensiosn
     for (i = 0; i < frameSize; ++i) {
@@ -1326,13 +1323,10 @@ void Phasor :: render(RenderCountType f) {
 
 
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 Sine :: Sine(EnvironmentShared e) 
 	// must initialize base class with passed arg
-	: Generator(e),
-		_amp(0),
-		_amp_prev(1) // init amp previous to 1 so to force reset to 0 on start
-		//_period_start_sample_pos(0)
+	: Generator(e)
 	{
 	_class_name = "Sine"; 
     _gid = ID_Sine;
@@ -1370,22 +1364,22 @@ void Sine :: init() {
 
 
 void Sine :: render(RenderCountType f) {
-	OutputSizeType fs = get_frame_size();
+    
+	_fs = get_frame_size();
 	OutputSizeType i(0);
 	
     while (_render_count < f) {
         _render_inputs(f);
 		_sum_inputs();
-		
-		for (i=0; i < fs; ++i) {
+        _sample_count = _render_count * _fs;
+		// iterate over one frame
+		for (i=0; i < _fs; ++i) {
 			_sum_frequency = _summed_inputs[_input_index_frequency][i];
-			_period_samples = floor((_sampling_rate / 
-					frequency_limiter(_sum_frequency, _nyquist)) + 0.5);                     
-			_amp = _amp_prev + (1.0 / static_cast<SampleType>(
-					(_period_samples - 1)));
-			if (_amp > 1.00001) _amp = 0.0;
-			_amp_prev = _amp;
-			outputs[0][i] = _amp;
+			//_sum_phase = _summed_inputs[_input_index_phase][i];
+            // 2*pi is one cycle, times the number of samples per cycle
+            _angle_increment = PI2 * (_sum_frequency / _sampling_rate);                        
+            // mult angle increment by cumulative running of samples
+			outputs[0][i] = sin(_angle_increment * (_sample_count+i));
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;

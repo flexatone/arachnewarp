@@ -60,10 +60,14 @@ typedef std::tr1::shared_ptr<MapStringBool> SharedMapStringBool;
 SampleType  const PI(3.14159265358979323846264338);
 SampleType const PI2(3.14159265358979323846264338*2.0);
 
+SampleType  const LOGTWO(0.69314718055994528623);
+SampleType  const LOGTEN(2.302585092994);
+
+
 //! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
 SampleType  const MIN_FQ(.00001);
 
-//! Defined for all hierarchical displays. 
+//! Defined for all text-based hierarchical displays. 
 std::tr1::uint8_t const INDENT_SIZE(2);
 
 
@@ -89,6 +93,105 @@ inline SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
 	fq = fq > nyquist ? nyquist : fq;
 	return fq < -nyquist ? -nyquist : fq;	
 }
+
+
+// taken from pd/chuck; need to update types, and integerate as necessar
+//-----------------------------------------------------------------------------
+//double round( double a )
+//{
+//    if( a >= 0 ) return (double)(long)( a + .5 );
+//    else return (double)(long)( a - .5 );
+//}
+//
+//
+//double trunc( double a )
+//{
+//    return (double)(long)a;
+//}
+//
+//
+//double remainder( long a, long b )
+//{
+//    long div = a/b;
+//    return a - b*div;
+//}
+//
+//double mtof( double f )
+//{
+//    if( f <= -1500 ) return (0);
+//    else if( f > 1499 ) return (mtof(1499));
+//    // else return (8.17579891564 * exp(.0577622650 * f));
+//    // TODO: optimize
+//    else return ( pow(2,(f-69)/12.0) * 440.0 );
+//}
+//
+//double ftom( double f )
+//{   
+//    // return (f > 0 ? 17.3123405046 * log(.12231220585 * f) : -1500);
+//    // TODO: optimize
+//    return (f > 0 ? (log(f/440.0) / LOGTWO) * 12.0 + 69 : -1500);
+//}
+//
+//
+//double powtodb( double f )
+//{
+//    if( f <= 0 ) return (0);
+//    else
+//    {
+//        double val = 100 + 10./LOGTEN * log(f);
+//        return (val < 0 ? 0 : val);
+//    }
+//}
+//
+//
+//double rmstodb( double f )
+//{
+//    if( f <= 0 ) return (0);
+//    else
+//    {
+//        double val = 100 + 20./LOGTEN * log(f);
+//        return (val < 0 ? 0 : val);
+//    }
+//}
+//
+//
+//double dbtopow( double f )
+//{
+//    if( f <= 0 )
+//        return (0);
+//    else
+//    {
+//        if( f > 870 ) f = 870;
+//        return (exp((LOGTEN * 0.1) * (f-100.)));
+//    }
+//}
+//
+//
+//double dbtorms( double f )
+//{
+//    if( f <= 0 )
+//        return (0);
+//    else
+//    {
+//        if( f > 485 ) f = 485;
+//        return (exp((LOGTEN * 0.05) * (f-100.)));
+//    }
+//}
+//
+//unsigned long nextpow2( unsigned long n )
+//{
+//    unsigned long nn = n;
+//    for( ; n &= n-1; nn = n );
+//    return nn * 2;
+//}
+//
+//unsigned long ensurepow2( unsigned long n )
+//{
+//    return nextpow2( n-1 );
+//}
+//
+//
+
 
 
 // utility classes =============================================================

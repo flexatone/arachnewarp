@@ -780,13 +780,15 @@ class Sine: public Generator {
 	
     SampleType _sum_frequency;
     SampleType _sum_phase;	
+    SampleType _angle_increment;	
 	
 	// state variables used for wave calc
 	//SampleType _period_seconds;
 	SampleType _amp;
 	SampleType _amp_prev;		
 	
-	RenderCountType _period_samples;		
+	RenderCountType _sample_count;		
+    OutputSizeType _fs; 
 
     public://------------------------------------------------------------------
     explicit Sine(EnvironmentShared);
