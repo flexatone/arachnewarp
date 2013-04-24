@@ -191,7 +191,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
     
     // the label is verbos, and describes i/o
     // create a doc segment of the box
-    std::string label = g->get_label();
+    std::string label = g->get_label_address();
     escape(label, "{}<>", "\\");
     _stream << "label = \"<doc>  " << label << " ";
 

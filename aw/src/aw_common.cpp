@@ -57,7 +57,7 @@ void print(SampleType* out, FrameSizeType size) {
         //std::cout << *out++ << ' ';
     //}    
     std::cout << '>' << std::endl;
-}
+}	
 
 
 const char* get_fp_home() {

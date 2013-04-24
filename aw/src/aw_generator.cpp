@@ -1352,7 +1352,7 @@ void Sine :: init() {
             aw::ParameterType::ID_Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
-	_input_index_phase = 1;	
+	_input_index_phase = 1;
 	
 	// register output
     aw::ParameterTypeShared pt3 = aw::ParameterType::make( 
@@ -1361,7 +1361,6 @@ void Sine :: init() {
     _register_output_parameter_type(pt3);	
 	
 }
-
 
 void Sine :: render(RenderCountType f) {
     
