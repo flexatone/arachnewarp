@@ -95,6 +95,13 @@ inline SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
 }
 
 
+inline SampleType double_limiter(SampleType src, SampleType min,
+        SampleType max) {
+    src = src < min ? min : src;
+    return src > max ? max : src;
+}
+
+
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------
 //double round( double a )

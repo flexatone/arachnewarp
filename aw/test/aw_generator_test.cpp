@@ -906,36 +906,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_1) {
     
 }
 
-BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
-
-	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
-	gbuf->set_slot_by_index(0, 2);
-	gbuf->set_slot_by_index(1, 1); // one half second of buffer
-
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Sine);
-    //aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Sine);
-
-    // one cycle for 4 samples
-    2 >> g1;
-    aw::GeneratorShared g3 = g1 * .5 + .5;
-    
-    g3 >> g2;
-    //g1->set_input_by_index(0, 22050);        
-
-	gbuf->add_input_by_index(0, g2);
-	gbuf->add_input_by_index(1, g3);
-
-	gbuf->render(1); // render count here meaningless
-
-    //gbuf->illustrate_outputs();
-    //gbuf->illustrate_network();
-    
-	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
-    
-}
-
-
 
 
 

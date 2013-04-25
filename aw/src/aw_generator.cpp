@@ -113,7 +113,10 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
     }
     else if (q == ID_Sine) {
         g = SineShared(new Sine(e));    
-    }    
+    }
+    else if (q == ID_Map) {
+        g = SineShared(new Map(e));
+    }
     else {
         throw std::invalid_argument("no matching GeneratorID");
     }
@@ -1352,7 +1355,7 @@ void Sine :: init() {
             aw::ParameterType::ID_Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
-	_input_index_phase = 1;
+	_input_index_phase = 1;	
 	
 	// register output
     aw::ParameterTypeShared pt3 = aw::ParameterType::make( 
@@ -1362,8 +1365,8 @@ void Sine :: init() {
 	
 }
 
+
 void Sine :: render(RenderCountType f) {
-    
 	_fs = get_frame_size();
 	OutputSizeType i(0);
 	
@@ -1374,11 +1377,135 @@ void Sine :: render(RenderCountType f) {
 		// iterate over one frame
 		for (i=0; i < _fs; ++i) {
 			_sum_frequency = _summed_inputs[_input_index_frequency][i];
+            
 			//_sum_phase = _summed_inputs[_input_index_phase][i];
             // 2*pi is one cycle, times the number of samples per cycle
             _angle_increment = PI2 * (_sum_frequency / _sampling_rate);                        
             // mult angle increment by cumulative running of samples
 			outputs[0][i] = sin(_angle_increment * (_sample_count+i));
+		}
+        //std::cout << "_period_samples: " << _period_samples << std::endl;        
+        _render_count += 1;
+    }
+    
+}
+
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+Map :: Map(EnvironmentShared e)
+	// must initialize base class with passed arg
+	: Generator(e)
+	{
+	_class_name = "Map";
+    _gid = ID_Map;
+}
+
+void Map :: init() {
+    // the int routie must configure the names and types of parameters
+    // std::cout << *this << " Phasor::init()" << std::endl;
+    Generator::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+	
+    // register some parameters
+    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Value);
+    pt1->set_instance_name("Source");
+    _register_input_parameter_type(pt1);
+	_input_index_src = 0;
+	
+
+    aw::ParameterTypeShared pt4 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt4->set_instance_name("Source Lower");
+    _register_input_parameter_type(pt4);
+	_input_index_src_lower = 1;
+
+    aw::ParameterTypeShared pt5 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt5->set_instance_name("Source Upper");
+    _register_input_parameter_type(pt5);
+	_input_index_src_upper = 2;
+	
+
+    aw::ParameterTypeShared pt2 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt2->set_instance_name("Destination Lower");
+    _register_input_parameter_type(pt2);	
+	_input_index_dst_lower = 3;
+
+    aw::ParameterTypeShared pt3 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt3->set_instance_name("Destination Upper");
+    _register_input_parameter_type(pt3);
+	_input_index_dst_upper = 4;
+
+
+	// register output
+    aw::ParameterTypeShared pt_out = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt_out->set_instance_name("Output");
+    _register_output_parameter_type(pt_out);	
+	
+}
+
+
+void Map :: render(RenderCountType f) {
+	_fs = get_frame_size();
+	OutputSizeType i(0);
+	
+	//fq = fq == 0 ? MIN_FQ : fq;
+    
+    while (_render_count < f) {
+        _render_inputs(f);
+		_sum_inputs();
+		// iterate over one frame
+        
+		for (i=0; i < _fs; ++i) {
+            // must get true min max; could do swap at if/else branch but this is probably close to as fast as possible
+            	
+            _min_src = _summed_inputs[_input_index_src_lower][i] <
+                    _summed_inputs[_input_index_src_upper][i] ?
+                    _summed_inputs[_input_index_src_lower][i] :
+                    _summed_inputs[_input_index_src_upper][i]
+
+            _max_src = _summed_inputs[_input_index_src_upper][i] >
+                    _summed_inputs[_input_index_src_lower][i] ?
+                    _summed_inputs[_input_index_src_upper][i] :
+                    _summed_inputs[_input_index_src_lower][i]
+
+            _min_dst = _summed_inputs[_input_index_dst_lower][i] <
+                    _summed_inputs[_input_index_dst_upper][i] ?
+                    _summed_inputs[_input_index_dst_lower][i] :
+                    _summed_inputs[_input_index_dst_upper][i]
+
+            _max_dst = _summed_inputs[_input_index_dst_upper][i] >
+                    _summed_inputs[_input_index_dst_lower][i] ?
+                    _summed_inputs[_input_index_dst_upper][i] :
+                    _summed_inputs[_input_index_dst_lower][i]
+
+        
+			_limit_src = aw::double_limiter(
+                    _summed_inputs[_input_index_src][i], _min_src, _max_src
+                    );
+            
+            _range_src = _max_src - _min_src; // no abs necessary
+            _range_dst = _max_dst - _min_dst; // no abs necessary
+            
+            if (_range_src != 0 && _range_dst != 0) {
+                // get percentage of src, apply to range of dst + shift
+                _mapped = ((_limit_src / _range_src) * _range_dst) + _min_dst;
+            }
+            else {
+                // if we have no range on input, it means that our source boundaries are the same, which means that we have clipped to a constant; there is no sensible mapping (dst lower, upper, middle are all vialable / if we have no range on output, it menans dst boundaries are the same, so we should output that value; thus in either case, simply returning the dst min is acceptable.
+                _mapped = _min_dst;
+            }
+            
+			outputs[0][i] = _mapped;
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
