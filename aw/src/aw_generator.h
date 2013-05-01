@@ -164,7 +164,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
         ID_Buffer,
         ID_Phasor,
         ID_Sine,
-        ID_Map,
+        ID_Map
     };
         
 		
@@ -807,13 +807,12 @@ class Sine: public Generator {
 
 
 //=============================================================================
-//! A mapping routine that takes four parameters: source, destination min, destination max, source min, source max. Values of the source greater than min/max are truncaated and held at that value.
+//! A mapping routine that takes five parameters: source, destination min, destination max, source min, source max. Values of the source greater than min/max are truncaated and held at that value.
 class Map;
 typedef std::tr1::shared_ptr<Map> MapShared;
 class Map: public Generator {
 
     private://-----------------------------------------------------------------
-
     ParameterIndexType _input_index_src;
     ParameterIndexType _input_index_src_lower; 	
     ParameterIndexType _input_index_src_upper; 	
