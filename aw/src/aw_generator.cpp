@@ -43,7 +43,7 @@ ParameterTypeShared ParameterType :: make(ParameterTypeID q){
         p = ParameterTypeTriggerShared(new ParameterTypeTrigger);    
     }    
     else {
-        throw std::invalid_argument("no matching ParaameterTypeID: " + q);
+        throw std::invalid_argument("no matching ParaameterTypeID");
     }
     return p;
 }
@@ -115,7 +115,7 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
         g = SineShared(new Sine(e));    
     }
     else if (q == ID_Map) {
-        g = SineShared(new Map(e));
+        g = MapShared(new Map(e));
     }
     else {
         throw std::invalid_argument("no matching GeneratorID");
@@ -1365,7 +1365,6 @@ void Sine :: init() {
 	
 }
 
-
 void Sine :: render(RenderCountType f) {
 	_fs = get_frame_size();
 	OutputSizeType i(0);
@@ -1405,8 +1404,11 @@ Map :: Map(EnvironmentShared e)
     _gid = ID_Map;
 }
 
+Map :: ~Map() {
+}
+
 void Map :: init() {
-    // the int routie must configure the names and types of parameters
+    // the int route must configure the names and types of parameters
     // std::cout << *this << " Phasor::init()" << std::endl;
     Generator::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
@@ -1417,7 +1419,7 @@ void Map :: init() {
     pt1->set_instance_name("Source");
     _register_input_parameter_type(pt1);
 	_input_index_src = 0;
-	
+
 
     aw::ParameterTypeShared pt4 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
@@ -1457,9 +1459,7 @@ void Map :: init() {
 void Map :: render(RenderCountType f) {
 	_fs = get_frame_size();
 	OutputSizeType i(0);
-	
-	//fq = fq == 0 ? MIN_FQ : fq;
-    
+	    
     while (_render_count < f) {
         _render_inputs(f);
 		_sum_inputs();
@@ -1467,34 +1467,33 @@ void Map :: render(RenderCountType f) {
         
 		for (i=0; i < _fs; ++i) {
             // must get true min max; could do swap at if/else branch but this is probably close to as fast as possible
-            	
             _min_src = _summed_inputs[_input_index_src_lower][i] <
                     _summed_inputs[_input_index_src_upper][i] ?
                     _summed_inputs[_input_index_src_lower][i] :
-                    _summed_inputs[_input_index_src_upper][i]
+                    _summed_inputs[_input_index_src_upper][i];
 
             _max_src = _summed_inputs[_input_index_src_upper][i] >
                     _summed_inputs[_input_index_src_lower][i] ?
                     _summed_inputs[_input_index_src_upper][i] :
-                    _summed_inputs[_input_index_src_lower][i]
+                    _summed_inputs[_input_index_src_lower][i];
 
             _min_dst = _summed_inputs[_input_index_dst_lower][i] <
                     _summed_inputs[_input_index_dst_upper][i] ?
                     _summed_inputs[_input_index_dst_lower][i] :
-                    _summed_inputs[_input_index_dst_upper][i]
+                    _summed_inputs[_input_index_dst_upper][i];
 
             _max_dst = _summed_inputs[_input_index_dst_upper][i] >
                     _summed_inputs[_input_index_dst_lower][i] ?
                     _summed_inputs[_input_index_dst_upper][i] :
-                    _summed_inputs[_input_index_dst_lower][i]
+                    _summed_inputs[_input_index_dst_lower][i];
 
-        
 			_limit_src = aw::double_limiter(
                     _summed_inputs[_input_index_src][i], _min_src, _max_src
                     );
             
             _range_src = _max_src - _min_src; // no abs necessary
             _range_dst = _max_dst - _min_dst; // no abs necessary
+            //std::cout << "_range_src:" << _range_src << " _range_dst:" << _range_dst;
             
             if (_range_src != 0 && _range_dst != 0) {
                 // get percentage of src, apply to range of dst + shift
@@ -1504,7 +1503,6 @@ void Map :: render(RenderCountType f) {
                 // if we have no range on input, it means that our source boundaries are the same, which means that we have clipped to a constant; there is no sensible mapping (dst lower, upper, middle are all vialable / if we have no range on output, it menans dst boundaries are the same, so we should output that value; thus in either case, simply returning the dst min is acceptable.
                 _mapped = _min_dst;
             }
-            
 			outputs[0][i] = _mapped;
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        

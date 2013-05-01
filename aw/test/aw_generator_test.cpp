@@ -858,7 +858,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_7) {
     // test basic multiplication
 	std::cerr << std::string(80, '-') << std::endl;
 
-
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
     g1->set_input_by_index(0, 4);
 	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);
@@ -869,13 +868,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_7) {
     g10->render(1);
 	BOOST_CHECK_CLOSE(g10->outputs[0][0], 11, .00001);
 
-
     aw::GeneratorShared g11 = g1 + g2 * 10; 
     //g10->illustrate_network();   
     g11->render(1);
 	BOOST_CHECK_CLOSE(g11->outputs[0][0], 74, .00001);
-
-
 
     aw::GeneratorShared g12 = 10 * g1 + .5; 
     //g10->illustrate_network();   
@@ -903,10 +899,73 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_1) {
     
     
 	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
-    
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_map_1) {
+
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
+    
+    g1->set_input_by_index(0, .5);
+    g1->set_input_by_index(1, 0); // source
+    g1->set_input_by_index(2, 1);
+    g1->set_input_by_index(3, 10); // dst
+    g1->set_input_by_index(4, 20);
+
+    g1->render(1);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 15.0, .0001);
+    
+    g1->set_input_by_index(0, -1);
+    g1->render(2);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 10.0, .0001);
+
+    g1->set_input_by_index(0, 2.5);
+    g1->render(3);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 20.0, .0001);
+
+    g1->set_input_by_index(0, .5);
+    g1->set_input_by_index(3, -100);
+    g1->set_input_by_index(4, 100);
+    g1->render(4);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 0.0, .0001);
+
+    g1->set_input_by_index(0, 2);
+    g1->set_input_by_index(1, 0);
+    g1->set_input_by_index(2, 100);
+    g1->set_input_by_index(3, 0);
+    g1->set_input_by_index(4, 1000);
+    g1->render(5);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 20.0, .0001);
+
+
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_map_2) {
+
+    aw::GeneratorShared gsine1 = aw::Generator::make(aw::Generator::ID_Sine);
+    6 >> gsine1;
+    aw::GeneratorShared gsine2 = aw::Generator::make(aw::Generator::ID_Sine);
+    4 >> gsine2;
+    aw::GeneratorShared gsine3 = aw::Generator::make(aw::Generator::ID_Sine);
+    20 >> gsine3;
+    
+	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	gbuf->set_slot_by_index(0, 1);
+	gbuf->set_slot_by_index(1, 60); // 60 sec
+    
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
+    g1->set_input_by_index(0, gsine3);
+    g1->set_input_by_index(1, -1); // source
+    g1->set_input_by_index(2, 1);
+    g1->set_input_by_index(3, gsine1); // dst
+    g1->set_input_by_index(4, gsine2);
+
+    gbuf->set_input_by_index(0, g1);
+//    gbuf->render(1);
+//    gbuf->illustrate_outputs();
+//    gbuf->illustrate_network();
+    
+}
 
 
 

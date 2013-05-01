@@ -60,6 +60,13 @@ BOOST_AUTO_TEST_CASE(aw_common_test3) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_common_test_inline_1) {
+
+    BOOST_CHECK_EQUAL(aw::double_limiter(.5, 0, 1), .5);
+    BOOST_CHECK_EQUAL(aw::double_limiter(1.5, 0, 1), 1);
+    BOOST_CHECK_EQUAL(aw::double_limiter(-.5, 0, 1), 0);
+
+}
 
 
 
