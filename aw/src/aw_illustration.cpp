@@ -87,7 +87,7 @@ set rmargin screen 0.98 " << std::endl;
         <<",1" << std::endl;
 
     for (int i=1; i<d+1; ++i) {
-        // TODO: need to increment color 
+        // TODO: need to increment/map color 
         _stream << "set style line " << i 
             << " lt 1 lw 1 pt 3 lc rgb '#332255'" << std::endl;
     }
@@ -99,7 +99,7 @@ set rmargin screen 0.98 " << std::endl;
     double top;
     double bottom;
         
-    for (OutputCountType dStep=1; dStep<d+1; ++dStep) {
+    for (OutputCountType dStep=1; dStep < d+1; ++dStep) {
         // use whole margin at top on first
         if (dStep == 1) {
             top = pos - margin; 
@@ -212,7 +212,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
                     "> out::" << static_cast<int>(pos) << " "; // << std::endl;
     }
 	// end the definition of the label/node
-    _stream << "\" fillcolor=\"" << ColorDictionary::get(g->get_gid()) << "\"];" << std::endl;    
+    _stream << "\" fillcolor=\"" << ColorDictionary::get(g->get_class_id()) << "\"];" << std::endl;
     
     // next, define connections
     Generator::VGenSharedOutPair g_ins;

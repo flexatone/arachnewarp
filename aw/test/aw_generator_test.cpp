@@ -95,6 +95,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     BOOST_CHECK_EQUAL(g3.get_input_count(), 1);
     BOOST_CHECK_EQUAL(g3.get_input_index_from_parameter_name("Constant numerical value"), 0);
     // check index out of range
+    BOOST_CHECK_EQUAL(g3.get_input_index_from_class_id(aw::ParameterType::ID_Value), 0);
+    
     BOOST_REQUIRE_THROW(g3.set_input_by_index(2, 30), std::invalid_argument);
     BOOST_REQUIRE_THROW(g3.set_input_by_index(1, 23), std::invalid_argument);
 	
@@ -935,39 +937,32 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_1) {
     g1->set_input_by_index(3, 0);
     g1->set_input_by_index(4, 1000);
     g1->render(5);
-    BOOST_CHECK_CLOSE(g1->outputs[0][0], 20.0, .0001);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 20.0, .0001);	
 
 
 }
+
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_2) {
 
-    aw::GeneratorShared gsine1 = aw::Generator::make(aw::Generator::ID_Sine);
-    6 >> gsine1;
-    aw::GeneratorShared gsine2 = aw::Generator::make(aw::Generator::ID_Sine);
-    4 >> gsine2;
-    aw::GeneratorShared gsine3 = aw::Generator::make(aw::Generator::ID_Sine);
-    20 >> gsine3;
-    
-	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
-	gbuf->set_slot_by_index(0, 1);
-	gbuf->set_slot_by_index(1, 60); // 60 sec
-    
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
-    g1->set_input_by_index(0, gsine3);
-    g1->set_input_by_index(1, -1); // source
-    g1->set_input_by_index(2, 1);
-    g1->set_input_by_index(3, gsine1); // dst
-    g1->set_input_by_index(4, gsine2);
-
-    gbuf->set_input_by_index(0, g1);
-//    gbuf->render(1);
-//    gbuf->illustrate_outputs();
-//    gbuf->illustrate_network();
+    g1->set_default(); // sets source to 0, 1
     
+    g1->set_input_by_index(0, .5);
+    g1->set_input_by_index(3, 10); // dst
+    g1->set_input_by_index(4, 20);
+
+    g1->render(1);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 15.0, .0001);
+    
+    g1->set_input_by_index(0, -1);
+    g1->render(2);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 10.0, .0001);
+
+    g1->set_input_by_index(0, 2.5);
+    g1->render(3);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 20.0, .0001);
 }
-
-
 
 
 

@@ -68,6 +68,32 @@ BOOST_AUTO_TEST_CASE(aw_common_test_inline_1) {
 
 }
 
+BOOST_AUTO_TEST_CASE(aw_test_true_min_max) {
+
+    aw::SampleType min(-1);
+    aw::SampleType max(-1);
+    aw::true_min_max(100, 4, &min, &max);
+
+    BOOST_CHECK_EQUAL(min, 4);
+    BOOST_CHECK_EQUAL(max, 100);
+    
+    min = -1;
+    max = -1;
+    aw::true_min_max(4, 100, &min, &max);
+    BOOST_CHECK_EQUAL(min, 4);
+    BOOST_CHECK_EQUAL(max, 100);
+
+
+    min = -1;
+    max = -1;
+    aw::true_min_max(3000, -12, &min, &max);
+    BOOST_CHECK_EQUAL(min, -12);
+    BOOST_CHECK_EQUAL(max, 3000);
+
+
+
+}
+
 
 
 
