@@ -102,6 +102,26 @@ inline SampleType double_limiter(SampleType src, SampleType min,
 }
 
 
+
+//! Detect and assign true min / max, based on comparison. Min and max are set by passing in pointers to to the value.
+inline void true_min_max(
+        SampleType lower,
+        SampleType upper,
+        SampleType* min,
+        SampleType* max) {
+
+    if (upper < lower){
+        *min = upper;
+        *max = lower;
+    }
+    else { // if equal nothing happens
+        *min = lower;
+        *max = upper;
+    }
+}
+
+
+
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------
 //double round( double a )

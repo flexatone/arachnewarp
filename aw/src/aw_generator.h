@@ -42,6 +42,10 @@ class ParameterType {
     protected://---------------------------------------------------------------
     //! Class name set on creation. 
     std::string _class_name;
+    
+    //! Public parameter id, can be used for class matching.
+    ParameterTypeID _class_id;
+    
     static const char _class_name_alt[];
 
     //! The name of the parameter in the context of a specific generator. 
@@ -67,6 +71,10 @@ class ParameterType {
 
     //! Return the name as a string. 
     std::string get_instance_name() const {return _instance_name;};
+    
+    // Return the Parameter type id. 
+    ParameterTypeID get_class_id() const {return _class_id;};
+    
 };
 
 
@@ -173,15 +181,12 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     std::string _class_name;
 
     //! Public generator id, can be used for class matching. 
-    GeneratorID _gid;
+    GeneratorID _class_id;
 
     private://------------------------------------------------------------------
     // Rename OutputCountType as OutputIndexType
     //! Store the number of outputs, similar to channels, that this Generator is currently set up with. 
     OutputCountType _output_count;
-    
-	//! The size of each frame for each _output_count as stored in the outputs vector. 
-    FrameSizeType _frame_size; // if changed, need to rebuild outputs	
     
 	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputSizeType is expected to store size up to long multichannel audio files.
     OutputSizeType _outputs_size;
@@ -196,6 +201,9 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     EnvironmentShared _environment;
 	
     protected://---------------------------------------------------------------
+
+	//! The size of each frame for each _output_count as stored in the outputs vector. This is protected because render() methods must access.
+    FrameSizeType _frame_size; // if changed, need to rebuild outputs	
     
     //! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
 	OutputSizeType _sampling_rate;
@@ -224,12 +232,12 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	
 	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
     std::tr1::unordered_map<ParameterIndexType, 
-                            ParameterTypeShared> _slot_parameter_type;		
+            ParameterTypeShared> _slot_parameter_type;
 	
 	
     //! We store a ParameterTypeShared for each defined output, telling us what it is.
     std::tr1::unordered_map<ParameterIndexType, 
-                            ParameterTypeShared> _output_parameter_type;		
+            ParameterTypeShared> _output_parameter_type;		
 		
 
     public://------------------------------------------------------------------
@@ -269,8 +277,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Call the render method on all stored inputs. This is done once for each render call; this calls each  input Generator's render() method. This means that during render() calls, _render_inputs() does not need to be called. 
     inline void _render_inputs(RenderCountType f);
 	
-	//! Flatten or sum multiple inputs that reside in the same input type. This is done to optimize dealing with multiple inputs in the same input type ahead of calculations for rendering. Results are stored in _summed_inputs VV. 
-	inline void _sum_inputs();
+	//! Flatten or sum multiple inputs that reside in the same input type. This is done to optimize dealing with multiple inputs in the same input type ahead of calculations for rendering. Results are stored in _summed_inputs VV. The fs argument is the number of frames to read.  
+	inline void _sum_inputs(FrameSizeType fs);
     
 	//! Call reset on all inputs. 
 	void _reset_inputs();
@@ -294,8 +302,15 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     
     virtual ~Generator();
     
-    //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called. 
-    virtual void init();        
+    //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called, and must be called explicitly in derived classes. This should only be called once in the life of a generator.
+    virtual void init();
+    
+    //! Reset all inputs, and zero out the outputs array and the _render count. Derived classes should manually call the base class.
+    virtual void reset();
+	
+
+    //! Set a default input and slot configuration. If other inputs or slots are configured, the will be removed. 
+    virtual void set_default();
 
     //! Return the the number of outputs dimensions
     OutputCountType get_output_count() const {return _output_count;};
@@ -330,9 +345,6 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	//! Get the nyquist frequency. 
     OutputSizeType get_nyquist() const {return _nyquist;};	
 
-    //! Reset all parameters, and zero out the outputs array.
-    virtual void reset();
-	
     
 	// info strings ...........................................................    
 
@@ -354,7 +366,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
-    GeneratorID get_gid() const {return _gid;};
+    GeneratorID get_class_id() const {return _class_id;};
 
 
 	// display ...............................................................    
@@ -405,7 +417,12 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     ParameterIndexType get_slot_count() {return _slot_count;};
 
 	//! Return the parameter index for a named parameter.
-    ParameterIndexType get_input_index_from_parameter_name(const std::string& s);
+    ParameterIndexType get_input_index_from_parameter_name(const
+            std::string& s);
+
+	//! Return the parameter index for the first-encountered parameter type id; raises an exception if not found.
+    ParameterIndexType get_input_index_from_class_id(const
+            ParameterType::ParameterTypeID ptid);
 
 	//! Return the parameter slot for a named parameter.
     ParameterIndexType get_slot_index_from_parameter_name(const std::string& s);	
@@ -419,11 +436,27 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
             ParameterIndexType i);
     
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
-    virtual void set_input_by_index(ParameterIndexType i, 
-            GeneratorShared gs, OutputCountType pos=0);
-                                        
-    virtual void set_input_by_index(ParameterIndexType i, SampleType v,
+    virtual void set_input_by_index(
+            ParameterIndexType i,
+            GeneratorShared gs,
             OutputCountType pos=0);
+    
+    virtual void set_input_by_index(
+            ParameterIndexType i,
+            SampleType v,
+            OutputCountType pos=0);
+
+    ///! Set input by class id of the ParameterType. 
+    void set_input_by_class_id(
+            ParameterType::ParameterTypeID ptid,
+            GeneratorShared gs,
+            OutputCountType pos=0);
+                                        
+    void set_input_by_class_id(
+            ParameterType::ParameterTypeID ptid,
+            SampleType v, // accept numbers
+            OutputCountType pos=0);
+
 
     //! Add a multiple input at this parameter. 
     virtual void add_input_by_index(ParameterIndexType i, 
@@ -716,7 +749,7 @@ class Buffer: public Generator {
 	
     ~Buffer();
 
-    virtual void init();    
+    virtual void init();
 	
 	//! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
     virtual void render(RenderCountType f);	
@@ -782,14 +815,12 @@ class Sine: public Generator {
     SampleType _sum_frequency;
     SampleType _sum_phase;	
     SampleType _angle_increment;	
-	
-	// state variables used for wave calc
-	//SampleType _period_seconds;
+	    
 	SampleType _amp;
 	SampleType _amp_prev;		
 	
 	RenderCountType _sample_count;		
-    OutputSizeType _fs; 
+    OutputSizeType _i;
 
     public://------------------------------------------------------------------
     explicit Sine(EnvironmentShared);
@@ -801,8 +832,6 @@ class Sine: public Generator {
 	//! Render the pure sine.. 
     virtual void render(RenderCountType f);
 };
-
-
 
 
 
@@ -818,8 +847,8 @@ class Map: public Generator {
     ParameterIndexType _input_index_src_upper; 	
     ParameterIndexType _input_index_dst_lower; 	
     ParameterIndexType _input_index_dst_upper; 	
-    
-    OutputSizeType _fs;
+
+    OutputSizeType _i;
     
     SampleType _limit_src;
     SampleType _range_src;
@@ -831,14 +860,15 @@ class Map: public Generator {
     SampleType _min_dst;
     SampleType _max_dst;
     
-    SampleType _mapped;
-
+    
     public://------------------------------------------------------------------
     explicit Map(EnvironmentShared);
 	
     ~Map();
 
-    virtual void init();    
+    virtual void init();
+    
+    virtual void set_default();
 		
 	//! Perform the mapping. 
     virtual void render(RenderCountType f);

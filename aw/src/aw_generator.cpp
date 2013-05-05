@@ -63,31 +63,37 @@ std::ostream& operator<<(std::ostream& ostream, const ParameterType& pt) {
 //-----------------------------------------------------------------------------
 ParameterTypeValue :: ParameterTypeValue() {
     _class_name = "ParameterTypeValue";
+    _class_id = ID_Value;
 }
 
 //-----------------------------------------------------------------------------
 ParameterTypeFrequency :: ParameterTypeFrequency() {
     _class_name = "ParameterTypeFrequency";
+    _class_id = ID_Frequency;
 }
 
 //-----------------------------------------------------------------------------
 ParameterTypeDuration :: ParameterTypeDuration() {
     _class_name = "ParameterTypeDuration";
+    _class_id = ID_Duration;
 }
 
 //-----------------------------------------------------------------------------
 ParameterTypePhase :: ParameterTypePhase() {
     _class_name = "ParameterTypePhase";
+    _class_id = ID_Phase;
 }
 
 //-----------------------------------------------------------------------------
 ParameterTypeChannels :: ParameterTypeChannels() {
     _class_name = "ParameterTypeChannels";
+    _class_id = ID_Channels;
 }
 
 //-----------------------------------------------------------------------------
 ParameterTypeTrigger :: ParameterTypeTrigger() {
     _class_name = "ParameterTypeTrigger";
+    _class_id = ID_Trigger;
 }
 
 
@@ -138,13 +144,13 @@ Generator :: Generator(EnvironmentShared e)
 	: _class_name("Generator"), 
     //gid(-1), // want this to not match any known value
 	_output_count(0), // always init to 1; can change in init
-	_frame_size(1), // set in init; 
 	_outputs_size(0), // will be updated after resizing
     _input_count(0), 	
-    _slot_count(0), 	    
+    _slot_count(0),
 	_environment(e), // replace with Environment
     
 	// protected ...
+	_frame_size(1), // set in init;         
 	_sampling_rate(0), // set from Envrionment in init()
 	_nyquist(0), // set from Envrionment in init()
 
@@ -158,6 +164,7 @@ Generator :: ~Generator() {
 }
 
 void Generator :: init() {
+    // TODO: should we set a boolean to make sure this is only called once?
     // the frame size is eithe common or larger; thus, we generally only read as many as we have from a client object. 
     _frame_size = _environment->get_common_frame_size();    
     _sampling_rate = _environment->get_sampling_rate();
@@ -166,8 +173,25 @@ void Generator :: init() {
     aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
             aw::ParameterType::ID_Value);
     pt1->set_instance_name("Generator default output");
-    _register_output_parameter_type(pt1);	
-    
+    _register_output_parameter_type(pt1);
+}
+
+void Generator :: reset() {
+    OutputCountType i;
+    FrameSizeType j;
+    SampleType n(0);
+    for (i=0; i<_output_count; ++i) {
+        for (j=0; j < _frame_size; ++j) {
+            outputs[i][j] = n;
+        }
+    }
+    // always reset render count?
+    _render_count = 0;
+	// should reset reset inputs?
+}
+
+void Generator :: set_default() {
+    // empty base class; override in derived. 
 }
 
 //.............................................................................
@@ -250,18 +274,15 @@ void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
     _slot_parameter_type[_slot_count] = pts;		
 	_slots.push_back(GeneratorShared()); // store empty to hold position
     _slot_count += 1;
-    
 }
-
 
 void Generator :: _update_for_new_slot() {
 }
 
-
 void Generator :: _render_inputs(RenderCountType f) {
     // for each of the inputs, need to render up to this frame
     // this is "pulling" lower-level values up to date
-    // this seems somewhat wasteful as in most cases we just will be advancing by 1 more than the previous frame count value 
+    // passing render count seems somewhat wasteful as in most cases we just will be advancing by 1 more than the previous frame count value
     // this is inlined in the header
     ParameterIndexType j;
     ParameterIndexType gen_count_at_input(0);
@@ -276,6 +297,7 @@ void Generator :: _render_inputs(RenderCountType f) {
 }
 
 void Generator :: _reset_inputs() {
+    // NOTE: this is not called on reset(), and thus this is not yet recurssive
     VGenSharedOutPair :: const_iterator j; // vector of generators    
     for (ParameterIndexType i = 0; i<_input_count; ++i) {
         // inputs are a vector of Generators
@@ -286,18 +308,14 @@ void Generator :: _reset_inputs() {
     }
 }
 
-void Generator :: _sum_inputs() {
+void Generator :: _sum_inputs(FrameSizeType fs) {
     // this is inlined in render() calls
     // note that this is nearly identical to Add :: render(); here we store the results in _summed_inputs, not in outputs; we also do not render inputs
+    // when reading inputs, we must assume they are the common frame size, not necessarily our frame size (like when we are a buffer)
     ParameterIndexType i;
     FrameSizeType k;
     ParameterIndexType j;
-
-    ParameterIndexType gen_count_at_input(0);    
-    OutputCountType out(0);
-
-    // when reading inputs, we must assume they are teh common frame size, not necessarily our frame size (like when we are a buffer)
-    FrameSizeType frameSize(get_common_frame_size());
+    ParameterIndexType gen_count_at_input(0);
 	SampleType sum(0);
     
 	// iterate over each input parameter type
@@ -305,15 +323,15 @@ void Generator :: _sum_inputs() {
         // do not need to _summed_inputs[i].clear(), as we are repalcing with a new SampleTyple sum; _summed_inputs[i].capacity() == frameSize due to reserving in _register_input_parameter_type
         gen_count_at_input = _inputs[i].size();        
 		// for each frame, read across all input
-		for (k=0; k < frameSize; ++k) {
+		for (k=0; k < fs; ++k) {
 			sum = 0;
 			// now iterate over each gen in this input
 			for (j=0; j<gen_count_at_input; ++j) {
-                out = _inputs[i][j].second;            
-				sum += _inputs[i][j].first->outputs[out][k];                                
+				sum += _inputs[i][j].first->outputs[
+                            _inputs[i][j].second // the output to read
+                        ][k];
 			}
 			// sum of all gens at this sample frame
-            // do not push_back, as has been resized; assign
             _summed_inputs[i][k] = sum;
 		}
 	}
@@ -327,9 +345,7 @@ void Generator :: render(RenderCountType f) {
     _render_count = f;
 }
 
-
 //..............................................................................
-
 SampleType Generator :: get_outputs_average() const {
     SampleType sum(0);
     for (OutputCountType i=0; i<_output_count; ++i) {
@@ -379,7 +395,6 @@ SampleType Generator :: get_output_average(OutputCountType d) const {
     return sum / count; // cast count to 
 }
 
-
 void Generator :: _set_frame_size(FrameSizeType f) {
     // protected
     // only change if different; assume already created
@@ -408,21 +423,6 @@ void Generator :: _set_frame_size(FrameSizeType f) {
 	//reset(); // must reset values to zero 
     //// when we set the dimension, should we set it for inputs?
 //}
-
-void Generator :: reset() {
-
-    OutputCountType i;
-    FrameSizeType j;
-    SampleType n(0);
-    for (i=0; i<_output_count; ++i) {
-        for (j=0; j < _frame_size; ++j) {
-            outputs[i][j] = n;
-        }
-    }
-    // always reset render count?
-    _render_count = 0;
-	// should reset reset inputs?
-}
 
 //..............................................................................
 // display methods
@@ -464,17 +464,13 @@ std::ostream& operator<<(std::ostream& ostream, const GeneratorShared g) {
 void Generator :: print_outputs(FrameSizeType start, FrameSizeType end) {
     // provide name of generator first by dereferencing this
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
-    
-        
     if (end == 0 || end < start) {
         end = _frame_size;
     }
     if (start > end) {
         start = 0;
     }
-    
-    std::cout << *this << " Output rc{" << _render_count << "} f{" << start << "-" << end << "}: ";
-    
+    std::cout << *this << " Output rc{" << _render_count << "} f{" << start << "-" << end << "}: ";    
     OutputCountType i;
     FrameSizeType j;
     for (i=0; i<_output_count; ++i) {
@@ -484,8 +480,6 @@ void Generator :: print_outputs(FrameSizeType start, FrameSizeType end) {
         }
     }
     std::cout << std::endl;
-    
-    
 }
 
 void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
@@ -535,8 +529,6 @@ void Generator :: illustrate_network() {
     //p.print(); // for debugging
 	p.pipe(); // pipe to gnu plot
 }
-
-
 
 //..............................................................................
 // loading and writing outputs
@@ -644,7 +636,6 @@ void Generator :: set_outputs_from_fp(const std::string& fp) {
 ParameterIndexType Generator :: get_input_index_from_parameter_name(
     const std::string& s) {
     // match the string to the name returned by get_instance_name; 
-    // this the instance name
     Generator :: MapIndexToParameterTypeShared ::const_iterator k;
     for (k=_input_parameter_type.begin(); 
         k != _input_parameter_type.end(); 
@@ -656,10 +647,23 @@ ParameterIndexType Generator :: get_input_index_from_parameter_name(
 	throw std::invalid_argument("no matching parameter name: " + s);
 }
 
+ParameterIndexType Generator :: get_input_index_from_class_id(const
+        ParameterType::ParameterTypeID ptid) {
+    // match the string to the name returned by get_instance_name; 
+    Generator :: MapIndexToParameterTypeShared ::const_iterator k;
+    for (k=_input_parameter_type.begin(); 
+        k != _input_parameter_type.end(); 
+        ++k) {
+        // each value (second( is a ParameterTypeShared)
+        if (ptid == k->second->get_class_id()) return k->first;
+    }
+	throw std::invalid_argument("no matching parameter type");
+}
+
 ParameterIndexType Generator :: get_slot_index_from_parameter_name(    
     const std::string& s) {
     // not yet implemented
-	throw std::invalid_argument("no matching parameter name: " + s);    
+	throw std::invalid_argument("no matching parameter name: " + s);
 }
 
 //..............................................................................
@@ -675,8 +679,10 @@ Generator::VGenSharedOutPair Generator :: get_input_gen_shared_by_index(
     return post;
 }
 
-void Generator :: set_input_by_index(ParameterIndexType i, 
-                                    GeneratorShared gs, OutputCountType pos){
+void Generator :: set_input_by_index(
+        ParameterIndexType i,
+        GeneratorShared gs,
+        OutputCountType pos){
     // if zero, none are set; current value is next available slot for registering
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");                                        
@@ -690,7 +696,9 @@ void Generator :: set_input_by_index(ParameterIndexType i,
     _inputs[i].push_back(gsop);    
 }
 
-void Generator :: set_input_by_index(ParameterIndexType i, SampleType v, 
+void Generator :: set_input_by_index(
+        ParameterIndexType i,
+        SampleType v,
         OutputCountType pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
@@ -698,6 +706,23 @@ void Generator :: set_input_by_index(ParameterIndexType i, SampleType v,
             _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c, pos); // call overloaded
+}
+
+
+void Generator :: set_input_by_class_id(
+        ParameterType::ParameterTypeID ptid,
+        GeneratorShared gs,
+        OutputCountType pos){
+    ParameterIndexType i = get_input_index_from_class_id(ptid);
+    set_input_by_index(i, gs, pos); // call overloaded
+}
+
+void Generator :: set_input_by_class_id(
+        ParameterType::ParameterTypeID ptid,
+        SampleType v,
+        OutputCountType pos){
+    ParameterIndexType i = get_input_index_from_class_id(ptid);
+    set_input_by_index(i, v, pos); // call overloaded
 }
 
 
@@ -765,18 +790,9 @@ GeneratorShared Generator :: get_slot_gen_shared_at_index(
     return _slots[i];
 }
 
-//..............................................................................
-// opperators
-// some opperators are defined in header as inline 
 
-//GeneratorShared Generator :: operator+(GeneratorShared other) const {
-//    GeneratorShared g = make(ID_Add);
-//    // can look and find min of (this.out_count, other.out_count)
-//    g->set_slot_by_index(0, 1); // just one channel?
-//    g->set_input_by_index(0, shared_from_this());
-//    g->set_input_by_index(0, other);
-//    return g;
-//}
+
+
 
 
 
@@ -787,7 +803,7 @@ Constant :: Constant(EnvironmentShared e)
 	// must initialize base class with passed arg
 	: Generator(e) {
 	_class_name = "Constant"; 
-    _gid = ID_Constant;
+    _class_id = ID_Constant;
 }
 
 Constant :: ~Constant() {
@@ -825,7 +841,6 @@ void Constant :: reset() {
     for (k = _values.begin(); k!=_values.end(); ++k) {
         v += *k;
     }
-    
     OutputCountType i;
     OutputCountType outs = get_output_count();
     FrameSizeType j;
@@ -920,7 +935,7 @@ Add :: Add(EnvironmentShared e)
 	_n_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;		
 	_class_name = "Add";	
-    _gid = ID_Add;    
+    _class_id = ID_Add;    
     _op_switch = '+';
     _n_opperands_init = 0; // must be 1
     // this approach was too slow, even when optimized    
@@ -982,7 +997,6 @@ void Add :: render(RenderCountType f) {
 
     ParameterIndexType gen_count_at_input(0);
     OutputCountType out(0);
-    FrameSizeType frameSize(get_frame_size());
         
     while (_render_count < f) {
         // calling render inputs updates the outputs of all inputs by calling their render functions; after doing so, the outputs are ready for reading
@@ -992,7 +1006,7 @@ void Add :: render(RenderCountType f) {
         for (i = 0; i < input_count; ++i) {
             gen_count_at_input = _inputs[i].size();
             // step through each frame             
-            for (k=0; k < frameSize; ++k) {
+            for (k=0; k < _frame_size; ++k) {
                 _n_opperands = _n_opperands_init; // declared in class
                 // add across for each Gen found in this input
                 for (j=0; j<gen_count_at_input; ++j) {
@@ -1020,7 +1034,7 @@ Multiply :: Multiply(EnvironmentShared e)
 	// must initialize base class with passed arg
 	: Add(e) {
 	_class_name = "Multiply";  // override what is set in Add
-    _gid = ID_Multiply;            
+    _class_id = ID_Multiply;            
     _op_switch = '*';
     _n_opperands_init = 1; // must be 1    
 }
@@ -1039,7 +1053,7 @@ Buffer :: Buffer(EnvironmentShared e)
 	// must initialize base class with passed arg
 	: Generator(e) {
 	_class_name = "Buffer";
-    _gid = ID_Buffer;        
+    _class_id = ID_Buffer;        
 	// this is the unique difference of the Buffer class 
     _frame_size_is_resizable = true;
 }
@@ -1118,7 +1132,6 @@ void Buffer :: render(RenderCountType f) {
 	// we assume that all inputs have the same frame size as standard frame size
 	FrameSizeType cfs = get_common_frame_size();
     FrameSizeType fs = get_frame_size();
-	    
 	RenderCountType rc(0); // must start with request for frame 1
 	OutputSizeType i(0);
 	OutputCountType j(0);
@@ -1128,7 +1141,7 @@ void Buffer :: render(RenderCountType f) {
 	// ignore render count for now; just fill buffer
     while (true) {
         _render_inputs(rc+1); // render count must start at 1
-		_sum_inputs();
+		_sum_inputs(cfs); // we use common frame size, not our frame size
 		for (i=0; i < cfs; ++i) {
             pos = i + (rc * cfs); // where we write in the buffer
             if (pos >= fs) break; // we end when we are full
@@ -1237,7 +1250,7 @@ Phasor :: Phasor(EnvironmentShared e)
 		//_period_start_sample_pos(0)
 	{
 	_class_name = "Phasor"; 
-    _gid = ID_Phasor;
+    _class_id = ID_Phasor;
 }
 
 Phasor :: ~Phasor() {
@@ -1280,9 +1293,7 @@ void Phasor :: render(RenderCountType f) {
 	// given a frequency and a sample rate, we can calculate the number of samples per cycle
 	// 1 / fq is time in seconds
 	// sr is samples per sec
-	// must access _frame_size ; each render is a frame worth
 	// this does not need to be done each render call, but if so, ensure continuity
-	OutputSizeType fs = get_frame_size();
 	// this is the abs positoin in this frame
 	//_abs_sample_pos = f * fs; 		
 	// this is the relative postion in this frame
@@ -1292,9 +1303,9 @@ void Phasor :: render(RenderCountType f) {
         // calling render inputs updates the outputs of all inputs by calling their render functions; after doing so, the outputs are ready for reading
         _render_inputs(f);
 		// get a vector  for each input summing accross all dimensions
-		_sum_inputs();
+		_sum_inputs(_frame_size);
 		
-		for (i=0; i < fs; ++i) {
+		for (i=0; i < _frame_size; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
 			_sum_frequency = _summed_inputs[_input_index_frequency][i];
 			// we might dither this to increase accuracy over time; we floor+.5 to get an int period for now; period must not be zero or 1 (div by zero)
@@ -1332,7 +1343,7 @@ Sine :: Sine(EnvironmentShared e)
 	: Generator(e)
 	{
 	_class_name = "Sine"; 
-    _gid = ID_Sine;
+    _class_id = ID_Sine;
 }
 
 Sine :: ~Sine() {
@@ -1366,22 +1377,19 @@ void Sine :: init() {
 }
 
 void Sine :: render(RenderCountType f) {
-	_fs = get_frame_size();
-	OutputSizeType i(0);
-	
     while (_render_count < f) {
         _render_inputs(f);
-		_sum_inputs();
-        _sample_count = _render_count * _fs;
+		_sum_inputs(_frame_size);
+        // a running count of samples
+        _sample_count = _render_count * _frame_size;
 		// iterate over one frame
-		for (i=0; i < _fs; ++i) {
-			_sum_frequency = _summed_inputs[_input_index_frequency][i];
-            
+		for (_i=0; _i < _frame_size; ++_i) {
+			_sum_frequency = _summed_inputs[_input_index_frequency][_i];            
 			//_sum_phase = _summed_inputs[_input_index_phase][i];
             // 2*pi is one cycle, times the number of samples per cycle
             _angle_increment = PI2 * (_sum_frequency / _sampling_rate);                        
             // mult angle increment by cumulative running of samples
-			outputs[0][i] = sin(_angle_increment * (_sample_count+i));
+			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
@@ -1401,7 +1409,7 @@ Map :: Map(EnvironmentShared e)
 	: Generator(e)
 	{
 	_class_name = "Map";
-    _gid = ID_Map;
+    _class_id = ID_Map;
 }
 
 Map :: ~Map() {
@@ -1456,39 +1464,37 @@ void Map :: init() {
 }
 
 
+void Map :: set_default() {
+    // default configuration is to set source lower/upper
+    set_input_by_index(_input_index_src_lower, 0);
+    set_input_by_index(_input_index_src_upper, 1);
+}
+
+
 void Map :: render(RenderCountType f) {
-	_fs = get_frame_size();
-	OutputSizeType i(0);
-	    
+    
     while (_render_count < f) {
         _render_inputs(f);
-		_sum_inputs();
+		_sum_inputs(_frame_size);
 		// iterate over one frame
         
-		for (i=0; i < _fs; ++i) {
-            // must get true min max; could do swap at if/else branch but this is probably close to as fast as possible
-            _min_src = _summed_inputs[_input_index_src_lower][i] <
-                    _summed_inputs[_input_index_src_upper][i] ?
-                    _summed_inputs[_input_index_src_lower][i] :
-                    _summed_inputs[_input_index_src_upper][i];
-
-            _max_src = _summed_inputs[_input_index_src_upper][i] >
-                    _summed_inputs[_input_index_src_lower][i] ?
-                    _summed_inputs[_input_index_src_upper][i] :
-                    _summed_inputs[_input_index_src_lower][i];
-
-            _min_dst = _summed_inputs[_input_index_dst_lower][i] <
-                    _summed_inputs[_input_index_dst_upper][i] ?
-                    _summed_inputs[_input_index_dst_lower][i] :
-                    _summed_inputs[_input_index_dst_upper][i];
-
-            _max_dst = _summed_inputs[_input_index_dst_upper][i] >
-                    _summed_inputs[_input_index_dst_lower][i] ?
-                    _summed_inputs[_input_index_dst_upper][i] :
-                    _summed_inputs[_input_index_dst_lower][i];
+		for (_i=0; _i < _frame_size; ++_i) {
+            // must get true min max
+            aw::true_min_max(
+                    _summed_inputs[_input_index_src_lower][_i],
+                    _summed_inputs[_input_index_src_upper][_i],
+                    &_min_src,
+                    &_max_src
+                    );
+            aw::true_min_max(
+                    _summed_inputs[_input_index_dst_lower][_i],
+                    _summed_inputs[_input_index_dst_upper][_i],
+                    &_min_dst,
+                    &_max_dst
+                    );
 
 			_limit_src = aw::double_limiter(
-                    _summed_inputs[_input_index_src][i], _min_src, _max_src
+                    _summed_inputs[_input_index_src][_i], _min_src, _max_src
                     );
             
             _range_src = _max_src - _min_src; // no abs necessary
@@ -1497,13 +1503,12 @@ void Map :: render(RenderCountType f) {
             
             if (_range_src != 0 && _range_dst != 0) {
                 // get percentage of src, apply to range of dst + shift
-                _mapped = ((_limit_src / _range_src) * _range_dst) + _min_dst;
+                outputs[0][_i] = ((_limit_src / _range_src) * _range_dst) + _min_dst;
             }
             else {
                 // if we have no range on input, it means that our source boundaries are the same, which means that we have clipped to a constant; there is no sensible mapping (dst lower, upper, middle are all vialable / if we have no range on output, it menans dst boundaries are the same, so we should output that value; thus in either case, simply returning the dst min is acceptable.
-                _mapped = _min_dst;
+                outputs[0][_i] = _min_dst;
             }
-			outputs[0][i] = _mapped;
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
