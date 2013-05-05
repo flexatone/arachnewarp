@@ -1390,11 +1390,18 @@ void Sine :: render(RenderCountType f) {
             _angle_increment = PI2 * (_sum_frequency / _sampling_rate);                        
             // mult angle increment by cumulative running of samples
 			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));
+            
+            // need to get summed LowerBoundary UpperBoundary values, then derive true min max; then:
+            // to scale to min max
+            // ((amp / 2) * (max-min)) + min
+            // avoid division: range of 2 is *.5, range 1 do nothing
+            // note that we will not be limiting: assume we kno behavor
+            // ((amp * .5) * (max-min)) + min
+            
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
     }
-    
 }
 
 
@@ -1492,7 +1499,7 @@ void Map :: render(RenderCountType f) {
                     &_min_dst,
                     &_max_dst
                     );
-
+            // if input is beyond min/max defined as source, it is clipped
 			_limit_src = aw::double_limiter(
                     _summed_inputs[_input_index_src][_i], _min_src, _max_src
                     );
