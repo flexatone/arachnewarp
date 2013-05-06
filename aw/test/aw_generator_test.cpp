@@ -898,10 +898,33 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_1) {
 	BOOST_CHECK_SMALL(g1->outputs[0][2], .001);
 	BOOST_CHECK_CLOSE(g1->outputs[0][3], -1, .00001);
 	BOOST_CHECK_SMALL(g1->outputs[0][4], .001);
-    
-    
 	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
 }
+
+// redo with map
+//BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
+//    // test basic multiplication
+//    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
+//
+//    // one cycle for 4 samples
+//    11025 > g1;
+//    g1->set_input_by_class_id(aw::ParameterType::ID_LowerBoundary, 0);
+//    g1->set_input_by_class_id(aw::ParameterType::ID_UpperBoundary, 2);
+//    
+//    //g1->set_input_by_index(0, 22050);        
+//    g1->render(1);
+//    //g1->illustrate_outputs();
+//	BOOST_CHECK_CLOSE(g1->outputs[0][0], 1, .00001);
+//	BOOST_CHECK_CLOSE(g1->outputs[0][1], 2, .00001);
+//	BOOST_CHECK_CLOSE(g1->outputs[0][2], 1, .00001);
+//	BOOST_CHECK_CLOSE(g1->outputs[0][3], 0, .00001);
+//	BOOST_CHECK_CLOSE(g1->outputs[0][4], 1, .00001);
+//    
+//    
+//	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
+//}
+//
+//
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_1) {
@@ -946,7 +969,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_map_2) {
 
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
-    g1->set_default(); // sets source to 0, 1
     
     g1->set_input_by_index(0, .5);
     g1->set_input_by_index(3, 10); // dst
@@ -965,6 +987,27 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_2) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_map_3) {
+
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
+    
+    g1->set_input_by_index(0, 0);
+    g1->set_input_by_index(1, -1);
+    g1->set_input_by_index(2, 1);
+    g1->set_input_by_index(3, 10); // dst
+    g1->set_input_by_index(4, 20);
+
+    g1->render(1);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 15.0, .0001);
+    
+    g1->set_input_by_index(0, -.5);
+    g1->render(2);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 12.5, .0001);
+
+    g1->set_input_by_index(0, .5);
+    g1->render(3);
+    BOOST_CHECK_CLOSE(g1->outputs[0][0], 17.5, .0001);
+}
 
 
 

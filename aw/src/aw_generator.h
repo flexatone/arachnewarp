@@ -33,7 +33,9 @@ class ParameterType {
         ID_Duration,
         ID_Phase,
         ID_Channels,
-        ID_Trigger
+        ID_Trigger,
+        ID_LowerBoundary,
+        ID_UpperBoundary
     };
 
     //! Primary constructor static method for creating share Parameter types. 
@@ -104,7 +106,6 @@ class ParameterTypeDuration: public ParameterType {
     explicit ParameterTypeDuration();
 };
 
-// TODO: phase can be provided in floating point values or degrees; figure out how to handle this
 class ParameterTypePhase;
 typedef std::tr1::shared_ptr<ParameterTypePhase> ParameterTypePhaseShared;
 //! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
@@ -112,7 +113,6 @@ class ParameterTypePhase: public ParameterType {
     public://------------------------------------------------------------------
     explicit ParameterTypePhase();
 };
-
 
 //! Used by some Generator to configure slots for both input and output channels, or dimensionality (frame/output count) of the internal marix. 
 class ParameterTypeChannels;
@@ -123,13 +123,30 @@ class ParameterTypeChannels: public ParameterType {
     explicit ParameterTypeChannels();
 };
 
-//! An impulse or trigger, or a single sample at 1. 
 class ParameterTypeTrigger;
 typedef std::tr1::shared_ptr<ParameterTypeTrigger> ParameterTypeTriggerShared;
-//! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
+//! An impulse or trigger, or a single sample at 1.
 class ParameterTypeTrigger: public ParameterType {
     public://------------------------------------------------------------------
     explicit ParameterTypeTrigger();
+};
+
+class ParameterTypeLowerBoundary;
+typedef std::tr1::shared_ptr<ParameterTypeLowerBoundary>
+        ParameterTypeLowerBoundaryShared;
+//! A lower boundary, likely a minimum, for dynamic sizing of a generator. 
+class ParameterTypeLowerBoundary: public ParameterType {
+    public://------------------------------------------------------------------
+    explicit ParameterTypeLowerBoundary();
+};
+
+class ParameterTypeUpperBoundary;
+typedef std::tr1::shared_ptr<ParameterTypeUpperBoundary>
+        ParameterTypeUpperBoundaryShared;
+//! A lower boundary, likely a maximum, for dynamic sizing of a generator. 
+class ParameterTypeUpperBoundary: public ParameterType {
+    public://------------------------------------------------------------------
+    explicit ParameterTypeUpperBoundary();
 };
 
 
@@ -479,7 +496,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 };
 
-
+//.............................................................................
 // functions on GeneratorShared ...............................................
 //! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
 inline GeneratorShared connect_serial(GeneratorShared lhs, GeneratorShared rhs, 
@@ -562,7 +579,6 @@ inline GeneratorShared connect_parallel(
             lhs->get_environment());
     // the returned Generator needs to support multiple channels; these are set as slow 0
     g->set_slot_by_index(0, j);
-
     // try to conect as many in to out as possible for each gen
     ParameterIndexType i;
     for (i = 0; i != j; ++i) {
@@ -572,7 +588,7 @@ inline GeneratorShared connect_parallel(
     return g;
 }
 
-//! Variant with sample type as left-hand side.
+//! Variant with SampleType as left-hand side.
 inline GeneratorShared connect_parallel(
         SampleType lhs, 
         GeneratorShared rhs, 
@@ -584,7 +600,7 @@ inline GeneratorShared connect_parallel(
     return g;
 }
 
-//! Variant with sample type as right-hand side.
+//! Variant with SampleType as right-hand side.
 inline GeneratorShared connect_parallel(
         GeneratorShared lhs, 
         SampleType rhs, 
@@ -681,7 +697,6 @@ class Constant: public Generator {
     //! Add value as a SampleType value.                                        
 	virtual void add_input_by_index(ParameterIndexType i, SampleType v, 
             OutputCountType pos=0);
-    
     
 };
 
@@ -803,7 +818,7 @@ class Phasor: public Generator {
 
 
 //=============================================================================
-//! A pure (calculated) sine wave. The sine has a ramp from -1 to 1 for each _output_count defined.
+//! A pure (calculated) sine wave. The sine has a ramp from -1 to 1 for each _output_count defined. Range is between -1 and 1. For performance, values are not mapped in this generator; use a Map instance. 
 class Sine;
 typedef std::tr1::shared_ptr<Sine> SineShared;
 class Sine: public Generator {
@@ -812,24 +827,24 @@ class Sine: public Generator {
     ParameterIndexType _input_index_frequency;    
     ParameterIndexType _input_index_phase;    
 	
-    SampleType _sum_frequency;
-    SampleType _sum_phase;	
+    //SampleType _sum_frequency;
+    // SampleType _sum_phase;
     SampleType _angle_increment;	
-	    
-	SampleType _amp;
-	SampleType _amp_prev;		
+
+	// SampleType _amp_prev;
 	
 	RenderCountType _sample_count;		
     OutputSizeType _i;
 
     public://------------------------------------------------------------------
+
     explicit Sine(EnvironmentShared);
 	
     ~Sine();
 
     virtual void init();    
-		
-	//! Render the pure sine.. 
+    
+	//! Render the pure sine..
     virtual void render(RenderCountType f);
 };
 
