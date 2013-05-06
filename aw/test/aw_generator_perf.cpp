@@ -88,6 +88,9 @@ int main() {
 //
 
 
+// after adding min/max
+//total time for 60 second of audio: <Timer: fm mod: 404.061 msec>
+//total time for 60 second of audio: <Timer: mapping two sinewaves: 417.88 msec>
 
 
 

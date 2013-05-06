@@ -41,7 +41,14 @@ ParameterTypeShared ParameterType :: make(ParameterTypeID q){
     }
     else if (q == ID_Trigger) {
         p = ParameterTypeTriggerShared(new ParameterTypeTrigger);    
+    }
+    else if (q == ID_LowerBoundary) {
+        p = ParameterTypeLowerBoundaryShared(new ParameterTypeLowerBoundary);    
     }    
+    else if (q == ID_UpperBoundary) {
+        p = ParameterTypeUpperBoundaryShared(new ParameterTypeUpperBoundary);    
+    }
+    
     else {
         throw std::invalid_argument("no matching ParaameterTypeID");
     }
@@ -95,6 +102,18 @@ ParameterTypeTrigger :: ParameterTypeTrigger() {
     _class_name = "ParameterTypeTrigger";
     _class_id = ID_Trigger;
 }
+
+//-----------------------------------------------------------------------------
+ParameterTypeLowerBoundary :: ParameterTypeLowerBoundary() {
+    _class_name = "ParameterTypeLowerBoundary";
+    _class_id = ID_LowerBoundary;
+}
+
+ParameterTypeUpperBoundary :: ParameterTypeUpperBoundary() {
+    _class_name = "ParameterTypeUpperBoundary";
+    _class_id = ID_UpperBoundary;
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -1350,7 +1369,7 @@ Sine :: ~Sine() {
 }
 
 void Sine :: init() {
-    // the int routie must configure the names and types of parameters
+    // the init must configure the names and types of parameters
     // std::cout << *this << " Phasor::init()" << std::endl;
     Generator::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
@@ -1366,14 +1385,15 @@ void Sine :: init() {
             aw::ParameterType::ID_Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
-	_input_index_phase = 1;	
-	
+	_input_index_phase = 1;
+    
 	// register output
-    aw::ParameterTypeShared pt3 = aw::ParameterType::make( 
+    aw::ParameterTypeShared pt_o1 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
-    pt3->set_instance_name("Output");
-    _register_output_parameter_type(pt3);	
-	
+    pt_o1->set_instance_name("Output");
+    _register_output_parameter_type(pt_o1);
+    
+    // always set default for min/max
 }
 
 void Sine :: render(RenderCountType f) {
@@ -1384,28 +1404,28 @@ void Sine :: render(RenderCountType f) {
         _sample_count = _render_count * _frame_size;
 		// iterate over one frame
 		for (_i=0; _i < _frame_size; ++_i) {
-			_sum_frequency = _summed_inputs[_input_index_frequency][_i];            
+			//_sum_frequency = ;
 			//_sum_phase = _summed_inputs[_input_index_phase][i];
             // 2*pi is one cycle, times the number of samples per cycle
-            _angle_increment = PI2 * (_sum_frequency / _sampling_rate);                        
+            _angle_increment = PI2 * (
+                    _summed_inputs[_input_index_frequency][_i] /
+                    _sampling_rate);
             // mult angle increment by cumulative running of samples
 			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));
             
-            // need to get summed LowerBoundary UpperBoundary values, then derive true min max; then:
-            // to scale to min max
-            // ((amp / 2) * (max-min)) + min
-            // avoid division: range of 2 is *.5, range 1 do nothing
-            // note that we will not be limiting: assume we kno behavor
-            // ((amp * .5) * (max-min)) + min
-            
+//            aw::true_min_max(
+//                    _summed_inputs[_input_index_lower_boundary][_i],
+//                    _summed_inputs[_input_index_upper_boundary][_i],
+//                    &_min,
+//                    &_max
+//                    );
+//            
+//            outputs[0][_i] = (((_amp * .5) + .5) * (_max-_min)) + _min;
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
     }
 }
-
-
-
 
 
 
@@ -1437,26 +1457,26 @@ void Map :: init() {
 
 
     aw::ParameterTypeShared pt4 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+            aw::ParameterType::ID_LowerBoundary);
     pt4->set_instance_name("Source Lower");
     _register_input_parameter_type(pt4);
 	_input_index_src_lower = 1;
 
     aw::ParameterTypeShared pt5 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+            aw::ParameterType::ID_UpperBoundary);
     pt5->set_instance_name("Source Upper");
     _register_input_parameter_type(pt5);
 	_input_index_src_upper = 2;
 	
 
     aw::ParameterTypeShared pt2 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+            aw::ParameterType::ID_LowerBoundary);
     pt2->set_instance_name("Destination Lower");
     _register_input_parameter_type(pt2);	
 	_input_index_dst_lower = 3;
 
     aw::ParameterTypeShared pt3 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+            aw::ParameterType::ID_UpperBoundary);
     pt3->set_instance_name("Destination Upper");
     _register_input_parameter_type(pt3);
 	_input_index_dst_upper = 4;
@@ -1466,17 +1486,17 @@ void Map :: init() {
     aw::ParameterTypeShared pt_out = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_out->set_instance_name("Output");
-    _register_output_parameter_type(pt_out);	
-	
+    _register_output_parameter_type(pt_out);
+    
+    // set default
+    set_default();
 }
-
 
 void Map :: set_default() {
     // default configuration is to set source lower/upper
     set_input_by_index(_input_index_src_lower, 0);
     set_input_by_index(_input_index_src_upper, 1);
 }
-
 
 void Map :: render(RenderCountType f) {
     
@@ -1508,9 +1528,12 @@ void Map :: render(RenderCountType f) {
             _range_dst = _max_dst - _min_dst; // no abs necessary
             //std::cout << "_range_src:" << _range_src << " _range_dst:" << _range_dst;
             
+            // _limit_src needs to be shifted to start from zero; if range is -3, 1 then need to add 3; if range is 3, 10, need to subtact 3; thus, -(min)            
             if (_range_src != 0 && _range_dst != 0) {
                 // get percentage of src, apply to range of dst + shift
-                outputs[0][_i] = ((_limit_src / _range_src) * _range_dst) + _min_dst;
+                outputs[0][_i] = (
+                        ((_limit_src - _min_src) / _range_src) *
+                        _range_dst) + _min_dst;
             }
             else {
                 // if we have no range on input, it means that our source boundaries are the same, which means that we have clipped to a constant; there is no sensible mapping (dst lower, upper, middle are all vialable / if we have no range on output, it menans dst boundaries are the same, so we should output that value; thus in either case, simply returning the dst min is acceptable.
