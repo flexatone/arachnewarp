@@ -3,6 +3,9 @@
 
 
 #include <cassert>
+#include <cmath>
+
+
 #include "aw_generator.h"
 #include "aw_common.h"
 #include "aw_timer.h"
@@ -68,12 +71,62 @@ bool b() {
 }
 
 
+bool c() {
+
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	// create two channel buffer
+	g1->set_slot_by_index(0, 2);
+	g1->set_slot_by_index(1, 60.0);
+		
+	// create 
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g2->add_input_by_index(0, 4); // a constant frequency
+	
+	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g3->add_input_by_index(0, 12); // a constant frequency
+
+	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	g3->add_input_by_index(0, -2); // a constant frequency
+
+	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
+	g1->add_input_by_index(0, g2);
+	g1->add_input_by_index(1, g3);
+	g1->add_input_by_index(1, g4);
+	
+    
+    aw::Timer t1("summing three phasors in two channels");
+    t1.start();
+	g1->render(1); // render count here meaningless
+	//g1->illustrate_outputs();
+    std::cout << "total time for 60 second of audio: " << t1 << std::endl;
+	
+    return true;
+}
+
+bool d() {
+    // test some math opperations for comparison
+    aw::OutputSizeType y;
+    aw::OutputSizeType x;
+
+    aw::Timer t1("calling sine through iterated numbers");
+    t1.start();
+    for (x=0; x<(44100*60); ++x) {
+        y = sin(x); // just doing an assignment
+    }
+	//g1->illustrate_outputs();
+    std::cout << "total time for 60 seconds (" << x << " samples) of audio: " << t1 << std::endl;
+    return true;
+}
+
+
 
 int main() {
 
     assert(
         a() &&
-        b()
+        b() &&
+        c() &&
+        d() 
         );
     
 }

@@ -142,6 +142,9 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
     else if (q == ID_Map) {
         g = MapShared(new Map(e));
     }
+    else if (q == ID_AttackDecay) {
+        g = AttackDecayShared(new AttackDecay(e));
+    }
     else {
         throw std::invalid_argument("no matching GeneratorID");
     }
@@ -210,7 +213,7 @@ void Generator :: reset() {
 }
 
 void Generator :: set_default() {
-    // empty base class; override in derived. 
+    // empty base class; override in derived classes and called in init() routines
 }
 
 //.............................................................................
@@ -1101,7 +1104,6 @@ void Buffer :: init() {
 	_register_slot_parameter_type(so2);
     // set value; will call _update_for_new_slot    
     set_slot_by_index(1, 1, true); // one second, update now 
-	
 }
 
 void Buffer :: _update_for_new_slot() {
@@ -1111,8 +1113,7 @@ void Buffer :: _update_for_new_slot() {
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
-	
-    // reset i/o, dropping all contained input connections; 
+    // reset i/o, dropping all contained input connections;
     _clear_input_parameter_types();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
@@ -1411,16 +1412,7 @@ void Sine :: render(RenderCountType f) {
                     _summed_inputs[_input_index_frequency][_i] /
                     _sampling_rate);
             // mult angle increment by cumulative running of samples
-			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));
-            
-//            aw::true_min_max(
-//                    _summed_inputs[_input_index_lower_boundary][_i],
-//                    _summed_inputs[_input_index_upper_boundary][_i],
-//                    &_min,
-//                    &_max
-//                    );
-//            
-//            outputs[0][_i] = (((_amp * .5) + .5) * (_max-_min)) + _min;
+			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));            
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
@@ -1503,8 +1495,7 @@ void Map :: render(RenderCountType f) {
     while (_render_count < f) {
         _render_inputs(f);
 		_sum_inputs(_frame_size);
-		// iterate over one frame
-        
+
 		for (_i=0; _i < _frame_size; ++_i) {
             // must get true min max
             aw::true_min_max(
@@ -1523,12 +1514,9 @@ void Map :: render(RenderCountType f) {
 			_limit_src = aw::double_limiter(
                     _summed_inputs[_input_index_src][_i], _min_src, _max_src
                     );
-            
             _range_src = _max_src - _min_src; // no abs necessary
             _range_dst = _max_dst - _min_dst; // no abs necessary
-            //std::cout << "_range_src:" << _range_src << " _range_dst:" << _range_dst;
-            
-            // _limit_src needs to be shifted to start from zero; if range is -3, 1 then need to add 3; if range is 3, 10, need to subtact 3; thus, -(min)            
+            // _limit_src needs to be shifted to start from zero; if range is -3, 1 then need to add 3; if range is 3, 10, need to subtact 3; thus, -(min)
             if (_range_src != 0 && _range_dst != 0) {
                 // get percentage of src, apply to range of dst + shift
                 outputs[0][_i] = (
@@ -1546,6 +1534,80 @@ void Map :: render(RenderCountType f) {
     
 }
 
+
+
+//-----------------------------------------------------------------------------
+AttackDecay :: AttackDecay(EnvironmentShared e)
+	// must initialize base class with passed arg
+	: Generator(e)
+	{
+	_class_name = "AttackDecay";
+    _class_id = ID_AttackDecay;
+}
+
+AttackDecay :: ~AttackDecay() {
+}
+
+void AttackDecay :: init() {
+    // the int route must configure the names and types of parameters
+    // std::cout << *this << " Phasor::init()" << std::endl;
+    Generator::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+	
+    // register some parameters
+    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+            aw::ParameterType::ID_Trigger);
+    pt1->set_instance_name("Trigger");
+    _register_input_parameter_type(pt1);
+	_input_index_trigger = 0;
+
+    aw::ParameterTypeShared pt2 = aw::ParameterType::make(
+            aw::ParameterType::ID_Duration);
+    pt2->set_instance_name("Attack time");
+    _register_input_parameter_type(pt2);
+	_input_index_attack = 1;
+
+    aw::ParameterTypeShared pt3 = aw::ParameterType::make(
+            aw::ParameterType::ID_Duration);
+    pt3->set_instance_name("Decay time");
+    _register_input_parameter_type(pt3);
+	_input_index_decay = 2;
+
+    aw::ParameterTypeShared pt4 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt4->set_instance_name("Slope");
+    _register_input_parameter_type(pt4);
+	_input_index_decay = 3;
+	
+    // TODO:
+    // have a slot to configure this as cyclical, triggered, or gated
+
+	// register output
+    aw::ParameterTypeShared pt_out = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt_out->set_instance_name("Output");
+    _register_output_parameter_type(pt_out);
+    
+    // set default
+    set_default();
+}
+
+void AttackDecay :: set_default() {
+}
+
+void AttackDecay :: render(RenderCountType f) {
+    
+    while (_render_count < f) {
+        _render_inputs(f);
+		_sum_inputs(_frame_size);
+		for (_i=0; _i < _frame_size; ++_i) {
+            
+		}
+        //std::cout << "_period_samples: " << _period_samples << std::endl;        
+        _render_count += 1;
+    }
+    
+}
 
 
 

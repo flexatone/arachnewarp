@@ -84,54 +84,9 @@ bool test_4() {
 }
 
 
+
+
 bool test_5() {
-	std::cerr << std::string(80, '-') << std::endl;
-	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
-
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
-	// create two channel buffer
-	g1->set_slot_by_index(0, 2);
-	// for five second
-	g1->set_slot_by_index(1, 5.0);
-		
-	// create 
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
-	g2->add_input_by_index(0, 4); // a constant frequency
-	
-	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
-	g3->add_input_by_index(0, 12); // a constant frequency
-
-	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Phasor);    
-	g3->add_input_by_index(0, -2); // a constant frequency
-
-	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
-	g1->add_input_by_index(0, g2);
-	g1->add_input_by_index(1, g3);
-	g1->add_input_by_index(1, g4);
-	
-    
-    aw::Timer t("rendering buffer");
-    t.start();
-    
-	// for one render cycle of the buffer, we render inputs until we fill the frame
-	// need to time this generation 
-	g1->render(1); // render count here meaningless
-	//g1->illustrate_outputs();
-    t.stop();
-    std::cout << "total time: " << t << std::endl;
-	
-	// on ubuntu w/o optimization, array impl: 60-70 msec, 
-	// on ubuntu w optimization, array impl: 0-10 msec, 
-	// on ubuntu w optimization, vector impl: 0-10 msec, slightly favoring 10, 
-	// on ubuntu w/o optimization, vector impl: 60 msec, 
-        
-    // on macos w optimization, 22.25 msec    
-    return true;
-}
-
-
-
-bool test_6() {
     // testing reassignemnt through connect for memory management
     
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
@@ -147,7 +102,7 @@ bool test_6() {
     g2->set_input_by_index(2, 2110);
           
     // g1 into g2
-    g2 = aw::connect(g1, g2);
+    g2 = aw::connect_serial(g1, g2);
 
     g2->render(1);
     
@@ -160,8 +115,11 @@ bool test_6() {
 int main() {
 	// TODO: read command line args to support selecting test by name
 
-    assert(test_1() && test_2() && test_3() 
-            && test_4() && test_5() && test_6());
+    assert(test_1() &&
+            test_2() &&
+            test_3() &&
+            test_4() &&
+            test_5());
 	
 	// test_6();
     

@@ -29,13 +29,14 @@ class ParameterType {
     //! Identifiers for Parameter types. 
     enum ParameterTypeID {
         ID_Value,
-        ID_Frequency, // rename Rate
+        ID_Frequency,
         ID_Duration,
         ID_Phase,
         ID_Channels,
-        ID_Trigger,
+        ID_Trigger, // what about inputs that take trigger and gate in same input?
         ID_LowerBoundary,
-        ID_UpperBoundary
+        ID_UpperBoundary,
+        ID_Table // for slot in breakpoint, wavetable
     };
 
     //! Primary constructor static method for creating share Parameter types. 
@@ -149,6 +150,14 @@ class ParameterTypeUpperBoundary: public ParameterType {
     explicit ParameterTypeUpperBoundary();
 };
 
+class ParameterTypeTable;
+typedef std::tr1::shared_ptr<ParameterTypeTable>
+        ParameterTypeTableShared;
+//! A table, or a Buffer with 2 channels of data. 
+class ParameterTypeTable: public ParameterType {
+    public://------------------------------------------------------------------
+    explicit ParameterTypeTable();
+};
 
 
 
@@ -189,7 +198,8 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
         ID_Buffer,
         ID_Phasor,
         ID_Sine,
-        ID_Map
+        ID_Map,
+        ID_AttackDecay
     };
         
 		
@@ -890,6 +900,36 @@ class Map: public Generator {
 };
 
 
+
+//=============================================================================
+//! An AD envelope.
+class AttackDecay;
+typedef std::tr1::shared_ptr<AttackDecay> AttackDecayShared;
+class AttackDecay: public Generator {
+
+    private://-----------------------------------------------------------------
+    ParameterIndexType _input_index_trigger;
+    ParameterIndexType _input_index_attack;
+    ParameterIndexType _input_index_decay;
+    ParameterIndexType _input_index_slope;
+
+    OutputSizeType _i;
+    
+    public://------------------------------------------------------------------
+    explicit AttackDecay(EnvironmentShared);
+	
+    ~AttackDecay();
+
+    virtual void init();
+    
+    virtual void set_default();
+		
+	//! Perform the envelope
+    virtual void render(RenderCountType f);
+};
+
+
+	
 
 
 

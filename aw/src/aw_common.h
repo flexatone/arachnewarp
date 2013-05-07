@@ -103,7 +103,7 @@ inline SampleType double_limiter(SampleType src, SampleType min,
 
 
 
-//! Detect and assign true min / max, based on comparison. Min and max are set by passing in pointers to to the value.
+//! Detect and assign true min / max, based on comparison. Min and max are set by passing in pointers to to the value that are set in place.
 inline void true_min_max(
         SampleType lower,
         SampleType upper,
@@ -118,6 +118,15 @@ inline void true_min_max(
         *min = lower;
         *max = upper;
     }
+}
+
+
+
+inline SampleType mtof(SampleType f) {
+    // midi to frequency
+    if (f <= -1500) return 0;
+    else if (f > 1499) return mtof(1499);
+    else return pow(2, (f-69) / 12.0) * 440.0;
 }
 
 
@@ -143,14 +152,6 @@ inline void true_min_max(
 //    return a - b*div;
 //}
 //
-//double mtof( double f )
-//{
-//    if( f <= -1500 ) return (0);
-//    else if( f > 1499 ) return (mtof(1499));
-//    // else return (8.17579891564 * exp(.0577622650 * f));
-//    // TODO: optimize
-//    else return ( pow(2,(f-69)/12.0) * 440.0 );
-//}
 //
 //double ftom( double f )
 //{   
@@ -229,9 +230,8 @@ typedef std::tr1::shared_ptr<const Environment> EnvironmentShared;
 //! A representation of the user's enviroinment. The Environment provides file-system-related access (file paths, etc) as well as audio I/O and related hardware related configuration options. 
 class Environment {
 
-
     private://-----------------------------------------------------------------
-    //! We internally store the temp directory as a Boost filepath object. The temp directory is stored in the user's home directory. This can be overriden in the future with different. location. 
+    //! We internally store the temp directory as a Boost filepath object. The temp directory is stored in the user's home directory. This can be overriden in the future with a different location.
     boost::filesystem::path _temp_directory;
 	
 	//! Private sampling rate storage. Defaults to 44100. 
