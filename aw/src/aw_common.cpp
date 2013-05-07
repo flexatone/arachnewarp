@@ -59,7 +59,6 @@ void print(SampleType* out, FrameSizeType size) {
     std::cout << '>' << std::endl;
 }	
 
-
 const char* get_fp_home() {
     // do not need anyimport to use getnev
     const char* homeDir = getenv("HOME");
