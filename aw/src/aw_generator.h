@@ -680,7 +680,8 @@ class Constant: public Generator {
 	explicit Constant(EnvironmentShared);
     ~Constant();
     
-    virtual void init();	
+    virtual void init();
+    
     virtual void reset();
 	
 	//! This overridden method needs only increment the _render_count, as the outputs array is set when reset() is called. 
@@ -819,6 +820,8 @@ class Phasor: public Generator {
     ~Phasor();
 
     virtual void init();    
+
+    virtual void reset();
 		
 	//! Render the phasor. 
     virtual void render(RenderCountType f);
@@ -853,6 +856,8 @@ class Sine: public Generator {
     ~Sine();
 
     virtual void init();    
+    
+    virtual void reset();
     
 	//! Render the pure sine..
     virtual void render(RenderCountType f);
@@ -895,7 +900,9 @@ class Map: public Generator {
     
     virtual void set_default();
 		
-	//! Perform the mapping. 
+    virtual void reset();
+    
+	//! Perform the mapping.
     virtual void render(RenderCountType f);
 };
 
@@ -914,6 +921,11 @@ class AttackDecay: public Generator {
     ParameterIndexType _input_index_slope;
 
     OutputSizeType _i;
+    OutputSizeType _a_samps;
+    OutputSizeType _d_samps;
+    OutputSizeType _progress_samps;
+    //! Store envelope stage as 0 (off); 1 (A); 2 (D)
+    unsigned int _env_stage;
     
     public://------------------------------------------------------------------
     explicit AttackDecay(EnvironmentShared);
@@ -924,6 +936,8 @@ class AttackDecay: public Generator {
     
     virtual void set_default();
 		
+    virtual void reset();
+    
 	//! Perform the envelope
     virtual void render(RenderCountType f);
 };

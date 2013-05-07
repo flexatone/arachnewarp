@@ -57,15 +57,17 @@ typedef std::tr1::unordered_map<std::string, bool> MapStringBool;
 typedef std::tr1::shared_ptr<MapStringBool> SharedMapStringBool;
 
 
-SampleType  const PI(3.14159265358979323846264338);
-SampleType const PI2(3.14159265358979323846264338*2.0);
-
-SampleType  const LOGTWO(0.69314718055994528623);
-SampleType  const LOGTEN(2.302585092994);
-
+SampleType const PI(3.14159265358979323846264338);
+SampleType const PI2(3.14159265358979323846264338 * 2.0);
+SampleType const LOGTWO(0.69314718055994528623);
+SampleType const LOGTEN(2.302585092994);
 
 //! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
-SampleType  const MIN_FQ(.00001);
+SampleType const MIN_FQ(.00001);
+
+//! The trigger threshold, or the value aboive which we determine that we have a trigger.
+SampleType const TRIG_THRESH(.99999);
+
 
 //! Defined for all text-based hierarchical displays. 
 std::tr1::uint8_t const INDENT_SIZE(2);

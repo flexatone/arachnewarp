@@ -1305,9 +1305,16 @@ void Phasor :: init() {
             aw::ParameterType::ID_Trigger);
     pt4->set_instance_name("Trigger");
     _register_output_parameter_type(pt4);	
-	
+
+    reset();
 }
 
+
+void Phasor :: reset() {
+    Generator::reset();
+    _amp = 0;
+    _amp_prev = 1;
+}
 
 void Phasor :: render(RenderCountType f) {
 	// given a frequency and a sample rate, we can calculate the number of samples per cycle
@@ -1329,7 +1336,7 @@ void Phasor :: render(RenderCountType f) {
 			// for each frame position, must get sum across all frequency values calculated.
 			_sum_frequency = _summed_inputs[_input_index_frequency][i];
 			// we might dither this to increase accuracy over time; we floor+.5 to get an int period for now; period must not be zero or 1 (div by zero)
-			_period_samples = floor((_sampling_rate / 
+			_period_samples = floor((static_cast<SampleType>(_sampling_rate) /
 					frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
                      
 			// add amp increment to previous amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
@@ -1394,8 +1401,13 @@ void Sine :: init() {
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
-    // always set default for min/max
+    reset();
 }
+
+void Sine :: reset() {
+    Generator::reset();
+}
+
 
 void Sine :: render(RenderCountType f) {
     while (_render_count < f) {
@@ -1482,12 +1494,18 @@ void Map :: init() {
     
     // set default
     set_default();
+    reset();
+
 }
 
 void Map :: set_default() {
     // default configuration is to set source lower/upper
     set_input_by_index(_input_index_src_lower, 0);
     set_input_by_index(_input_index_src_upper, 1);
+}
+
+void Map :: reset() {
+    Generator::reset();
 }
 
 void Map :: render(RenderCountType f) {
@@ -1577,7 +1595,7 @@ void AttackDecay :: init() {
             aw::ParameterType::ID_Value);
     pt4->set_instance_name("Slope");
     _register_input_parameter_type(pt4);
-	_input_index_decay = 3;
+	_input_index_slope = 3;
 	
     // TODO:
     // have a slot to configure this as cyclical, triggered, or gated
@@ -1590,10 +1608,18 @@ void AttackDecay :: init() {
     
     // set default
     set_default();
+    reset();
 }
 
 void AttackDecay :: set_default() {
 }
+
+void AttackDecay :: reset() {
+    Generator::reset();
+    _progress_samps = 0;
+}
+
+
 
 void AttackDecay :: render(RenderCountType f) {
     
@@ -1601,6 +1627,39 @@ void AttackDecay :: render(RenderCountType f) {
         _render_inputs(f);
 		_sum_inputs(_frame_size);
 		for (_i=0; _i < _frame_size; ++_i) {
+        
+            if (_summed_inputs[_input_index_trigger][_i] > TRIG_THRESH) {
+                _env_stage = 1; // go to attack
+                _progress_samps = 0;
+                // todo: should use last amp here
+            }
+            // convert to samples; will truncate to int; might need to round
+            _a_samps = fabs(_summed_inputs[_input_index_attack][_i] *
+                    static_cast<SampleType>(_sampling_rate));
+            _d_samps = fabs(_summed_inputs[_input_index_decay][_i] *
+                    static_cast<SampleType>(_sampling_rate));
+            
+            // get envelope stage other than 1
+            if (_progress_samps > (_a_samps + _d_samps)) {
+                _env_stage = 0; // in silence
+            }
+            else if (_progress_samps > _a_samps) { // and lt A+D
+                _env_stage = 2; // in decay
+            }
+            
+            //std::cout << "_env_stage: " << _env_stage << "; " << _a_samps << "; " << _d_samps << std::endl;
+            // write outputs
+            if (_env_stage == 0) {
+                outputs[0][_i] = 0;
+            }
+            else if (_env_stage == 1) {
+                outputs[0][_i] = .8;
+            }
+            else { // stage 2
+                outputs[0][_i] = .2;
+            }
+            // always increment; just reset when we get a trigger
+            ++_progress_samps;
             
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
