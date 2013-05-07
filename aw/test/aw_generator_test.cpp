@@ -988,7 +988,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_2) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_3) {
-
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
     
     g1->set_input_by_index(0, 0);
@@ -1007,6 +1006,29 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_3) {
     g1->set_input_by_index(0, .5);
     g1->render(3);
     BOOST_CHECK_CLOSE(g1->outputs[0][0], 17.5, .0001);
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_1) {
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_AttackDecay);
+
+    g1->set_input_by_index(1, .1); // atack/decay in sec
+    g1->set_input_by_index(2, .1);
+
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+    4 >> g2; // 4 per second
+    
+    g1->set_input_by_index(0, g2, 1); // need second output, the phasor trigger
+    
+	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	gbuf->set_slot_by_index(0, 2);
+	gbuf->set_slot_by_index(1, 1);
+    
+    gbuf->set_input_by_index(0, g2, 1); // write trigger
+    gbuf->set_input_by_index(1, g1);
+    gbuf->render(1);
+    //gbuf->illustrate_outputs();
+    
 }
 
 
