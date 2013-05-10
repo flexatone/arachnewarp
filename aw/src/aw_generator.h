@@ -925,7 +925,10 @@ class AttackDecay: public Generator {
     OutputSizeType _d_samps;
     OutputSizeType _progress_samps;
     //! Store envelope stage as 0 (off); 1 (A); 2 (D)
-    unsigned int _env_stage;
+    UINT8 _env_stage;
+
+    SampleType _amp_last;
+    SampleType _amp_factor; // scalar iteratively applied
     
     public://------------------------------------------------------------------
     explicit AttackDecay(EnvironmentShared);
