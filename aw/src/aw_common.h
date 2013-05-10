@@ -33,7 +33,7 @@ typedef std::tr1::uint32_t FrameSizeType;
 typedef std::tr1::uint32_t OutputSizeType;
 
 // _output_count probably never more than 200!
-//! An unisigned integer describing the number of inputs or outputs for a Generator. 
+//! An unisigned integer describing the number of inputs or outputs for a Generator. Note that this is essential the same as the PararmeterIndexType, and should be unified. 
 typedef std::tr1::uint8_t OutputCountType; 
 
 //! A vector of frame size types. This is used for offsets into the outputs.
@@ -64,6 +64,10 @@ SampleType const LOGTEN(2.302585092994);
 
 //! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
 SampleType const MIN_FQ(.00001);
+
+// -120 dB, or pow(10, -120/20), or 1e-06
+SampleType const MIN_AMP(.000001);
+
 
 //! The trigger threshold, or the value aboive which we determine that we have a trigger.
 SampleType const TRIG_THRESH(.99999);

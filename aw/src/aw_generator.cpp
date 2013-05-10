@@ -1622,7 +1622,7 @@ void AttackDecay :: reset() {
 
 
 void AttackDecay :: render(RenderCountType f) {
-    
+    // see Fast Exponential Envelope Generator at http://musicdsp.com/ for implementation susggestions
     while (_render_count < f) {
         _render_inputs(f);
 		_sum_inputs(_frame_size);
@@ -1648,14 +1648,16 @@ void AttackDecay :: render(RenderCountType f) {
             }
             
             //std::cout << "_env_stage: " << _env_stage << "; " << _a_samps << "; " << _d_samps << std::endl;
-            // write outputs
+            // write outputs	
             if (_env_stage == 0) {
                 outputs[0][_i] = 0;
             }
             else if (_env_stage == 1) {
+                _amp_factor = 1.0 + (log(1) - log(MIN_AMP)) / (_a_samps + 1);
                 outputs[0][_i] = .8;
             }
             else { // stage 2
+                _amp_factor = 1.0 + (log(MIN_AMP) - log(1)) / (_a_samps + 1);
                 outputs[0][_i] = .2;
             }
             // always increment; just reset when we get a trigger
