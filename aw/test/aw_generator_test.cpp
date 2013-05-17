@@ -1024,7 +1024,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_1) {
 	gbuf->set_slot_by_index(0, 2);
 	gbuf->set_slot_by_index(1, 1);
     
-    gbuf->set_input_by_index(0, g2, 1); // write trigger
+    gbuf->set_input_by_index(0, g2, 1); // write trigger, out 1
     gbuf->set_input_by_index(1, g1);
     gbuf->render(1);
     //gbuf->illustrate_outputs();

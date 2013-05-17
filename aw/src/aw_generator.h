@@ -918,17 +918,22 @@ class AttackDecay: public Generator {
     ParameterIndexType _input_index_trigger;
     ParameterIndexType _input_index_attack;
     ParameterIndexType _input_index_decay;
-    ParameterIndexType _input_index_slope;
+    ParameterIndexType _input_index_exponent;
 
     OutputSizeType _i;
-    OutputSizeType _a_samps;
-    OutputSizeType _d_samps;
+    
+    // make these sample types because will deivide by
+    SampleType _a_samps;
+    SampleType _d_samps;
+    
+    //! Progress samps are set to zero at trigger
     OutputSizeType _progress_samps;
+    OutputSizeType _progress_samps_d_start;
+    
     //! Store envelope stage as 0 (off); 1 (A); 2 (D)
     UINT8 _env_stage;
 
-    SampleType _amp_last;
-    SampleType _amp_factor; // scalar iteratively applied
+    SampleType _amp;
     
     public://------------------------------------------------------------------
     explicit AttackDecay(EnvironmentShared);

@@ -579,13 +579,14 @@ void Generator :: write_output_to_fp(const std::string& fp,
 
 void Generator :: set_outputs_from_array(SampleType* v, OutputSizeType s, 
 								OutputCountType ch, bool interleaved){
-    // low level method of a raw array as input; need size;
-	// caller is responsible for releasing called array
+    // low level method of a raw, interleaved array as input; need size;
+    // we need this b/c libsndfile uses raw arrays
+	// caller is responsible for releasing passed in array
 	// we will read in only as many channels as we currently have as outputs
 	if (s < 1) {
 		throw std::domain_error(
             "the supplied vector must have size greater than 0");
-	}	
+	}
     
 	bool reset_needed(true); 
 	// if possible, we will resize the frame size; outs will not be changed
@@ -872,13 +873,7 @@ void Constant :: reset() {
         for (j=0; j < frames; ++j) {
             outputs[i][j] = v;
         }
-    }
-    
-    // do not need to partion by diminsons
-//    OutputSizeType m_len(get_outputs_size()); 
-//    for (OutputSizeType i=0; i<m_len; ++i) {
-//        outputs[i] = v; // set to the value
-//    }
+    }    
     // always reset frame count?
     _render_count = 0;
 }
@@ -1593,9 +1588,9 @@ void AttackDecay :: init() {
 
     aw::ParameterTypeShared pt4 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
-    pt4->set_instance_name("Slope");
+    pt4->set_instance_name("Exponent");
     _register_input_parameter_type(pt4);
-	_input_index_slope = 3;
+	_input_index_exponent = 3;
 	
     // TODO:
     // have a slot to configure this as cyclical, triggered, or gated
@@ -1612,11 +1607,14 @@ void AttackDecay :: init() {
 }
 
 void AttackDecay :: set_default() {
+    // this is the exponent
+    set_input_by_index(_input_index_exponent, 4);
 }
 
 void AttackDecay :: reset() {
     Generator::reset();
     _progress_samps = 0;
+    _env_stage = 0;
 }
 
 
@@ -1627,38 +1625,54 @@ void AttackDecay :: render(RenderCountType f) {
         _render_inputs(f);
 		_sum_inputs(_frame_size);
 		for (_i=0; _i < _frame_size; ++_i) {
-        
-            if (_summed_inputs[_input_index_trigger][_i] > TRIG_THRESH) {
-                _env_stage = 1; // go to attack
-                _progress_samps = 0;
-                // todo: should use last amp here
-            }
+
             // convert to samples; will truncate to int; might need to round
             _a_samps = fabs(_summed_inputs[_input_index_attack][_i] *
                     static_cast<SampleType>(_sampling_rate));
             _d_samps = fabs(_summed_inputs[_input_index_decay][_i] *
                     static_cast<SampleType>(_sampling_rate));
+
+            if (_summed_inputs[_input_index_trigger][_i] > TRIG_THRESH) {
+                _env_stage = 1; // go to attack
+                _progress_samps = 0;
+            }
+
+            // determine stage in non trigger context;
+            // only do once, when env stage is 1
+            if (_progress_samps > _a_samps && _env_stage == 1)  { // and < A+D
+                _env_stage = 2; // in decay
+                _progress_samps_d_start = _progress_samps;
+            }
             
             // get envelope stage other than 1
             if (_progress_samps > (_a_samps + _d_samps)) {
                 _env_stage = 0; // in silence
-            }
-            else if (_progress_samps > _a_samps) { // and lt A+D
-                _env_stage = 2; // in decay
+                // cleared, but no longer relevant
             }
             
             //std::cout << "_env_stage: " << _env_stage << "; " << _a_samps << "; " << _d_samps << std::endl;
             // write outputs	
-            if (_env_stage == 0) {
-                outputs[0][_i] = 0;
+            if (_env_stage == 0) { // in silence
+                outputs[0][_i] = 0.0;
             }
-            else if (_env_stage == 1) {
-                _amp_factor = 1.0 + (log(1) - log(MIN_AMP)) / (_a_samps + 1);
-                outputs[0][_i] = .8;
+            else if (_env_stage == 1) { // attack
+                // 1-pow((dur-x)/float(dur),4)
+                outputs[0][_i] = 1 - pow(
+                        (_a_samps-_progress_samps) / _a_samps,
+                        _summed_inputs[_input_index_exponent][_i]
+                        );
             }
-            else { // stage 2
-                _amp_factor = 1.0 + (log(MIN_AMP) - log(1)) / (_a_samps + 1);
-                outputs[0][_i] = .2;
+            else if (_env_stage == 2) { // attack
+                // pow((dur-x)/float(dur),4)
+                outputs[0][_i] = pow(
+                    (_d_samps-(_progress_samps-_progress_samps_d_start)) /
+                            _d_samps,
+                    _summed_inputs[_input_index_exponent][_i]
+                    );
+                //outputs[0][_i] = .2;
+            }
+            else {
+                throw "bad stage"; // provide proper or errror
             }
             // always increment; just reset when we get a trigger
             ++_progress_samps;
