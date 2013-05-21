@@ -24,8 +24,6 @@ namespace aw {
 //! The sample type is used for sample values, e.g., amplitude measurements in the output vector. 
 typedef double SampleType; // sample value type
 
-// frame size type: probadbly under 10,000, 0 to 65535
-// if we store complete audio files in a frame, this will need to be bigger
 //! The size of a single frame (or vector), or the number of samples processed per computation cycle. This is a very large integer as we might need to accomodate loading in large audio files as a single frame. 
 typedef std::tr1::uint32_t FrameSizeType;
 
@@ -243,7 +241,7 @@ class Environment {
 	//! Private sampling rate storage. Defaults to 44100. 
 	OutputSizeType _sampling_rate;
     
-    //! Common (but not all) frame size. Defaults to 
+    //! Common (but not all) frame size. Defaults to 64.  
 	FrameSizeType _common_frame_size;
 	
     //! Load default directories.
@@ -251,12 +249,17 @@ class Environment {
 	
     public://-------------------------------------------------------------------
 
-    explicit Environment();
+    // need to =delete the default constructor
     
-    ~Environment();
+    explicit Environment(FrameSizeType fs=64);
+    
+    //~Environment();
 	
-    //! Factory method that sets defaults. 
+    //! Factory method that sets defaults.
     static EnvironmentShared make();    
+
+    //! Factory method that provides frame size defaults. Could by 'make from'. 
+    static EnvironmentShared make_with_frame_size(FrameSizeType fs=64);
     
     //! Return the sampling rate
 	OutputSizeType get_sampling_rate() const {return _sampling_rate;};

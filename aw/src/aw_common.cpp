@@ -97,11 +97,11 @@ const char* get_fp_home() {
 // utility classes
 
 
-Environment :: Environment() 
+Environment :: Environment(FrameSizeType fs) 
 	: _sampling_rate(44100),
-    _common_frame_size(64) {
+    _common_frame_size(fs) { // default is 64
 	// post initializers
-    _load_defaults();
+    _load_defaults(); // file paths, not frame size
 }
 
 EnvironmentShared Environment :: make() {
@@ -109,7 +109,13 @@ EnvironmentShared Environment :: make() {
     return e;
 }
 
-Environment :: ~Environment() {}
+EnvironmentShared Environment :: make_with_frame_size(FrameSizeType fs) {
+    EnvironmentShared e = EnvironmentShared(new Environment(fs));
+    return e;
+}
+
+
+// Environment :: ~Environment() {}
 
 void Environment :: _load_defaults() {
     // this method is called on init
