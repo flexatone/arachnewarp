@@ -269,7 +269,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
     public://------------------------------------------------------------------
         
-    //! A linear array of samples, which may include multiple dimensions (e.g. channels) placed in series. This might be private, but for performance this is presently public: no function call is required to read from it. To read from 
+    //! A vector of sample vectors. This might be private, but for performance this is presently public: no function call is required to read from it. 
     VVSampleType outputs;	
     
 

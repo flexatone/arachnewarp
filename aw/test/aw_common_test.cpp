@@ -103,5 +103,34 @@ BOOST_AUTO_TEST_CASE(aw_test_mtof) {
 
 }
 
+BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
+
+    aw::EnvironmentShared e1 = aw::Environment::make();
+    BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
+
+    aw::EnvironmentShared e2 = aw::Environment::make_with_frame_size(128);
+    BOOST_CHECK_EQUAL(e2->get_common_frame_size(), 128);
+
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

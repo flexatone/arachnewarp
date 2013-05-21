@@ -242,7 +242,7 @@ void Generator :: _resize_outputs() {
     assert(outputs.size() == _output_count);
     
     SampleType n(0);
-    // reserve each component; might set value as well to 0
+    // reserve each component; set value to 0
 	// must be sure all have the same _frame_size
     for (j=outputs.begin(); j!=outputs.end(); ++j) {
 		// this will also set all values to 0.0
@@ -1620,7 +1620,7 @@ void AttackDecay :: reset() {
 
 
 void AttackDecay :: render(RenderCountType f) {
-    // see Fast Exponential Envelope Generator at http://musicdsp.com/ for implementation susggestions
+    // TODO: store unit interval mapping so can resume/start from that point
     while (_render_count < f) {
         _render_inputs(f);
 		_sum_inputs(_frame_size);
@@ -1669,9 +1669,8 @@ void AttackDecay :: render(RenderCountType f) {
                             _d_samps,
                     _summed_inputs[_input_index_exponent][_i]
                     );
-                //outputs[0][_i] = .2;
             }
-            else {
+            else { // should never happen
                 throw "bad stage"; // provide proper or errror
             }
             // always increment; just reset when we get a trigger
