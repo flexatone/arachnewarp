@@ -3,7 +3,10 @@
 
 
 #include <string>
+#include <sstream>
 #include <vector>
+#include <algorithm>
+#include <iostream>
 
 #include <tr1/cstdint> // has uint32_t
 #include <tr1/memory>
@@ -126,11 +129,80 @@ inline void true_min_max(
 
 
 
+//! Convert midi to frequency. 	
 inline SampleType mtof(SampleType f) {
     // midi to frequency
     if (f <= -1500) return 0;
     else if (f > 1499) return mtof(1499);
     else return pow(2, (f-69) / 12.0) * 440.0;
+}
+
+
+
+// string procs ===============================================================
+
+
+//! Convert a string into lower case in place. 
+inline void to_lower(std::string& src) {
+    std::transform(src.begin(), src.end(), src.begin(), ::tolower);
+}
+
+
+//std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+//    std::stringstream ss(s);
+//    std::string item;
+//    while (std::getline(ss, item, delim)) {
+//        elems.push_back(item);
+//    }
+//    return elems;
+//}
+
+// Split a strng by pased in delimiter	
+inline void split(const std::string& src,
+        const char delim,
+        std::vector<std::string>& post) {
+    
+    std::stringstream ss(src);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        post.push_back(item);
+    }
+
+}
+
+
+//! Remove characters form a string passed in place.
+inline void remove(std::string& src, const char target) {
+    src.erase(std::remove(src.begin(), src.end(), target), src.end());
+}
+
+
+//! A templated function that will take a string and convert to a vector of type T, using istreingstream conversion.
+template <typename T>
+inline void string_to_vector(const std::string& src,
+        std::vector<T>& post,
+        const char delim=',',
+        const std::string& remove="") {
+
+    std::vector<std::string> col; // need a temp col of strings
+    std::vector<std::string>::const_iterator i;
+    
+    T var;
+    std::istringstream iss;
+    
+    // split in place by delim into col
+    aw::split(src, delim, col);
+    // for each part of col, make into type T
+    for(i=col.begin(); i!=col.end(); ++i) {
+        iss.clear(); // clear it on each pass
+        // remove undesirable chars here, for each component
+        // aw::remove(*i, char)
+        // check string is empty
+        iss.str(*i);
+        iss >> var;
+        post.push_back(var);
+        }
+    
 }
 
 

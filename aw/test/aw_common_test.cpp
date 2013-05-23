@@ -1,6 +1,9 @@
 // g++ -I ../src aw_common_test.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -Wall -o aw_common_test
 
-// -std=c++0x 
+// clang++ -I ../src aw_common_test.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -Wall -o aw_common_test
+
+// to add -std=c++11 -stdlib=libc++
+
 
 
 #define BOOST_TEST_DYN_LINK
@@ -18,6 +21,7 @@
 
 #include <iostream>
 #include <string>
+#include <list>
 
 #include "aw_common.h"
 
@@ -112,19 +116,67 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
     BOOST_CHECK_EQUAL(e2->get_common_frame_size(), 128);
 
     
+}	
+
+
+
+BOOST_AUTO_TEST_CASE(aw_test_to_lower) {
+
+    std::string a("TESTing asdf SDF");
+    aw::to_lower(a);
+    BOOST_CHECK_EQUAL(a, "testing asdf sdf");
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_test_split) {
+
+    std::vector<std::string> post;
+    std::string a("1, 4.3, 1.2");
+    
+    aw::split(a, ',', post);
+    
+    BOOST_CHECK_EQUAL(post[0], "1");
+    BOOST_CHECK_EQUAL(post[1], " 4.3");
+    BOOST_CHECK_EQUAL(post[2], " 1.2");
+    
 }
 
 
 
 
+BOOST_AUTO_TEST_CASE(aw_test_remove) {
+
+    std::string a("1, 4.3, 1.2");
+    
+    aw::remove(a, ',');
+    
+    BOOST_CHECK_EQUAL(a, "1 4.3 1.2");
+
+    aw::remove(a, ' ');
+    
+    BOOST_CHECK_EQUAL(a, "14.31.2");
+    
+}
 
 
 
+BOOST_AUTO_TEST_CASE(string_to_vector) {
+
+    std::string a("1, 4.3, 1.2");
+
+    std::vector<aw::SampleType> post;
+    
+    aw::string_to_vector<aw::SampleType>(a, post);
+    
+    BOOST_CHECK_EQUAL(post[0], 1);
+    BOOST_CHECK_EQUAL(post[1], 4.3);
+    BOOST_CHECK_EQUAL(post[2], 1.2);
 
 
+    // TODO: make this work
+    std::string b("1, (4.3, 1.2)");
 
-
-
+}
 
 
 
