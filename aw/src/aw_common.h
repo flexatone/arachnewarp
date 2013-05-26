@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <cmath>
 
 #include <tr1/cstdint> // has uint32_t
 #include <tr1/memory>
@@ -98,7 +99,21 @@ inline SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
 	// this is inlined
 	fq = fq == 0 ? MIN_FQ : fq;
 	fq = fq > nyquist ? nyquist : fq;
-	return fq < -nyquist ? -nyquist : fq;	
+	return fq < -nyquist ? -nyquist : fq;
+}
+
+//! Limit a phase value between 0 and PI2 by wrapping: done in place. 
+inline void phase_limiter(SampleType& phase) {
+    if (phase >= PI2) {
+        while (phase >= PI2) {
+            phase -= PI2;
+        }
+    }
+    else if (phase < 0.0) {
+        while (phase < 0.0) {
+            phase += PI2;
+        }
+    }
 }
 
 
@@ -147,21 +162,16 @@ inline void to_lower(std::string& src) {
     std::transform(src.begin(), src.end(), src.begin(), ::tolower);
 }
 
+//! Remove characters form a string passed in place.
+inline void remove(std::string& src, const char target) {
+    src.erase(std::remove(src.begin(), src.end(), target), src.end());
+}
 
-//std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-//    std::stringstream ss(s);
-//    std::string item;
-//    while (std::getline(ss, item, delim)) {
-//        elems.push_back(item);
-//    }
-//    return elems;
-//}
 
-// Split a strng by pased in delimiter	
+//! Split a string by a delimiter. 
 inline void split(const std::string& src,
         const char delim,
         std::vector<std::string>& post) {
-    
     std::stringstream ss(src);
     std::string item;
     while (std::getline(ss, item, delim)) {
@@ -170,17 +180,11 @@ inline void split(const std::string& src,
 
 }
 
-
-//! Remove characters form a string passed in place.
-inline void remove(std::string& src, const char target) {
-    src.erase(std::remove(src.begin(), src.end(), target), src.end());
-}
-
-
 //! A templated function that will take a string and convert to a vector of type T, using istreingstream conversion.
 template <typename T>
-inline void string_to_vector(const std::string& src,
-        std::vector<T>& post,
+void string_to_vector(
+        const std::string& src, // input
+        std::vector<T>& post, // return collector
         const char delim=',',
         const std::string& remove="") {
 
@@ -189,23 +193,30 @@ inline void string_to_vector(const std::string& src,
     
     T var;
     std::istringstream iss;
-    
+    std::string working(src); // copy to permit changing in place
+
+    for (std::string::const_iterator j=remove.begin(); j != remove.end(); ++j) {
+        aw::remove(working, *j);
+    }
     // split in place by delim into col
-    aw::split(src, delim, col);
+    aw::split(working, delim, col);
     // for each part of col, make into type T
     for(i=col.begin(); i!=col.end(); ++i) {
         iss.clear(); // clear it on each pass
-        // remove undesirable chars here, for each component
-        // aw::remove(*i, char)
-        // check string is empty
         iss.str(*i);
         iss >> var;
         post.push_back(var);
-        }
-    
+    }
 }
 
 
+
+
+
+
+
+
+    
 
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------

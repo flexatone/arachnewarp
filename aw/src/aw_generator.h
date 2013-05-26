@@ -756,10 +756,6 @@ class Multiply: public Add {
 
 
 
-
-
-
-
 //=============================================================================
 //! A Buffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
 class Buffer;
@@ -788,8 +784,6 @@ class Buffer: public Generator {
     virtual void set_outputs_from_fp(const std::string& fp);
         
 };
-
-
 
 
 
@@ -842,8 +836,11 @@ class Sine: public Generator {
 	
     //SampleType _sum_frequency;
     // SampleType _sum_phase;
-    SampleType _angle_increment;	
-
+    SampleType _angle_increment;
+    SampleType _phase_increment;
+    SampleType _cur_phase;
+    SampleType _cur_fq;
+    
 	// SampleType _amp_prev;
 	
 	RenderCountType _sample_count;		
@@ -855,7 +852,9 @@ class Sine: public Generator {
 	
     ~Sine();
 
-    virtual void init();    
+    virtual void init();
+    
+    virtual void set_default();    
     
     virtual void reset();
     

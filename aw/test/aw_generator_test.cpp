@@ -1,5 +1,8 @@
 // g++ -I ../src  aw_generator_test.cpp ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp -DSTAND_ALONE -l boost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -g -o aw_generator_test
 
+// g++-4.7 -I ../src  aw_generator_test.cpp ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp -DSTAND_ALONE -l boost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -g -o aw_generator_test
+
+
 // -std=c++0x
 
 #define BOOST_TEST_DYN_LINK
@@ -887,44 +890,36 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_7) {
 BOOST_AUTO_TEST_CASE(aw_generator_sine_1) {
     // test basic multiplication
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
-
-    // one cycle for 4 samples
-    11025 >> g1;
-    //g1->set_input_by_index(0, 22050);        
+    g1->set_input_by_index(0, 11025);
     g1->render(1);
-    //g1->illustrate_outputs();
-	BOOST_CHECK_CLOSE(g1->outputs[0][0], 0, .00001);
-	BOOST_CHECK_CLOSE(g1->outputs[0][1], 1, .00001);
+    // must use check_small here or otherwise get SIGABR
+        
+	BOOST_CHECK_SMALL(g1->outputs[0][0], .001);
+	BOOST_CHECK_CLOSE(g1->outputs[0][1], 1.0, .00001);
 	BOOST_CHECK_SMALL(g1->outputs[0][2], .001);
-	BOOST_CHECK_CLOSE(g1->outputs[0][3], -1, .00001);
+	BOOST_CHECK_CLOSE(g1->outputs[0][3], -1.0, .00001);
 	BOOST_CHECK_SMALL(g1->outputs[0][4], .001);
-	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
 }
 
-// redo with map
-//BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
-//    // test basic multiplication
-//    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
-//
-//    // one cycle for 4 samples
-//    11025 > g1;
-//    g1->set_input_by_class_id(aw::ParameterType::ID_LowerBoundary, 0);
-//    g1->set_input_by_class_id(aw::ParameterType::ID_UpperBoundary, 2);
-//    
-//    //g1->set_input_by_index(0, 22050);        
-//    g1->render(1);
-//    //g1->illustrate_outputs();
-//	BOOST_CHECK_CLOSE(g1->outputs[0][0], 1, .00001);
-//	BOOST_CHECK_CLOSE(g1->outputs[0][1], 2, .00001);
-//	BOOST_CHECK_CLOSE(g1->outputs[0][2], 1, .00001);
-//	BOOST_CHECK_CLOSE(g1->outputs[0][3], 0, .00001);
-//	BOOST_CHECK_CLOSE(g1->outputs[0][4], 1, .00001);
-//    
-//    
-//	//BOOST_CHECK_CLOSE(g1->outputs[0][0], 120, .001);
-//}
-//
-//
+
+BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
+    // test basic multiplication
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
+    // one cycle for 4 samples
+    //882. >> g1; // gets 25 points per half cycle
+    g1->set_input_by_index(0, 882);
+    g1->set_input_by_index(1, aw::PI * .5);
+    
+    g1->render(1);
+    // must use check_small here or otherwise get SIGABR
+    
+    //g1->illustrate_outputs();
+    
+	BOOST_CHECK_CLOSE(g1->outputs[0][0], 1.0, .00001);
+	BOOST_CHECK_CLOSE(g1->outputs[0][25], -1.0, .00001);
+	BOOST_CHECK_CLOSE(g1->outputs[0][50], 1.0, .00001);
+}
+
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_1) {

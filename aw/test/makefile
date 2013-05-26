@@ -1,4 +1,4 @@
-CC=g++
+CC=g++-4.7
 
 # this is the abs directory for this file 
 # TOP := $(dir $(CURDIR)/$(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))
