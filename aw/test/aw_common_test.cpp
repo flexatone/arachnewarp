@@ -1,5 +1,7 @@
 // g++ -I ../src aw_common_test.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -Wall -o aw_common_test
 
+// g++-4.7 -I ../src aw_common_test.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -Wall -o aw_common_test
+
 // clang++ -I ../src aw_common_test.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -Wall -o aw_common_test
 
 // to add -std=c++11 -stdlib=libc++
@@ -107,6 +109,23 @@ BOOST_AUTO_TEST_CASE(aw_test_mtof) {
 
 }
 
+BOOST_AUTO_TEST_CASE(aw_test_phase_limiter_a) {
+    aw::SampleType a(3.0);
+    
+    aw::phase_limiter(a);
+    BOOST_CHECK_CLOSE(a, 3.0, .0001);
+    
+    a = 6.8;
+    aw::phase_limiter(a);
+    BOOST_CHECK_CLOSE(a, 0.516814, .001);
+
+    a = -3.14 * 6;
+    aw::phase_limiter(a);
+    //std::cout << "here: " << a << std::endl;
+    BOOST_CHECK_CLOSE(a, 0.00955592, .001);
+}
+
+
 BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
     aw::EnvironmentShared e1 = aw::Environment::make();
@@ -175,6 +194,16 @@ BOOST_AUTO_TEST_CASE(string_to_vector) {
 
     // TODO: make this work
     std::string b("1, (4.3, 1.2)");
+
+    post.clear();
+    aw::string_to_vector<aw::SampleType>(b, post, ',', "()");
+    
+    
+
+    BOOST_CHECK_EQUAL(post[0], 1);
+    BOOST_CHECK_EQUAL(post[1], 4.3);
+    BOOST_CHECK_EQUAL(post[2], 1.2);
+
 
 }
 

@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_2) {
 	g1->add_input_by_index(1, g4);
     
     
-    g1->illustrate_network();
+    //g1->illustrate_network();
 	//g1->illustrate_outputs();
 
 	

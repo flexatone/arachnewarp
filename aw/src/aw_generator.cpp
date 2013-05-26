@@ -155,7 +155,7 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
 
 
 GeneratorShared  Generator :: make(GeneratorID q){
-	// just get defailt environment
+	// just get default environment
     EnvironmentShared e = EnvironmentShared(new Environment);
     return make_with_environment(q, e);
 }
@@ -186,8 +186,8 @@ Generator :: ~Generator() {
 }
 
 void Generator :: init() {
-    // TODO: should we set a boolean to make sure this is only called once?
-    // the frame size is eithe common or larger; thus, we generally only read as many as we have from a client object. 
+    // we only set sampling reate at init; thus, we can call init to reset SR
+    // the frame size is eithe common or larger; thus, we generally only read as many as we have from a client object.
     _frame_size = _environment->get_common_frame_size();    
     _sampling_rate = _environment->get_sampling_rate();
 	_nyquist = _sampling_rate / 2; // let floor
@@ -1373,7 +1373,6 @@ Sine :: ~Sine() {
 
 void Sine :: init() {
     // the init must configure the names and types of parameters
-    // std::cout << *this << " Phasor::init()" << std::endl;
     Generator::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
@@ -1396,32 +1395,76 @@ void Sine :: init() {
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
+    set_default();
     reset();
 }
 
+void Sine :: set_default() {
+    // default configuration sets phase at zero
+    set_input_by_index(_input_index_phase, 0);
+}
+
+
 void Sine :: reset() {
     Generator::reset();
+    // will get set on first render call
+    _cur_phase = 0;
+    _cur_fq = 0;
+    _phase_increment = 0;
 }
+
+
+//void Sine :: render(RenderCountType f) {
+//    while (_render_count < f) {
+//        _render_inputs(f);
+//		_sum_inputs(_frame_size);
+//        // a running count of samples
+//        _sample_count = _render_count * _frame_size;
+//		// iterate over one frame
+//		for (_i=0; _i < _frame_size; ++_i) {
+//			//_sum_frequency = ;
+//			//_sum_phase = _summed_inputs[_input_index_phase][i];
+//            // 2*pi is one cycle, times the number of samples per cycle
+//            _angle_increment = PI2 * (
+//                    _summed_inputs[_input_index_frequency][_i] /
+//                    _sampling_rate);
+//            // mult angle increment by cumulative running of samples
+//			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));            
+//		}
+//        //std::cout << "_period_samples: " << _period_samples << std::endl;        
+//        _render_count += 1;
+//    }
+//}
+
 
 
 void Sine :: render(RenderCountType f) {
     while (_render_count < f) {
         _render_inputs(f);
 		_sum_inputs(_frame_size);
-        // a running count of samples
-        _sample_count = _render_count * _frame_size;
-		// iterate over one frame
+        
 		for (_i=0; _i < _frame_size; ++_i) {
-			//_sum_frequency = ;
-			//_sum_phase = _summed_inputs[_input_index_phase][i];
-            // 2*pi is one cycle, times the number of samples per cycle
-            _angle_increment = PI2 * (
-                    _summed_inputs[_input_index_frequency][_i] /
-                    _sampling_rate);
-            // mult angle increment by cumulative running of samples
-			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));            
-		}
-        //std::cout << "_period_samples: " << _period_samples << std::endl;        
+
+            // whne phase input changes, set cur value to that value; not sure this is the right way to do this but maybe, as an phasor driving 1 to 2IP would oscillate
+            if (_summed_inputs[_input_index_phase][_i] != _phase_increment) {
+                _phase_increment = _summed_inputs[_input_index_phase][_i];
+                _cur_phase = _phase_increment; 
+            }
+            phase_limiter(_cur_phase); // inllined, in place
+        
+            // phase input is a phase offset                 
+            outputs[0][_i] = sin(_cur_phase);
+            
+            if (_summed_inputs[_input_index_frequency][_i] != _cur_fq) {
+                _cur_fq = _summed_inputs[_input_index_frequency][_i];
+                // could pre-callc 2 pi over sr
+                _angle_increment = PI2 * _cur_fq / _sampling_rate;
+            }
+            _cur_phase += _angle_increment;
+            
+            phase_limiter(_cur_phase); // inllined, in place
+        }
+        
         _render_count += 1;
     }
 }
