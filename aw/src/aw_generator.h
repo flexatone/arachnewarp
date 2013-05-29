@@ -918,6 +918,10 @@ class AttackDecay: public Generator {
     ParameterIndexType _input_index_attack;
     ParameterIndexType _input_index_decay;
     ParameterIndexType _input_index_exponent;
+    ParameterIndexType _input_index_cycle;
+
+    ParameterIndexType _output_index_eoa;
+    ParameterIndexType _output_index_eod;
 
     OutputSizeType _i;
     
@@ -925,13 +929,15 @@ class AttackDecay: public Generator {
     SampleType _a_samps;
     SampleType _d_samps;
     
+    SampleType _last_amp; // last amp    
+    SampleType _stage_amp_range; // last unit interval amp, pre exp scaling
+
+    bool _trigger_a; // last unit interval amp, pre exp scaling
+    
     //! Progress samps are set to zero at trigger
     OutputSizeType _progress_samps;
-    OutputSizeType _progress_samps_d_start;
-    
     //! Store envelope stage as 0 (off); 1 (A); 2 (D)
     UINT8 _env_stage;
-
     SampleType _amp;
     
     public://------------------------------------------------------------------

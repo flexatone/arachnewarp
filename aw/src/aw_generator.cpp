@@ -1061,7 +1061,8 @@ void Multiply :: init() {
 }
 
 
-
+//------------------------------------------------------------------------------
+// TODO: add comparison-family opperators, starting w >
 
 
 
@@ -1611,38 +1612,55 @@ void AttackDecay :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+    aw::ParameterTypeShared pt_i1 = aw::ParameterType::make(
             aw::ParameterType::ID_Trigger);
-    pt1->set_instance_name("Trigger");
-    _register_input_parameter_type(pt1);
+    pt_i1->set_instance_name("Trigger");
+    _register_input_parameter_type(pt_i1);
 	_input_index_trigger = 0;
 
-    aw::ParameterTypeShared pt2 = aw::ParameterType::make(
+    aw::ParameterTypeShared pt_i2 = aw::ParameterType::make(
             aw::ParameterType::ID_Duration);
-    pt2->set_instance_name("Attack time");
-    _register_input_parameter_type(pt2);
+    pt_i2->set_instance_name("Attack time");
+    _register_input_parameter_type(pt_i2);
 	_input_index_attack = 1;
 
-    aw::ParameterTypeShared pt3 = aw::ParameterType::make(
+    aw::ParameterTypeShared pt_i3 = aw::ParameterType::make(
             aw::ParameterType::ID_Duration);
-    pt3->set_instance_name("Decay time");
-    _register_input_parameter_type(pt3);
+    pt_i3->set_instance_name("Decay time");
+    _register_input_parameter_type(pt_i3);
 	_input_index_decay = 2;
 
-    aw::ParameterTypeShared pt4 = aw::ParameterType::make(
+    aw::ParameterTypeShared pt_i4 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
-    pt4->set_instance_name("Exponent");
-    _register_input_parameter_type(pt4);
+    pt_i4->set_instance_name("Exponent");
+    _register_input_parameter_type(pt_i4);
 	_input_index_exponent = 3;
+
+    aw::ParameterTypeShared pt_i5 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt_i5->set_instance_name("Cycle");
+    _register_input_parameter_type(pt_i5);
+	_input_index_cycle = 4;
 	
-    // TODO:
-    // have a slot to configure this as cyclical, triggered, or gated
 
 	// register output
-    aw::ParameterTypeShared pt_out = aw::ParameterType::make(
+    aw::ParameterTypeShared pt_o1 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
-    pt_out->set_instance_name("Output");
-    _register_output_parameter_type(pt_out);
+    pt_o1->set_instance_name("Output");
+    _register_output_parameter_type(pt_o1);
+    
+    // add outputs: EOA, EOD!
+    aw::ParameterTypeShared pt_o2 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt_o2->set_instance_name("EOA");
+    _register_output_parameter_type(pt_o2);
+    _output_index_eoa = 1;
+
+    aw::ParameterTypeShared pt_o3 = aw::ParameterType::make(
+            aw::ParameterType::ID_Value);
+    pt_o3->set_instance_name("EOD");
+    _register_output_parameter_type(pt_o3);
+    _output_index_eod = 2;
     
     // set default
     set_default();
@@ -1650,24 +1668,33 @@ void AttackDecay :: init() {
 }
 
 void AttackDecay :: set_default() {
-    // this is the exponent
+    // set trigger to zero in case user just assigns cycle
+    set_input_by_index(_input_index_trigger, 0);
     set_input_by_index(_input_index_exponent, 4);
+    set_input_by_index(_input_index_cycle, 0);
+    
 }
 
 void AttackDecay :: reset() {
     Generator::reset();
     _progress_samps = 0;
     _env_stage = 0;
+    _last_amp = 0;
+    _stage_amp_range = 1;
+    _trigger_a = false;
 }
 
-
-
 void AttackDecay :: render(RenderCountType f) {
-    // TODO: store unit interval mapping so can resume/start from that point
+    // TODO: have this support gates; sustain if fall is > creater than attack; never do less than attack if gate falls before end of attack
+    
     while (_render_count < f) {
         _render_inputs(f);
 		_sum_inputs(_frame_size);
 		for (_i=0; _i < _frame_size; ++_i) {
+
+            // alway set to zero unless we have a change
+            outputs[_output_index_eoa][_i] = 0.0;
+            outputs[_output_index_eod][_i] = 0.0;
 
             // convert to samples; will truncate to int; might need to round
             _a_samps = fabs(_summed_inputs[_input_index_attack][_i] *
@@ -1675,47 +1702,67 @@ void AttackDecay :: render(RenderCountType f) {
             _d_samps = fabs(_summed_inputs[_input_index_decay][_i] *
                     static_cast<SampleType>(_sampling_rate));
 
-            if (_summed_inputs[_input_index_trigger][_i] > TRIG_THRESH) {
-                _env_stage = 1; // go to attack
-                _progress_samps = 0;
-            }
 
-            // determine stage in non trigger context;
-            // only do once, when env stage is 1
+            // attack can be triggered by two conditions: if in cycle mode and envl stage is 0 (after completion of release), or if we get a normal trigger. 
+            if (_summed_inputs[_input_index_cycle][_i] > TRIG_THRESH &&
+                    _env_stage == 0) {
+                _trigger_a = true;
+            }
+            else if (_summed_inputs[_input_index_trigger][_i] > TRIG_THRESH) {
+                _trigger_a = true;
+            }
+            // determine stage: these are called once
+            // if in any stage, and we find a trig:
+            if (_trigger_a) {
+                _env_stage = 1; // go to attack
+                _progress_samps = 0; // should already by zero
+                _stage_amp_range = 1 - _last_amp;
+                _trigger_a = false;
+            }
+            // only do once, when env stage is 1 and have enough attack, move stage
             if (_progress_samps > _a_samps && _env_stage == 1)  { // and < A+D
                 _env_stage = 2; // in decay
-                _progress_samps_d_start = _progress_samps;
+                _progress_samps = 0;
+                _stage_amp_range = 1 - _last_amp;                
+                // trig end of attack
+                outputs[_output_index_eoa][_i] = 1.0;
+            }            
+            // if we are in stage 2 and our progress is > decay samples, move to silence
+            if (_progress_samps > _d_samps && _env_stage == 2) {
+                _env_stage = 0; // in silence; if auto will re-trigger
+                _progress_samps = 0;
+                // if we get to here we reached zero
+                _stage_amp_range = 1; // decay is always from 1
+                 // trig end of decay
+                outputs[_output_index_eod][_i] = 1.0;
             }
             
-            // get envelope stage other than 1
-            if (_progress_samps > (_a_samps + _d_samps)) {
-                _env_stage = 0; // in silence
-                // cleared, but no longer relevant
-            }
-            
-            //std::cout << "_env_stage: " << _env_stage << "; " << _a_samps << "; " << _d_samps << std::endl;
-            // write outputs	
+            // the following are called repeatedly within a selected stage
+            // write outputs
             if (_env_stage == 0) { // in silence
+                _stage_amp_range = 1;
                 outputs[0][_i] = 0.0;
             }
             else if (_env_stage == 1) { // attack
                 // 1-pow((dur-x)/float(dur),4)
+                // inverse exponential in ascent, scaled over range
                 outputs[0][_i] = 1 - pow(
-                        (_a_samps-_progress_samps) / _a_samps,
+                        ((_a_samps - _progress_samps) / _a_samps),
                         _summed_inputs[_input_index_exponent][_i]
-                        );
+                        ) * _stage_amp_range;
             }
-            else if (_env_stage == 2) { // attack
+            else if (_env_stage == 2) { // decay
                 // pow((dur-x)/float(dur),4)
                 outputs[0][_i] = pow(
-                    (_d_samps-(_progress_samps-_progress_samps_d_start)) /
-                            _d_samps,
-                    _summed_inputs[_input_index_exponent][_i]
-                    );
+                        ((_d_samps - _progress_samps) / _d_samps),
+                        _summed_inputs[_input_index_exponent][_i]
+                        );
             }
             else { // should never happen
                 throw "bad stage"; // provide proper or errror
             }
+            
+            _last_amp = outputs[0][_i];
             // always increment; just reset when we get a trigger
             ++_progress_samps;
             

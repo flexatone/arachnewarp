@@ -1,9 +1,8 @@
 
 
-// g++ aw_generator_rt -Wall -I "/Volumes/xdisc/_sync/_x/src/arachnewarp/arachnewarp/src/core" -I "/Volumes/xdisc/_sync/_x/src/cpp/boost_1_43_0" -l portaudio -l portaudiocpp -l arachnewarp -o aw_PortAudio01_atest
 
 
-// g++ aw_generator_rt.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -Wall -O3 -o aw_generator_rt
+// g++-4.7 aw_generator_rt.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -Wall -O3 -o aw_generator_rt
 
 
 
@@ -42,10 +41,10 @@ public:
                 aw::Generator::ID_Sine, e);
         220 >> g1;
         
-
+        // rate of fm
         aw::GeneratorShared gmod = aw::Generator::make_with_environment(
                 aw::Generator::ID_Sine, e);
-        2 >> gmod;
+        8 >> gmod;
 
         aw::GeneratorShared gmap = aw::Generator::make_with_environment(
                 aw::Generator::ID_Map, e);
@@ -54,16 +53,21 @@ public:
         gmap->set_input_by_index(1, -1);
         gmap->set_input_by_index(2, 1);
         // dst
-        gmap->set_input_by_index(3, 880+100);
-        gmap->set_input_by_index(4, 880-100);
+        gmap->set_input_by_index(3, 880+440);
+        gmap->set_input_by_index(4, 880-440);
         
         
         aw::GeneratorShared g2 = aw::Generator::make_with_environment(
                 aw::Generator::ID_Sine, e);
         gmap >> g2;
 
-        root_gen = g1 + g2;
+        aw::GeneratorShared genv = aw::Generator::make(
+                aw::Generator::ID_AttackDecay);
+        genv->set_input_by_index(1, .25); // atack/decay in sec
+        genv->set_input_by_index(2, .25);
+        genv->set_input_by_index(4, 1); // self cycle mode
         
+        root_gen = (g1 + g2) * genv;
         
         std::cout << "initialized root_gen" << std::endl;
         root_gen->print_inputs();

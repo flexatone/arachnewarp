@@ -1005,24 +1005,115 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_3) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_1) {
+    // tesing normal triggering
+
     aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_AttackDecay);
 
-    g1->set_input_by_index(1, .1); // atack/decay in sec
-    g1->set_input_by_index(2, .1);
+    g1->set_input_by_index(1, .125); // atack/decay in sec
+    g1->set_input_by_index(2, .125);
 
     aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
-    4 >> g2; // 4 per second
+    2 >> g2; // 4 per second
     
     g1->set_input_by_index(0, g2, 1); // need second output, the phasor trigger
     
 	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
-	gbuf->set_slot_by_index(0, 2);
+	gbuf->set_slot_by_index(0, 4); // want to set this with: {2, 1} | gbuf;
 	gbuf->set_slot_by_index(1, 1);
     
     gbuf->set_input_by_index(0, g2, 1); // write trigger, out 1
-    gbuf->set_input_by_index(1, g1);
+    gbuf->set_input_by_index(1, g1, 0); // envelope
+    gbuf->set_input_by_index(2, g1, 1); // envelope eoa
+    gbuf->set_input_by_index(3, g1, 2); // envelope eod
+    
     gbuf->render(1);
     //gbuf->illustrate_outputs();
+    unsigned int offset = 44100 / 8;
+    BOOST_CHECK(gbuf->outputs[1][0] < .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 1] > .9);
+    BOOST_CHECK(gbuf->outputs[1][offset * 2] < .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 3] < .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 4] < .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 5] > .9);
+    BOOST_CHECK(gbuf->outputs[1][offset * 6] < .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 7] < .1);
+
+    // end of attack; rounding cause off by one
+    BOOST_CHECK(gbuf->outputs[2][offset * 1 + 1] > .9);
+    // end of decay; again, rounding error to sample results in shift
+    BOOST_CHECK(gbuf->outputs[3][offset * 2 + 2] > .9);
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_2) {
+    // tesing retriggering during decay
+
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_AttackDecay);
+
+    g1->set_input_by_index(1, .125); // atack/decay in sec
+    g1->set_input_by_index(2, 1);
+
+    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+    2 >> g2; // 4 per second
+    
+    g1->set_input_by_index(0, g2, 1); // need second output, the phasor trigger
+    
+	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	gbuf->set_slot_by_index(0, 4); // want to set this with: {2, 1} | gbuf;
+	gbuf->set_slot_by_index(1, 1);
+    
+    gbuf->set_input_by_index(0, g2, 1); // write trigger, out 1
+    gbuf->set_input_by_index(1, g1, 0); // envelope
+    gbuf->set_input_by_index(2, g1, 1); // envelope eoa
+    gbuf->set_input_by_index(3, g1, 2); // envelope eod
+    
+    gbuf->render(1);
+    unsigned int offset = 44100 / 8;
+    BOOST_CHECK(gbuf->outputs[1][0] < .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 1] > .9);
+    BOOST_CHECK(gbuf->outputs[1][offset * 2] > .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 3] > .1);
+    // not at zero at start of next
+    BOOST_CHECK(gbuf->outputs[1][offset * 4] > .1);
+    BOOST_CHECK(gbuf->outputs[1][offset * 5] > .9);
+//    BOOST_CHECK(gbuf->outputs[1][offset * 6] < .1);
+//    BOOST_CHECK(gbuf->outputs[1][offset * 7] < .1);
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_3) {
+    // tesing auto trigger
+    
+    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_AttackDecay);
+
+    g1->set_input_by_index(1, .125); // atack/decay in sec
+    g1->set_input_by_index(2, .125);
+    g1->set_input_by_index(4, 1); // self cycle mode
+        
+	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	gbuf->set_slot_by_index(0, 3);
+	gbuf->set_slot_by_index(1, 1);
+    
+    gbuf->set_input_by_index(0, g1, 0); // envelope
+    gbuf->set_input_by_index(1, g1, 1); // envelope eoa
+    gbuf->set_input_by_index(2, g1, 2); // envelope eod
+    
+    gbuf->render(1);
+    //gbuf->illustrate_outputs();
+    // 44100 samples, 4 envelopes peaking at .125
+    unsigned int offset = 44100 / 8;
+    BOOST_CHECK(gbuf->outputs[0][0] < .1);
+    BOOST_CHECK(gbuf->outputs[0][offset * 1] > .9);
+    BOOST_CHECK(gbuf->outputs[0][offset * 2] < .1);
+    BOOST_CHECK(gbuf->outputs[0][offset * 3] > .9);
+    BOOST_CHECK(gbuf->outputs[0][offset * 4] < .1);
+    BOOST_CHECK(gbuf->outputs[0][offset * 5] > .9);
+    BOOST_CHECK(gbuf->outputs[0][offset * 6] < .1);
+    BOOST_CHECK(gbuf->outputs[0][offset * 7] > .9);
+    BOOST_CHECK(gbuf->outputs[0][offset * 8 - 1] < .1);
+    
+    // end of attack; rounding cause off by one
+    BOOST_CHECK(gbuf->outputs[1][offset * 1 + 1] > .9);
+    // end of decay; again, rounding error to sample results in shift
+    BOOST_CHECK(gbuf->outputs[2][offset * 2 + 2] > .9);
     
 }
 
