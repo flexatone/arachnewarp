@@ -7,10 +7,10 @@
 namespace aw {
     
 Timer :: Timer(const std::string& n) :
-        _name(n),
-        _start_time(0),
-        _end_time(0),
-        _stopped(false) {
+        _name{n},
+        _start_time{0},
+        _end_time{0},
+        _stopped{false} {
 }
 
 void Timer :: start() {
@@ -37,7 +37,7 @@ double Timer :: _get_ms_difference(std::clock_t start, std::clock_t end) const {
 
 std::ostream& operator<<(std::ostream& ostream, const Timer& t) {
     // get time difference but do not stop
-    double dif(0);
+    double dif{0};
     if (not (t._stopped)) { // if not stopped, get comparison to now
         dif = t._get_ms_difference(t._start_time, std::clock());
     }

@@ -1,17 +1,15 @@
 #ifndef _AW_COMMON_H_
 #define _AW_COMMON_H_
 
-
 #include <string>
 #include <sstream>
 #include <vector>
 #include <algorithm>
 #include <iostream>
 #include <cmath>
-
-#include <tr1/cstdint> // has uint32_t
-#include <tr1/memory>
-#include <tr1/unordered_map>
+#include <cstdint> // has uint32_t
+#include <memory>
+#include <unordered_map>
 
 #include <boost/filesystem.hpp>
 #include <boost/exception/all.hpp> // needed for filesystem?
@@ -29,34 +27,34 @@ namespace aw {
 typedef double SampleType; // sample value type
 
 //! The size of a single frame (or vector), or the number of samples processed per computation cycle. This is a very large integer as we might need to accomodate loading in large audio files as a single frame. 
-typedef std::tr1::uint32_t FrameSizeType;
+typedef std::uint32_t FrameSizeType;
 
 //! Output size. Was uint16_t, but for handling audio files was increased to uint32_t. In general, the outputs is the frame size times the number of outputs, so outputs is always greater than or equal to frame size. 
-typedef std::tr1::uint32_t OutputSizeType;
+typedef std::uint32_t OutputSizeType;
 
 // _output_count probably never more than 200!
-//! An unisigned integer describing the number of inputs or outputs for a Generator. Note that this is essential the same as the PararmeterIndexType, and should be unified. 
-typedef std::tr1::uint8_t OutputCountType; 
+//! An unisigned integer describing the number of inputs or outputs for a Generator. Note that this is essentially the same as the PararmeterIndexType, and should be unified. 
+typedef std::uint8_t OutputCountType; 
 
 //! A vector of frame size types. This is used for offsets into the outputs.
 typedef std::vector<FrameSizeType> VFrameSizeType;
 
 //! A small unsigned interger for specialized cases. 
-typedef std::tr1::uint8_t UINT8; 
+typedef std::uint8_t UINT8; 
 
 //! An unsigned integer for each Generator that counts the number of frames that have passed; this number needs to be very large and overflow gracefully. 
-typedef std::tr1::uint64_t RenderCountType; 
+typedef std::uint64_t RenderCountType; 
 
-//! An unisnged integer to represent the position of an input parameter, i.e., an input or output position. Assumed ot never have more thean 200 parameter inputs for a Generator. 
-typedef std::tr1::uint8_t ParameterIndexType; 
+//! An unisnged integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Generator. Can replace all OutputCountType
+typedef std::uint8_t ParameterIndexType; 
 
 
 // TODO: replace with a SharedGenerator: but, we need a SharedGenerator to be hashable, which requires us to extend std::hash or similar
 //! A mapping of a String to bool. 
-typedef std::tr1::unordered_map<std::string, bool> MapStringBool;
+typedef std::unordered_map<std::string, bool> MapStringBool;
 
 //! The shared pointer version of MapStringParameterIndexPairToBool.
-typedef std::tr1::shared_ptr<MapStringBool> SharedMapStringBool;
+typedef std::shared_ptr<MapStringBool> SharedMapStringBool;
 
 
 SampleType const PI(3.14159265358979323846264338);
@@ -76,7 +74,7 @@ SampleType const TRIG_THRESH(.99999);
 
 
 //! Defined for all text-based hierarchical displays. 
-std::tr1::uint8_t const INDENT_SIZE(2);
+std::uint8_t const INDENT_SIZE(2);
 
 
 // functions ===================================================================
@@ -313,7 +311,7 @@ void string_to_vector(
 
 class Environment;
 //! The shared Environment is always const: it cannot be changed from the outside.
-typedef std::tr1::shared_ptr<const Environment> EnvironmentShared;
+typedef std::shared_ptr<const Environment> EnvironmentShared;
 //! A representation of the user's enviroinment. The Environment provides file-system-related access (file paths, etc) as well as audio I/O and related hardware related configuration options. 
 class Environment {
 

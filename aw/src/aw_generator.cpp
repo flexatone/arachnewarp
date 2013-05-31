@@ -6,14 +6,11 @@
 #include <vector>
 #include <cassert>
 
-// #include <tr1/functional>
-
 // needed for Buffer
 #include <sndfile.hh>
 
 #include "aw_generator.h"
 #include "aw_illustration.h"
-
 
 
 namespace aw {
@@ -57,9 +54,6 @@ ParameterTypeShared ParameterType :: make(ParameterTypeID q){
 
 ParameterType :: ParameterType() {
     _class_name = "ParameterType";
-}
-
-ParameterType :: ~ParameterType() {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const ParameterType& pt) {
@@ -128,7 +122,7 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
         g = AddShared(new Add(e));    
     }
     else if (q == ID_Multiply) {
-        g = AddShared(new Multiply(e));    
+        g = MultiplyShared(new Multiply(e));    
     }    
     else if (q == ID_Buffer) {
         g = BufferShared(new Buffer(e));    
@@ -165,25 +159,23 @@ Generator :: Generator(EnvironmentShared e)
 	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
 	: _class_name("Generator"), 
     //gid(-1), // want this to not match any known value
-	_output_count(0), // always init to 1; can change in init
-	_outputs_size(0), // will be updated after resizing
-    _input_count(0), 	
-    _slot_count(0),
-	_environment(e), // replace with Environment
+	_output_count{0}, // always init to 1; can change in init
+	_outputs_size{0}, // will be updated after resizing
+    _input_count{0},
+    _slot_count{0},
+	_environment{e}, // replace with Environment
     
 	// protected ...
-	_frame_size(1), // set in init;         
-	_sampling_rate(0), // set from Envrionment in init()
-	_nyquist(0), // set from Envrionment in init()
+	_frame_size{1}, // set in init;
+	_sampling_rate{0}, // set from Envrionment in init()
+	_nyquist{0}, // set from Envrionment in init()
 
-    _frame_size_is_resizable(false), 	
-    _render_count(0) {
+    _frame_size_is_resizable{false},
+    _render_count{0} {
 	//outputs(NULL) {
     //std::cout << "Generator (1 arg): Constructor" << std::endl;
 }
 
-Generator :: ~Generator() {
-}
 
 void Generator :: init() {
     // we only set sampling reate at init; thus, we can call init to reset SR
@@ -631,7 +623,7 @@ void Generator :: set_outputs_from_array(SampleType* v, OutputSizeType s,
 void Generator :: set_outputs_from_vector(const VSampleType& vst, 
 								OutputCountType ch, bool interleaved) {
 	// this is set outputs as we will try to set all channels available
-    // size is a long; cast ot std::tr1::uint32_t
+    // size is a long; cast ot std::uint32_t
 	// we trasfer the contents of the vector to an array
 	OutputSizeType s = static_cast<OutputSizeType>(vst.size());
 	// pack this in an array for reuse of the same function
@@ -674,7 +666,7 @@ ParameterIndexType Generator :: get_input_index_from_class_id(const
         ParameterType::ParameterTypeID ptid) {
     // match the string to the name returned by get_instance_name; 
     Generator :: MapIndexToParameterTypeShared ::const_iterator k;
-    for (k=_input_parameter_type.begin(); 
+    for (k = _input_parameter_type.begin();
         k != _input_parameter_type.end(); 
         ++k) {
         // each value (second( is a ParameterTypeShared)
@@ -829,9 +821,6 @@ Constant :: Constant(EnvironmentShared e)
     _class_id = ID_Constant;
 }
 
-Constant :: ~Constant() {
-}
-
 void Constant :: init() {
     //std::cout << *this << " Constant::init()" << std::endl;
     // resize and reset after setting parameters
@@ -946,29 +935,25 @@ void Constant :: add_input_by_index(ParameterIndexType i, SampleType v, OutputCo
 
 
 //------------------------------------------------------------------------------
-Add :: Add(EnvironmentShared e) 
+_BinaryCombined :: _BinaryCombined(EnvironmentShared e) 
 	// must initialize base class with passed arg
 	: Generator(e), 
 	_n_opperands(0) { // end intitializer list
-    _frame_size_is_resizable = false;		
-	_class_name = "Add";	
-    _class_id = ID_Add;    
+    _frame_size_is_resizable = false;
+    // the following need to be set in derived classes
+//	_class_name = "Add";
+//    _class_id = ID_Add;
     _op_switch = '+';
     _n_opperands_init = 0; // must be 1
-    // this approach was too slow, even when optimized    
-	//_op = std::tr1::function::plus<SampleType>(SampleType, SampleType);
 }
 
-Add :: ~Add() {
-}
-
-void Add :: init() {
+void _BinaryCombined :: init() {
     // the int routine must configure the names and types of parameters
     Generator::init();
     // must clear the default set by Gen init because slot will set directly    
     _clear_output_parameter_types();
     
-    aw::ParameterTypeShared so1 = aw::ParameterType::make( 
+    aw::ParameterTypeShared so1 = aw::ParameterType::make(
             aw::ParameterType::ID_Channels);
                                            
     so1->set_instance_name("Channels");
@@ -978,7 +963,7 @@ void Add :: init() {
 }
 
 
-void Add :: _update_for_new_slot() {
+void _BinaryCombined :: _update_for_new_slot() {
     // this is a small int; might overflow of trying to create large number of outs
     OutputCountType outs = static_cast<OutputCountType>(_slots[0]->outputs[0][0]);
     if (outs <= 0) {
@@ -1005,7 +990,7 @@ void Add :: _update_for_new_slot() {
 }
 
 
-void Add :: render(RenderCountType f) {
+void _BinaryCombined :: render(RenderCountType f) {
 
     ParameterIndexType i;
     ParameterIndexType input_count(get_input_count());
@@ -1045,11 +1030,24 @@ void Add :: render(RenderCountType f) {
 
 
 
+//------------------------------------------------------------------------------
+Add :: Add(EnvironmentShared e)
+	// must initialize base class with passed arg
+	: _BinaryCombined(e) {
+	_class_name = "Add";  // override what is set in Add
+    _class_id = ID_Add;
+    _op_switch = '+';
+    _n_opperands_init = 0;
+}
+
+void Add :: init() {
+    _BinaryCombined::init(); // must call base init; calls Generator::init()
+}
 
 //------------------------------------------------------------------------------
 Multiply :: Multiply(EnvironmentShared e) 
 	// must initialize base class with passed arg
-	: Add(e) {
+	: _BinaryCombined(e) {
 	_class_name = "Multiply";  // override what is set in Add
     _class_id = ID_Multiply;            
     _op_switch = '*';
@@ -1057,12 +1055,14 @@ Multiply :: Multiply(EnvironmentShared e)
 }
 
 void Multiply :: init() {
-    Add::init(); // must call base init; calls Generator::init()
+    _BinaryCombined::init(); // must call base init; calls Generator::init()
 }
 
 
 //------------------------------------------------------------------------------
-// TODO: add comparison-family opperators, starting w >
+// comparison
+
+
 
 
 
@@ -1076,8 +1076,6 @@ Buffer :: Buffer(EnvironmentShared e)
     _frame_size_is_resizable = true;
 }
 
-Buffer :: ~Buffer() {
-}
 
 void Buffer :: init() {
     // the int routie must configure the names and types of parameters
@@ -1269,8 +1267,6 @@ Phasor :: Phasor(EnvironmentShared e)
     _class_id = ID_Phasor;
 }
 
-Phasor :: ~Phasor() {
-}
 
 void Phasor :: init() {
     // the int routie must configure the names and types of parameters
@@ -1482,8 +1478,6 @@ Map :: Map(EnvironmentShared e)
     _class_id = ID_Map;
 }
 
-Map :: ~Map() {
-}
 
 void Map :: init() {
     // the int route must configure the names and types of parameters
@@ -1600,9 +1594,6 @@ AttackDecay :: AttackDecay(EnvironmentShared e)
 	{
 	_class_name = "AttackDecay";
     _class_id = ID_AttackDecay;
-}
-
-AttackDecay :: ~AttackDecay() {
 }
 
 void AttackDecay :: init() {
