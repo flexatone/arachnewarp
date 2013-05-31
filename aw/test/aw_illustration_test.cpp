@@ -42,9 +42,7 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_1) {
     //p.write(fp); 
 }
 
-BOOST_AUTO_TEST_CASE(aw_illustration_test_2) {
-	std::cout << "running aw_illustration_test_2" << std::endl;
-    
+BOOST_AUTO_TEST_CASE(aw_illustration_test_2) {    
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);

@@ -7,7 +7,6 @@
 // Need this for getting user home directory when not set to HOME
 #include <pwd.h>
 
-
 // Anything that includes common will need to include -l boost_filesystem -l boost_system to run the Environment code here
 #include <boost/filesystem.hpp>
 
@@ -20,7 +19,7 @@ namespace aw {
 
 
 void escape(std::string& str, const std::string& replace_targets, 
-                              const std::string& prefix) {
+        const std::string& prefix) {
     // replace a string by character; all passed in by reference; this is used in writing dot files for graphiz
     std::string::const_iterator i;
     std::stringstream s; 
@@ -88,10 +87,11 @@ const char* get_fp_home() {
 //==============================================================================
 // utility classes
 
+// TODO: add a static variable to store a default, and a static method to get and set the default
 
 Environment :: Environment(FrameSizeType fs) 
-	: _sampling_rate(44100),
-    _common_frame_size(fs) { // default is 64
+	: _sampling_rate{44100},
+    _common_frame_size{fs} { // default is 64
 	// post initializers
     _load_defaults(); // file paths, not frame size
 }

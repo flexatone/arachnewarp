@@ -1,15 +1,13 @@
 #ifndef _AW_PLOTTER_H_
 #define _AW_PLOTTER_H_
 
-#include <tr1/memory>
+#include <memory>
 #include <vector>
 #include <sstream>
 
 #include "aw_common.h"
 #include "aw_illustration.h"
 #include "aw_generator.h"
-
-
 
 namespace aw {
 
@@ -40,10 +38,9 @@ class Illustration {
 };
 
 
-
 //! An interface to GNUplot writing. Rename this TimeDomain
 class TimeDomainGraph;
-typedef std::tr1::shared_ptr<TimeDomainGraph> TimeDomainGraphShared;
+typedef std::shared_ptr<TimeDomainGraph> TimeDomainGraphShared;
 class TimeDomainGraph : public Illustration{
     
     public://-------------------------------------------------------------------
@@ -61,9 +58,7 @@ class TimeDomainGraph : public Illustration{
     
     //! Pipe the the plot to gnuplot directly.
     virtual void pipe();
-    
 };
-
 
 
 // A mapping form generator id to a color string. 
@@ -73,11 +68,9 @@ class ColorDictionary {
 };
 
 
-
-
 //! An interface to Graphiz writing.
 class NetworkGraph;
-typedef std::tr1::shared_ptr<NetworkGraph> NetworkGraphShared;
+typedef std::shared_ptr<NetworkGraph> NetworkGraphShared;
 class NetworkGraph : public Illustration{
 
     private://------------------------------------------------------------------

@@ -1,26 +1,21 @@
 #ifndef _AW_GENERATOR_H_
 #define _AW_GENERATOR_H_
 
-
 #include <vector>
 #include <string>
 #include <utility> // has pair
-
-// #include <tr1/functional>
-#include <tr1/unordered_map>
-//#include <memory> # only with -std=c++0x
-#include <tr1/memory>
+#include <unordered_map>
+#include <memory>
 
 #include "aw_common.h"
 
 namespace aw {
 
-
 //=============================================================================
 class ParameterType;
 
 //! Shared ParameterType. 
-typedef std::tr1::shared_ptr<ParameterType> ParameterTypeShared;
+typedef std::shared_ptr<ParameterType> ParameterTypeShared;
 
 //! The ParameterType, based on subclass definition, defines the meaning of an input slot that can be filled by a Generator. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage of a Generator. 
 class ParameterType {
@@ -33,7 +28,8 @@ class ParameterType {
         ID_Duration,
         ID_Phase,
         ID_Channels,
-        ID_Trigger, // what about inputs that take trigger and gate in same input?
+        // what about inputs that take trigger or gate in same input?
+        ID_Trigger,
         ID_LowerBoundary,
         ID_UpperBoundary,
         ID_Table // for slot in breakpoint, wavetable
@@ -62,8 +58,6 @@ class ParameterType {
     public://------------------------------------------------------------------
     explicit ParameterType();
 
-    virtual ~ParameterType();
-
 	//! Output stream processor.
 	friend std::ostream& operator<<(std::ostream& outputs, const ParameterType& pt);
 
@@ -83,16 +77,15 @@ class ParameterType {
 
 class ParameterTypeValue;
 //! Shared ParameterTypeValue.
-typedef std::tr1::shared_ptr<ParameterTypeValue> ParameterTypeValueShared;
+typedef std::shared_ptr<ParameterTypeValue> ParameterTypeValueShared;
 //! A subclass of ParameterType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
 class ParameterTypeValue: public ParameterType {
     public://------------------------------------------------------------------
     explicit ParameterTypeValue();
 };
 
-// TODO: provide a RateConverter that permits specifiying values in a variety of different ways. Parameter type frequency should by usable for all duration types
 class ParameterTypeFrequency;
-typedef std::tr1::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyShared;
+typedef std::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyShared;
 //! A subclass of ParameterType that specifies a frequency; this is assumed presently to be in Hertz.
 class ParameterTypeFrequency: public ParameterType {
     public://------------------------------------------------------------------
@@ -100,7 +93,7 @@ class ParameterTypeFrequency: public ParameterType {
 };
 
 class ParameterTypeDuration;
-typedef std::tr1::shared_ptr<ParameterTypeDuration> ParameterTypeDurationShared;
+typedef std::shared_ptr<ParameterTypeDuration> ParameterTypeDurationShared;
 //! A subclass of ParameterType that specifies a duration in seconds.
 class ParameterTypeDuration: public ParameterType {
     public://------------------------------------------------------------------
@@ -108,7 +101,7 @@ class ParameterTypeDuration: public ParameterType {
 };
 
 class ParameterTypePhase;
-typedef std::tr1::shared_ptr<ParameterTypePhase> ParameterTypePhaseShared;
+typedef std::shared_ptr<ParameterTypePhase> ParameterTypePhaseShared;
 //! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
 class ParameterTypePhase: public ParameterType {
     public://------------------------------------------------------------------
@@ -117,7 +110,7 @@ class ParameterTypePhase: public ParameterType {
 
 //! Used by some Generator to configure slots for both input and output channels, or dimensionality (frame/output count) of the internal marix. 
 class ParameterTypeChannels;
-typedef std::tr1::shared_ptr<ParameterTypeChannels> ParameterTypeChannelsShared;
+typedef std::shared_ptr<ParameterTypeChannels> ParameterTypeChannelsShared;
 //! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
 class ParameterTypeChannels: public ParameterType {
     public://------------------------------------------------------------------
@@ -125,7 +118,7 @@ class ParameterTypeChannels: public ParameterType {
 };
 
 class ParameterTypeTrigger;
-typedef std::tr1::shared_ptr<ParameterTypeTrigger> ParameterTypeTriggerShared;
+typedef std::shared_ptr<ParameterTypeTrigger> ParameterTypeTriggerShared;
 //! An impulse or trigger, or a single sample at 1.
 class ParameterTypeTrigger: public ParameterType {
     public://------------------------------------------------------------------
@@ -133,7 +126,7 @@ class ParameterTypeTrigger: public ParameterType {
 };
 
 class ParameterTypeLowerBoundary;
-typedef std::tr1::shared_ptr<ParameterTypeLowerBoundary>
+typedef std::shared_ptr<ParameterTypeLowerBoundary>
         ParameterTypeLowerBoundaryShared;
 //! A lower boundary, likely a minimum, for dynamic sizing of a generator. 
 class ParameterTypeLowerBoundary: public ParameterType {
@@ -142,7 +135,7 @@ class ParameterTypeLowerBoundary: public ParameterType {
 };
 
 class ParameterTypeUpperBoundary;
-typedef std::tr1::shared_ptr<ParameterTypeUpperBoundary>
+typedef std::shared_ptr<ParameterTypeUpperBoundary>
         ParameterTypeUpperBoundaryShared;
 //! A lower boundary, likely a maximum, for dynamic sizing of a generator. 
 class ParameterTypeUpperBoundary: public ParameterType {
@@ -151,7 +144,7 @@ class ParameterTypeUpperBoundary: public ParameterType {
 };
 
 class ParameterTypeTable;
-typedef std::tr1::shared_ptr<ParameterTypeTable>
+typedef std::shared_ptr<ParameterTypeTable>
         ParameterTypeTableShared;
 //! A table, or a Buffer with 2 channels of data. 
 class ParameterTypeTable: public ParameterType {
@@ -163,14 +156,14 @@ class ParameterTypeTable: public ParameterType {
 
 //=============================================================================
 class Generator;
-typedef std::tr1::shared_ptr<Generator> GeneratorShared;
+typedef std::shared_ptr<Generator> GeneratorShared;
 //! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. 
-class Generator: public std::tr1::enable_shared_from_this<Generator> {
+class Generator: public std::enable_shared_from_this<Generator> {
 
     public://--------------------------=---------------------------------------
     // public typedefs
 	//! A mapping of index number
-    typedef std::tr1::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
+    typedef std::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
     
 	typedef std::vector<SampleType> VSampleType;
 	typedef std::vector<VSampleType> VVSampleType;
@@ -245,7 +238,7 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
     RenderCountType _render_count;
 	
     //! The main storage for ParameterTypeShared instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
-    std::tr1::unordered_map<ParameterIndexType, 
+    std::unordered_map<ParameterIndexType,
                             ParameterTypeShared> _input_parameter_type;	
 		
     //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
@@ -258,18 +251,18 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 	VGenShared _slots;
 	
 	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
-    std::tr1::unordered_map<ParameterIndexType, 
+    std::unordered_map<ParameterIndexType,
             ParameterTypeShared> _slot_parameter_type;
 	
 	
     //! We store a ParameterTypeShared for each defined output, telling us what it is.
-    std::tr1::unordered_map<ParameterIndexType, 
+    std::unordered_map<ParameterIndexType,
             ParameterTypeShared> _output_parameter_type;		
 		
 
     public://------------------------------------------------------------------
         
-    //! A vector of sample vectors. This might be private, but for performance this is presently public: no function call is required to read from it. 
+    //! A vector of sample vectors. This might be deemed best as private, but for performance this is public: no function call is required to read from it. 
     VVSampleType outputs;	
     
 
@@ -324,10 +317,13 @@ class Generator: public std::tr1::enable_shared_from_this<Generator> {
 
 
     public://------------------------------------------------------------------
-	//! Main constructor that takes a generator config. 
+
+	//! Main constructor that takes a generator config.
     explicit Generator(EnvironmentShared e);
+
+    //! The default constructor is deleted: we always must pass in an Envrionment. 
+    Generator() = delete;
     
-    virtual ~Generator();
     
     //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called, and must be called explicitly in derived classes. This should only be called once in the life of a generator.
     virtual void init();
@@ -667,7 +663,7 @@ inline GeneratorShared operator*(SampleType lhs, GeneratorShared rhs) {
 //=============================================================================
 //! A Generator that returns a constant value, or fills its outputs vector with the same vale for all frames. 
 class Constant;
-typedef std::tr1::shared_ptr<Constant> ConstantShared;
+typedef std::shared_ptr<Constant> ConstantShared;
 class Constant: public Generator {
 
     private://-----------------------------------------------------------------
@@ -678,7 +674,6 @@ class Constant: public Generator {
     public://------------------------------------------------------------------
 
 	explicit Constant(EnvironmentShared);
-    ~Constant();
     
     virtual void init();
     
@@ -711,11 +706,12 @@ class Constant: public Generator {
     
 };
 
+
 //=============================================================================
-//! An add or mix, summing all Generators across all dimensions at its single input.
-class Add;
-typedef std::tr1::shared_ptr<Add> AddShared;
-class Add: public Generator {
+//! All Generators that can process a single input (+, *, avg?) can derive from this class.
+class _BinaryCombined;
+// no shared, as an ABC
+class _BinaryCombined: public Generator {
 
     protected://---------------------------------------------------------------
     SampleType _n_opperands;
@@ -729,9 +725,7 @@ class Add: public Generator {
 	void _update_for_new_slot();
 
     public://------------------------------------------------------------------
-    explicit Add(EnvironmentShared);
-	
-    ~Add();
+    explicit _BinaryCombined(EnvironmentShared);
 
     virtual void init();    
 		
@@ -741,11 +735,28 @@ class Add: public Generator {
 
 
 
+
+//=============================================================================
+//! A mult sums all Generators across all dimensions at its single operand input. Derives from Add, as all operators will 
+class Add;
+typedef std::shared_ptr<Add> AddShared;
+class Add: public _BinaryCombined {
+
+    public://------------------------------------------------------------------
+    explicit Add(EnvironmentShared);
+	
+    virtual void init();    
+
+};
+
+
+
+
 //=============================================================================
 //! A mult sums all Generators across all dimensions at its single operand input. Derives from Add, as all operators will 
 class Multiply;
-typedef std::tr1::shared_ptr<Multiply> MultiplyShared;
-class Multiply: public Add {
+typedef std::shared_ptr<Multiply> MultiplyShared;
+class Multiply: public _BinaryCombined {
 
     public://------------------------------------------------------------------
     explicit Multiply(EnvironmentShared);
@@ -759,7 +770,7 @@ class Multiply: public Add {
 //=============================================================================
 //! A Buffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
 class Buffer;
-typedef std::tr1::shared_ptr<Buffer> BufferShared;
+typedef std::shared_ptr<Buffer> BufferShared;
 class Buffer: public Generator {
 
     protected://---------------------------------------------------------------
@@ -769,8 +780,6 @@ class Buffer: public Generator {
     public://------------------------------------------------------------------
     explicit Buffer(EnvironmentShared);
 	
-    ~Buffer();
-
     virtual void init();
 	
 	//! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
@@ -790,7 +799,7 @@ class Buffer: public Generator {
 //=============================================================================
 //! The phasor has a ramp from 0 to 1 for each _output_count defined. Only the first _output_count of multiple dimensional inputs is used. 
 class Phasor;
-typedef std::tr1::shared_ptr<Phasor> PhasorShared;
+typedef std::shared_ptr<Phasor> PhasorShared;
 class Phasor: public Generator {
 
     private://-----------------------------------------------------------------
@@ -811,8 +820,6 @@ class Phasor: public Generator {
     public://------------------------------------------------------------------
     explicit Phasor(EnvironmentShared);
 	
-    ~Phasor();
-
     virtual void init();    
 
     virtual void reset();
@@ -827,7 +834,7 @@ class Phasor: public Generator {
 //=============================================================================
 //! A pure (calculated) sine wave. The sine has a ramp from -1 to 1 for each _output_count defined. Range is between -1 and 1. For performance, values are not mapped in this generator; use a Map instance. 
 class Sine;
-typedef std::tr1::shared_ptr<Sine> SineShared;
+typedef std::shared_ptr<Sine> SineShared;
 class Sine: public Generator {
 
     private://-----------------------------------------------------------------
@@ -867,7 +874,7 @@ class Sine: public Generator {
 //=============================================================================
 //! A mapping routine that takes five parameters: source, destination min, destination max, source min, source max. Values of the source greater than min/max are truncaated and held at that value.
 class Map;
-typedef std::tr1::shared_ptr<Map> MapShared;
+typedef std::shared_ptr<Map> MapShared;
 class Map: public Generator {
 
     private://-----------------------------------------------------------------
@@ -893,8 +900,6 @@ class Map: public Generator {
     public://------------------------------------------------------------------
     explicit Map(EnvironmentShared);
 	
-    ~Map();
-
     virtual void init();
     
     virtual void set_default();
@@ -910,7 +915,7 @@ class Map: public Generator {
 //=============================================================================
 //! An AD envelope.
 class AttackDecay;
-typedef std::tr1::shared_ptr<AttackDecay> AttackDecayShared;
+typedef std::shared_ptr<AttackDecay> AttackDecayShared;
 class AttackDecay: public Generator {
 
     private://-----------------------------------------------------------------
@@ -943,8 +948,6 @@ class AttackDecay: public Generator {
     public://------------------------------------------------------------------
     explicit AttackDecay(EnvironmentShared);
 	
-    ~AttackDecay();
-
     virtual void init();
     
     virtual void set_default();
@@ -957,10 +960,6 @@ class AttackDecay: public Generator {
 
 
 	
-
-
-
-
 
 
 

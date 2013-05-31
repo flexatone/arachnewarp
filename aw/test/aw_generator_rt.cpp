@@ -2,7 +2,7 @@
 
 
 
-// g++-4.7 aw_generator_rt.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -Wall -O3 -o aw_generator_rt
+// g++-4.7 -std=c++11 aw_generator_rt.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -Wall -O3 -o aw_generator_rt
 
 
 
