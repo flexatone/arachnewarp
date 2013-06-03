@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <list>
 #include <algorithm>
 #include <iostream>
 #include <cmath>
@@ -160,14 +161,92 @@ inline void to_lower(std::string& src) {
     std::transform(src.begin(), src.end(), src.begin(), ::tolower);
 }
 
-//! Remove characters form a string passed in place.
+//! Remove characters from a string passed in place.
 inline void remove(std::string& src, const char target) {
     src.erase(std::remove(src.begin(), src.end(), target), src.end());
 }
 
 
+//! For a given delimited sitring, determine a nested width, and raise an error if it is not nested width
+inline UINT8 nested_width(
+        const std::string& src,
+        const char delim,
+        const char lbound,
+        const char rbound) {
+
+    std::string item(src); // copy; just to pass to ss
+    aw::remove(item, ' ');
+    
+    UINT8 depth_current {0};
+    UINT8 depth_max {0};
+    UINT8 width_current {0}; // start at 1 b/c counting delims
+    UINT8 width_max {0};
+    UINT8 non_space_in_delim {0};
+    
+    std::list<UINT8> coll_width; // can check for uniformity
+    
+    std::cout << src << ": " << std::endl;
+    
+    std::string::const_iterator c;
+    for (c = src.begin(); c != src.end(); ++c) {
+        // if we have a delim and we got some non-space chars
+        if (*c == delim && non_space_in_delim > 0) {
+            ++width_current;
+            non_space_in_delim = 0;
+        }
+        else if (*c == lbound) {
+            ++depth_current;
+            width_current = 0; // reset
+            non_space_in_delim = 0; // reset at open
+        }
+        else if (*c == rbound) { // closing
+            // if we have a width, and have encountered chars since last delim	
+            if (width_current > 0) {
+                // extra 1 for first not counted
+                if (non_space_in_delim > 0) {
+                    coll_width.push_back(width_current+1);
+                }
+                else { //no non-space chars found, but store to detect error
+                    coll_width.push_back(width_current);
+                }
+            }
+            width_current = 0; // reset, possibly redundant
+            --depth_current;
+        }
+        else {
+            ++non_space_in_delim;
+        }
+        // update on each char
+        depth_max = std::max(depth_max, depth_current);
+        //std::cout << *c << ": " << (int)width_current << std::endl;
+    }
+    // if we have left over widht, it is because we did not get a closing rbound, or we have no r/l bounds
+    if (width_current > 0) {
+        coll_width.push_back(width_current+1);
+    }
+    // store and check a last value; must all be the same if length is > than 1
+    if (coll_width.size() > 0) {
+        for (auto i : coll_width) { // i is a reference
+            std::cout << "widths: " << (int) i << std::endl;
+            width_max = std::max(i, width_max);
+        }
+        // after finding max, check all
+        for (auto i : coll_width) { // i is a reference
+            if (i != width_max) {
+                throw std::invalid_argument("inconsistent width");
+            }
+        }
+        
+    }
+    // if width_max is == len of elements, we have a dimensionality of 1; must test this after
+    return width_max;
+    
+}
+
+
 //! Split a string by a delimiter. 
-inline void split(const std::string& src,
+inline void split(
+        const std::string& src,
         const char delim,
         std::vector<std::string>& post) {
     std::stringstream ss(src);

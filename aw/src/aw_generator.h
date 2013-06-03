@@ -423,13 +423,17 @@ class Generator: public std::enable_shared_from_this<Generator> {
 	void set_outputs_from_array(SampleType* v, OutputSizeType s, 
 							OutputCountType ch, bool interleaved=true);
 								
-	//! Set the outputs (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. 
-	void set_outputs_from_vector(const VSampleType& vst, 
+	//! Set the outputs (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. Should by a const vector but cannot yet get usage right when deriving an array pointer; but: the passed in vector should not be changed. 
+	void set_outputs_from_vector(VSampleType& vst,
 								OutputCountType ch, bool interleaved=true);
 
 
-    //! If we are in a Buffer class, this method loads a complete file path to an audio file into the outpout of this Generator. 
+    //! If we are in a Buffer class, this method loads a complete file path to an audio file into the output of this Generator. This is not implemented in the base class Generator. 
     virtual void set_outputs_from_fp(const std::string& fp);
+
+
+    //! If we are a Buffer class, we set and resize output to conform to a string representation of data. Useful for loading breakpoint or other data elements.
+    virtual void set_outputs_from_string(const std::string& fp);
 
 
 	// inputs and slots ......................................................    
@@ -708,7 +712,7 @@ class Constant: public Generator {
 
 
 //=============================================================================
-//! All Generators that can process a single input (+, *, avg?) can derive from this class.
+//! All Generators that can process a single input with the same operator (and knowing the number of inputs and starting value) (+, *, avg?) can derive from this class.
 class _BinaryCombined;
 // no shared, as an ABC
 class _BinaryCombined: public Generator {
@@ -789,9 +793,13 @@ class Buffer: public Generator {
     virtual void write_output_to_fp(const std::string& fp, 
                                     OutputCountType d=0) const;
         
-    //! Set the outputs of this Generator to the content of an audio file. This overridden method makes the usage of libsndfile to read in a file. 
+    //! Set the outputs of this Generator to the content of an audio file provided as an audio path. This overridden method makes the usage of libsndfile to read in a file.
     virtual void set_outputs_from_fp(const std::string& fp);
-        
+
+    //! Set the outputs of this Generator to the content of a numbers specified in a string representation E.g.: "(3, 4, 5)" or "((1, .5), (3, 2))".
+    virtual void set_outputs_from_string(const std::string& fp);
+
+    
 };
 
 

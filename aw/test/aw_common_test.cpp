@@ -159,26 +159,18 @@ BOOST_AUTO_TEST_CASE(aw_test_split) {
 }
 
 
-
-
 BOOST_AUTO_TEST_CASE(aw_test_remove) {
 
     std::string a("1, 4.3, 1.2");
-    
     aw::remove(a, ',');
-    
     BOOST_CHECK_EQUAL(a, "1 4.3 1.2");
-
     aw::remove(a, ' ');
-    
     BOOST_CHECK_EQUAL(a, "14.31.2");
     
 }
 
 
-
 BOOST_AUTO_TEST_CASE(string_to_vector) {
-
     std::string a("1, 4.3, 1.2");
 
     std::vector<aw::SampleType> post;
@@ -189,21 +181,65 @@ BOOST_AUTO_TEST_CASE(string_to_vector) {
     BOOST_CHECK_EQUAL(post[1], 4.3);
     BOOST_CHECK_EQUAL(post[2], 1.2);
 
-
     // TODO: make this work
     std::string b("1, (4.3, 1.2)");
 
     post.clear();
     aw::string_to_vector<aw::SampleType>(b, post, ',', "()");
-    
-    
 
     BOOST_CHECK_EQUAL(post[0], 1);
     BOOST_CHECK_EQUAL(post[1], 4.3);
     BOOST_CHECK_EQUAL(post[2], 1.2);
 
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(as_test_nested_width) {
+
+    BOOST_CHECK_EQUAL(
+        aw::nested_width("1, 4.3, 1.2", ',', '(', ')'),
+        3);
+
+    BOOST_CHECK_EQUAL(
+        aw::nested_width("1, 2, 3, 20, 5", ',', '(', ')'),
+        5);
+
+    BOOST_CHECK_EQUAL(
+        aw::nested_width("(1, 2), (3, 20), (5, 120)", ',', '(', ')'),
+        2);
+
+    BOOST_CHECK_EQUAL(
+        aw::nested_width("(1, 4), (1, 2)", ',', '(', ')'),
+        2);
+    BOOST_CHECK_EQUAL(
+        aw::nested_width("(1, 4, 3), (1, 2, 2)", ',', '(', ')'),
+        3);
+
+    BOOST_CHECK_EQUAL(
+        aw::nested_width("((1, 4, 3), (0, 0, 0), (1, 2, 2))", ',', '(', ')'),
+        3);
+
+    // commas between groups are not required
+    BOOST_CHECK_EQUAL(
+        aw::nested_width("((1, 4, 3) (0, 0, 0) (1, 2, 2))",
+        ',', '(', ')'),
+        3);
+
+    BOOST_REQUIRE_THROW(
+            aw::nested_width("(1, 4, 3), (2, 2)", ',', '(', ')'),
+            std::invalid_argument);
+
+//    std::cout << "here: " << (int)aw::nested_width("(1,), (2, 2)", ',', '(', ')') << std::endl;
+    BOOST_REQUIRE_THROW(
+            aw::nested_width("(1,), (2, 2)", ',', '(', ')'),
+            std::invalid_argument);
+
+
 
 }
+
 
 
 

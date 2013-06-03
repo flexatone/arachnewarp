@@ -620,30 +620,29 @@ void Generator :: set_outputs_from_array(SampleType* v, OutputSizeType s,
 	}
 }
 
-void Generator :: set_outputs_from_vector(const VSampleType& vst, 
+void Generator :: set_outputs_from_vector(VSampleType& vst, 
 								OutputCountType ch, bool interleaved) {
 	// this is set outputs as we will try to set all channels available
     // size is a long; cast ot std::uint32_t
-	// we trasfer the contents of the vector to an array
 	OutputSizeType s = static_cast<OutputSizeType>(vst.size());
-	// pack this in an array for reuse of the same function
-    SampleType* v = new SampleType[s];
-	// cant use iterator b/c need number
-    for (OutputSizeType i=0; i<s; ++i) {
-		v[i] = vst[i];
-	}
+    // pointer to first element simulating an array
+    SampleType* v = &vst[0]; // get a pointer to this vector
+    // this will resize and reset if possible in dervied Generator
 	set_outputs_from_array(v, s, ch, interleaved);
-	// clean up temporary array 
-	delete[] v;
 }
 
 // set outputs form fp
 void Generator :: set_outputs_from_fp(const std::string& fp) {
     // vitual method overridden in Buffer (so as to localize use of libsndfile
-    // an exception to call on base class
     throw std::domain_error("not implemented on base class");
 
 }
+
+void Generator :: set_outputs_from_string(const std::string& fp) {
+    throw std::domain_error("not implemented on base class");
+
+}
+
 
 //..............................................................................
 // parameter translating
@@ -1236,21 +1235,27 @@ void Buffer :: write_output_to_fp(const std::string& fp,
 void Buffer :: set_outputs_from_fp(const std::string& fp) {
     // vitual method overridden in Buffer (so as to localize use of libsndfile
     // an exception to call on base class
-    // std::cout << *this << ": set_outputs_from_fp" << std::endl;
-
     // libsndfile nomenclature is different than used here: For a sound file with only one channel, a frame is the same as a item (ie a single sample) while for multi channel sound files, a single frame contains a single item for each channel.
 	SndfileHandle sh(fp);
     // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array; ideally we would pass in our outputs directly
     OutputSizeType s =  static_cast<OutputSizeType>(sh.frames() * sh.channels());
+    // we need to use a double, as that seems to be what we get out of sndfile
     double* v = new double[s]; // why not use SampleType instaed of double
     sh.readf(v, sh.frames());
     // this call will resize frame if necessary
     set_outputs_from_array(v, s, sh.channels());
     delete[] v;
-
 }
 
-
+void Buffer :: set_outputs_from_string(const std::string& raw) {
+    // get vector and call set_output_from_vector    
+    std::vector<SampleType> src;
+    string_to_vector<SampleType>(raw, src, ',', "()");
+    // TODO: derive number of channels based on parens!
+    OutputCountType ch {1};
+    // this call will resize frame if necessary
+    set_outputs_from_vector(src, ch);
+}
 
 
 
