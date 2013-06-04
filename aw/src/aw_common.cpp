@@ -82,7 +82,7 @@ const char* get_fp_home() {
 //==============================================================================
 // utility classes
 
-// TODO: add a static variable to store a default, and a static method to get and set the default
+// TODO: add a static variable to store a default environment instance, and a static method to get and set the default
 
 Environment :: Environment(FrameSizeType fs) 
 	: _sampling_rate{44100},
@@ -122,6 +122,71 @@ std::string Environment :: get_fp_temp(std::string name) const {
     // this might read from a file or do other configurations
     return (_temp_directory / name).string();
 }
+
+
+
+
+
+//! A single flat list
+BufferInjector :: BufferInjector(std::initializer_list<SampleType> src) {
+    // this always have 1 dimension
+    _channels = 1;
+        
+    _parsed.reserve(src.size());
+    for (auto x : src) {
+        _parsed.push_back(x);
+    }
+}
+
+//! A nested list.
+BufferInjector :: BufferInjector(
+        std::initializer_list< std::initializer_list<SampleType> > src) {
+    
+    // number of sub groups is channels;
+    // find max on first iteration; must go through all
+    _channels = 0;
+    for (auto group : src) {
+        _channels = std::max(_channels, group.size());
+    }
+
+    std::size_t group_count;
+    for (auto group : src) {
+        group_count = 0;
+        for (auto x : group) {
+            _parsed.push_back(x);
+            ++group_count;
+        }
+        // pad zerof for anything missing
+        while (group_count < _channels) {
+            _parsed.push_back(0);
+            ++group_count;
+        }
+    }
+}
+
+
+OutputCountType BufferInjector :: get_channels() {
+    return _channels;
+}
+    
+OutputSizeType BufferInjector :: get_frame_size() {
+    return _parsed.size() / _channels;
+}
+
+// Pass in a reference to a vector and have it cleared, sized, and filled.
+void BufferInjector :: fill_interleaved(std::vector<SampleType>& post) {
+    post.clear();
+    post.reserve(_parsed.size());
+    for (auto x : _parsed) {
+        post.push_back(x);
+    }
+}
+
+
+
+
+
+
 
 
 } // end namespace aw
