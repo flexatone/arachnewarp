@@ -137,6 +137,50 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
 
 
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_buffer_injector_a) {
+
+    aw::BufferInjector bi({3, 6, 2, 3, 5});
+    BOOST_CHECK_EQUAL(bi.get_frame_size(), 5);
+    BOOST_CHECK_EQUAL(bi.get_channels(), 1);
+    
+}
+
+BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
+
+    std::vector<aw::SampleType> post;
+
+    aw::BufferInjector bi1({ {1, .5}, {10, .2}, {20, .5}});
+    BOOST_CHECK_EQUAL(bi1.get_frame_size(), 3);
+    BOOST_CHECK_EQUAL(bi1.get_channels(), 2);
+
+
+    aw::BufferInjector bi2({ {1}, {10, .2}, {20, .5}});
+    BOOST_CHECK_EQUAL(bi2.get_frame_size(), 3);
+    BOOST_CHECK_EQUAL(bi2.get_channels(), 2);
+    
+    bi2.fill_interleaved(post);
+    BOOST_CHECK_EQUAL(post[0], 1);
+    BOOST_CHECK_EQUAL(post[1], 0); // filled zero!
+    BOOST_CHECK_EQUAL(post[2], 10);
+    BOOST_CHECK_EQUAL(post[3], .2);
+    BOOST_CHECK_EQUAL(post[4], 20);
+    BOOST_CHECK_EQUAL(post[5], .5);
+    
+}
+
+
+
+
+
+
+
+
+
+
 BOOST_AUTO_TEST_CASE(aw_test_to_lower) {
 
     std::string a("TESTing asdf SDF");
@@ -193,54 +237,53 @@ BOOST_AUTO_TEST_CASE(string_to_vector) {
 
 }
 
-
-
-
-BOOST_AUTO_TEST_CASE(as_test_nested_width) {
-
-    BOOST_CHECK_EQUAL(
-        aw::nested_width("1, 4.3, 1.2", ',', '(', ')'),
-        3);
-
-    BOOST_CHECK_EQUAL(
-        aw::nested_width("1, 2, 3, 20, 5", ',', '(', ')'),
-        5);
-
-    BOOST_CHECK_EQUAL(
-        aw::nested_width("(1, 2), (3, 20), (5, 120)", ',', '(', ')'),
-        2);
-
-    BOOST_CHECK_EQUAL(
-        aw::nested_width("(1, 4), (1, 2)", ',', '(', ')'),
-        2);
-    BOOST_CHECK_EQUAL(
-        aw::nested_width("(1, 4, 3), (1, 2, 2)", ',', '(', ')'),
-        3);
-
-    BOOST_CHECK_EQUAL(
-        aw::nested_width("((1, 4, 3), (0, 0, 0), (1, 2, 2))", ',', '(', ')'),
-        3);
-
-    // commas between groups are not required
-    BOOST_CHECK_EQUAL(
-        aw::nested_width("((1, 4, 3) (0, 0, 0) (1, 2, 2))",
-        ',', '(', ')'),
-        3);
-
-    BOOST_REQUIRE_THROW(
-            aw::nested_width("(1, 4, 3), (2, 2)", ',', '(', ')'),
-            std::invalid_argument);
-
-//    std::cout << "here: " << (int)aw::nested_width("(1,), (2, 2)", ',', '(', ')') << std::endl;
-    BOOST_REQUIRE_THROW(
-            aw::nested_width("(1,), (2, 2)", ',', '(', ')'),
-            std::invalid_argument);
-
-
-
-}
-
-
+//
+//
+//
+//BOOST_AUTO_TEST_CASE(as_test_nested_width) {
+//
+//    BOOST_CHECK_EQUAL(
+//        aw::nested_width("1, 4.3, 1.2", ',', '(', ')'),
+//        3);
+//
+//    BOOST_CHECK_EQUAL(
+//        aw::nested_width("1, 2, 3, 20, 5", ',', '(', ')'),
+//        5);
+//
+//    BOOST_CHECK_EQUAL(
+//        aw::nested_width("(1, 2), (3, 20), (5, 120)", ',', '(', ')'),
+//        2);
+//
+//    BOOST_CHECK_EQUAL(
+//        aw::nested_width("(1, 4), (1, 2)", ',', '(', ')'),
+//        2);
+//    BOOST_CHECK_EQUAL(
+//        aw::nested_width("(1, 4, 3), (1, 2, 2)", ',', '(', ')'),
+//        3);
+//
+//    BOOST_CHECK_EQUAL(
+//        aw::nested_width("((1, 4, 3), (0, 0, 0), (1, 2, 2))", ',', '(', ')'),
+//        3);
+//
+//    // commas between groups are not required
+//    BOOST_CHECK_EQUAL(
+//        aw::nested_width("((1, 4, 3) (0, 0, 0) (1, 2, 2))",
+//        ',', '(', ')'),
+//        3);
+//
+//    BOOST_REQUIRE_THROW(
+//            aw::nested_width("(1, 4, 3), (2, 2)", ',', '(', ')'),
+//            std::invalid_argument);
+//
+////    std::cout << "here: " << (int)aw::nested_width("(1,), (2, 2)", ',', '(', ')') << std::endl;
+//    BOOST_REQUIRE_THROW(
+//            aw::nested_width("(1,), (2, 2)", ',', '(', ')'),
+//            std::invalid_argument);
+//
+//
+//}
+//
+//
 
 
 

@@ -11,6 +11,7 @@
 #include <cstdint> // has uint32_t
 #include <memory>
 #include <unordered_map>
+#include <initializer_list>
 
 #include <boost/filesystem.hpp>
 #include <boost/exception/all.hpp> // needed for filesystem?
@@ -35,7 +36,7 @@ typedef std::uint32_t OutputSizeType;
 
 // _output_count probably never more than 200!
 //! An unisigned integer describing the number of inputs or outputs for a Generator. Note that this is essentially the same as the PararmeterIndexType, and should be unified. 
-typedef std::uint8_t OutputCountType; 
+typedef std::size_t OutputCountType;
 
 //! A vector of frame size types. This is used for offsets into the outputs.
 typedef std::vector<FrameSizeType> VFrameSizeType;
@@ -47,7 +48,7 @@ typedef std::uint8_t UINT8;
 typedef std::uint64_t RenderCountType; 
 
 //! An unisnged integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Generator. Can replace all OutputCountType
-typedef std::uint8_t ParameterIndexType; 
+typedef std::size_t ParameterIndexType; 
 
 
 // TODO: replace with a SharedGenerator: but, we need a SharedGenerator to be hashable, which requires us to extend std::hash or similar
@@ -168,80 +169,80 @@ inline void remove(std::string& src, const char target) {
 
 
 //! For a given delimited sitring, determine a nested width, and raise an error if it is not nested width
-inline UINT8 nested_width(
-        const std::string& src,
-        const char delim,
-        const char lbound,
-        const char rbound) {
-
-    std::string item(src); // copy; just to pass to ss
-    aw::remove(item, ' ');
-    
-    UINT8 depth_current {0};
-    UINT8 depth_max {0};
-    UINT8 width_current {0}; // start at 1 b/c counting delims
-    UINT8 width_max {0};
-    UINT8 non_space_in_delim {0};
-    
-    std::list<UINT8> coll_width; // can check for uniformity
-    
-    std::cout << src << ": " << std::endl;
-    
-    std::string::const_iterator c;
-    for (c = src.begin(); c != src.end(); ++c) {
-        // if we have a delim and we got some non-space chars
-        if (*c == delim && non_space_in_delim > 0) {
-            ++width_current;
-            non_space_in_delim = 0;
-        }
-        else if (*c == lbound) {
-            ++depth_current;
-            width_current = 0; // reset
-            non_space_in_delim = 0; // reset at open
-        }
-        else if (*c == rbound) { // closing
-            // if we have a width, and have encountered chars since last delim	
-            if (width_current > 0) {
-                // extra 1 for first not counted
-                if (non_space_in_delim > 0) {
-                    coll_width.push_back(width_current+1);
-                }
-                else { //no non-space chars found, but store to detect error
-                    coll_width.push_back(width_current);
-                }
-            }
-            width_current = 0; // reset, possibly redundant
-            --depth_current;
-        }
-        else {
-            ++non_space_in_delim;
-        }
-        // update on each char
-        depth_max = std::max(depth_max, depth_current);
-        //std::cout << *c << ": " << (int)width_current << std::endl;
-    }
-    // if we have left over widht, it is because we did not get a closing rbound, or we have no r/l bounds
-    if (width_current > 0) {
-        coll_width.push_back(width_current+1);
-    }
-    // store and check a last value; must all be the same if length is > than 1
-    if (coll_width.size() > 0) {
-        for (auto i : coll_width) { // i is a reference
-            std::cout << "widths: " << (int) i << std::endl;
-            width_max = std::max(i, width_max);
-        }
-        // after finding max, check all
-        for (auto i : coll_width) { // i is a reference
-            if (i != width_max) {
-                throw std::invalid_argument("inconsistent width");
-            }
-        }
-        
-    }
-    // if width_max is == len of elements, we have a dimensionality of 1; must test this after
-    return width_max;
-    
-}
+//inline UINT8 nested_width(
+//        const std::string& src,
+//        const char delim,
+//        const char lbound,
+//        const char rbound) {
+//
+//    std::string item(src); // copy; just to pass to ss
+//    aw::remove(item, ' ');
+//    
+//    UINT8 depth_current {0};
+//    UINT8 depth_max {0};
+//    UINT8 width_current {0}; // start at 1 b/c counting delims
+//    UINT8 width_max {0};
+//    UINT8 non_space_in_delim {0};
+//    
+//    std::list<UINT8> coll_width; // can check for uniformity
+//    
+//    std::cout << src << ": " << std::endl;
+//    
+//    std::string::const_iterator c;
+//    for (c = src.begin(); c != src.end(); ++c) {
+//        // if we have a delim and we got some non-space chars
+//        if (*c == delim && non_space_in_delim > 0) {
+//            ++width_current;
+//            non_space_in_delim = 0;
+//        }
+//        else if (*c == lbound) {
+//            ++depth_current;
+//            width_current = 0; // reset
+//            non_space_in_delim = 0; // reset at open
+//        }
+//        else if (*c == rbound) { // closing
+//            // if we have a width, and have encountered chars since last delim	
+//            if (width_current > 0) {
+//                // extra 1 for first not counted
+//                if (non_space_in_delim > 0) {
+//                    coll_width.push_back(width_current+1);
+//                }
+//                else { //no non-space chars found, but store to detect error
+//                    coll_width.push_back(width_current);
+//                }
+//            }
+//            width_current = 0; // reset, possibly redundant
+//            --depth_current;
+//        }
+//        else {
+//            ++non_space_in_delim;
+//        }
+//        // update on each char
+//        depth_max = std::max(depth_max, depth_current);
+//        //std::cout << *c << ": " << (int)width_current << std::endl;
+//    }
+//    // if we have left over widht, it is because we did not get a closing rbound, or we have no r/l bounds
+//    if (width_current > 0) {
+//        coll_width.push_back(width_current+1);
+//    }
+//    // store and check a last value; must all be the same if length is > than 1
+//    if (coll_width.size() > 0) {
+//        for (auto i : coll_width) { // i is a reference
+//            std::cout << "widths: " << (int) i << std::endl;
+//            width_max = std::max(i, width_max);
+//        }
+//        // after finding max, check all
+//        for (auto i : coll_width) { // i is a reference
+//            if (i != width_max) {
+//                throw std::invalid_argument("inconsistent width");
+//            }
+//        }
+//        
+//    }
+//    // if width_max is == len of elements, we have a dimensionality of 1; must test this after
+//    return width_max;
+//    
+//}
 
 
 //! Split a string by a delimiter. 
@@ -437,7 +438,38 @@ class Environment {
 
 
 
+//	int x = f<double>({2, 4, 5});
+//template<class T> int f(std::initializer_list<T> args) {
+//	return args.size();
+//}
+//	int x = f<double>({2, 4, 5});
+//	x = f<std::initializer_list<double>>({{2,3}, {4,6}});
+    
+    
+class BufferInjector {
+    private:
+        std::vector<SampleType> _parsed;
+        OutputCountType _channels;
+        bool _equal_width;
+    
+    public:
+    
+        BufferInjector() = delete;
 
+        //! A single flat list
+        BufferInjector(std::initializer_list<SampleType>);
+    
+        //! A nested list.
+        BufferInjector(
+                std::initializer_list< std::initializer_list<SampleType> >);
+    
+        OutputCountType get_channels();
+    
+        OutputSizeType get_frame_size();
+
+        void fill_interleaved(std::vector<SampleType>&);
+    
+};
 
 
 
