@@ -127,28 +127,22 @@ std::string Environment :: get_fp_temp(std::string name) const {
 
 
 
-//! A single flat list
-BufferInjector :: BufferInjector(std::initializer_list<SampleType> src) {
+BufferInjector :: BufferInjector(ILSampleType src) {
     // this always have 1 dimension
     _channels = 1;
-        
     _parsed.reserve(src.size());
     for (auto x : src) {
         _parsed.push_back(x);
     }
 }
 
-//! A nested list.
-BufferInjector :: BufferInjector(
-        std::initializer_list< std::initializer_list<SampleType> > src) {
-    
+BufferInjector :: BufferInjector(ILILSampleType src) {
     // number of sub groups is channels;
     // find max on first iteration; must go through all
     _channels = 0;
     for (auto group : src) {
         _channels = std::max(_channels, group.size());
     }
-
     std::size_t group_count;
     for (auto group : src) {
         group_count = 0;
@@ -164,17 +158,16 @@ BufferInjector :: BufferInjector(
     }
 }
 
-
-OutputCountType BufferInjector :: get_channels() {
+ParameterIndexType BufferInjector :: get_channels() {
     return _channels;
 }
     
-OutputSizeType BufferInjector :: get_frame_size() {
+OutputsSizeT BufferInjector :: get_frame_size() {
     return _parsed.size() / _channels;
 }
 
-// Pass in a reference to a vector and have it cleared, sized, and filled.
 void BufferInjector :: fill_interleaved(std::vector<SampleType>& post) {
+// Pass in a reference to a vector and have it cleared, sized, and filled.
     post.clear();
     post.reserve(_parsed.size());
     for (auto x : _parsed) {
