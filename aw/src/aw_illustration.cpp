@@ -19,7 +19,7 @@ Illustration :: Illustration() {}
 
 Illustration :: ~Illustration() {}
 
-//void Illustration :: draw(const std::vector<SampleType>& v, OutputCountType d) {
+//void Illustration :: draw(const std::vector<SampleType>& v, ParameterIndexType d) {
 //    throw std::invalid_argument("not implemented");
 //}
 //
@@ -53,7 +53,7 @@ TimeDomainGraph :: TimeDomainGraph() {}
 TimeDomainGraph :: ~TimeDomainGraph() {}
 
 void TimeDomainGraph :: draw_vector(const std::vector<SampleType>& v, 
-    OutputCountType d) {
+    ParameterIndexType d) {
     // d is the output count in the vector
 
     // get frame size, or units per _output_count    
@@ -72,7 +72,7 @@ void TimeDomainGraph :: draw_vector(const std::vector<SampleType>& v,
     }                
 
     // clear the string
-    _stream.str("");     
+    _stream.str("");
     _stream << "\
 unset key \n\
 set style line 11 lc rgb '#ffffff' lt 1 \n\
@@ -85,7 +85,7 @@ set rmargin screen 0.98 " << std::endl;
     _stream << "set multiplot layout " << static_cast<int>(d) 
         <<",1" << std::endl;
 
-    for (int i=1; i<d+1; ++i) {
+    for (std::size_t i=1; i < d+1; ++i) {
         // TODO: need to increment/map color 
         _stream << "set style line " << i 
             << " lt 1 lw 1 pt 3 lc rgb '#332255'" << std::endl;
@@ -98,7 +98,7 @@ set rmargin screen 0.98 " << std::endl;
     double top;
     double bottom;
         
-    for (OutputCountType dStep=1; dStep < d+1; ++dStep) {
+    for (ParameterIndexType dStep=1; dStep < d+1; ++dStep) {
         // use whole margin at top on first
         if (dStep == 1) {
             top = pos - margin; 
@@ -135,7 +135,7 @@ set rmargin screen 0.98 " << std::endl;
 //}
 
 void TimeDomainGraph :: draw(GeneratorShared g) {    
-	Generator::VSampleType v;
+	VSampleType v;
 	g->write_outputs_to_vector(v); // load outputs into this vecotr
     draw_vector(v, g->get_output_count());
     
@@ -234,7 +234,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
         _draw_generator(g_slot, memo);
     }    
 
-    OutputCountType g_ins_out_pos(0);
+    ParameterIndexType g_ins_out_pos(0);
     GeneratorShared g_in;
     Generator::VGenSharedOutPair::const_iterator j; 
     // show connections by describing inputs

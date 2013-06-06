@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_7) {
 	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
 	// testing setting the outputs from a file path
-    aw::Generator::VSampleType v {.2, .5, .4, .8};
+    aw::VSampleType v {.2, .5, .4, .8};
 
     g1->set_outputs_from_vector(v, 1);
     BOOST_CHECK_CLOSE(g1->outputs[0][0], .2, .00001);

@@ -191,7 +191,7 @@ void Generator :: init() {
 }
 
 void Generator :: reset() {
-    OutputCountType i;
+    ParameterIndexType i;
     FrameSizeType j;
     SampleType n(0);
     for (i=0; i<_output_count; ++i) {
@@ -215,7 +215,7 @@ void Generator :: _resize_outputs() {
     // only do this once to avoid repeating
     _outputs_size = _output_count * _frame_size;
     
-    OutputCountType i;
+    ParameterIndexType i;
     VVSampleType::iterator j; // not a const       
     
     // add output vectors if necessary
@@ -362,7 +362,7 @@ void Generator :: render(RenderCountType f) {
 //..............................................................................
 SampleType Generator :: get_outputs_average() const {
     SampleType sum(0);
-    for (OutputCountType i=0; i<_output_count; ++i) {
+    for (ParameterIndexType i=0; i<_output_count; ++i) {
         for (FrameSizeType j=0; j < _frame_size; ++j) {
             sum += fabs(outputs[i][j]);
         }
@@ -370,15 +370,15 @@ SampleType Generator :: get_outputs_average() const {
     return sum / _outputs_size;
 }
 
-SampleType Generator :: get_output_average(OutputCountType d) const {
+SampleType Generator :: get_output_average(ParameterIndexType d) const {
     // this does single output and whole outputs averaging.
     // if d is zero, get all frames/channels, otherwise, just get rquested dimension (i.e., 2d gets vector pos 1
 	if (d > _output_count) {
 		throw std::invalid_argument("a dimension greater than the number available has been requested");
 	}	
-    VOutputCount dims; 
-    OutputSizeType count(0); 
-    OutputCountType p;
+    VParameterIndexT dims; 
+    OutputsSizeT count(0); 
+    ParameterIndexType p;
     
 	if (d == 0) {
         // get all
@@ -389,7 +389,7 @@ SampleType Generator :: get_output_average(OutputCountType d) const {
     }
     else {
         // need to request from 1 less than submitted positio, as dim 0 is the first dimension; we know tha td is greater tn zero
-        OutputCountType dPos = d - 1;
+        ParameterIndexType dPos = d - 1;
         if (dPos >= _output_count) {
             // this should not happend due to check above
             throw std::invalid_argument("requested dimension is greater than that supported");
@@ -400,7 +400,7 @@ SampleType Generator :: get_output_average(OutputCountType d) const {
     }
     SampleType sum(0);    
     // get average of one dim or all 
-    for (VOutputCount::const_iterator i=dims.begin(); i!=dims.end(); ++i) {
+    for (VParameterIndexT::const_iterator i=dims.begin(); i!=dims.end(); ++i) {
         // from start of dim to 1 less than frame plus start
         for (FrameSizeType j=0; j < _frame_size; ++j) {
             sum += outputs[*i][j];
@@ -426,7 +426,7 @@ void Generator :: _set_frame_size(FrameSizeType f) {
 }
 
 
-//void Generator :: _set_output_count(OutputCountType d) {
+//void Generator :: _set_output_count(ParameterIndexType d) {
 	//// this public method is not used during Generator::__init__
     //// only change if different; assume already created
 	//if (d == 0) {
@@ -485,7 +485,7 @@ void Generator :: print_outputs(FrameSizeType start, FrameSizeType end) {
         start = 0;
     }
     std::cout << *this << " Output rc{" << _render_count << "} f{" << start << "-" << end << "}: ";    
-    OutputCountType i;
+    ParameterIndexType i;
     FrameSizeType j;
     for (i=0; i<_output_count; ++i) {
         std::cout << std::endl << space1;            
@@ -552,9 +552,9 @@ void Generator :: write_outputs_to_vector(VSampleType& vst) const {
     
     vst.clear(); // may not be necessary, but insures consistancy
     vst.resize(_outputs_size, SampleType(0));    
-    OutputCountType i;
+    ParameterIndexType i;
     FrameSizeType j;
-    OutputSizeType n(0);
+    OutputsSizeT n(0);
             
     for (i=0; i<_output_count; ++i) {
         for (j=0; j < _frame_size; ++j) {        
@@ -565,12 +565,12 @@ void Generator :: write_outputs_to_vector(VSampleType& vst) const {
 }
 
 void Generator :: write_output_to_fp(const std::string& fp, 
-                                    OutputCountType d) const {
+                                    ParameterIndexType d) const {
     throw std::domain_error("not implemented on base class");
 }
 
-void Generator :: set_outputs_from_array(SampleType* v, OutputSizeType s, 
-								OutputCountType ch, bool interleaved){
+void Generator :: set_outputs_from_array(SampleType* v, OutputsSizeT s, 
+								ParameterIndexType ch, bool interleaved){
     // low level method of a raw, interleaved array as input; need size;
     // we need this b/c libsndfile uses raw arrays
 	// caller is responsible for releasing passed in array
@@ -591,15 +591,15 @@ void Generator :: set_outputs_from_array(SampleType* v, OutputSizeType s,
 	if (reset_needed) reset(); 
 
 	// determine how many outputs to read; try to take all unless greater than output
-	OutputCountType out_count_to_take(ch);
+	ParameterIndexType out_count_to_take(ch);
 	if (ch > _output_count) {
 		out_count_to_take = _output_count;
 	}
 	    
 	// assuming interleaved source to non-interleved destination; audio inputs are normally interleaved
-	OutputCountType j(0);
-	OutputSizeType i(0); // for each sample in source
-	OutputSizeType k(0); // for each sample we write
+	ParameterIndexType j(0);
+	OutputsSizeT i(0); // for each sample in source
+	OutputsSizeT k(0); // for each sample we write
 	
 	// we will never run over larger area than outputs size, s is less than outputs; we also must not run over v, so we must iterate by s. 
     while (i < s) {
@@ -621,24 +621,30 @@ void Generator :: set_outputs_from_array(SampleType* v, OutputSizeType s,
 }
 
 void Generator :: set_outputs_from_vector(VSampleType& vst, 
-								OutputCountType ch, bool interleaved) {
+								ParameterIndexType ch, bool interleaved) {
 	// this is set outputs as we will try to set all channels available
     // size is a long; cast ot std::uint32_t
-	OutputSizeType s = static_cast<OutputSizeType>(vst.size());
+	OutputsSizeT s = static_cast<OutputsSizeT>(vst.size());
     // pointer to first element simulating an array
     SampleType* v = &vst[0]; // get a pointer to this vector
     // this will resize and reset if possible in dervied Generator
 	set_outputs_from_array(v, s, ch, interleaved);
 }
 
-// set outputs form fp
 void Generator :: set_outputs_from_fp(const std::string& fp) {
     // vitual method overridden in Buffer (so as to localize use of libsndfile
     throw std::domain_error("not implemented on base class");
 
 }
 
-void Generator :: set_outputs_from_string(const std::string& fp) {
+
+void Generator :: set_outputs(const BufferInjectorShared bi) {
+    // vitual method overridden in Buffer
+    throw std::domain_error("not implemented on base class");
+}
+
+void Generator :: set_outputs(const std::string& fp) {
+    // vitual method overridden in Buffer
     throw std::domain_error("not implemented on base class");
 
 }
@@ -696,7 +702,7 @@ Generator::VGenSharedOutPair Generator :: get_input_gen_shared_by_index(
 void Generator :: set_input_by_index(
         ParameterIndexType i,
         GeneratorShared gs,
-        OutputCountType pos){
+        ParameterIndexType pos){
     // if zero, none are set; current value is next available slot for registering
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");                                        
@@ -713,7 +719,7 @@ void Generator :: set_input_by_index(
 void Generator :: set_input_by_index(
         ParameterIndexType i,
         SampleType v,
-        OutputCountType pos){
+        ParameterIndexType pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
     aw::GeneratorShared c = aw::Generator::make_with_environment(ID_Constant, 
@@ -726,7 +732,7 @@ void Generator :: set_input_by_index(
 void Generator :: set_input_by_class_id(
         ParameterType::ParameterTypeID ptid,
         GeneratorShared gs,
-        OutputCountType pos){
+        ParameterIndexType pos){
     ParameterIndexType i = get_input_index_from_class_id(ptid);
     set_input_by_index(i, gs, pos); // call overloaded
 }
@@ -734,14 +740,14 @@ void Generator :: set_input_by_class_id(
 void Generator :: set_input_by_class_id(
         ParameterType::ParameterTypeID ptid,
         SampleType v,
-        OutputCountType pos){
+        ParameterIndexType pos){
     ParameterIndexType i = get_input_index_from_class_id(ptid);
     set_input_by_index(i, v, pos); // call overloaded
 }
 
 
 void Generator :: add_input_by_index(ParameterIndexType i, 
-        GeneratorShared gs, OutputCountType pos){
+        GeneratorShared gs, ParameterIndexType pos){
     // pos is the output of the generator to connect into the specified input
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");
@@ -755,7 +761,7 @@ void Generator :: add_input_by_index(ParameterIndexType i,
 }
 
 void Generator :: add_input_by_index(ParameterIndexType i, SampleType v, 
-        OutputCountType pos){
+        ParameterIndexType pos){
     // adding additional as a constant value
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
@@ -852,8 +858,8 @@ void Constant :: reset() {
     for (k = _values.begin(); k!=_values.end(); ++k) {
         v += *k;
     }
-    OutputCountType i;
-    OutputCountType outs = get_output_count();
+    ParameterIndexType i;
+    ParameterIndexType outs = get_output_count();
     FrameSizeType j;
     FrameSizeType frames = get_frame_size();
     
@@ -901,11 +907,11 @@ Generator::VGenSharedOutPair Constant :: get_input_gen_shared_by_index(
     return post;
 }
 
-void Constant :: set_input_by_index(ParameterIndexType i, GeneratorShared gs, OutputCountType pos) {
+void Constant :: set_input_by_index(ParameterIndexType i, GeneratorShared gs, ParameterIndexType pos) {
     throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
 }
 
-void Constant :: set_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos){
+void Constant :: set_input_by_index(ParameterIndexType i, SampleType v, ParameterIndexType pos){
     if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
@@ -916,11 +922,11 @@ void Constant :: set_input_by_index(ParameterIndexType i, SampleType v, OutputCo
 }
 
 void Constant :: add_input_by_index(ParameterIndexType i, 
-                                    GeneratorShared gs, OutputCountType pos) {
+                                    GeneratorShared gs, ParameterIndexType pos) {
     throw std::invalid_argument("invalid to add a GeneratoreShared as a value to a Constatn");
 }
 
-void Constant :: add_input_by_index(ParameterIndexType i, SampleType v, OutputCountType pos){
+void Constant :: add_input_by_index(ParameterIndexType i, SampleType v, ParameterIndexType pos){
     if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
@@ -964,7 +970,7 @@ void _BinaryCombined :: init() {
 
 void _BinaryCombined :: _update_for_new_slot() {
     // this is a small int; might overflow of trying to create large number of outs
-    OutputCountType outs = static_cast<OutputCountType>(_slots[0]->outputs[0][0]);
+    ParameterIndexType outs = static_cast<ParameterIndexType>(_slots[0]->outputs[0][0]);
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
@@ -974,7 +980,7 @@ void _BinaryCombined :: _update_for_new_slot() {
     std::stringstream s;
     aw::ParameterTypeShared pt;    
     // set inputs; this will clear any existing connections
-    for (OutputCountType i=0; i<outs; ++i) {
+    for (ParameterIndexType i=0; i<outs; ++i) {
         //pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
         pt = aw::ParameterType::make(aw::ParameterType::ID_Value);
         s.str(""); // clears contents; not the same as .clear()
@@ -997,7 +1003,7 @@ void _BinaryCombined :: render(RenderCountType f) {
     ParameterIndexType j;    
 
     ParameterIndexType gen_count_at_input(0);
-    OutputCountType out(0);
+    ParameterIndexType out(0);
         
     while (_render_count < f) {
         // calling render inputs updates the outputs of all inputs by calling their render functions; after doing so, the outputs are ready for reading
@@ -1102,7 +1108,7 @@ void Buffer :: init() {
 void Buffer :: _update_for_new_slot() {
 	// slot 0: channels
     // this is a small int; might overflow of trying to create large number of outs
-    OutputCountType outs = static_cast<OutputCountType>(_slots[0]->outputs[0][0]);
+    ParameterIndexType outs = static_cast<ParameterIndexType>(_slots[0]->outputs[0][0]);
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
@@ -1114,7 +1120,7 @@ void Buffer :: _update_for_new_slot() {
     aw::ParameterTypeValueShared pt_i;
     aw::ParameterTypeValueShared pt_o;    	
     // set inputs; this will clear any existing connections
-    for (OutputCountType i=0; i<outs; ++i) {        
+    for (ParameterIndexType i=0; i<outs; ++i) {        
         aw::ParameterTypeShared pt_i = aw::ParameterType::make( 
                 aw::ParameterType::ID_Value);        
         s.str(""); // clears contents; not the same as .clear()
@@ -1146,9 +1152,9 @@ void Buffer :: render(RenderCountType f) {
 	FrameSizeType cfs = get_common_frame_size();
     FrameSizeType fs = get_frame_size();
 	RenderCountType rc(0); // must start with request for frame 1
-	OutputSizeType i(0);
-	OutputCountType j(0);
-	OutputCountType out_count(get_output_count()); // out is always same as in 
+	OutputsSizeT i(0);
+	ParameterIndexType j(0);
+	ParameterIndexType out_count(get_output_count()); // out is always same as in 
 	RenderCountType pos(0);
     
 	// ignore render count for now; just fill buffer
@@ -1173,7 +1179,7 @@ void Buffer :: render(RenderCountType f) {
 }
 
 void Buffer :: write_output_to_fp(const std::string& fp, 
-                                    OutputCountType d) const {
+                                    ParameterIndexType d) const {
     // default is d is 0, which is all 
     // if want ch 2 of stereo, d is 2
     if (d > get_output_count()) {
@@ -1182,11 +1188,11 @@ void Buffer :: write_output_to_fp(const std::string& fp,
     // can select format here
 	int format = SF_FORMAT_AIFF | SF_FORMAT_PCM_16;
                                     
-    VOutputCount dims; 
-    OutputSizeType count(0);
-    OutputCountType p;    
+    VParameterIndexT dims; 
+    OutputsSizeT count(0);
+    ParameterIndexType p;    
     
-    OutputCountType reqDim(1); // one if requested a specific dim
+    ParameterIndexType reqDim(1); // one if requested a specific dim
     if (d==0) {
         reqDim = get_output_count(); // number of dims
         //dims = out_to_matrix_offset; //copy entire vector     
@@ -1196,7 +1202,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
         count = get_outputs_size();        
     } 
     else { // just write the single dim specified 
-        OutputCountType dPos = d - 1; // if request dim 2, want offset for 1
+        ParameterIndexType dPos = d - 1; // if request dim 2, want offset for 1
         //dims.push_back(out_to_matrix_offset[dPos]);    
         dims.push_back(dPos);        
         count = get_frame_size(); // only need one frame
@@ -1212,15 +1218,15 @@ void Buffer :: write_output_to_fp(const std::string& fp,
 	if (not v) {
         throw std::bad_alloc();    
     }
-    OutputSizeType i(0);
-    OutputSizeType j(0);
+    OutputsSizeT i(0);
+    OutputsSizeT j(0);
     
     FrameSizeType frameSize = get_frame_size();
 
     // interleave dimensions if more than one requested
     // iterate over frame size; for each frame, we will write that many dimensiosn
     for (i = 0; i < frameSize; ++i) {
-        for (VOutputCount::const_iterator p = dims.begin(); p != dims.end(); ++p) {
+        for (VParameterIndexT::const_iterator p = dims.begin(); p != dims.end(); ++p) {
             // if we are stereo, for each frame point we write two points, one at each offset position
             v[j] = outputs[*p][i];
             ++j; // abs position
@@ -1238,7 +1244,7 @@ void Buffer :: set_outputs_from_fp(const std::string& fp) {
     // libsndfile nomenclature is different than used here: For a sound file with only one channel, a frame is the same as a item (ie a single sample) while for multi channel sound files, a single frame contains a single item for each channel.
 	SndfileHandle sh(fp);
     // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array; ideally we would pass in our outputs directly
-    OutputSizeType s =  static_cast<OutputSizeType>(sh.frames() * sh.channels());
+    OutputsSizeT s =  static_cast<OutputsSizeT>(sh.frames() * sh.channels());
     // we need to use a double, as that seems to be what we get out of sndfile
     double* v = new double[s]; // why not use SampleType instaed of double
     sh.readf(v, sh.frames());
@@ -1247,16 +1253,20 @@ void Buffer :: set_outputs_from_fp(const std::string& fp) {
     delete[] v;
 }
 
-void Buffer :: set_outputs_from_string(const std::string& raw) {
-    // get vector and call set_output_from_vector    
-    std::vector<SampleType> src;
-    string_to_vector<SampleType>(raw, src, ',', "()");
-    // TODO: derive number of channels based on parens!
-    OutputCountType ch {1};
-    // this call will resize frame if necessary
-    set_outputs_from_vector(src, ch);
+
+
+void Buffer :: set_outputs(const BufferInjectorShared bi) {
+    // vitual method overridden in Buffer
+    // TODO: implement
+    throw std::domain_error("not implemented on base class");
 }
 
+void Buffer :: set_outputs(const std::string& fp) {
+    // vitual method overridden in Buffer
+    // TODO: implement    
+    throw std::domain_error("not implemented on base class");
+
+}
 
 
 
@@ -1321,7 +1331,7 @@ void Phasor :: render(RenderCountType f) {
 	// this is the abs positoin in this frame
 	//_abs_sample_pos = f * fs; 		
 	// this is the relative postion in this frame
-	OutputSizeType i(0);
+	OutputsSizeT i(0);
 	
     while (_render_count < f) {
         // calling render inputs updates the outputs of all inputs by calling their render functions; after doing so, the outputs are ready for reading

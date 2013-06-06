@@ -164,18 +164,9 @@ class Generator: public std::enable_shared_from_this<Generator> {
     // public typedefs
 	//! A mapping of index number
     typedef std::unordered_map<ParameterIndexType, ParameterTypeShared> MapIndexToParameterTypeShared;
-    
-	typedef std::vector<SampleType> VSampleType;
-	typedef std::vector<VSampleType> VVSampleType;
-
-    typedef std::vector<OutputCountType> VOutputCount;
 		
-    // typedef std::vector<FrameSizeType> VFrameSize;
-    // typedef std::vector<VFrameSize> VVFrameSize;
-
-    // TODO: OutputCountType should be ParameterIndexType
-    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.  
-    typedef std::pair<GeneratorShared, OutputCountType> GenSharedOutPair;
+    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.
+    typedef std::pair<GeneratorShared, ParameterIndexType> GenSharedOutPair;
     typedef std::vector<GenSharedOutPair> VGenSharedOutPair;
     typedef std::vector<VGenSharedOutPair> VVGenSharedOutPair;
 
@@ -204,12 +195,12 @@ class Generator: public std::enable_shared_from_this<Generator> {
     GeneratorID _class_id;
 
     private://------------------------------------------------------------------
-    // Rename OutputCountType as OutputIndexType
+    // Rename ParameterIndexType as OutputIndexType
     //! Store the number of outputs, similar to channels, that this Generator is currently set up with. 
-    OutputCountType _output_count;
+    ParameterIndexType _output_count;
     
-	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputSizeType is expected to store size up to long multichannel audio files.
-    OutputSizeType _outputs_size;
+	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputsSizeT is expected to store size up to long multichannel audio files.
+    OutputsSizeT _outputs_size;
     
     // TODO: use InputIndexType ParameterIndexType 
     //! Number of input parameters used by this Generator. More than one Generator can reside in each slot. 
@@ -226,10 +217,10 @@ class Generator: public std::enable_shared_from_this<Generator> {
     FrameSizeType _frame_size; // if changed, need to rebuild outputs	
     
     //! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
-	OutputSizeType _sampling_rate;
+	OutputsSizeT _sampling_rate;
 	
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
-	OutputSizeType _nyquist;
+	OutputsSizeT _nyquist;
 		
     //! Define if this Generator has resizable frame size. Most generators do not have have resizable frame size; only some (like a Buffer) do.
     bool _frame_size_is_resizable; // TODO: make private?	
@@ -336,7 +327,7 @@ class Generator: public std::enable_shared_from_this<Generator> {
     virtual void set_default();
 
     //! Return the the number of outputs dimensions
-    OutputCountType get_output_count() const {return _output_count;};
+    ParameterIndexType get_output_count() const {return _output_count;};
 
     //! Return the the outputs size, or the total number of samples used for all frames at all outputs.
     FrameSizeType get_outputs_size() const {return _outputs_size;};
@@ -345,13 +336,13 @@ class Generator: public std::enable_shared_from_this<Generator> {
     SampleType get_outputs_average() const;
 
     //! Get the average of single _output_count of outputs. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
-    SampleType get_output_average(OutputCountType d) const;
+    SampleType get_output_average(ParameterIndexType d) const;
 
     //! Return a Boolean if this Generator has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
 	
-    //! Return the the frame size, the number of samples per output outputs. The frame size is always at or greater than the common frame size. 
-    OutputSizeType get_frame_size() const {return _frame_size;};	
+    //! Return the the frame size, the number of samples per output channel. The frame size is always at or greater than the common frame size.
+    OutputsSizeT get_frame_size() const {return _frame_size;};	
 
     //! Return a copy of the environment shared pointer.
     EnvironmentShared get_environment() const {
@@ -359,14 +350,14 @@ class Generator: public std::enable_shared_from_this<Generator> {
     };
     
 	//! Return the common frame size derived from the stored shared Environment. If this Generator has resizable frames, this may not be the same as the current frame size. 
-    OutputSizeType get_common_frame_size() const {
+    OutputsSizeT get_common_frame_size() const {
 			return _environment->get_common_frame_size();};	
 
 	//! Get the sampling rate. 
-    OutputSizeType get_sampling_rate() const {return _sampling_rate;};	
+    OutputsSizeT get_sampling_rate() const {return _sampling_rate;};	
 
 	//! Get the nyquist frequency. 
-    OutputSizeType get_nyquist() const {return _nyquist;};	
+    OutputsSizeT get_nyquist() const {return _nyquist;};	
 
     
 	// info strings ...........................................................    
@@ -417,23 +408,26 @@ class Generator: public std::enable_shared_from_this<Generator> {
 
     //! Write out all outpout to the provided file path. If this is a Buffer, this can be used to write an audio file.
     virtual void write_output_to_fp(const std::string& fp, 
-                                    OutputCountType d=0) const;
+                                    ParameterIndexType d=0) const;
 	
 	//! Set the outputs from an array. 
-	void set_outputs_from_array(SampleType* v, OutputSizeType s, 
-							OutputCountType ch, bool interleaved=true);
+	void set_outputs_from_array(SampleType* v, OutputsSizeT s, 
+							ParameterIndexType ch, bool interleaved=true);
 								
 	//! Set the outputs (resizing if possible) to values passsed in from a vector of SampleType. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. Should by a const vector but cannot yet get usage right when deriving an array pointer; but: the passed in vector should not be changed. 
 	void set_outputs_from_vector(VSampleType& vst,
-								OutputCountType ch, bool interleaved=true);
+								ParameterIndexType ch, bool interleaved=true);
 
 
     //! If we are in a Buffer class, this method loads a complete file path to an audio file into the output of this Generator. This is not implemented in the base class Generator. 
     virtual void set_outputs_from_fp(const std::string& fp);
 
 
-    //! If we are a Buffer class, we set and resize output to conform to a string representation of data. Useful for loading breakpoint or other data elements.
-    virtual void set_outputs_from_string(const std::string& fp);
+    //! Overridden, overloaded function for setting outputs. Implemented by Buffer, but defined on base so all have access. Need a BufferInjector because otherwise we would take more parameters for channels, etc.
+    virtual void set_outputs(const BufferInjectorShared bi);
+
+    //! Set output swith a file path represented as a string.
+    virtual void set_outputs(const std::string& fp);
 
 
 	// inputs and slots ......................................................    
@@ -466,31 +460,31 @@ class Generator: public std::enable_shared_from_this<Generator> {
     virtual void set_input_by_index(
             ParameterIndexType i,
             GeneratorShared gs,
-            OutputCountType pos=0);
+            ParameterIndexType pos=0);
     
     virtual void set_input_by_index(
             ParameterIndexType i,
             SampleType v,
-            OutputCountType pos=0);
+            ParameterIndexType pos=0);
 
     ///! Set input by class id of the ParameterType. 
     void set_input_by_class_id(
             ParameterType::ParameterTypeID ptid,
             GeneratorShared gs,
-            OutputCountType pos=0);
+            ParameterIndexType pos=0);
                                         
     void set_input_by_class_id(
             ParameterType::ParameterTypeID ptid,
             SampleType v, // accept numbers
-            OutputCountType pos=0);
+            ParameterIndexType pos=0);
 
 
     //! Add a multiple input at this parameter. 
     virtual void add_input_by_index(ParameterIndexType i, 
-            GeneratorShared gs, OutputCountType pos=0);
+            GeneratorShared gs, ParameterIndexType pos=0);
 
     virtual void add_input_by_index(ParameterIndexType i, SampleType v, 
-            OutputCountType pos=0);
+            ParameterIndexType pos=0);
   
 	// slot ..............................................................    	
     //! Directly set a parameter to a slot given an index. This will remove/erase any parameter on this slot. The update parameter permits disabling updating a slot, useful during initial configuration. 
@@ -533,7 +527,7 @@ inline GeneratorShared connect_serial(GeneratorShared lhs, GeneratorShared rhs,
         // we use add_* so we can do this repeatedly on the same position through multiple calls
         rhs->add_input_by_index(i, lhs, i);
     }
-    return rhs;
+    return rhs; // this might return a reference instaed of same GeneratorShared
 }
 
 
@@ -573,7 +567,34 @@ inline GeneratorShared operator>(SampleType lhs, GeneratorShared rhs) {
 }
 
 
-// operator + .................................................................
+
+// operator &&................................................................
+// memory (outputs storage) direct settting
+
+inline GeneratorShared operator&&(aw::ILSampleType lhs, GeneratorShared rhs) {
+    //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+    // convert to aw::BufferInjector
+    BufferInjectorShared bis = BufferInjectorShared(new BufferInjector(lhs));
+    rhs->set_outputs(bis);
+    return rhs;
+} 
+
+inline GeneratorShared operator&&(aw::ILILSampleType lhs, GeneratorShared rhs) {
+    //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+    // convert to aw::BufferInjector
+    BufferInjectorShared bis = BufferInjectorShared(new BufferInjector(lhs));
+    rhs->set_outputs(bis);
+    return rhs;    
+} 
+
+inline GeneratorShared operator&&(const std::string lhs, GeneratorShared rhs) {
+    //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+    rhs->set_outputs(lhs);
+    return rhs;        
+} 
+
+
+// parallel connections ......................................................
 
 //! Connect two generators as inputs into another generator, where that generator is given by the passed in GeneratorID.
 inline GeneratorShared connect_parallel(
@@ -626,40 +647,35 @@ inline GeneratorShared connect_parallel(
 
 // operator + .................................................................
 inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
-    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Add);
-    return g;
-} 
+    return aw::connect_parallel(lhs, rhs, Generator::ID_Add);
+}
 
 inline GeneratorShared operator+(GeneratorShared lhs, SampleType rhs) {
-    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Add);    
-    return g;
-} 
+    return aw::connect_parallel(lhs, rhs, Generator::ID_Add);
+}
 
 inline GeneratorShared operator+(SampleType lhs, GeneratorShared rhs) {
-    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Add);    
-    return g;
-} 
-
-
-// operator * .................................................................
-inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
-    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
-    return g;
-} 
-
-inline GeneratorShared operator*(GeneratorShared lhs, SampleType rhs) {
-    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
-    return g;
-} 
-
-inline GeneratorShared operator*(SampleType lhs, GeneratorShared rhs) {
-    GeneratorShared g = aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
-    return g;
-} 
+    return aw::connect_parallel(lhs, rhs, Generator::ID_Add);
+}
 
 // Alternative opperators:
 // |, || set slots
 // & set output buffer directly
+
+
+// operator * .................................................................
+inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
+    return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+}
+
+inline GeneratorShared operator*(GeneratorShared lhs, SampleType rhs) {
+    return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+}
+
+inline GeneratorShared operator*(SampleType lhs, GeneratorShared rhs) {
+    return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+} 
+
 
 
 
@@ -694,25 +710,25 @@ class Constant: public Generator {
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.
     virtual void set_input_by_index(ParameterIndexType i, GeneratorShared gs, 
-            OutputCountType pos=0);    
+            ParameterIndexType pos=0);    
                                         
     //! Set value as a SampleType value.
 	virtual void set_input_by_index(ParameterIndexType i, SampleType v, 
-            OutputCountType pos=0);
+            ParameterIndexType pos=0);
     
     //! This overridden method throws an exception: you cannot set a Generator to a constant.    
     virtual void add_input_by_index(ParameterIndexType i, GeneratorShared gs, 
-            OutputCountType pos=0);    
+            ParameterIndexType pos=0);    
                                         
     //! Add value as a SampleType value.                                        
 	virtual void add_input_by_index(ParameterIndexType i, SampleType v, 
-            OutputCountType pos=0);
+            ParameterIndexType pos=0);
     
 };
 
 
 //=============================================================================
-//! All Generators that can process a single input with the same operator (and knowing the number of inputs and starting value) (+, *, avg?) can derive from this class.
+//! All Generators that can process a single input (parameter slot) with the same operator (and knowing the number of inputs and starting value) (+, *, avg?) can derive from this class.
 class _BinaryCombined;
 // no shared, as an ABC
 class _BinaryCombined: public Generator {
@@ -748,12 +764,8 @@ class Add: public _BinaryCombined {
 
     public://------------------------------------------------------------------
     explicit Add(EnvironmentShared);
-	
-    virtual void init();    
-
+    virtual void init();
 };
-
-
 
 
 //=============================================================================
@@ -764,11 +776,8 @@ class Multiply: public _BinaryCombined {
 
     public://------------------------------------------------------------------
     explicit Multiply(EnvironmentShared);
-	
-    virtual void init();    
-
+    virtual void init();
 };
-
 
 
 //=============================================================================
@@ -789,15 +798,19 @@ class Buffer: public Generator {
 	//! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
     virtual void render(RenderCountType f);	
 			
-    //! Write to an audio file to given the ouput file path. The optional OutputCountType argument can be used to specify a single _output_count of many to write. If OutputCountType is 0, all outputs are written.
+    //! Write to an audio file to given the ouput file path. The optional ParameterIndexType argument can be used to specify a single _output_count of many to write. If ParameterIndexType is 0, all outputs are written.
     virtual void write_output_to_fp(const std::string& fp, 
-                                    OutputCountType d=0) const;
+                                    ParameterIndexType d=0) const;
         
     //! Set the outputs of this Generator to the content of an audio file provided as an audio path. This overridden method makes the usage of libsndfile to read in a file.
     virtual void set_outputs_from_fp(const std::string& fp);
 
-    //! Set the outputs of this Generator to the content of a numbers specified in a string representation E.g.: "(3, 4, 5)" or "((1, .5), (3, 2))".
-    virtual void set_outputs_from_string(const std::string& fp);
+    //! Overridden set outputs from BufferInjectorShared
+    virtual void set_outputs(const BufferInjectorShared bi);
+
+    //! Overridden set outputs a std::string, treated a file path.
+    virtual void set_outputs(const std::string& fp);
+
 
     
 };
@@ -859,7 +872,7 @@ class Sine: public Generator {
 	// SampleType _amp_prev;
 	
 	RenderCountType _sample_count;		
-    OutputSizeType _i;
+    OutputsSizeT _i;
 
     public://------------------------------------------------------------------
 
@@ -892,7 +905,7 @@ class Map: public Generator {
     ParameterIndexType _input_index_dst_lower; 	
     ParameterIndexType _input_index_dst_upper; 	
 
-    OutputSizeType _i;
+    OutputsSizeT _i;
     
     SampleType _limit_src;
     SampleType _range_src;
@@ -936,7 +949,7 @@ class AttackDecay: public Generator {
     ParameterIndexType _output_index_eoa;
     ParameterIndexType _output_index_eod;
 
-    OutputSizeType _i;
+    OutputsSizeT _i;
     
     // make these sample types because will deivide by
     SampleType _a_samps;
@@ -948,7 +961,7 @@ class AttackDecay: public Generator {
     bool _trigger_a; // last unit interval amp, pre exp scaling
     
     //! Progress samps are set to zero at trigger
-    OutputSizeType _progress_samps;
+    OutputsSizeT _progress_samps;
     //! Store envelope stage as 0 (off); 1 (A); 2 (D)
     UINT8 _env_stage;
     SampleType _amp;

@@ -28,15 +28,31 @@ namespace aw {
 //! The sample type is used for sample values, e.g., amplitude measurements in the output vector. 
 typedef double SampleType; // sample value type
 
-//! The size of a single frame (or vector), or the number of samples processed per computation cycle. This is a very large integer as we might need to accomodate loading in large audio files as a single frame. 
+//! One dimensional initializer list of SampleTypes.
+typedef std::initializer_list<SampleType> ILSampleType;
+
+//! Two dimensional initializer list of SampleTypes.
+typedef std::initializer_list<ILSampleType> ILILSampleType;
+
+//! One dimensional vector of samples.
+typedef std::vector<SampleType> VSampleType;
+
+//! Two dimensinoal vector of samples. 
+typedef std::vector<VSampleType> VVSampleType;
+
+    
+//! The size of a single frame (or vector), or the number of samples processed per computation cycle or stored in a single channel of output data. This is a very large integer as we might need to accomodate loading in large audio files as a single frame.
 typedef std::uint32_t FrameSizeType;
 
 //! Output size. Was uint16_t, but for handling audio files was increased to uint32_t. In general, the outputs is the frame size times the number of outputs, so outputs is always greater than or equal to frame size. 
-typedef std::uint32_t OutputSizeType;
+typedef std::uint32_t OutputsSizeT;
 
-// _output_count probably never more than 200!
-//! An unisigned integer describing the number of inputs or outputs for a Generator. Note that this is essentially the same as the PararmeterIndexType, and should be unified. 
-typedef std::size_t OutputCountType;
+
+//! An unsigned integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Generator.
+typedef std::size_t ParameterIndexType; 
+
+
+typedef std::vector<ParameterIndexType> VParameterIndexT;
 
 //! A vector of frame size types. This is used for offsets into the outputs.
 typedef std::vector<FrameSizeType> VFrameSizeType;
@@ -47,8 +63,6 @@ typedef std::uint8_t UINT8;
 //! An unsigned integer for each Generator that counts the number of frames that have passed; this number needs to be very large and overflow gracefully. 
 typedef std::uint64_t RenderCountType; 
 
-//! An unisnged integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Generator. Can replace all OutputCountType
-typedef std::size_t ParameterIndexType; 
 
 
 // TODO: replace with a SharedGenerator: but, we need a SharedGenerator to be hashable, which requires us to extend std::hash or similar
@@ -104,15 +118,11 @@ inline SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
 
 //! Limit a phase value between 0 and PI2 by wrapping: done in place. 
 inline void phase_limiter(SampleType& phase) {
-    if (phase >= PI2) {
-        while (phase >= PI2) {
-            phase -= PI2;
-        }
+    while (phase >= PI2) {
+        phase -= PI2;
     }
-    else if (phase < 0.0) {
-        while (phase < 0.0) {
-            phase += PI2;
-        }
+    while (phase < 0.0) {
+        phase += PI2;
     }
 }
 
@@ -166,83 +176,6 @@ inline void to_lower(std::string& src) {
 inline void remove(std::string& src, const char target) {
     src.erase(std::remove(src.begin(), src.end(), target), src.end());
 }
-
-
-//! For a given delimited sitring, determine a nested width, and raise an error if it is not nested width
-//inline UINT8 nested_width(
-//        const std::string& src,
-//        const char delim,
-//        const char lbound,
-//        const char rbound) {
-//
-//    std::string item(src); // copy; just to pass to ss
-//    aw::remove(item, ' ');
-//    
-//    UINT8 depth_current {0};
-//    UINT8 depth_max {0};
-//    UINT8 width_current {0}; // start at 1 b/c counting delims
-//    UINT8 width_max {0};
-//    UINT8 non_space_in_delim {0};
-//    
-//    std::list<UINT8> coll_width; // can check for uniformity
-//    
-//    std::cout << src << ": " << std::endl;
-//    
-//    std::string::const_iterator c;
-//    for (c = src.begin(); c != src.end(); ++c) {
-//        // if we have a delim and we got some non-space chars
-//        if (*c == delim && non_space_in_delim > 0) {
-//            ++width_current;
-//            non_space_in_delim = 0;
-//        }
-//        else if (*c == lbound) {
-//            ++depth_current;
-//            width_current = 0; // reset
-//            non_space_in_delim = 0; // reset at open
-//        }
-//        else if (*c == rbound) { // closing
-//            // if we have a width, and have encountered chars since last delim	
-//            if (width_current > 0) {
-//                // extra 1 for first not counted
-//                if (non_space_in_delim > 0) {
-//                    coll_width.push_back(width_current+1);
-//                }
-//                else { //no non-space chars found, but store to detect error
-//                    coll_width.push_back(width_current);
-//                }
-//            }
-//            width_current = 0; // reset, possibly redundant
-//            --depth_current;
-//        }
-//        else {
-//            ++non_space_in_delim;
-//        }
-//        // update on each char
-//        depth_max = std::max(depth_max, depth_current);
-//        //std::cout << *c << ": " << (int)width_current << std::endl;
-//    }
-//    // if we have left over widht, it is because we did not get a closing rbound, or we have no r/l bounds
-//    if (width_current > 0) {
-//        coll_width.push_back(width_current+1);
-//    }
-//    // store and check a last value; must all be the same if length is > than 1
-//    if (coll_width.size() > 0) {
-//        for (auto i : coll_width) { // i is a reference
-//            std::cout << "widths: " << (int) i << std::endl;
-//            width_max = std::max(i, width_max);
-//        }
-//        // after finding max, check all
-//        for (auto i : coll_width) { // i is a reference
-//            if (i != width_max) {
-//                throw std::invalid_argument("inconsistent width");
-//            }
-//        }
-//        
-//    }
-//    // if width_max is == len of elements, we have a dimensionality of 1; must test this after
-//    return width_max;
-//    
-//}
 
 
 //! Split a string by a delimiter. 
@@ -400,7 +333,7 @@ class Environment {
     boost::filesystem::path _temp_directory;
 	
 	//! Private sampling rate storage. Defaults to 44100. 
-	OutputSizeType _sampling_rate;
+	OutputsSizeT _sampling_rate;
     
     //! Common (but not all) frame size. Defaults to 64.  
 	FrameSizeType _common_frame_size;
@@ -423,7 +356,7 @@ class Environment {
     static EnvironmentShared make_with_frame_size(FrameSizeType fs=64);
     
     //! Return the sampling rate
-	OutputSizeType get_sampling_rate() const {return _sampling_rate;};
+	OutputsSizeT get_sampling_rate() const {return _sampling_rate;};
 
     //! Return the common (or shared) frame size. 
     FrameSizeType get_common_frame_size() const {return _common_frame_size;};
@@ -445,11 +378,13 @@ class Environment {
 //	int x = f<double>({2, 4, 5});
 //	x = f<std::initializer_list<double>>({{2,3}, {4,6}});
     
-    
+
+class BufferInjector;
+typedef std::shared_ptr<BufferInjector> BufferInjectorShared;
 class BufferInjector {
     private:
         std::vector<SampleType> _parsed;
-        OutputCountType _channels;
+        ParameterIndexType _channels;
         bool _equal_width;
     
     public:
@@ -457,16 +392,17 @@ class BufferInjector {
         BufferInjector() = delete;
 
         //! A single flat list
-        BufferInjector(std::initializer_list<SampleType>);
+        BufferInjector(ILSampleType);
     
         //! A nested list.
-        BufferInjector(
-                std::initializer_list< std::initializer_list<SampleType> >);
+        BufferInjector(ILILSampleType);
     
-        OutputCountType get_channels();
+        ParameterIndexType get_channels();
     
-        OutputSizeType get_frame_size();
+        //! The frame size is the total number of samples per channel. 
+        OutputsSizeT get_frame_size();
 
+        //! Pass in vector of SampleTypes and fill it up a linear representation of the provided values.
         void fill_interleaved(std::vector<SampleType>&);
     
 };

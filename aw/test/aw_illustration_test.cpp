@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_1) {
 	for (int i=-100; i<100; ++i) {
 		v.push_back(i);
 	}
-	aw::OutputCountType d(2);
+	aw::ParameterIndexType d(2);
 
     std::string fp("plot.plt");
     

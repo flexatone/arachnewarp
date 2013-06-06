@@ -105,8 +105,8 @@ bool c() {
 
 bool d() {
     // test some math opperations for comparison
-    aw::OutputSizeType y;
-    aw::OutputSizeType x;
+    aw::OutputsSizeT y;
+    aw::OutputsSizeT x;
 
     aw::Timer t1("calling sine through iterated numbers");
     t1.start();
