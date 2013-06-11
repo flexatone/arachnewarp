@@ -575,21 +575,23 @@ inline GeneratorShared operator&&(aw::ILSampleType lhs, GeneratorShared rhs) {
     //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
     // convert to aw::BufferInjector
     BufferInjectorShared bis = BufferInjectorShared(new BufferInjector(lhs));
-    rhs->set_outputs(bis);
+    rhs->set_outputs(bis); // will throw if rhs is not Buffer
     return rhs;
 } 
 
+//! This version takes an ILIL (initializer list of initializer lists).
 inline GeneratorShared operator&&(aw::ILILSampleType lhs, GeneratorShared rhs) {
     //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
     // convert to aw::BufferInjector
     BufferInjectorShared bis = BufferInjectorShared(new BufferInjector(lhs));
-    rhs->set_outputs(bis);
+    rhs->set_outputs(bis); // will throw if rhs is not Buffer
     return rhs;    
 } 
 
 inline GeneratorShared operator&&(const std::string lhs, GeneratorShared rhs) {
     //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
-    rhs->set_outputs(lhs);
+    // TODO: when we ahave a sound-file lookup routine, use it here to convert lhs into a full, complete path; or, do this at set_outputs_from_fp. 
+    rhs->set_outputs(lhs); // will throw if rhs is not Buffer
     return rhs;        
 } 
 

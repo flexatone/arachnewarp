@@ -815,7 +815,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_4) {
     g1 >> g2;
 
     g2->render(1);
-    g2->illustrate_network();
+    //g2->illustrate_network();
     // only o2 gets the added values
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
 	BOOST_CHECK_CLOSE(g2->outputs[1][0], 305, .001);
@@ -1130,6 +1130,59 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_3) {
     BOOST_CHECK(gbuf->outputs[2][offset * 2 + 2] > .9);
     
 }
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+    g1->set_slot_by_index(0, 1); // must set one channel
+    aw::BufferInjectorShared bi = aw::BufferInjectorShared(new aw::BufferInjector({0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0}));
+    g1->set_outputs(bi);
+    BOOST_CHECK(g1->get_frame_size() == 13);
+    BOOST_CHECK(g1->get_output_count() == 1);
+
+    BOOST_CHECK(g1->outputs[0][6] == 6);
+    
+    //g1->illustrate_outputs();
+    
+	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Buffer);
+    //{3, 1, 3, .5, 0} && g1;
+    //g2->set_slot_by_index(0, 1); // must set one channel
+    bi = aw::BufferInjectorShared(new aw::BufferInjector({{10, 1, 2}, {5, 4, 5}, {4, 5, 4}, {1, 2, 20}, {4, 5, 4}, {1, 2, 20}}));
+    g2->set_outputs(bi);
+    BOOST_CHECK(g2->get_frame_size() == 6);
+    BOOST_CHECK(g2->get_output_count() == 3);
+
+    BOOST_CHECK(g2->outputs[0][0] == 10);
+    BOOST_CHECK(g2->outputs[1][0] == 1);
+    BOOST_CHECK(g2->outputs[2][0] == 2);
+
+    BOOST_CHECK(g2->outputs[0][1] == 5);
+    BOOST_CHECK(g2->outputs[1][1] == 4);
+    BOOST_CHECK(g2->outputs[2][1] == 5);
+    
+    //g2->illustrate_outputs();
+    
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
+	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+    
+    // this works!
+    operator&&({3,4,5}, g1);
+    
+    // but thisdoes not: TODO: have make method on BuffInjector and have op overload work on that 
+    //{3, 4, 5} && g1;
+
+}
+
+
+
 
 
 

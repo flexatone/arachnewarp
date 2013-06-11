@@ -380,7 +380,9 @@ class Environment {
     
 
 class BufferInjector;
+
 typedef std::shared_ptr<BufferInjector> BufferInjectorShared;
+
 class BufferInjector {
     private:
         std::vector<SampleType> _parsed;

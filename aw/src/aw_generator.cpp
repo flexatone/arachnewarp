@@ -576,6 +576,7 @@ void Generator :: set_outputs_from_array(SampleType* v, OutputsSizeT s,
 	// caller is responsible for releasing passed in array
 	// we will read in only as many channels as we currently have as outputs
 	if (s < 1) {
+        //std::cout << "passed size: " << s << std::endl;
 		throw std::domain_error(
             "the supplied vector must have size greater than 0");
 	}
@@ -1257,15 +1258,20 @@ void Buffer :: set_outputs_from_fp(const std::string& fp) {
 
 void Buffer :: set_outputs(const BufferInjectorShared bi) {
     // vitual method overridden in Buffer
-    // TODO: implement
-    throw std::domain_error("not implemented on base class");
+    std::cout << "Buffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;
+    
+    VSampleType vst;
+    bi->fill_interleaved(vst);
+    ParameterIndexType ch = bi->get_channels();
+    set_slot_by_index(0, ch); // set channels
+    // will get a pointer to vst and pass to set from array
+    set_outputs_from_vector(vst, ch);
+    // vector will be auto destroyed here
 }
 
 void Buffer :: set_outputs(const std::string& fp) {
     // vitual method overridden in Buffer
-    // TODO: implement    
-    throw std::domain_error("not implemented on base class");
-
+    set_outputs_from_fp(fp);
 }
 
 
