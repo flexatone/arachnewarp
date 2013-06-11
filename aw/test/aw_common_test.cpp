@@ -175,6 +175,20 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
+
+    aw::BufferInjectorShared bi = aw::BufferInjectorShared(
+            new aw::BufferInjector({3, 6, 2, 3, 5}));
+    std::vector<aw::SampleType> post;
+    bi->fill_interleaved(post);
+    BOOST_CHECK_EQUAL(post[0], 3);
+    BOOST_CHECK_EQUAL(post[1], 6);
+    BOOST_CHECK_EQUAL(post[2], 2);
+
+
+
+}
+
 
 
 

@@ -83,7 +83,7 @@ set lmargin screen 0.02 \n\
 set rmargin screen 0.98 " << std::endl;    
     
     _stream << "set multiplot layout " << static_cast<int>(d) 
-        <<",1" << std::endl;
+            <<",1" << std::endl;
 
     for (std::size_t i=1; i < d+1; ++i) {
         // TODO: need to increment/map color 
@@ -98,7 +98,7 @@ set rmargin screen 0.98 " << std::endl;
     double top;
     double bottom;
         
-    for (ParameterIndexType dStep=1; dStep < d+1; ++dStep) {
+    for (ParameterIndexType dStep=1; dStep < d + 1; ++dStep) {
         // use whole margin at top on first
         if (dStep == 1) {
             top = pos - margin; 
@@ -117,7 +117,9 @@ set rmargin screen 0.98 " << std::endl;
                 
         _stream << "set tmargin screen " << top << std::endl;
         _stream << "set bmargin screen " << bottom << std::endl;
-        _stream << "plot '-' using ($1) with impulse linestyle " 
+        // impulse: good for audio
+        // good for brakpoints: linespoints
+        _stream << "plot '-' using ($1) with impulse linestyle "
             << static_cast<int>(dStep) << std::endl;    
 
         // provide data here; assuming non-interleaved

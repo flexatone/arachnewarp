@@ -166,8 +166,9 @@ OutputsSizeT BufferInjector :: get_frame_size() {
     return _parsed.size() / _channels;
 }
 
-void BufferInjector :: fill_interleaved(std::vector<SampleType>& post) {
+void BufferInjector :: fill_interleaved(VSampleType& post) {
 // Pass in a reference to a vector and have it cleared, sized, and filled.
+    std::cout << "fill_interleaved: " << get_frame_size() << std::endl;
     post.clear();
     post.reserve(_parsed.size());
     for (auto x : _parsed) {
