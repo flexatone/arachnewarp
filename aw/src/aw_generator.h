@@ -571,6 +571,10 @@ inline GeneratorShared operator>(SampleType lhs, GeneratorShared rhs) {
 // operator &&................................................................
 // memory (outputs storage) direct settting
 
+// TODO: these need to take BufferInjector as arg, only have 1 overload
+// add BufferInjector::make() to get shared version
+// rename Injector
+
 inline GeneratorShared operator&&(aw::ILSampleType lhs, GeneratorShared rhs) {
     //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
     // convert to aw::BufferInjector

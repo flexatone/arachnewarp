@@ -1176,7 +1176,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
     // this works!
     operator&&({3,4,5}, g1);
     
-    // but thisdoes not: TODO: have make method on BuffInjector and have op overload work on that 
+    // can do this:
+    // ILSampleType({3,4,5}) && g1;
+    // but will have to know type 
+    
+    // but thisdoes not: TODO: have make method on BuffInjector and have op overload work on that; or find out how to fix
     //{3, 4, 5} && g1;
 
 }

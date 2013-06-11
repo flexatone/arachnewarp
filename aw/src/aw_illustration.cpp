@@ -119,6 +119,7 @@ set rmargin screen 0.98 " << std::endl;
         _stream << "set bmargin screen " << bottom << std::endl;
         // impulse: good for audio
         // good for brakpoints: linespoints
+        // TODO: if frameSize tn 20 points or so, use linespoints, else impulse
         _stream << "plot '-' using ($1) with impulse linestyle "
             << static_cast<int>(dStep) << std::endl;    
 
