@@ -28,7 +28,7 @@ const int FRAMES_PER_BUFFER = 64;
 class AWPerformer {
 public:
     aw::GeneratorShared root_gen;
-    aw::RenderCountType render_count;
+    aw::RenderCountT render_count;
     
 	explicit AWPerformer() :
             render_count(0) {

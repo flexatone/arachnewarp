@@ -46,9 +46,9 @@ void escape(std::string& str, const std::string& replace_targets,
 //==============================================================================
 // display
 
-void print(SampleType* out, FrameSizeType size) {
+void print(SampleT* out, FrameSizeT size) {
     std::cout << "<array ";
-    for (FrameSizeType i=0; i<size; ++i) {
+    for (FrameSizeT i=0; i<size; ++i) {
         std::cout << out[i] << ' ';
     }
     // TODO: figure out how to do this idiom    
@@ -84,7 +84,7 @@ const char* get_fp_home() {
 
 // TODO: add a static variable to store a default environment instance, and a static method to get and set the default
 
-Environment :: Environment(FrameSizeType fs) 
+Environment :: Environment(FrameSizeT fs) 
 	: _sampling_rate{44100},
     _common_frame_size{fs} { // default is 64
 	// post initializers
@@ -96,7 +96,7 @@ EnvironmentShared Environment :: make() {
     return e;
 }
 
-EnvironmentShared Environment :: make_with_frame_size(FrameSizeType fs) {
+EnvironmentShared Environment :: make_with_frame_size(FrameSizeT fs) {
     EnvironmentShared e = EnvironmentShared(new Environment(fs));
     return e;
 }
@@ -125,9 +125,8 @@ std::string Environment :: get_fp_temp(std::string name) const {
 
 
 
-
-
-BufferInjector :: BufferInjector(ILSampleType src) {
+//==============================================================================
+Injector :: Injector(ILSampleT src) {
     // this always have 1 dimension
     _channels = 1;
     _parsed.reserve(src.size());
@@ -136,7 +135,7 @@ BufferInjector :: BufferInjector(ILSampleType src) {
     }
 }
 
-BufferInjector :: BufferInjector(ILILSampleType src) {
+Injector :: Injector(ILILSampleT src) {
     // number of sub groups is channels;
     // find max on first iteration; must go through all
     _channels = 0;
@@ -158,17 +157,26 @@ BufferInjector :: BufferInjector(ILILSampleType src) {
     }
 }
 
-ParameterIndexType BufferInjector :: get_channels() {
+InjectorShared Injector :: make(ILSampleT src) {
+    return InjectorShared(new Injector(src));
+}
+
+InjectorShared Injector :: make(ILILSampleT src) {
+    return InjectorShared(new Injector(src));
+}
+
+
+ParameterIndexT Injector :: get_channels() const {
     return _channels;
 }
     
-OutputsSizeT BufferInjector :: get_frame_size() {
+OutputsSizeT Injector :: get_frame_size() const {
     return _parsed.size() / _channels;
 }
 
-void BufferInjector :: fill_interleaved(VSampleType& post) {
+void Injector :: fill_interleaved(VSampleT& post) const {
 // Pass in a reference to a vector and have it cleared, sized, and filled.
-    std::cout << "fill_interleaved: " << get_frame_size() << std::endl;
+    //std::cout << "fill_interleaved: " << get_frame_size() << std::endl;
     post.clear();
     post.reserve(_parsed.size());
     for (auto x : _parsed) {

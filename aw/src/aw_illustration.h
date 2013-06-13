@@ -50,8 +50,8 @@ class TimeDomainGraph : public Illustration{
     virtual ~TimeDomainGraph();
 
     //! Low level drawing routine, assumes 1 dimension of output. Useful for calling on things other than Generators.
-    virtual void draw_vector(const std::vector<SampleType>& v, 
-    ParameterIndexType d=1);
+    virtual void draw_vector(const std::vector<SampleT>& v, 
+    ParameterIndexT d=1);
 
     //! Write the plot of the generator.     
     virtual void draw(const GeneratorShared g);

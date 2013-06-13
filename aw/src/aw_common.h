@@ -26,42 +26,42 @@ namespace aw {
 
 // define the sample format
 //! The sample type is used for sample values, e.g., amplitude measurements in the output vector. 
-typedef double SampleType; // sample value type
+typedef double SampleT; // sample value type
 
 //! One dimensional initializer list of SampleTypes.
-typedef std::initializer_list<SampleType> ILSampleType;
+typedef std::initializer_list<SampleT> ILSampleT;
 
 //! Two dimensional initializer list of SampleTypes.
-typedef std::initializer_list<ILSampleType> ILILSampleType;
+typedef std::initializer_list<ILSampleT> ILILSampleT;
 
 //! One dimensional vector of samples.
-typedef std::vector<SampleType> VSampleType;
+typedef std::vector<SampleT> VSampleT;
 
 //! Two dimensinoal vector of samples. 
-typedef std::vector<VSampleType> VVSampleType;
+typedef std::vector<VSampleT> VVSampleT;
 
     
 //! The size of a single frame (or vector), or the number of samples processed per computation cycle or stored in a single channel of output data. This is a very large integer as we might need to accomodate loading in large audio files as a single frame.
-typedef std::uint32_t FrameSizeType;
+typedef std::uint32_t FrameSizeT;
 
 //! Output size. Was uint16_t, but for handling audio files was increased to uint32_t. In general, the outputs is the frame size times the number of outputs, so outputs is always greater than or equal to frame size. 
 typedef std::uint32_t OutputsSizeT;
 
 
 //! An unsigned integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Generator.
-typedef std::size_t ParameterIndexType; 
+typedef std::size_t ParameterIndexT; 
 
 
-typedef std::vector<ParameterIndexType> VParameterIndexT;
+typedef std::vector<ParameterIndexT> VParameterIndexT;
 
 //! A vector of frame size types. This is used for offsets into the outputs.
-typedef std::vector<FrameSizeType> VFrameSizeType;
+typedef std::vector<FrameSizeT> VFrameSizeType;
 
 //! A small unsigned interger for specialized cases. 
 typedef std::uint8_t UINT8; 
 
 //! An unsigned integer for each Generator that counts the number of frames that have passed; this number needs to be very large and overflow gracefully. 
-typedef std::uint64_t RenderCountType; 
+typedef std::uint64_t RenderCountT; 
 
 
 
@@ -73,20 +73,20 @@ typedef std::unordered_map<std::string, bool> MapStringBool;
 typedef std::shared_ptr<MapStringBool> SharedMapStringBool;
 
 
-SampleType const PI(3.14159265358979323846264338);
-SampleType const PI2(3.14159265358979323846264338 * 2.0);
-SampleType const LOGTWO(0.69314718055994528623);
-SampleType const LOGTEN(2.302585092994);
+SampleT const PI(3.14159265358979323846264338);
+SampleT const PI2(3.14159265358979323846264338 * 2.0);
+SampleT const LOGTWO(0.69314718055994528623);
+SampleT const LOGTEN(2.302585092994);
 
 //! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
-SampleType const MIN_FQ(.00001);
+SampleT const MIN_FQ(.00001);
 
 // -120 dB, or pow(10, -120/20), or 1e-06
-SampleType const MIN_AMP(.000001);
+SampleT const MIN_AMP(.000001);
 
 
-//! The trigger threshold, or the value aboive which we determine that we have a trigger.
-SampleType const TRIG_THRESH(.99999);
+//! The trigger threshold, or the value above which we determine that we have a trigger.
+SampleT const TRIG_THRESH(.99999);
 
 
 //! Defined for all text-based hierarchical displays. 
@@ -100,8 +100,8 @@ void escape(std::string& str, const std::string& replace_targets,
         const std::string& prefix);
 
 
-//! Print an arry of SampleType of size type FrameSizeType.
-void print(SampleType* out, FrameSizeType size);
+//! Print an arry of SampleT of size type FrameSizeT.
+void print(SampleT* out, FrameSizeT size);
 
 //! Return the users home directory as a const char pointer. This is what is returned by low-level calls, and is thus returned here to reduce creating temporary objects.
 const char* get_fp_home();
@@ -109,7 +109,7 @@ const char* get_fp_home();
 
 //! Frequency values might swing through zero, or exceed Nyquist. This inline function solves this problem by returning a minimum number of zero is hit.
 // note that inline functions need to be defined in the header
-inline SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
+inline SampleT frequency_limiter(SampleT fq, SampleT nyquist) {
 	// this is inlined
 	fq = fq == 0 ? MIN_FQ : fq;
 	fq = fq > nyquist ? nyquist : fq;
@@ -117,7 +117,7 @@ inline SampleType frequency_limiter(SampleType fq, SampleType nyquist) {
 }
 
 //! Limit a phase value between 0 and PI2 by wrapping: done in place. 
-inline void phase_limiter(SampleType& phase) {
+inline void phase_limiter(SampleT& phase) {
     while (phase >= PI2) {
         phase -= PI2;
     }
@@ -127,8 +127,8 @@ inline void phase_limiter(SampleType& phase) {
 }
 
 
-inline SampleType double_limiter(SampleType src, SampleType min,
-        SampleType max) {
+inline SampleT double_limiter(SampleT src, SampleT min,
+        SampleT max) {
     src = src < min ? min : src;
     return src > max ? max : src;
 }
@@ -137,10 +137,10 @@ inline SampleType double_limiter(SampleType src, SampleType min,
 
 //! Detect and assign true min / max, based on comparison. Min and max are set by passing in pointers to to the value that are set in place.
 inline void true_min_max(
-        SampleType lower,
-        SampleType upper,
-        SampleType* min,
-        SampleType* max) {
+        SampleT lower,
+        SampleT upper,
+        SampleT* min,
+        SampleT* max) {
 
     if (upper < lower){
         *min = upper;
@@ -155,7 +155,7 @@ inline void true_min_max(
 
 
 //! Convert midi to frequency. 	
-inline SampleType mtof(SampleType f) {
+inline SampleT mtof(SampleT f) {
     // midi to frequency
     if (f <= -1500) return 0;
     else if (f > 1499) return mtof(1499);
@@ -336,7 +336,7 @@ class Environment {
 	OutputsSizeT _sampling_rate;
     
     //! Common (but not all) frame size. Defaults to 64.  
-	FrameSizeType _common_frame_size;
+	FrameSizeT _common_frame_size;
 	
     //! Load default directories.
     void _load_defaults();
@@ -345,7 +345,7 @@ class Environment {
 
     // need to =delete the default constructor
     
-    explicit Environment(FrameSizeType fs=64);
+    explicit Environment(FrameSizeT fs=64);
     
     //~Environment();
 	
@@ -353,13 +353,13 @@ class Environment {
     static EnvironmentShared make();    
 
     //! Factory method that provides frame size defaults. Could by 'make from'. 
-    static EnvironmentShared make_with_frame_size(FrameSizeType fs=64);
+    static EnvironmentShared make_with_frame_size(FrameSizeT fs=64);
     
     //! Return the sampling rate
 	OutputsSizeT get_sampling_rate() const {return _sampling_rate;};
 
     //! Return the common (or shared) frame size. 
-    FrameSizeType get_common_frame_size() const {return _common_frame_size;};
+    FrameSizeT get_common_frame_size() const {return _common_frame_size;};
 
 	//! This returns a file path in the environment-specified temporary directory. By default this is in the user directory .arachnewaro. This returns a string for easier compatibility with clients, rather than a Boost file path
     std::string get_fp_temp(std::string name) const;
@@ -369,7 +369,7 @@ class Environment {
 
 };
 
-
+    	
 
 //	int x = f<double>({2, 4, 5});
 //template<class T> int f(std::initializer_list<T> args) {
@@ -379,33 +379,37 @@ class Environment {
 //	x = f<std::initializer_list<double>>({{2,3}, {4,6}});
     
 
-class BufferInjector;
+class Injector;
 
-typedef std::shared_ptr<BufferInjector> BufferInjectorShared;
+typedef std::shared_ptr<Injector> InjectorShared;
 
-class BufferInjector {
+class Injector {
     private:
-        std::vector<SampleType> _parsed;
-        ParameterIndexType _channels;
+        std::vector<SampleT> _parsed;
+        ParameterIndexT _channels;
         bool _equal_width;
     
     public:
     
-        BufferInjector() = delete;
+        Injector() = delete;
 
         //! A single flat list
-        BufferInjector(ILSampleType);
+        Injector(ILSampleT);
     
         //! A nested list.
-        BufferInjector(ILILSampleType);
+        Injector(ILILSampleT);
     
-        ParameterIndexType get_channels();
+        static InjectorShared make(ILSampleT);
+
+        static InjectorShared make(ILILSampleT);
+    
+        ParameterIndexT get_channels() const;
     
         //! The frame size is the total number of samples per channel. 
-        OutputsSizeT get_frame_size();
+        OutputsSizeT get_frame_size() const;
 
         //! Pass in vector of SampleTypes and fill it up a linear representation of the provided values.
-        void fill_interleaved(std::vector<SampleType>&);
+        void fill_interleaved(VSampleT&) const;
     
 };
 
