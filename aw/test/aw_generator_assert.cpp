@@ -60,7 +60,7 @@ bool test_3() {
    	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
     // set channels to 3
     
-	aw::VSampleType v;
+	aw::VSampleT v;
 	for (std::size_t i=0; i < 120; ++i) {
 		v.push_back(i % 5);
 	}

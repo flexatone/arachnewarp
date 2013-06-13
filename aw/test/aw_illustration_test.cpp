@@ -27,11 +27,11 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_1) {
     //BOOST_CHECK_EQUAL(aw::Gen_Name_Constant, 0);
 	
 	aw::TimeDomainGraph p;
-	std::vector<aw::SampleType> v;
+	std::vector<aw::SampleT> v;
 	for (int i=-100; i<100; ++i) {
 		v.push_back(i);
 	}
-	aw::ParameterIndexType d(2);
+	aw::ParameterIndexT d(2);
 
     std::string fp("plot.plt");
     

@@ -19,11 +19,11 @@ Illustration :: Illustration() {}
 
 Illustration :: ~Illustration() {}
 
-//void Illustration :: draw(const std::vector<SampleType>& v, ParameterIndexType d) {
+//void Illustration :: draw(const std::vector<SampleT>& v, ParameterIndexT d) {
 //    throw std::invalid_argument("not implemented");
 //}
 //
-//void Illustration :: draw(const std::vector<SampleType>& v) {
+//void Illustration :: draw(const std::vector<SampleT>& v) {
 //    throw std::invalid_argument("not implemented");
 //}
 
@@ -52,15 +52,15 @@ TimeDomainGraph :: TimeDomainGraph() {}
 
 TimeDomainGraph :: ~TimeDomainGraph() {}
 
-void TimeDomainGraph :: draw_vector(const std::vector<SampleType>& v, 
-    ParameterIndexType d) {
+void TimeDomainGraph :: draw_vector(const std::vector<SampleT>& v, 
+    ParameterIndexT d) {
     // d is the output count in the vector
 
     // get frame size, or units per _output_count    
-    FrameSizeType frameSize = static_cast<FrameSizeType>(v.size());
+    FrameSizeT frameSize = static_cast<FrameSizeT>(v.size());
     // assume that frame size is even division of size
     if (d >= 1) {
-        frameSize = static_cast<FrameSizeType>(v.size() / d);
+        frameSize = static_cast<FrameSizeT>(v.size() / d);
     }
     else {
     	throw std::invalid_argument("_output_count must be greater than zero");    
@@ -69,7 +69,16 @@ void TimeDomainGraph :: draw_vector(const std::vector<SampleType>& v,
     // if we get a crazy large _output_count, or have a small vector
     if (frameSize < 1) {
     	throw std::invalid_argument("frame size is less than 1");
-    }                
+    }
+    
+    // set line style based on frame size
+    std::string line_style;
+    if (frameSize > 40) {
+        line_style = "impulse";
+    }
+    else {
+        line_style = "linespoints";
+    }
 
     // clear the string
     _stream.str("");
@@ -98,7 +107,7 @@ set rmargin screen 0.98 " << std::endl;
     double top;
     double bottom;
         
-    for (ParameterIndexType dStep=1; dStep < d + 1; ++dStep) {
+    for (ParameterIndexT dStep=1; dStep < d + 1; ++dStep) {
         // use whole margin at top on first
         if (dStep == 1) {
             top = pos - margin; 
@@ -120,11 +129,11 @@ set rmargin screen 0.98 " << std::endl;
         // impulse: good for audio
         // good for brakpoints: linespoints
         // TODO: if frameSize tn 20 points or so, use linespoints, else impulse
-        _stream << "plot '-' using ($1) with impulse linestyle "
+        _stream << "plot '-' using ($1) with " << line_style << " linestyle "
             << static_cast<int>(dStep) << std::endl;    
 
         // provide data here; assuming non-interleaved
-        for (FrameSizeType i=frameSize*(dStep-1); i<frameSize*dStep; ++i) {
+        for (FrameSizeT i=frameSize*(dStep-1); i<frameSize*dStep; ++i) {
             _stream << std::setprecision(8) << v[i] << std::endl;
         }
         _stream << "e" << std::endl; // show end of data
@@ -133,12 +142,12 @@ set rmargin screen 0.98 " << std::endl;
 }
 
 
-//void TimeDomainGraph :: draw(const std::vector<SampleType>& v) {
+//void TimeDomainGraph :: draw(const std::vector<SampleT>& v) {
 //    draw(v, 0);
 //}
 
 void TimeDomainGraph :: draw(GeneratorShared g) {    
-	VSampleType v;
+	VSampleT v;
 	g->write_outputs_to_vector(v); // load outputs into this vecotr
     draw_vector(v, g->get_output_count());
     
@@ -197,7 +206,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
     escape(label, "{}<>", "\\");
     _stream << "label = \"<doc>  " << label << " ";
 
-    ParameterIndexType pos(0);    
+    ParameterIndexT pos(0);    
     // iterate over slots
     for (pos=0; pos < g->get_slot_count(); ++pos) {
         _stream << " | <x" << static_cast<int>(pos) << 
@@ -237,7 +246,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
         _draw_generator(g_slot, memo);
     }    
 
-    ParameterIndexType g_ins_out_pos(0);
+    ParameterIndexT g_ins_out_pos(0);
     GeneratorShared g_in;
     Generator::VGenSharedOutPair::const_iterator j; 
     // show connections by describing inputs

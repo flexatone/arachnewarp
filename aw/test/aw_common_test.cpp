@@ -73,8 +73,8 @@ BOOST_AUTO_TEST_CASE(aw_common_test_inline_1) {
 }
 
 BOOST_AUTO_TEST_CASE(aw_test_true_min_max) {
-    aw::SampleType min(-1);
-    aw::SampleType max(-1);
+    aw::SampleT min(-1);
+    aw::SampleT max(-1);
     aw::true_min_max(100, 4, &min, &max);
 
     BOOST_CHECK_EQUAL(min, 4);
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(aw_test_true_min_max) {
 
 BOOST_AUTO_TEST_CASE(aw_test_mtof) {
 
-    aw::SampleType x;
+    aw::SampleT x;
     x = aw::mtof(69);
     BOOST_CHECK_CLOSE(x, 440.0, .0001);
 
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(aw_test_mtof) {
 }
 
 BOOST_AUTO_TEST_CASE(aw_test_phase_limiter_a) {
-    aw::SampleType a(3.0);
+    aw::SampleT a(3.0);
     
     aw::phase_limiter(a);
     BOOST_CHECK_CLOSE(a, 3.0, .0001);
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_a) {
 
-    aw::BufferInjector bi({3, 6, 2, 3, 5});
+    aw::Injector bi({3, 6, 2, 3, 5});
     BOOST_CHECK_EQUAL(bi.get_frame_size(), 5);
     BOOST_CHECK_EQUAL(bi.get_channels(), 1);
     
@@ -151,14 +151,14 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_a) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
-    std::vector<aw::SampleType> post;
+    std::vector<aw::SampleT> post;
 
-    aw::BufferInjector bi1({ {1, .5}, {10, .2}, {20, .5}});
+    aw::Injector bi1({ {1, .5}, {10, .2}, {20, .5}});
     BOOST_CHECK_EQUAL(bi1.get_frame_size(), 3);
     BOOST_CHECK_EQUAL(bi1.get_channels(), 2);
 
 
-    aw::BufferInjector bi2({ {1}, {10, .2}, {20, .5}});
+    aw::Injector bi2({ {1}, {10, .2}, {20, .5}});
     BOOST_CHECK_EQUAL(bi2.get_frame_size(), 3);
     BOOST_CHECK_EQUAL(bi2.get_channels(), 2);
     
@@ -177,9 +177,9 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 
-    aw::BufferInjectorShared bi = aw::BufferInjectorShared(
-            new aw::BufferInjector({3, 6, 2, 3, 5}));
-    std::vector<aw::SampleType> post;
+    aw::InjectorShared bi = aw::InjectorShared(
+            new aw::Injector({3, 6, 2, 3, 5}));
+    std::vector<aw::SampleT> post;
     bi->fill_interleaved(post);
     BOOST_CHECK_EQUAL(post[0], 3);
     BOOST_CHECK_EQUAL(post[1], 6);
@@ -231,9 +231,9 @@ BOOST_AUTO_TEST_CASE(aw_test_remove) {
 BOOST_AUTO_TEST_CASE(string_to_vector) {
     std::string a("1, 4.3, 1.2");
 
-    std::vector<aw::SampleType> post;
+    std::vector<aw::SampleT> post;
     
-    aw::string_to_vector<aw::SampleType>(a, post);
+    aw::string_to_vector<aw::SampleT>(a, post);
     
     BOOST_CHECK_EQUAL(post[0], 1);
     BOOST_CHECK_EQUAL(post[1], 4.3);
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(string_to_vector) {
     std::string b("1, (4.3, 1.2)");
 
     post.clear();
-    aw::string_to_vector<aw::SampleType>(b, post, ',', "()");
+    aw::string_to_vector<aw::SampleT>(b, post, ',', "()");
 
     BOOST_CHECK_EQUAL(post[0], 1);
     BOOST_CHECK_EQUAL(post[1], 4.3);
