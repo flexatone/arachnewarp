@@ -10,7 +10,7 @@ need to favor object composition rather than subclasse to optimzier performance
     have a manager class that lives inside classes manually configured with no v/table
 
 
-Generators can be passed in an input Generator and read its output vector for input
+Generators can be passed in an input Gen and read its output vector for input
     if the output is not ready yet, call _gen()
     if an input frame_dimension is larger than the output frame_imension
         needs to increase output_frame size

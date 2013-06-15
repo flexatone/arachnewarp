@@ -48,7 +48,7 @@ typedef std::uint32_t FrameSizeT;
 typedef std::uint32_t OutputsSizeT;
 
 
-//! An unsigned integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Generator.
+//! An unsigned integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Gen.
 typedef std::size_t ParameterIndexT; 
 
 
@@ -60,7 +60,7 @@ typedef std::vector<FrameSizeT> VFrameSizeType;
 //! A small unsigned interger for specialized cases. 
 typedef std::uint8_t UINT8; 
 
-//! An unsigned integer for each Generator that counts the number of frames that have passed; this number needs to be very large and overflow gracefully. 
+//! An unsigned integer for each Gen that counts the number of frames that have passed; this number needs to be very large and overflow gracefully. 
 typedef std::uint64_t RenderCountT; 
 
 
@@ -324,7 +324,7 @@ void string_to_vector(
 
 class Environment;
 //! The shared Environment is always const: it cannot be changed from the outside.
-typedef std::shared_ptr<const Environment> EnvironmentShared;
+typedef std::shared_ptr<const Environment> EnvironmentPtr;
 //! A representation of the user's enviroinment. The Environment provides file-system-related access (file paths, etc) as well as audio I/O and related hardware related configuration options. 
 class Environment {
 
@@ -350,10 +350,10 @@ class Environment {
     //~Environment();
 	
     //! Factory method that sets defaults.
-    static EnvironmentShared make();    
+    static EnvironmentPtr make();    
 
     //! Factory method that provides frame size defaults. Could by 'make from'. 
-    static EnvironmentShared make_with_frame_size(FrameSizeT fs=64);
+    static EnvironmentPtr make_with_frame_size(FrameSizeT fs=64);
     
     //! Return the sampling rate
 	OutputsSizeT get_sampling_rate() const {return _sampling_rate;};
@@ -379,9 +379,10 @@ class Environment {
 //	x = f<std::initializer_list<double>>({{2,3}, {4,6}});
     
 
+//! A class used to pass list and nested list values with initializer lists. 
 class Injector;
 
-typedef std::shared_ptr<Injector> InjectorShared;
+typedef std::shared_ptr<Injector> InjectorPtr;
 
 class Injector {
     private:
@@ -399,9 +400,9 @@ class Injector {
         //! A nested list.
         Injector(ILILSampleT);
     
-        static InjectorShared make(ILSampleT);
+        static InjectorPtr make(ILSampleT);
 
-        static InjectorShared make(ILILSampleT);
+        static InjectorPtr make(ILILSampleT);
     
         ParameterIndexT get_channels() const;
     
@@ -414,6 +415,16 @@ class Injector {
 };
 
 
+
+//! A simple struct to support returning simple error messages from functions that cannot raise exception
+struct Validity {
+
+    //! Bool to check validity.
+    bool ok;
+    
+    //! String reporting what happened
+    std::string msg;
+};
 
 
 

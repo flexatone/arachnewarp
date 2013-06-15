@@ -91,13 +91,13 @@ Environment :: Environment(FrameSizeT fs)
     _load_defaults(); // file paths, not frame size
 }
 
-EnvironmentShared Environment :: make() {
-    EnvironmentShared e = EnvironmentShared(new Environment);
+EnvironmentPtr Environment :: make() {
+    EnvironmentPtr e = EnvironmentPtr(new Environment);
     return e;
 }
 
-EnvironmentShared Environment :: make_with_frame_size(FrameSizeT fs) {
-    EnvironmentShared e = EnvironmentShared(new Environment(fs));
+EnvironmentPtr Environment :: make_with_frame_size(FrameSizeT fs) {
+    EnvironmentPtr e = EnvironmentPtr(new Environment(fs));
     return e;
 }
 
@@ -126,6 +126,9 @@ std::string Environment :: get_fp_temp(std::string name) const {
 
 
 //==============================================================================
+
+// TODO: Need two types of injectors: one for values, another for simple collections of generators; could alternatively simply have >> take VGen({})
+
 Injector :: Injector(ILSampleT src) {
     // this always have 1 dimension
     _channels = 1;
@@ -157,12 +160,12 @@ Injector :: Injector(ILILSampleT src) {
     }
 }
 
-InjectorShared Injector :: make(ILSampleT src) {
-    return InjectorShared(new Injector(src));
+InjectorPtr Injector :: make(ILSampleT src) {
+    return InjectorPtr(new Injector(src));
 }
 
-InjectorShared Injector :: make(ILILSampleT src) {
-    return InjectorShared(new Injector(src));
+InjectorPtr Injector :: make(ILILSampleT src) {
+    return InjectorPtr(new Injector(src));
 }
 
 

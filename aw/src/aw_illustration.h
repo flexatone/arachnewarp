@@ -24,7 +24,7 @@ class Illustration {
 
     public://-------------------------------------------------------------------
     //! Write the data to the stringstream. 
-    virtual void draw(const GeneratorShared g);
+    virtual void draw(const GenPtr g);
 
     //! Pipe the the plot to gnuplot directly.
     virtual void pipe();
@@ -54,7 +54,7 @@ class TimeDomainGraph : public Illustration{
     ParameterIndexT d=1);
 
     //! Write the plot of the generator.     
-    virtual void draw(const GeneratorShared g);
+    virtual void draw(const GenPtr g);
     
     //! Pipe the the plot to gnuplot directly.
     virtual void pipe();
@@ -64,7 +64,7 @@ class TimeDomainGraph : public Illustration{
 // A mapping form generator id to a color string. 
 class ColorDictionary {
     public://-------------------------------------------------------------------
-    static std::string get(Generator::GeneratorID gid);
+    static std::string get(Gen::GeneratorID gid);
 };
 
 
@@ -75,8 +75,8 @@ class NetworkGraph : public Illustration{
 
     private://------------------------------------------------------------------
     
-    //! Recursive functino for adding description of a Generator.
-    void _draw_generator(const GeneratorShared g, SharedMapStringBool memo);
+    //! Recursive functino for adding description of a Gen.
+    void _draw_generator(const GenPtr g, SharedMapStringBool memo);
 
     public://-------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ class NetworkGraph : public Illustration{
     virtual ~NetworkGraph();
     
     //! Draw the generator.
-    virtual void draw(const GeneratorShared g);
+    virtual void draw(const GenPtr g);
     
     //! Pipe the the plot to gnuplot directly.
     virtual void pipe();

@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(aw_common_test1) {
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	//std::cout << "running aw_common_test 2" << std::endl;
 	
-	aw::EnvironmentShared es = aw::EnvironmentShared(new aw::Environment);
+	aw::EnvironmentPtr es = aw::EnvironmentPtr(new aw::Environment);
 
 	std::string fp = es->get_fp_temp("test.txt");
 	std::string match("test.txt");
@@ -126,10 +126,10 @@ BOOST_AUTO_TEST_CASE(aw_test_phase_limiter_a) {
 
 BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
-    aw::EnvironmentShared e1 = aw::Environment::make();
+    aw::EnvironmentPtr e1 = aw::Environment::make();
     BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
 
-    aw::EnvironmentShared e2 = aw::Environment::make_with_frame_size(128);
+    aw::EnvironmentPtr e2 = aw::Environment::make_with_frame_size(128);
     BOOST_CHECK_EQUAL(e2->get_common_frame_size(), 128);
 
     
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 
-    aw::InjectorShared bi = aw::InjectorShared(
+    aw::InjectorPtr bi = aw::InjectorPtr(
             new aw::Injector({3, 6, 2, 3, 5}));
     std::vector<aw::SampleT> post;
     bi->fill_interleaved(post);

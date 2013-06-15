@@ -18,17 +18,17 @@ namespace aw {
 //=============================================================================
 // ParameterType
 
-ParameterTypeShared ParameterType :: make(ParameterTypeID q){
-    ParameterTypeShared p;
+ParameterTypePtr ParameterType :: make(ParameterTypeID q){
+    ParameterTypePtr p;
     // just get defailt environment
     if (q == ID_Value) {
-        p = ParameterTypeValueShared(new ParameterTypeValue);
+        p = ParameterTypeValuePtr(new ParameterTypeValue);
     }
     else if (q == ID_Frequency) {
-        p = ParameterTypeFrequencyShared(new ParameterTypeFrequency);    
+        p = ParameterTypeFrequencyPtr(new ParameterTypeFrequency);    
     }
     else if (q == ID_Duration) {
-        p = ParameterTypeDurationShared(new ParameterTypeDuration);    
+        p = ParameterTypeDurationPtr(new ParameterTypeDuration);    
     }    
     else if (q == ID_Phase) {
         p = ParameterTypePhaseShared(new ParameterTypePhase);    
@@ -112,32 +112,32 @@ ParameterTypeUpperBoundary :: ParameterTypeUpperBoundary() {
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-GeneratorShared  Generator :: make_with_environment(GeneratorID q, 
-            EnvironmentShared e) {                        
-    GeneratorShared g;    
+GenPtr  Gen :: make_with_environment(GeneratorID q, 
+            EnvironmentPtr e) {                        
+    GenPtr g;    
     if (q == ID_Constant) {
-        g = ConstantShared(new Constant(e));
+        g = ConstantPtr(new Constant(e));
     }
     else if (q == ID_Add) {
-        g = AddShared(new Add(e));    
+        g = AddPtr(new Add(e));    
     }
     else if (q == ID_Multiply) {
-        g = MultiplyShared(new Multiply(e));    
+        g = MultiplyPtr(new Multiply(e));    
     }    
     else if (q == ID_Buffer) {
-        g = BufferShared(new Buffer(e));    
+        g = BufferPtr(new Buffer(e));    
     }	
     else if (q == ID_Phasor) {
-        g = PhasorShared(new Phasor(e));    
+        g = PhasorPtr(new Phasor(e));    
     }
     else if (q == ID_Sine) {
-        g = SineShared(new Sine(e));    
+        g = SinePtr(new Sine(e));    
     }
     else if (q == ID_Map) {
-        g = MapShared(new Map(e));
+        g = MapPtr(new Map(e));
     }
     else if (q == ID_AttackDecay) {
-        g = AttackDecayShared(new AttackDecay(e));
+        g = AttackDecayPtr(new AttackDecay(e));
     }
     else {
         throw std::invalid_argument("no matching GeneratorID");
@@ -148,16 +148,16 @@ GeneratorShared  Generator :: make_with_environment(GeneratorID q,
 }
 
 
-GeneratorShared  Generator :: make(GeneratorID q){
+GenPtr  Gen :: make(GeneratorID q){
 	// just get default environment
-    EnvironmentShared e = EnvironmentShared(new Environment);
+    EnvironmentPtr e = EnvironmentPtr(new Environment);
     return make_with_environment(q, e);
 }
 
 //.............................................................................
-Generator :: Generator(EnvironmentShared e) 
-	// this is the only constructor for Generator; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
-	: _class_name("Generator"), 
+Gen :: Gen(EnvironmentPtr e) 
+	// this is the only constructor for Gen; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
+	: _class_name("Gen"), 
     //gid(-1), // want this to not match any known value
 	_output_count{0}, // always init to 1; can change in init
 	_outputs_size{0}, // will be updated after resizing
@@ -173,24 +173,24 @@ Generator :: Generator(EnvironmentShared e)
     _frame_size_is_resizable{false},
     _render_count{0} {
 	//outputs(NULL) {
-    //std::cout << "Generator (1 arg): Constructor" << std::endl;
+    //std::cout << "Gen (1 arg): Constructor" << std::endl;
 }
 
 
-void Generator :: init() {
+void Gen :: init() {
     // we only set sampling reate at init; thus, we can call init to reset SR
     // the frame size is eithe common or larger; thus, we generally only read as many as we have from a client object.
     _frame_size = _environment->get_common_frame_size();    
     _sampling_rate = _environment->get_sampling_rate();
 	_nyquist = _sampling_rate / 2; // let floor
     	
-    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
             aw::ParameterType::ID_Value);
-    pt1->set_instance_name("Generator default output");
+    pt1->set_instance_name("Gen default output");
     _register_output_parameter_type(pt1);
 }
 
-void Generator :: reset() {
+void Gen :: reset() {
     ParameterIndexT i;
     FrameSizeT j;
     SampleT n(0);
@@ -204,13 +204,13 @@ void Generator :: reset() {
 	// should reset reset inputs?
 }
 
-void Generator :: set_default() {
+void Gen :: set_default() {
     // empty base class; override in derived classes and called in init() routines
 }
 
 //.............................................................................
 // private methods
-void Generator :: _resize_outputs() {
+void Gen :: _resize_outputs() {
     // size is always dim * _frame_size
     // only do this once to avoid repeating
     _outputs_size = _output_count * _frame_size;
@@ -245,25 +245,33 @@ void Generator :: _resize_outputs() {
     
 }
 
-void Generator :: _register_output_parameter_type(ParameterTypeShared pts) {
+
+//.............................................................................
+// protected methods
+
+Validity Gen :: _validate_outputs() {
+    return Validity {true, "OK"};
+}
+
+void Gen :: _register_output_parameter_type(ParameterTypePtr pts) {
 	// called in derived init() to setup a output types; this does not preprae storage ; 
     _output_parameter_type[_output_count] = pts;
     _output_count += 1;
 	_resize_outputs(); // will use _output_count value
 }
 
-void Generator :: _clear_output_parameter_types() {
+void Gen :: _clear_output_parameter_types() {
     _output_count = 0;
     outputs.clear();
 }
 
-void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
+void Gen :: _register_input_parameter_type(ParameterTypePtr pts) {
 	// called in derived init() to setup a input types and prepare storage
     // storing in an unordered map
     _input_parameter_type[_input_count] = pts;
 
     // store a vector in the position to accept inputs
-    VGenSharedOutPair vInner;  
+    VGenPtrOutPair vInner;  
     _inputs.push_back(vInner); // extr copy made here
     	
 	VSampleT vSampleTypeInner;
@@ -276,24 +284,24 @@ void Generator :: _register_input_parameter_type(ParameterTypeShared pts) {
     _input_count += 1;
 }
 
-void Generator :: _clear_input_parameter_types() {
+void Gen :: _clear_input_parameter_types() {
     _input_count = 0;
     _inputs.clear();
     _summed_inputs.clear();
 }
 
-void Generator :: _register_slot_parameter_type(ParameterTypeShared pts) {
+void Gen :: _register_slot_parameter_type(ParameterTypePtr pts) {
 	// called in derived init()
 	// set dictionary directly
     _slot_parameter_type[_slot_count] = pts;		
-	_slots.push_back(GeneratorShared()); // store empty to hold position
+	_slots.push_back(GenPtr()); // store empty to hold position
     _slot_count += 1;
 }
 
-void Generator :: _update_for_new_slot() {
+void Gen :: _update_for_new_slot() {
 }
 
-void Generator :: _render_inputs(RenderCountT f) {
+void Gen :: _render_inputs(RenderCountT f) {
     // for each of the inputs, need to render up to this frame
     // this is "pulling" lower-level values up to date
     // passing render count seems somewhat wasteful as in most cases we just will be advancing by 1 more than the previous frame count value
@@ -310,9 +318,9 @@ void Generator :: _render_inputs(RenderCountT f) {
     }
 }
 
-void Generator :: _reset_inputs() {
+void Gen :: _reset_inputs() {
     // NOTE: this is not called on reset(), and thus this is not yet recurssive
-    VGenSharedOutPair :: const_iterator j; // vector of generators    
+    VGenPtrOutPair :: const_iterator j; // vector of generators    
     for (ParameterIndexT i = 0; i<_input_count; ++i) {
         // inputs are a vector of Generators
         for (j=_inputs[i].begin(); j!=_inputs[i].end(); ++j) {
@@ -322,7 +330,7 @@ void Generator :: _reset_inputs() {
     }
 }
 
-void Generator :: _sum_inputs(FrameSizeT fs) {
+void Gen :: _sum_inputs(FrameSizeT fs) {
     // this is inlined in render() calls
     // note that this is nearly identical to Add :: render(); here we store the results in _summed_inputs, not in outputs; we also do not render inputs
     // when reading inputs, we must assume they are the common frame size, not necessarily our frame size (like when we are a buffer)
@@ -354,13 +362,13 @@ void Generator :: _sum_inputs(FrameSizeT fs) {
 //..............................................................................
 // public methods
 
-void Generator :: render(RenderCountT f) {
+void Gen :: render(RenderCountT f) {
     // this is a dummy render method just for demonstartion; at the end of a render cycle _render_count must be the same as `f`
     _render_count = f;
 }
 
 //..............................................................................
-SampleT Generator :: get_outputs_average() const {
+SampleT Gen :: get_outputs_average() const {
     SampleT sum(0);
     for (ParameterIndexT i=0; i<_output_count; ++i) {
         for (FrameSizeT j=0; j < _frame_size; ++j) {
@@ -370,7 +378,7 @@ SampleT Generator :: get_outputs_average() const {
     return sum / _outputs_size;
 }
 
-SampleT Generator :: get_output_average(ParameterIndexT d) const {
+SampleT Gen :: get_output_average(ParameterIndexT d) const {
     // this does single output and whole outputs averaging.
     // if d is zero, get all frames/channels, otherwise, just get rquested dimension (i.e., 2d gets vector pos 1
 	if (d > _output_count) {
@@ -409,7 +417,7 @@ SampleT Generator :: get_output_average(ParameterIndexT d) const {
     return sum / count; // cast count to 
 }
 
-void Generator :: _set_frame_size(FrameSizeT f) {
+void Gen :: _set_frame_size(FrameSizeT f) {
     // protected
     // only change if different; assume already created
 	if (!_frame_size_is_resizable) {
@@ -426,8 +434,8 @@ void Generator :: _set_frame_size(FrameSizeT f) {
 }
 
 
-//void Generator :: _set_output_count(ParameterIndexT d) {
-	//// this public method is not used during Generator::__init__
+//void Gen :: _set_output_count(ParameterIndexT d) {
+	//// this public method is not used during Gen::__init__
     //// only change if different; assume already created
 	//if (d == 0) {
 		//throw std::invalid_argument("a dimension of 0 is not supported");
@@ -441,21 +449,21 @@ void Generator :: _set_frame_size(FrameSizeT f) {
 //..............................................................................
 // display methods
 
-std::string Generator :: get_name_address() const {
+std::string Gen :: get_name_address() const {
     std::stringstream s;
     // get address of self, dereferenced, without delimiters
     s << _class_name << &(*this); 
     return s.str();
 } 
 
-std::string Generator :: get_label_address() const {
+std::string Gen :: get_label_address() const {
     std::stringstream s;
     // get address of self, dereferenced
     s << "Gen::" << _class_name << "{" << &(*this) << "}"; 
     return s.str();
 } 
 
-std::string Generator :: get_label() const {
+std::string Gen :: get_label() const {
     std::stringstream s;
     s << "<" << get_label_address() << 
         " x{" << static_cast<int>(_slot_count) << "}" <<     
@@ -465,17 +473,17 @@ std::string Generator :: get_label() const {
     return s.str();
 } 
 
-std::ostream& operator<<(std::ostream& ostream, const Generator& g) {
+std::ostream& operator<<(std::ostream& ostream, const Gen& g) {
     ostream << g.get_label();
     return ostream; 
 }
 
-std::ostream& operator<<(std::ostream& ostream, const GeneratorShared g) {
+std::ostream& operator<<(std::ostream& ostream, const GenPtr g) {
     ostream << g->get_label(); // get from shared pointer
     return ostream; 
 }
 
-void Generator :: print_outputs(FrameSizeT start, FrameSizeT end) {
+void Gen :: print_outputs(FrameSizeT start, FrameSizeT end) {
     // provide name of generator first by dereferencing this
     std::string space1 = std::string(INDENT_SIZE*2, ' ');
     if (end == 0 || end < start) {
@@ -496,7 +504,7 @@ void Generator :: print_outputs(FrameSizeT start, FrameSizeT end) {
     std::cout << std::endl;
 }
 
-void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
+void Gen :: print_inputs(bool recursive, UINT8 recurse_level) {
     //std::cout << "recurse_level: " << (int)recurse_level << std::endl;
     std::string space1 = std::string(recurse_level*INDENT_SIZE, ' ');
     std::string space2 = std::string((recurse_level+1)*INDENT_SIZE, ' '); 
@@ -504,16 +512,16 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
 
     std::cout << space1 << *this << " Inputs:" << std::endl;
 
-    VGenSharedOutPair :: const_iterator j;
+    VGenPtrOutPair :: const_iterator j;
     // need an interger as key for _input_parameter_type
     for (ParameterIndexT k=0; k!=_inputs.size(); ++k) {   
-        ParameterTypeShared pts = _input_parameter_type[k];
+        ParameterTypePtr pts = _input_parameter_type[k];
         // need to iterate over each sub vector
         std::cout << space2 << *pts << std::endl;
         for (j=_inputs[k].begin(); j!=_inputs[k].end(); ++j) {
             // deref
-            GeneratorShared g = (*j).first;
-            if (g == NULL) { // an empty GeneratorShared
+            GenPtr g = (*j).first;
+            if (g == NULL) { // an empty GenPtr
                 std::cout << space3 << "<Empty>" << std::endl;                
             }
             else {
@@ -529,14 +537,14 @@ void Generator :: print_inputs(bool recursive, UINT8 recurse_level) {
 }
 
 // illustrate outputs
-void Generator :: illustrate_outputs() {
+void Gen :: illustrate_outputs() {
 	TimeDomainGraph p;
     // pass a version this instancea as a Shared Pointer
 	p.draw(shared_from_this());
 	p.pipe(); // pipe to gnu plot
 }
 
-void Generator :: illustrate_network() {
+void Gen :: illustrate_network() {
 	NetworkGraph p;
     // pass a version this instancea as a Shared Pointer
 	p.draw(shared_from_this());
@@ -547,7 +555,7 @@ void Generator :: illustrate_network() {
 //..............................................................................
 // loading and writing outputs
 
-void Generator :: write_outputs_to_vector(VSampleT& vst) const {
+void Gen :: write_outputs_to_vector(VSampleT& vst) const {
     // writing out to a flat vector
     
     vst.clear(); // may not be necessary, but insures consistancy
@@ -564,12 +572,12 @@ void Generator :: write_outputs_to_vector(VSampleT& vst) const {
     }
 }
 
-void Generator :: write_output_to_fp(const std::string& fp, 
+void Gen :: write_output_to_fp(const std::string& fp, 
                                     ParameterIndexT d) const {
     throw std::domain_error("not implemented on base class");
 }
 
-void Generator :: set_outputs_from_array(SampleT* v, OutputsSizeT s, 
+Validity Gen :: set_outputs_from_array(SampleT* v, OutputsSizeT s,
 								ParameterIndexT ch, bool interleaved){
     // low level method of a raw, interleaved array as input; need size;
     // we need this b/c libsndfile uses raw arrays
@@ -619,32 +627,39 @@ void Generator :: set_outputs_from_array(SampleT* v, OutputsSizeT s,
 		}
 		k += 1; // increment only once for each bundle of channel infor written
 	}
+    
+    // validate the outputs; this is no op on base class, but derived for things like Breakpoint
+    return _validate_outputs();
 }
 
-void Generator :: set_outputs_from_vector(VSampleT& vst, 
+void Gen :: set_outputs_from_vector(VSampleT& vst, 
 								ParameterIndexT ch, bool interleaved) {
 	// this is set outputs as we will try to set all channels available
     // size is a long; cast ot std::uint32_t
 	OutputsSizeT s = static_cast<OutputsSizeT>(vst.size());
     // pointer to first element simulating an array
     SampleT* v = &vst[0]; // get a pointer to this vector
-    // this will resize and reset if possible in dervied Generator
-	set_outputs_from_array(v, s, ch, interleaved);
+    // this will resize and reset if possible in dervied Gen
+	Validity ok = set_outputs_from_array(v, s, ch, interleaved);
+    if (!ok.ok) {
+        throw std::invalid_argument(ok.msg);
+    }
+    
 }
 
-void Generator :: set_outputs_from_fp(const std::string& fp) {
+void Gen :: set_outputs_from_fp(const std::string& fp) {
     // vitual method overridden in Buffer (so as to localize use of libsndfile
     throw std::domain_error("not implemented on base class");
 
 }
 
 
-void Generator :: set_outputs(const InjectorShared bi) {
+void Gen :: set_outputs(const InjectorPtr bi) {
     // vitual method overridden in Buffer
     throw std::domain_error("not implemented on base class");
 }
 
-void Generator :: set_outputs(const std::string& fp) {
+void Gen :: set_outputs(const std::string& fp) {
     // vitual method overridden in Buffer
     throw std::domain_error("not implemented on base class");
 
@@ -654,34 +669,34 @@ void Generator :: set_outputs(const std::string& fp) {
 //..............................................................................
 // parameter translating
 
-ParameterIndexT Generator :: get_input_index_from_parameter_name(
+ParameterIndexT Gen :: get_input_index_from_parameter_name(
     const std::string& s) {
     // match the string to the name returned by get_instance_name; 
-    Generator :: MapIndexToParameterTypeShared ::const_iterator k;
+    Gen :: MapIndexToParameterTypePtr ::const_iterator k;
     for (k=_input_parameter_type.begin(); 
         k != _input_parameter_type.end(); 
         ++k) {
-        // each value (second( is a ParameterTypeShared)
+        // each value (second( is a ParameterTypePtr)
         if (s == k->second->get_instance_name()) return k->first;
     }
 	// raise an exception, or return error code?
 	throw std::invalid_argument("no matching parameter name: " + s);
 }
 
-ParameterIndexT Generator :: get_input_index_from_class_id(const
+ParameterIndexT Gen :: get_input_index_from_class_id(const
         ParameterType::ParameterTypeID ptid) {
     // match the string to the name returned by get_instance_name; 
-    Generator :: MapIndexToParameterTypeShared ::const_iterator k;
+    Gen :: MapIndexToParameterTypePtr ::const_iterator k;
     for (k = _input_parameter_type.begin();
         k != _input_parameter_type.end(); 
         ++k) {
-        // each value (second( is a ParameterTypeShared)
+        // each value (second( is a ParameterTypePtr)
         if (ptid == k->second->get_class_id()) return k->first;
     }
 	throw std::invalid_argument("no matching parameter type");
 }
 
-ParameterIndexT Generator :: get_slot_index_from_parameter_name(    
+ParameterIndexT Gen :: get_slot_index_from_parameter_name(    
     const std::string& s) {
     // not yet implemented
 	throw std::invalid_argument("no matching parameter name: " + s);
@@ -690,19 +705,19 @@ ParameterIndexT Generator :: get_slot_index_from_parameter_name(
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
 
-Generator::VGenSharedOutPair Generator :: get_input_gen_shared_by_index(
+Gen::VGenPtrOutPair Gen :: get_input_gen_shared_by_index(
                         ParameterIndexT i) {
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");		
     }
     // NOTE: this is copying all contents, but probably not a problem b/c just shared pointers
-    Generator::VGenSharedOutPair post(_inputs[i]);
+    Gen::VGenPtrOutPair post(_inputs[i]);
     return post;
 }
 
-void Generator :: set_input_by_index(
+void Gen :: set_input_by_index(
         ParameterIndexT i,
-        GeneratorShared gs,
+        GenPtr gs,
         ParameterIndexT pos){
     // if zero, none are set; current value is next available slot for registering
     if (_input_count <= 0 or i >= _input_count) {
@@ -713,32 +728,32 @@ void Generator :: set_input_by_index(
     }    
     // this removes all stored values
     _inputs[i].clear();    
-    GenSharedOutPair gsop(gs, pos);  
+    GenPtrOutPair gsop(gs, pos);  
     _inputs[i].push_back(gsop);    
 }
 
-void Generator :: set_input_by_index(
+void Gen :: set_input_by_index(
         ParameterIndexT i,
         SampleT v,
         ParameterIndexT pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
-    aw::GeneratorShared c = aw::Generator::make_with_environment(ID_Constant, 
+    aw::GenPtr c = aw::Gen::make_with_environment(ID_Constant, 
             _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c, pos); // call overloaded
 }
 
 
-void Generator :: set_input_by_class_id(
+void Gen :: set_input_by_class_id(
         ParameterType::ParameterTypeID ptid,
-        GeneratorShared gs,
+        GenPtr gs,
         ParameterIndexT pos){
     ParameterIndexT i = get_input_index_from_class_id(ptid);
     set_input_by_index(i, gs, pos); // call overloaded
 }
 
-void Generator :: set_input_by_class_id(
+void Gen :: set_input_by_class_id(
         ParameterType::ParameterTypeID ptid,
         SampleT v,
         ParameterIndexT pos){
@@ -747,8 +762,8 @@ void Generator :: set_input_by_class_id(
 }
 
 
-void Generator :: add_input_by_index(ParameterIndexT i, 
-        GeneratorShared gs, ParameterIndexT pos){
+void Gen :: add_input_by_index(ParameterIndexT i, 
+        GenPtr gs, ParameterIndexT pos){
     // pos is the output of the generator to connect into the specified input
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");
@@ -757,17 +772,17 @@ void Generator :: add_input_by_index(ParameterIndexT i,
         throw std::invalid_argument("position exceeds output count on passed input");    
     }
     // adding additiona, with a generator
-    GenSharedOutPair gsop(gs, pos);     
+    GenPtrOutPair gsop(gs, pos);     
     _inputs[i].push_back(gsop);    
 }
 
-void Generator :: add_input_by_index(ParameterIndexT i, SampleT v, 
+void Gen :: add_input_by_index(ParameterIndexT i, SampleT v, 
         ParameterIndexT pos){
     // adding additional as a constant value
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
-	// pass the EnvironmentShared to inner Generator 
-    aw::GeneratorShared c = aw::Generator::make_with_environment(ID_Constant, 
+	// pass the EnvironmentPtr to inner Gen 
+    aw::GenPtr c = aw::Gen::make_with_environment(ID_Constant, 
             _environment);    
     c->set_input_by_index(0, v); // this will call Constant::reset()
     add_input_by_index(i, c, pos); // other overloaded
@@ -776,7 +791,7 @@ void Generator :: add_input_by_index(ParameterIndexT i, SampleT v,
 
 //..............................................................................
 // public slot control 
-void Generator :: set_slot_by_index(ParameterIndexT i, GeneratorShared gs, 
+void Gen :: set_slot_by_index(ParameterIndexT i, GenPtr gs, 
 									bool update){
     // if zero, none are set; current value is next available slot for registering]
 	// updat defaults to true in header	
@@ -790,12 +805,12 @@ void Generator :: set_slot_by_index(ParameterIndexT i, GeneratorShared gs,
 	}
 }
 
-void Generator :: set_slot_by_index(ParameterIndexT i, SampleT v, 
+void Gen :: set_slot_by_index(ParameterIndexT i, SampleT v, 
 									bool update){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
 	// updat defaults to true in header
-    aw::GeneratorShared c = aw::Generator::make_with_environment(ID_Constant, 
+    aw::GenPtr c = aw::Gen::make_with_environment(ID_Constant, 
             _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_slot_by_index(i, c, update); // call overloaded
@@ -803,7 +818,7 @@ void Generator :: set_slot_by_index(ParameterIndexT i, SampleT v,
 }
 
 
-GeneratorShared Generator :: get_slot_gen_shared_at_index(
+GenPtr Gen :: get_slot_gen_shared_at_index(
 										  ParameterIndexT i) {
     if (_slot_count <= 0 or i >= _slot_count) {
         throw std::invalid_argument("Parameter index is not available.");		
@@ -820,9 +835,9 @@ GeneratorShared Generator :: get_slot_gen_shared_at_index(
 
 
 //------------------------------------------------------------------------------
-Constant :: Constant(EnvironmentShared e) 
+Constant :: Constant(EnvironmentPtr e) 
 	// must initialize base class with passed arg
-	: Generator(e) {
+	: Gen(e) {
 	_class_name = "Constant"; 
     _class_id = ID_Constant;
 }
@@ -831,13 +846,13 @@ void Constant :: init() {
     //std::cout << *this << " Constant::init()" << std::endl;
     // resize and reset after setting parameters
     // this will call the virtual reset 
-    Generator::init();
+    Gen::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-//    aw::ParameterTypeValueShared pt1 = aw::ParameterTypeValueShared(new 
+//    aw::ParameterTypeValuePtr pt1 = aw::ParameterTypeValuePtr(new 
 //                                       aw::ParameterTypeValue);
-    aw::ParameterTypeShared pt1 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt1 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt1->set_instance_name("Constant numerical value");
     _register_output_parameter_type(pt1);	
@@ -879,12 +894,12 @@ void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
     std::string space2 = std::string((recurse_level+1)*INDENT_SIZE, ' '); 
     std::string space3 = std::string((recurse_level+2)*INDENT_SIZE, ' ');     
     // this cannot recurse so nothing to do with parameters; just so that
-    // they are the same as Generator
+    // they are the same as Gen
     std::cout << space1 << *this << " Inputs:" << std::endl;
     // iterative over inputs
     for (ParameterIndexT k=0; k!=_inputs.size(); ++k) {   
         // is this doing a copy?
-        ParameterTypeShared pts = _input_parameter_type[k];
+        ParameterTypePtr pts = _input_parameter_type[k];
         std::cout << space2 << *pts << std::endl;
         // need to iterate over stored _values
         VSampleT :: const_iterator j;
@@ -900,15 +915,15 @@ void Constant :: render(RenderCountT f) {
 }
 
 
-Generator::VGenSharedOutPair Constant :: get_input_gen_shared_by_index(
+Gen::VGenPtrOutPair Constant :: get_input_gen_shared_by_index(
 										  ParameterIndexT i) {
 	// overridden virtual method
     // return an empty vector for clients to iterate over
-    Generator::VGenSharedOutPair post;
+    Gen::VGenPtrOutPair post;
     return post;
 }
 
-void Constant :: set_input_by_index(ParameterIndexT i, GeneratorShared gs, ParameterIndexT pos) {
+void Constant :: set_input_by_index(ParameterIndexT i, GenPtr gs, ParameterIndexT pos) {
     throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
 }
 
@@ -923,7 +938,7 @@ void Constant :: set_input_by_index(ParameterIndexT i, SampleT v, ParameterIndex
 }
 
 void Constant :: add_input_by_index(ParameterIndexT i, 
-                                    GeneratorShared gs, ParameterIndexT pos) {
+                                    GenPtr gs, ParameterIndexT pos) {
     throw std::invalid_argument("invalid to add a GeneratoreShared as a value to a Constatn");
 }
 
@@ -941,9 +956,9 @@ void Constant :: add_input_by_index(ParameterIndexT i, SampleT v, ParameterIndex
 
 
 //------------------------------------------------------------------------------
-_BinaryCombined :: _BinaryCombined(EnvironmentShared e) 
+_BinaryCombined :: _BinaryCombined(EnvironmentPtr e) 
 	// must initialize base class with passed arg
-	: Generator(e), 
+	: Gen(e), 
 	_n_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;
     // the following need to be set in derived classes
@@ -955,11 +970,11 @@ _BinaryCombined :: _BinaryCombined(EnvironmentShared e)
 
 void _BinaryCombined :: init() {
     // the int routine must configure the names and types of parameters
-    Generator::init();
+    Gen::init();
     // must clear the default set by Gen init because slot will set directly    
     _clear_output_parameter_types();
     
-    aw::ParameterTypeShared so1 = aw::ParameterType::make(
+    aw::ParameterTypePtr so1 = aw::ParameterType::make(
             aw::ParameterType::ID_Channels);
                                            
     so1->set_instance_name("Channels");
@@ -979,10 +994,10 @@ void _BinaryCombined :: _update_for_new_slot() {
     _clear_input_parameter_types();
 	
     std::stringstream s;
-    aw::ParameterTypeShared pt;    
+    aw::ParameterTypePtr pt;    
     // set inputs; this will clear any existing connections
     for (ParameterIndexT i=0; i<outs; ++i) {
-        //pt = aw::ParameterTypeValueShared(new aw::ParameterTypeValue);
+        //pt = aw::ParameterTypeValuePtr(new aw::ParameterTypeValue);
         pt = aw::ParameterType::make(aw::ParameterType::ID_Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Opperands " << i+1;
@@ -1037,7 +1052,7 @@ void _BinaryCombined :: render(RenderCountT f) {
 
 
 //------------------------------------------------------------------------------
-Add :: Add(EnvironmentShared e)
+Add :: Add(EnvironmentPtr e)
 	// must initialize base class with passed arg
 	: _BinaryCombined(e) {
 	_class_name = "Add";  // override what is set in Add
@@ -1047,11 +1062,11 @@ Add :: Add(EnvironmentShared e)
 }
 
 void Add :: init() {
-    _BinaryCombined::init(); // must call base init; calls Generator::init()
+    _BinaryCombined::init(); // must call base init; calls Gen::init()
 }
 
 //------------------------------------------------------------------------------
-Multiply :: Multiply(EnvironmentShared e) 
+Multiply :: Multiply(EnvironmentPtr e) 
 	// must initialize base class with passed arg
 	: _BinaryCombined(e) {
 	_class_name = "Multiply";  // override what is set in Add
@@ -1061,7 +1076,7 @@ Multiply :: Multiply(EnvironmentShared e)
 }
 
 void Multiply :: init() {
-    _BinaryCombined::init(); // must call base init; calls Generator::init()
+    _BinaryCombined::init(); // must call base init; calls Gen::init()
 }
 
 
@@ -1073,9 +1088,9 @@ void Multiply :: init() {
 
 
 //------------------------------------------------------------------------------
-Buffer :: Buffer(EnvironmentShared e) 
+Buffer :: Buffer(EnvironmentPtr e) 
 	// must initialize base class with passed arg
-	: Generator(e) {
+	: Gen(e) {
 	_class_name = "Buffer";
     _class_id = ID_Buffer;        
 	// this is the unique difference of the Buffer class 
@@ -1087,18 +1102,18 @@ void Buffer :: init() {
     // the int routie must configure the names and types of parameters
     // std::cout << *this << " Buffer::init()" << std::endl;
     // call base init, allocates and resets()
-    Generator::init();    
+    Gen::init();    
     _clear_output_parameter_types(); // must clear the default set by Gen init
 
     // register some slots: 
     // register slots
-    aw::ParameterTypeShared so1 = aw::ParameterType::make( 
+    aw::ParameterTypePtr so1 = aw::ParameterType::make( 
             aw::ParameterType::ID_Channels);                                           
     so1->set_instance_name("Channels");
 	_register_slot_parameter_type(so1);
     set_slot_by_index(0, 1, false); // false so as to not update until dur is set
 	    
-    aw::ParameterTypeShared so2 = aw::ParameterType::make( 
+    aw::ParameterTypePtr so2 = aw::ParameterType::make( 
             aw::ParameterType::ID_Duration);
     so2->set_instance_name("Duration in seconds");
 	_register_slot_parameter_type(so2);
@@ -1118,18 +1133,18 @@ void Buffer :: _update_for_new_slot() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     std::stringstream s;
-    aw::ParameterTypeValueShared pt_i;
-    aw::ParameterTypeValueShared pt_o;    	
+    aw::ParameterTypeValuePtr pt_i;
+    aw::ParameterTypeValuePtr pt_o;    	
     // set inputs; this will clear any existing connections
     for (ParameterIndexT i=0; i<outs; ++i) {        
-        aw::ParameterTypeShared pt_i = aw::ParameterType::make( 
+        aw::ParameterTypePtr pt_i = aw::ParameterType::make( 
                 aw::ParameterType::ID_Value);        
         s.str(""); // clears contents; not the same as .clear()
         s << "Input " << i+1;
         pt_i->set_instance_name(s.str());
         _register_input_parameter_type(pt_i);        
 		
-        aw::ParameterTypeShared pt_o = aw::ParameterType::make( 
+        aw::ParameterTypePtr pt_o = aw::ParameterType::make( 
                 aw::ParameterType::ID_Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Output " << i+1;
@@ -1245,18 +1260,23 @@ void Buffer :: set_outputs_from_fp(const std::string& fp) {
     // libsndfile nomenclature is different than used here: For a sound file with only one channel, a frame is the same as a item (ie a single sample) while for multi channel sound files, a single frame contains a single item for each channel.
 	SndfileHandle sh(fp);
     // read into temporary array; this means that we use 2x the memory that we really need, but it means that we can un-interleave the audio file when passing in the array; ideally we would pass in our outputs directly
-    OutputsSizeT s =  static_cast<OutputsSizeT>(sh.frames() * sh.channels());
+    OutputsSizeT s = static_cast<OutputsSizeT>(sh.frames() * sh.channels());
     // we need to use a double, as that seems to be what we get out of sndfile
     double* v = new double[s]; // why not use SampleT instaed of double
     sh.readf(v, sh.frames());
     // this call will resize frame if necessary
-    set_outputs_from_array(v, s, sh.channels());
+    Validity ok = set_outputs_from_array(v, s, sh.channels());
+    // delte temporary array first
     delete[] v;
+    // raise exception after cleanup.
+    if (!ok.ok) {    
+        throw std::invalid_argument(ok.msg);
+    }
 }
 
 
 
-void Buffer :: set_outputs(const InjectorShared bi) {
+void Buffer :: set_outputs(const InjectorPtr bi) {
     // vitual method overridden in Buffer
     //std::cout << "Buffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;    
     VSampleT vst;
@@ -1276,9 +1296,31 @@ void Buffer :: set_outputs(const std::string& fp) {
 
 
 //------------------------------------------------------------------------------
-Phasor :: Phasor(EnvironmentShared e) 
+Breakpoints :: Breakpoints(EnvironmentPtr e) 
 	// must initialize base class with passed arg
-	: Generator(e),
+	: Buffer(e) {
+	_class_name = "Breakpoints";  // override what is set in Add
+    _class_id = ID_Breakpoints;            
+}
+
+void Breakpoints :: init() {
+    Buffer::init(); // must call base init; calls Gen::init()
+}
+
+
+Validity Breakpoints :: _validate_outputs() {
+    return Validity {true, "OK"};
+}
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+Phasor :: Phasor(EnvironmentPtr e) 
+	// must initialize base class with passed arg
+	: Gen(e),
 		_amp(0),
 		_amp_prev(1) // init amp previous to 1 so to force reset to 0 on start
 		//_period_start_sample_pos(0)
@@ -1291,29 +1333,29 @@ Phasor :: Phasor(EnvironmentShared e)
 void Phasor :: init() {
     // the int routie must configure the names and types of parameters
     // std::cout << *this << " Phasor::init()" << std::endl;
-    Generator::init();
+    Gen::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
             aw::ParameterType::ID_Frequency);                                       
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    aw::ParameterTypeShared pt2 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt2 = aw::ParameterType::make( 
             aw::ParameterType::ID_Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;	
 	
 	// register outputs
-    aw::ParameterTypeShared pt3 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt3 = aw::ParameterType::make( 
             aw::ParameterType::ID_Value);
     pt3->set_instance_name("Output");
     _register_output_parameter_type(pt3);	
 
-    aw::ParameterTypeShared pt4 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt4 = aw::ParameterType::make( 
             aw::ParameterType::ID_Trigger);
     pt4->set_instance_name("Trigger");
     _register_output_parameter_type(pt4);	
@@ -1323,7 +1365,7 @@ void Phasor :: init() {
 
 
 void Phasor :: reset() {
-    Generator::reset();
+    Gen::reset();
     _amp = 0;
     _amp_prev = 1;
 }
@@ -1377,9 +1419,9 @@ void Phasor :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-Sine :: Sine(EnvironmentShared e) 
+Sine :: Sine(EnvironmentPtr e) 
 	// must initialize base class with passed arg
-	: Generator(e)
+	: Gen(e)
 	{
 	_class_name = "Sine"; 
     _class_id = ID_Sine;
@@ -1390,24 +1432,24 @@ Sine :: ~Sine() {
 
 void Sine :: init() {
     // the init must configure the names and types of parameters
-    Generator::init();
+    Gen::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
             aw::ParameterType::ID_Frequency);                                       
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    aw::ParameterTypeShared pt2 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt2 = aw::ParameterType::make( 
             aw::ParameterType::ID_Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;
     
 	// register output
-    aw::ParameterTypeShared pt_o1 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_o1 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
@@ -1423,7 +1465,7 @@ void Sine :: set_default() {
 
 
 void Sine :: reset() {
-    Generator::reset();
+    Gen::reset();
     // will get set on first render call
     _cur_phase = 0;
     _cur_fq = 0;
@@ -1490,9 +1532,9 @@ void Sine :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-Map :: Map(EnvironmentShared e)
+Map :: Map(EnvironmentPtr e)
 	// must initialize base class with passed arg
-	: Generator(e)
+	: Gen(e)
 	{
 	_class_name = "Map";
     _class_id = ID_Map;
@@ -1502,37 +1544,37 @@ Map :: Map(EnvironmentShared e)
 void Map :: init() {
     // the int route must configure the names and types of parameters
     // std::cout << *this << " Phasor::init()" << std::endl;
-    Generator::init();
+    Gen::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypeShared pt1 = aw::ParameterType::make( 
+    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
             aw::ParameterType::ID_Value);
     pt1->set_instance_name("Source");
     _register_input_parameter_type(pt1);
 	_input_index_src = 0;
 
 
-    aw::ParameterTypeShared pt4 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt4 = aw::ParameterType::make(
             aw::ParameterType::ID_LowerBoundary);
     pt4->set_instance_name("Source Lower");
     _register_input_parameter_type(pt4);
 	_input_index_src_lower = 1;
 
-    aw::ParameterTypeShared pt5 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt5 = aw::ParameterType::make(
             aw::ParameterType::ID_UpperBoundary);
     pt5->set_instance_name("Source Upper");
     _register_input_parameter_type(pt5);
 	_input_index_src_upper = 2;
 	
 
-    aw::ParameterTypeShared pt2 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt2 = aw::ParameterType::make(
             aw::ParameterType::ID_LowerBoundary);
     pt2->set_instance_name("Destination Lower");
     _register_input_parameter_type(pt2);	
 	_input_index_dst_lower = 3;
 
-    aw::ParameterTypeShared pt3 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt3 = aw::ParameterType::make(
             aw::ParameterType::ID_UpperBoundary);
     pt3->set_instance_name("Destination Upper");
     _register_input_parameter_type(pt3);
@@ -1540,7 +1582,7 @@ void Map :: init() {
 
 
 	// register output
-    aw::ParameterTypeShared pt_out = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_out = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_out->set_instance_name("Output");
     _register_output_parameter_type(pt_out);
@@ -1558,7 +1600,7 @@ void Map :: set_default() {
 }
 
 void Map :: reset() {
-    Generator::reset();
+    Gen::reset();
 }
 
 void Map :: render(RenderCountT f) {
@@ -1608,9 +1650,9 @@ void Map :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-AttackDecay :: AttackDecay(EnvironmentShared e)
+AttackDecay :: AttackDecay(EnvironmentPtr e)
 	// must initialize base class with passed arg
-	: Generator(e)
+	: Gen(e)
 	{
 	_class_name = "AttackDecay";
     _class_id = ID_AttackDecay;
@@ -1619,35 +1661,35 @@ AttackDecay :: AttackDecay(EnvironmentShared e)
 void AttackDecay :: init() {
     // the int route must configure the names and types of parameters
     // std::cout << *this << " Phasor::init()" << std::endl;
-    Generator::init();
+    Gen::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypeShared pt_i1 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_i1 = aw::ParameterType::make(
             aw::ParameterType::ID_Trigger);
     pt_i1->set_instance_name("Trigger");
     _register_input_parameter_type(pt_i1);
 	_input_index_trigger = 0;
 
-    aw::ParameterTypeShared pt_i2 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_i2 = aw::ParameterType::make(
             aw::ParameterType::ID_Duration);
     pt_i2->set_instance_name("Attack time");
     _register_input_parameter_type(pt_i2);
 	_input_index_attack = 1;
 
-    aw::ParameterTypeShared pt_i3 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_i3 = aw::ParameterType::make(
             aw::ParameterType::ID_Duration);
     pt_i3->set_instance_name("Decay time");
     _register_input_parameter_type(pt_i3);
 	_input_index_decay = 2;
 
-    aw::ParameterTypeShared pt_i4 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_i4 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_i4->set_instance_name("Exponent");
     _register_input_parameter_type(pt_i4);
 	_input_index_exponent = 3;
 
-    aw::ParameterTypeShared pt_i5 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_i5 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_i5->set_instance_name("Cycle");
     _register_input_parameter_type(pt_i5);
@@ -1655,19 +1697,19 @@ void AttackDecay :: init() {
 	
 
 	// register output
-    aw::ParameterTypeShared pt_o1 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_o1 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
     // add outputs: EOA, EOD!
-    aw::ParameterTypeShared pt_o2 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_o2 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_o2->set_instance_name("EOA");
     _register_output_parameter_type(pt_o2);
     _output_index_eoa = 1;
 
-    aw::ParameterTypeShared pt_o3 = aw::ParameterType::make(
+    aw::ParameterTypePtr pt_o3 = aw::ParameterType::make(
             aw::ParameterType::ID_Value);
     pt_o3->set_instance_name("EOD");
     _register_output_parameter_type(pt_o3);
@@ -1687,7 +1729,7 @@ void AttackDecay :: set_default() {
 }
 
 void AttackDecay :: reset() {
-    Generator::reset();
+    Gen::reset();
     _progress_samps = 0;
     _env_stage = 0;
     _last_amp = 0;
@@ -1768,9 +1810,6 @@ void AttackDecay :: render(RenderCountT f) {
                         ((_d_samps - _progress_samps) / _d_samps),
                         _summed_inputs[_input_index_exponent][_i]
                         );
-            }
-            else { // should never happen
-                throw "bad stage"; // provide proper or errror
             }
             
             _last_amp = outputs[0][_i];

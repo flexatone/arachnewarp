@@ -19,8 +19,8 @@
 
 BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 
-    aw::EnvironmentShared e = aw::Environment::make();
-	aw::Generator g1 = aw::Generator(e);
+    aw::EnvironmentPtr e = aw::Environment::make();
+	aw::Gen g1 = aw::Gen(e);
     g1.init();
 	//g1.print_outputs();
 	g1.render(1); // can call directly on object
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     // this has no parameters so should raise exception on trying to set or add
     BOOST_REQUIRE_THROW(g1.set_input_by_index(0, 30), std::invalid_argument);
 
-	aw::GeneratorShared g2 = aw::GeneratorShared(new aw::Generator(e));
+	aw::GenPtr g2 = aw::GenPtr(new aw::Gen(e));
     g2->init();
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 0, .0000001);
 	
@@ -49,36 +49,36 @@ BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
     BOOST_CHECK_EQUAL(g2->get_nyquist(), 22050);
 
 	
-    BOOST_CHECK_EQUAL(g2->get_class_name(), "Generator");
+    BOOST_CHECK_EQUAL(g2->get_class_name(), "Gen");
 }	
 
 
 BOOST_AUTO_TEST_CASE(aw_parameter_type_test_1) {
 	// testing creation
-	aw::ParameterTypeShared pt1 = aw::ParameterTypeShared(new 
+	aw::ParameterTypePtr pt1 = aw::ParameterTypePtr(new 
                                     aw::ParameterType);
 	BOOST_CHECK_EQUAL(pt1->get_class_name(), "ParameterType");
 
-	aw::ParameterTypeShared pt2 = aw::ParameterType::make(aw::ParameterType::ID_Phase);
+	aw::ParameterTypePtr pt2 = aw::ParameterType::make(aw::ParameterType::ID_Phase);
 	BOOST_CHECK_EQUAL(pt2->get_class_name(), "ParameterTypePhase");
 
 	pt2->set_instance_name("degree of spin");
 	BOOST_CHECK_EQUAL(pt2->get_instance_name(), "degree of spin");
 
-	aw::ParameterTypeShared pt3 = aw::ParameterType::make(aw::ParameterType::ID_Value);
+	aw::ParameterTypePtr pt3 = aw::ParameterType::make(aw::ParameterType::ID_Value);
 	BOOST_CHECK_EQUAL(pt3->get_class_name(), "ParameterTypeValue");
 
-	aw::ParameterTypeShared pt4 = aw::ParameterType::make(aw::ParameterType::ID_Frequency);
+	aw::ParameterTypePtr pt4 = aw::ParameterType::make(aw::ParameterType::ID_Frequency);
 	BOOST_CHECK_EQUAL(pt4->get_class_name(), "ParameterTypeFrequency");
 
 
-	aw::ParameterTypeShared pt5 = aw::ParameterType::make(aw::ParameterType::ID_Duration);
+	aw::ParameterTypePtr pt5 = aw::ParameterType::make(aw::ParameterType::ID_Duration);
 	BOOST_CHECK_EQUAL(pt5->get_class_name(), "ParameterTypeDuration");
 
-	aw::ParameterTypeShared pt6 = aw::ParameterType::make(aw::ParameterType::ID_Channels);
+	aw::ParameterTypePtr pt6 = aw::ParameterType::make(aw::ParameterType::ID_Channels);
 	BOOST_CHECK_EQUAL(pt6->get_class_name(), "ParameterTypeChannels");
 
-	aw::ParameterTypeShared pt7 = aw::ParameterType::make(aw::ParameterType::ID_Trigger);
+	aw::ParameterTypePtr pt7 = aw::ParameterType::make(aw::ParameterType::ID_Trigger);
 	BOOST_CHECK_EQUAL(pt7->get_class_name(), "ParameterTypeTrigger");
 
 
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_1) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     // basic test of constant
-    aw::EnvironmentShared e = aw::Environment::make();
+    aw::EnvironmentPtr e = aw::Environment::make();
 	aw::Constant g3(e);
     g3.init();
     //g3.print_inputs();
@@ -118,9 +118,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
     
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);
-	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Constant);
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Constant);
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Add);
 
 	g1->set_input_by_index(0, 2);
 	//g1->print_outputs();
@@ -147,13 +147,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_1) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
     // do not need to init() when called with make()
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);
-	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Constant);
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Constant);
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Add);
 
-	aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Constant);
-	aw::GeneratorShared g5 = aw::Generator::make(aw::Generator::ID_Constant);
-	aw::GeneratorShared g6 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GenPtr g4 = aw::Gen::make(aw::Gen::ID_Constant);
+	aw::GenPtr g5 = aw::Gen::make(aw::Gen::ID_Constant);
+	aw::GenPtr g6 = aw::Gen::make(aw::Gen::ID_Add);
 
 	g4->set_input_by_index(0, 11);
 	g5->set_input_by_index(0, 20);
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_2) {
 BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
 	// test auto constant creation when adding a sample type
     
-	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Add);
     
     // this will automatically create constant Generators
 	g3->add_input_by_index(0, 11);
@@ -208,13 +208,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_3) {
 BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
 	// test auto constant creation when adding a sample type
     
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Constant);
 	g1->set_input_by_index(0, 2); 							
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);	
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Constant);	
 	g2->set_input_by_index(0, 3); 							
 							
 	// make a 1 dimensional adder
-	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Add);
 	// add opperands
 	g3->set_input_by_index(0, g1); 							
 	g3->add_input_by_index(0, g2); 							
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_add_4) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
     // floating point addition
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);
 
     // this will automatically create constant Generators
 	g1->add_input_by_index(0, 1.5);
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	// test auto constant creation when adding a sample type
     
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);
 
     // this will automatically create constant Generators
 	g1->add_input_by_index(0, 3.5);
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 	// test auto constant creation when adding a sample type
     
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
     BOOST_CHECK_EQUAL(g1->get_outputs_size(), 44100);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
     BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
 	// testing setting the outputs from a file path
 	
     std::string s("../test/12518-sk1Kick.aif");
@@ -410,7 +410,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {    
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
 	// test round trip file reading and writing; this is good for valgrind testing as we have to create dyanmic vectors for temporary storage
     std::string s("../test/12518-sk1Kick.aif");
     g1->set_outputs_from_fp(s);	
@@ -420,7 +420,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_7) {
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
 	// testing setting the outputs from a file path
     aw::VSampleT v {.2, .5, .4, .8};
 
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_7) {
 }
 
 BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {    
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Phasor);
     
     // this will automatically create constant Generators
 	//g1->add_input_by_index(0, 5512.5);
@@ -455,7 +455,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 	//g1->print_outputs();
     //g1->illustrate_outputs();
 	
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);
 	g2->add_input_by_index(0, 11025.5); // 8 samples
 	g2->render(1);	
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 0, .00001);
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 	// test summing if inputs for frequency
     
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Phasor);
     
     // 5512.5 / 2 == 2206.25
 	g1->add_input_by_index(0, 2756.25); //	
@@ -495,7 +495,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
 
 	// changing the slot calls overridden _update_for_new_slot(), resizes frame size
 	g1->set_slot_by_index(1, 20.0); // 20 second buffer
@@ -505,7 +505,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
 		
 	// create 
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);    
 	g2->add_input_by_index(0, 4); // a constant frequency
 	
 	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
@@ -525,19 +525,19 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 	
-	//aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Recorder);
+	//aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Recorder);
 
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	// for one second
 	g1->set_slot_by_index(1, .01); // 441 samples
 		
 	// create 
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);    
 	g2->add_input_by_index(0, 2); // a constant frequency, period of 22050
 	
-	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Phasor);    
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Phasor);    
 	g3->add_input_by_index(0, 4410); // a constant frequency, period of 10 
 
 	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
@@ -566,7 +566,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_multiply_1) {
     // test basic multiplication
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Multiply);
     // sets channels
     g1->set_slot_by_index(0, 1);
     
@@ -589,16 +589,16 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
     // test basic multiplication
 
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Phasor);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Phasor);
     g1->add_input_by_index(0, 4);
 
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);
     g2->add_input_by_index(0, 8);
 
 
-    aw::GeneratorShared g3a = g1 * g2;    
+    aw::GenPtr g3a = g1 * g2;    
 
-	aw::GeneratorShared gr = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr gr = aw::Gen::make(aw::Gen::ID_Buffer);
 	// create two channel buffer
 	gr->set_slot_by_index(0, 1);
 	// for one second
@@ -624,7 +624,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
     // multy channel multiplication
     
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Multiply);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Multiply);
     
     // three channel
     g1->set_slot_by_index(0, 3);
@@ -652,7 +652,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
         
     
     // sum each of three outputs of g1
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
     // set g2 to receive g1 from each of its outputs
     g2->add_input_by_index(0, g1, 0);
     g2->add_input_by_index(0, g1, 1);
@@ -674,16 +674,16 @@ BOOST_AUTO_TEST_CASE(aw_generator_multiply_2) {
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_2) {
     // test basic multiplication
 
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Constant);
     g1->set_input_by_index(0, 4);
-    aw::GeneratorShared g2 = g1 + 2;    
+    aw::GenPtr g2 = g1 + 2;    
     g2->render(1);
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 6, .001);
 
 
-	aw::GeneratorShared g3 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Constant);
     g3->set_input_by_index(0, 100);
-    aw::GeneratorShared g4 = 2 + g3;    
+    aw::GenPtr g4 = 2 + g3;    
     g4->render(1);
 	BOOST_CHECK_CLOSE(g4->outputs[0][0], 102, .001);
         
@@ -692,9 +692,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_2) {
 
 BOOST_AUTO_TEST_CASE(connect_f_1) {
 
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Constant);
     g1->set_input_by_index(0, 3.5);
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
     
     // this is g1 to g2
     g2 = aw::connect_serial(g1, g2);
@@ -702,7 +702,7 @@ BOOST_AUTO_TEST_CASE(connect_f_1) {
     
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 3.5, .0001);
     
-    aw::GeneratorShared g4 = aw::Generator::make(aw::Generator::ID_Constant);
+    aw::GenPtr g4 = aw::Gen::make(aw::Gen::ID_Constant);
     g4->set_input_by_index(0, 6.5);
     
     // g4 to g2
@@ -713,13 +713,13 @@ BOOST_AUTO_TEST_CASE(connect_f_1) {
 
 BOOST_AUTO_TEST_CASE(connect_f_2) {
     // test multiple connections in parallel
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);
     g1->set_slot_by_index(0, 3); // three channels
     g1->set_input_by_index(0, 10);
     g1->set_input_by_index(1, 200);
     g1->set_input_by_index(2, 4000);
           
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
     g2->set_slot_by_index(0, 3); // three channels          
     g2->set_input_by_index(0, 34);
     g2->set_input_by_index(1, 105);
@@ -740,13 +740,13 @@ BOOST_AUTO_TEST_CASE(connect_f_2) {
 
 BOOST_AUTO_TEST_CASE(connect_f_3) {
     // test multiple connections in parallel
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);
     g1->set_slot_by_index(0, 3); // three channels
     g1->set_input_by_index(0, 10);
     g1->set_input_by_index(1, 200);
     g1->set_input_by_index(2, 4000);
           
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
     g2->set_slot_by_index(0, 3); // three channels          
     g2->set_input_by_index(0, 34);
     g2->set_input_by_index(1, 105);
@@ -771,10 +771,10 @@ BOOST_AUTO_TEST_CASE(connect_f_3) {
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
     // test basic multiplication
 
-    aw::GeneratorShared g1a = aw::Generator::make(aw::Generator::ID_Constant);
+    aw::GenPtr g1a = aw::Gen::make(aw::Gen::ID_Constant);
     g1a->set_input_by_index(0, 4);
 
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
     g2->set_input_by_index(0, 7);
 
     g1a >> g2;
@@ -782,7 +782,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
     g2->render(1);
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 11, .001);
        
-    aw::GeneratorShared g1b = aw::Generator::make(aw::Generator::ID_Constant);
+    aw::GenPtr g1b = aw::Gen::make(aw::Gen::ID_Constant);
     g1b->set_input_by_index(0, 12.5);
 
     // can connect another input to g2 
@@ -798,18 +798,17 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_4) {
     // test single and double connections
 
     // test multiple connections in parallel
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);
     g1->set_slot_by_index(0, 3); // three channels
     g1->set_input_by_index(0, 10);
     g1->set_input_by_index(1, 200);
     g1->set_input_by_index(2, 4000);
           
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
     g2->set_slot_by_index(0, 3); // three channels          
     g2->set_input_by_index(0, 34);
     g2->set_input_by_index(1, 105);
     g2->set_input_by_index(2, 2110);
-          
 
     // connect all of 1 to all fo 2
     g1 >> g2;
@@ -826,45 +825,20 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_4) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_5) {
-    // test single and double connections
-
-    // test multiple connections in parallel
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);
-    g1->set_slot_by_index(0, 3); // three channels
-    g1->set_input_by_index(0, 10);
-    g1->set_input_by_index(1, 200);
-    g1->set_input_by_index(2, 4000);
-          
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);
-    g2->set_slot_by_index(0, 3); // three channels          
-    g2->set_input_by_index(0, 34);
-    g2->set_input_by_index(1, 105);
-    g2->set_input_by_index(2, 2110);
-          
-
-    // connect first o/i of each
-    g1 > g2;
-
-    g2->render(1);
-    g2->illustrate_network();
-    // only o2 gets the added values
-	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
-	BOOST_CHECK_CLOSE(g2->outputs[1][0], 105, .001);
-	BOOST_CHECK_CLOSE(g2->outputs[2][0], 2110, .001);
 
 }
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_6) {
 
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Add);    
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);    
     // connect two constants to g1b
     aw::connect_serial(20, g1);
     aw::connect_serial(11, g1);
     g1->render(1);
 	BOOST_CHECK_CLOSE(g1->outputs[0][0], 31, .001);
 
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Add);    
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);    
     23.5 >> g2;
     100.5 >> g2;
     g2->render(1);
@@ -875,22 +849,22 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_6) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_7) {
     // test basic multiplication
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Constant);
     g1->set_input_by_index(0, 4);
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Constant);
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Constant);
     g2->set_input_by_index(0, 7);
 
-    aw::GeneratorShared g10 = g1 + g2; 
+    aw::GenPtr g10 = g1 + g2; 
     //g10->illustrate_network();   
     g10->render(1);
 	BOOST_CHECK_CLOSE(g10->outputs[0][0], 11, .00001);
 
-    aw::GeneratorShared g11 = g1 + g2 * 10; 
+    aw::GenPtr g11 = g1 + g2 * 10; 
     //g10->illustrate_network();   
     g11->render(1);
 	BOOST_CHECK_CLOSE(g11->outputs[0][0], 74, .00001);
 
-    aw::GeneratorShared g12 = 10 * g1 + .5; 
+    aw::GenPtr g12 = 10 * g1 + .5; 
     //g10->illustrate_network();   
     g12->render(1);
 	BOOST_CHECK_CLOSE(g12->outputs[0][0], 40.5, .00001);
@@ -901,8 +875,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_7) {
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_8) {
     // test basic multiplication
 
-	aw::GeneratorShared g1 = aw::Generator::make(
-            aw::Generator::ID_Sine);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Sine);
     aw::Injector::make({200, .5}) >> g1;
     g1->render(1);
     //g1->print_inputs();
@@ -910,9 +883,25 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_8) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_opperators_9) {
+    // test basic multiplication
+
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
+    // setting slots: channels and duratin in sec
+    aw::Injector::make({3, 1.0}) || g1;
+
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 3);
+    BOOST_CHECK_EQUAL(g1->get_outputs_size(),
+            3*g1->get_environment()->get_sampling_rate());
+    
+}
+
+
+
+
 BOOST_AUTO_TEST_CASE(aw_generator_sine_1) {
     // test basic multiplication
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Sine);
     g1->set_input_by_index(0, 11025);
     g1->render(1);
     // must use check_small here or otherwise get SIGABR
@@ -927,7 +916,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_1) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
     // test basic multiplication
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Sine);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Sine);
     // one cycle for 4 samples
     //882. >> g1; // gets 25 points per half cycle
     g1->set_input_by_index(0, 882);
@@ -947,7 +936,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_1) {
 
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Map);
     
     g1->set_input_by_index(0, .5);
     g1->set_input_by_index(1, 0); // source
@@ -986,7 +975,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_1) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_2) {
 
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Map);
     
     g1->set_input_by_index(0, .5);
     g1->set_input_by_index(3, 10); // dst
@@ -1006,7 +995,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_2) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_3) {
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Map);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Map);
     
     g1->set_input_by_index(0, 0);
     g1->set_input_by_index(1, -1);
@@ -1030,17 +1019,17 @@ BOOST_AUTO_TEST_CASE(aw_generator_map_3) {
 BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_1) {
     // tesing normal triggering
 
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_AttackDecay);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_AttackDecay);
 
     g1->set_input_by_index(1, .125); // atack/decay in sec
     g1->set_input_by_index(2, .125);
 
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);
     2 >> g2; // 4 per second
     
     g1->set_input_by_index(0, g2, 1); // need second output, the phasor trigger
     
-	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr gbuf = aw::Gen::make(aw::Gen::ID_Buffer);
 	gbuf->set_slot_by_index(0, 4); // want to set this with: {2, 1} | gbuf;
 	gbuf->set_slot_by_index(1, 1);
     
@@ -1070,17 +1059,17 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_2) {
     // tesing retriggering during decay
 
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_AttackDecay);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_AttackDecay);
 
     g1->set_input_by_index(1, .125); // atack/decay in sec
     g1->set_input_by_index(2, 1);
 
-    aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Phasor);
+    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);
     2 >> g2; // 4 per second
     
     g1->set_input_by_index(0, g2, 1); // need second output, the phasor trigger
     
-	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr gbuf = aw::Gen::make(aw::Gen::ID_Buffer);
 	gbuf->set_slot_by_index(0, 4); // want to set this with: {2, 1} | gbuf;
 	gbuf->set_slot_by_index(1, 1);
     
@@ -1105,13 +1094,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_2) {
 BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_3) {
     // tesing auto trigger
     
-    aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_AttackDecay);
+    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_AttackDecay);
 
     g1->set_input_by_index(1, .125); // atack/decay in sec
     g1->set_input_by_index(2, .125);
     g1->set_input_by_index(4, 1); // self cycle mode
         
-	aw::GeneratorShared gbuf = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr gbuf = aw::Gen::make(aw::Gen::ID_Buffer);
 	gbuf->set_slot_by_index(0, 3);
 	gbuf->set_slot_by_index(1, 1);
     
@@ -1145,9 +1134,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_3) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
     g1->set_slot_by_index(0, 1); // must set one channel
-    aw::InjectorShared bi = aw::InjectorShared(new aw::Injector({0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0}));
+    aw::InjectorPtr bi = aw::InjectorPtr(new aw::Injector({0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0}));
     g1->set_outputs(bi);
     BOOST_CHECK(g1->get_frame_size() == 13);
     BOOST_CHECK(g1->get_output_count() == 1);
@@ -1156,10 +1145,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
     
     //g1->illustrate_outputs();
     
-	aw::GeneratorShared g2 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Buffer);
     //{3, 1, 3, .5, 0} && g1;
     //g2->set_slot_by_index(0, 1); // must set one channel
-    bi = aw::InjectorShared(new aw::Injector({{10, 1, 2}, {5, 4, 5}, {4, 5, 4}, {1, 2, 20}, {4, 5, 4}, {1, 2, 20}}));
+    bi = aw::InjectorPtr(new aw::Injector({{10, 1, 2}, {5, 4, 5}, {4, 5, 4}, {1, 2, 20}, {4, 5, 4}, {1, 2, 20}}));
     g2->set_outputs(bi);
     BOOST_CHECK(g2->get_frame_size() == 6);
     BOOST_CHECK(g2->get_output_count() == 3);
@@ -1180,7 +1169,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
-	aw::GeneratorShared g1 = aw::Generator::make(aw::Generator::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
     
     aw::Injector::make({3,4,5,200,2000}) && g1;
     //g1->illustrate_outputs();
