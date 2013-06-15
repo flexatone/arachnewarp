@@ -15,9 +15,9 @@ namespace aw {
 class ParameterType;
 
 //! Shared ParameterType. 
-typedef std::shared_ptr<ParameterType> ParameterTypeShared;
+typedef std::shared_ptr<ParameterType> ParameterTypePtr;
 
-//! The ParameterType, based on subclass definition, defines the meaning of an input slot that can be filled by a Generator. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage of a Generator. 
+//! The ParameterType, based on subclass definition, defines the meaning of an input slot that can be filled by a Gen. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage of a Gen. 
 class ParameterType {
     public://------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ class ParameterType {
     };
 
     //! Primary constructor static method for creating share Parameter types. 
-    static ParameterTypeShared make(ParameterTypeID);
+    static ParameterTypePtr make(ParameterTypeID);
 
     protected://---------------------------------------------------------------
     //! Class name set on creation. 
@@ -61,7 +61,7 @@ class ParameterType {
 	//! Output stream processor.
 	friend std::ostream& operator<<(std::ostream& outputs, const ParameterType& pt);
 
-    //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Generator and may not be the same even if its the same ParameterType subclass. 
+    //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Gen and may not be the same even if its the same ParameterType subclass. 
     void set_instance_name(const std::string& s) {_instance_name = s;};
 
     std::string get_class_name() const {return _class_name;};
@@ -77,7 +77,7 @@ class ParameterType {
 
 class ParameterTypeValue;
 //! Shared ParameterTypeValue.
-typedef std::shared_ptr<ParameterTypeValue> ParameterTypeValueShared;
+typedef std::shared_ptr<ParameterTypeValue> ParameterTypeValuePtr;
 //! A subclass of ParameterType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
 class ParameterTypeValue: public ParameterType {
     public://------------------------------------------------------------------
@@ -85,7 +85,7 @@ class ParameterTypeValue: public ParameterType {
 };
 
 class ParameterTypeFrequency;
-typedef std::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyShared;
+typedef std::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyPtr;
 //! A subclass of ParameterType that specifies a frequency; this is assumed presently to be in Hertz.
 class ParameterTypeFrequency: public ParameterType {
     public://------------------------------------------------------------------
@@ -93,7 +93,7 @@ class ParameterTypeFrequency: public ParameterType {
 };
 
 class ParameterTypeDuration;
-typedef std::shared_ptr<ParameterTypeDuration> ParameterTypeDurationShared;
+typedef std::shared_ptr<ParameterTypeDuration> ParameterTypeDurationPtr;
 //! A subclass of ParameterType that specifies a duration in seconds.
 class ParameterTypeDuration: public ParameterType {
     public://------------------------------------------------------------------
@@ -108,7 +108,7 @@ class ParameterTypePhase: public ParameterType {
     explicit ParameterTypePhase();
 };
 
-//! Used by some Generator to configure slots for both input and output channels, or dimensionality (frame/output count) of the internal marix. 
+//! Used by some Gen to configure slots for both input and output channels, or dimensionality (frame/output count) of the internal marix. 
 class ParameterTypeChannels;
 typedef std::shared_ptr<ParameterTypeChannels> ParameterTypeChannelsShared;
 //! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
@@ -155,23 +155,23 @@ class ParameterTypeTable: public ParameterType {
 
 
 //=============================================================================
-class Generator;
-typedef std::shared_ptr<Generator> GeneratorShared;
-//! Generator class. Base-class of all Generators. A Generator has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Generator inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Generator is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. 
-class Generator: public std::enable_shared_from_this<Generator> {
+class Gen;
+typedef std::shared_ptr<Gen> GenPtr;
+//! Gen class. Base-class of all Generators. A Gen has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Gen inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Gen is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. 
+class Gen: public std::enable_shared_from_this<Gen> {
 
     public://--------------------------=---------------------------------------
     // public typedefs
 	//! A mapping of index number
-    typedef std::unordered_map<ParameterIndexT, ParameterTypeShared> MapIndexToParameterTypeShared;
+    typedef std::unordered_map<ParameterIndexT, ParameterTypePtr> MapIndexToParameterTypePtr;
 		
     //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.
-    typedef std::pair<GeneratorShared, ParameterIndexT> GenSharedOutPair;
-    typedef std::vector<GenSharedOutPair> VGenSharedOutPair;
-    typedef std::vector<VGenSharedOutPair> VVGenSharedOutPair;
+    typedef std::pair<GenPtr, ParameterIndexT> GenPtrOutPair;
+    typedef std::vector<GenPtrOutPair> VGenPtrOutPair;
+    typedef std::vector<VGenPtrOutPair> VVGenPtrOutPair;
 
-    //! A vector of GeneratorShared instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
-    typedef std::vector<GeneratorShared> VGenShared;
+    //! A vector of GenPtr instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
+    typedef std::vector<GenPtr> VGenPtr;
     
     // enums    
     //! Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators. 
@@ -180,6 +180,7 @@ class Generator: public std::enable_shared_from_this<Generator> {
         ID_Add,
         ID_Multiply,   
         ID_Buffer,
+        ID_Breakpoints,
         ID_Phasor,
         ID_Sine,
         ID_Map,
@@ -196,20 +197,21 @@ class Generator: public std::enable_shared_from_this<Generator> {
 
     private://------------------------------------------------------------------
     // Rename ParameterIndexT as OutputIndexType
-    //! Store the number of outputs, similar to channels, that this Generator is currently set up with. 
+    //! Store the number of output channels, that this Gen is currently set up with. Storage array acount.
     ParameterIndexT _output_count;
     
-	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputsSizeT is expected to store size up to long multichannel audio files.
+	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputsSizeT is expected to store size up to long multichannel audio files. Total storage size.
     OutputsSizeT _outputs_size;
     
     // TODO: use InputIndexType ParameterIndexT 
-    //! Number of input parameters used by this Generator. More than one Generator can reside in each slot. 
-    ParameterIndexT _input_count;    
-	//! Number of slots used by this Generator. One Generator can reside in each slot. 
+    //! Number of input parameters used by this Gen. More than one Gen can reside in each slot. 
+    ParameterIndexT _input_count;
+
+	//! Number of slots used by this Gen. One Gen can reside in each slot. 
     ParameterIndexT _slot_count;    
 
 	//! Store the Envrionment instance. 
-    EnvironmentShared _environment;
+    EnvironmentPtr _environment;
 	
     protected://---------------------------------------------------------------
 
@@ -222,33 +224,33 @@ class Generator: public std::enable_shared_from_this<Generator> {
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
 	OutputsSizeT _nyquist;
 		
-    //! Define if this Generator has resizable frame size. Most generators do not have have resizable frame size; only some (like a Buffer) do.
+    //! Define if this Gen has resizable frame size. Most generators do not have have resizable frame size; only some (like a Buffer) do.
     bool _frame_size_is_resizable; // TODO: make private?	
                             
     //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. RenderCountT must be the largest integer available.
     RenderCountT _render_count;
 	
-    //! The main storage for ParameterTypeShared instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
+    //! The main storage for ParameterTypePtr instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
     std::unordered_map<ParameterIndexT,
-                            ParameterTypeShared> _input_parameter_type;	
+                            ParameterTypePtr> _input_parameter_type;	
 		
     //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
-    VVGenSharedOutPair _inputs;
+    VVGenPtrOutPair _inputs;
     
 	//! For each render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types. This is done to make render() methods cleaner and remove redundancy.
 	VVSampleT _summed_inputs;    
     
-	//! A std::vector of GeneratorsShared that are used for configuration of this Generator. Unlike inputs, only one Generator can occupy a slot position. Example: a buffer has a slot for duration of that buffer. It is not yet decided if generators in slots shold be rendered. Further, which output of the generator slot is alos not yet assigned.
-	VGenShared _slots;
+	//! A std::vector of GeneratorsShared that are used for configuration of this Gen. Unlike inputs, only one Gen can occupy a slot position. Example: a buffer has a slot for duration of that buffer. It is not yet decided if generators in slots shold be rendered. Further, which output of the generator slot is alos not yet assigned.
+	VGenPtr _slots;
 	
 	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
     std::unordered_map<ParameterIndexT,
-            ParameterTypeShared> _slot_parameter_type;
+            ParameterTypePtr> _slot_parameter_type;
 	
 	
-    //! We store a ParameterTypeShared for each defined output, telling us what it is.
+    //! We store a ParameterTypePtr for each defined output, telling us what it is.
     std::unordered_map<ParameterIndexT,
-            ParameterTypeShared> _output_parameter_type;		
+            ParameterTypePtr> _output_parameter_type;		
 		
 
     public://------------------------------------------------------------------
@@ -260,24 +262,27 @@ class Generator: public std::enable_shared_from_this<Generator> {
     // ========================================================================
     // methods ================================================================
 	
-    private://-----------------------------------------------------------------   	
-	
+    private://-----------------------------------------------------------------   		
     //! Resize the outputs vector. Always called when registering an output or changing frame size.
-    void _resize_outputs();    
+    void _resize_outputs();
 	
+
     protected://---------------------------------------------------------------
-		
-    //! Called by Generators during init() to configure the input parameters found in this Generator. ParameterTypeShared instances are stored in the Generator, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
-    void _register_input_parameter_type(ParameterTypeShared pts);
+	
+    //! Validate the current contnets of the outputs data. A virtual method for overridding in derived classes (e.g., Breakpoints). Called whenever a outputs are set as a whole (aka, set by array). Will raise an exception.
+    Validity _validate_outputs();
+    
+    //! Called by Generators during init() to configure the input parameters found in this Gen. ParameterTypePtr instances are stored in the Gen, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
+    void _register_input_parameter_type(ParameterTypePtr pts);
 
     //! Remove all inputs; used by slots that dynamically chagne inputs and outputs; all existing inputs will remain. 
     void _clear_input_parameter_types();
 
-	//! Called by Generators during init() to configure the slot parameters found in this Generator.
-    void _register_slot_parameter_type(ParameterTypeShared pts);
+	//! Called by Generators during init() to configure the slot parameters found in this Gen.
+    void _register_slot_parameter_type(ParameterTypePtr pts);
 
 	//! Define an output. This calls _resize_outputs().
-    void _register_output_parameter_type(ParameterTypeShared pts);
+    void _register_output_parameter_type(ParameterTypePtr pts);
 
     //! Remove all outputs; used by slots that dynamically change inputs and outputs; all existing inputs will remain. 
     void _clear_output_parameter_types();
@@ -299,24 +304,24 @@ class Generator: public std::enable_shared_from_this<Generator> {
     
     
     public://------------------------------------------------------------------
-    //! Factory for Generators using a provided EnvironmentShared. 
-    static GeneratorShared make_with_environment(GeneratorID q, 
-            EnvironmentShared e);
+    //! Factory for Generators using a provided EnvironmentPtr. 
+    static GenPtr make_with_environment(GeneratorID q, 
+            EnvironmentPtr e);
 
-    //! Factory for all Generators with by generator ID alone. This creates a GeneratorShared, and calls its init() method.     
-    static GeneratorShared make(GeneratorID);
+    //! Factory for all Generators with by generator ID alone. This creates a GenPtr, and calls its init() method.     
+    static GenPtr make(GeneratorID);
 
 
     public://------------------------------------------------------------------
 
 	//! Main constructor that takes a generator config.
-    explicit Generator(EnvironmentShared e);
+    explicit Gen(EnvironmentPtr e);
 
     //! The default constructor is deleted: we always must pass in an Envrionment. 
-    Generator() = delete;
+    Gen() = delete;
     
     
-    //! Initialize the Generator. This method is responsible for creating ParameterTypeValueShared instances and adding them to the Generator using the _register_input_parameter_type method. This method also does the initial sizing of the Generator, and thus could raise an exception. Additional buffers that might be needed for this Generator can be stored here. As this is virtual the base-classes init is not called, and must be called explicitly in derived classes. This should only be called once in the life of a generator.
+    //! Initialize the Gen. This method is responsible for creating ParameterTypeValuePtr instances and adding them to the Gen using the _register_input_parameter_type method. This method also does the initial sizing of the Gen, and thus could raise an exception. Additional buffers that might be needed for this Gen can be stored here. As this is virtual the base-classes init is not called, and must be called explicitly in derived classes. This should only be called once in the life of a generator.
     virtual void init();
     
     //! Reset all inputs, and zero out the outputs array and the _render count. Derived classes should manually call the base class.
@@ -338,18 +343,18 @@ class Generator: public std::enable_shared_from_this<Generator> {
     //! Get the average of single _output_count of outputs. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
     SampleT get_output_average(ParameterIndexT d) const;
 
-    //! Return a Boolean if this Generator has resizable frame size
+    //! Return a Boolean if this Gen has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
 	
     //! Return the the frame size, the number of samples per output channel. The frame size is always at or greater than the common frame size.
     OutputsSizeT get_frame_size() const {return _frame_size;};	
 
     //! Return a copy of the environment shared pointer.
-    EnvironmentShared get_environment() const {
+    EnvironmentPtr get_environment() const {
         return _environment; 
     };
     
-	//! Return the common frame size derived from the stored shared Environment. If this Generator has resizable frames, this may not be the same as the current frame size. 
+	//! Return the common frame size derived from the stored shared Environment. If this Gen has resizable frames, this may not be the same as the current frame size. 
     OutputsSizeT get_common_frame_size() const {
 			return _environment->get_common_frame_size();};	
 
@@ -362,20 +367,20 @@ class Generator: public std::enable_shared_from_this<Generator> {
     
 	// info strings ...........................................................    
 
-    //! Get the name and address (memory start) for this Generator, as a single string.
+    //! Get the name and address (memory start) for this Gen, as a single string.
     std::string get_name_address() const;
     
-    //! Get the name and addres for this Generator, labeling the name with "Gen" and wrapping the address in braces. This is used for a more readable presentation.
+    //! Get the name and addres for this Gen, labeling the name with "Gen" and wrapping the address in braces. This is used for a more readable presentation.
     std::string get_label_address() const;
     
     //! Get a complete label for this generator. This includes the get_label_address() presentation, alongwith the input and output count. 
     std::string get_label() const;
     
-	//! Output stream friend function: returns the label of the Generator. 
-	friend std::ostream& operator<<(std::ostream& ostream, const Generator& g);
+	//! Output stream friend function: returns the label of the Gen. 
+	friend std::ostream& operator<<(std::ostream& ostream, const Gen& g);
     
-	//! Output stream friend function: returns the label of the GeneratorShared.     
-	friend std::ostream& operator<<(std::ostream& ostream, const GeneratorShared g);
+	//! Output stream friend function: returns the label of the GenPtr.     
+	friend std::ostream& operator<<(std::ostream& ostream, const GenPtr g);
 
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
@@ -390,7 +395,7 @@ class Generator: public std::enable_shared_from_this<Generator> {
     //! Print the the hierarchical list of all input values. This is virtual because Constant must print inputs in as different way. No other generator should need to specialize. 
     virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
 
-    //! Render the requested frame if not already rendered. This is virtual because every Generator renders in a different way. 
+    //! Render the requested frame if not already rendered. This is virtual because every Gen renders in a different way. 
     virtual void render(RenderCountT f); 
 
 
@@ -410,8 +415,9 @@ class Generator: public std::enable_shared_from_this<Generator> {
     virtual void write_output_to_fp(const std::string& fp, 
                                     ParameterIndexT d=0) const;
 	
-	//! Set the outputs from an array. 
-	void set_outputs_from_array(SampleT* v, OutputsSizeT s, 
+        
+	//! Set the outputs from an array. This low level routine is the only way outputs are directly written from a collection. The reeturned bool is the result of _validate_outputs. 
+	Validity set_outputs_from_array(SampleT* v, OutputsSizeT s,
 							ParameterIndexT ch, bool interleaved=true);
 								
 	//! Set the outputs (resizing if possible) to values passsed in from a vector of SampleT. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. Should by a const vector but cannot yet get usage right when deriving an array pointer; but: the passed in vector should not be changed. 
@@ -419,22 +425,23 @@ class Generator: public std::enable_shared_from_this<Generator> {
 								ParameterIndexT ch, bool interleaved=true);
 
 
-    //! If we are in a Buffer class, this method loads a complete file path to an audio file into the output of this Generator. This is not implemented in the base class Generator. 
+    //! If we are in a Buffer class, this method loads a complete file path to an audio file into the output of this Gen. This is not implemented in the base class Gen. 
     virtual void set_outputs_from_fp(const std::string& fp);
 
 
     //! Overridden, overloaded function for setting outputs. Implemented by Buffer, but defined on base so all have access. Need a Injector because otherwise we would take more parameters for channels, etc.
-    virtual void set_outputs(const InjectorShared bi);
+    virtual void set_outputs(const InjectorPtr bi);
 
     //! Set output swith a file path represented as a string.
     virtual void set_outputs(const std::string& fp);
+
 
 
 	// inputs and slots ......................................................    
     //! Return the number of inputs; this is not the same as the number of Generators, as each input may have 1 or more Generators
     ParameterIndexT get_input_count() {return _input_count;};
 
-    //! Return the number of slots. There is only one Generator per slot. 
+    //! Return the number of slots. There is only one Gen per slot. 
     ParameterIndexT get_slot_count() {return _slot_count;};
 
 	//! Return the parameter index for a named parameter.
@@ -452,14 +459,14 @@ class Generator: public std::enable_shared_from_this<Generator> {
     // TODO: must check for duplicated connections and silently skip them; 
     
 	// inputs ..............................................................    
-    //! Get a vector of GeneratorShared for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
-    virtual VGenSharedOutPair get_input_gen_shared_by_index(
+    //! Get a vector of GenPtr for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
+    virtual VGenPtrOutPair get_input_gen_shared_by_index(
             ParameterIndexT i);
     
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     virtual void set_input_by_index(
             ParameterIndexT i,
-            GeneratorShared gs,
+            GenPtr gs,
             ParameterIndexT pos=0);
     
     virtual void set_input_by_index(
@@ -470,7 +477,7 @@ class Generator: public std::enable_shared_from_this<Generator> {
     ///! Set input by class id of the ParameterType. 
     void set_input_by_class_id(
             ParameterType::ParameterTypeID ptid,
-            GeneratorShared gs,
+            GenPtr gs,
             ParameterIndexT pos=0);
                                         
     void set_input_by_class_id(
@@ -481,14 +488,14 @@ class Generator: public std::enable_shared_from_this<Generator> {
 
     //! Add a multiple input at this parameter. 
     virtual void add_input_by_index(ParameterIndexT i, 
-            GeneratorShared gs, ParameterIndexT pos=0);
+            GenPtr gs, ParameterIndexT pos=0);
 
     virtual void add_input_by_index(ParameterIndexT i, SampleT v, 
             ParameterIndexT pos=0);
   
 	// slot ..............................................................    	
     //! Directly set a parameter to a slot given an index. This will remove/erase any parameter on this slot. The update parameter permits disabling updating a slot, useful during initial configuration. 
-    virtual void set_slot_by_index(ParameterIndexT i, GeneratorShared gs, 
+    virtual void set_slot_by_index(ParameterIndexT i, GenPtr gs, 
 									bool update=true);
     
 	//! Overridden to handle a constant. 
@@ -496,14 +503,14 @@ class Generator: public std::enable_shared_from_this<Generator> {
 									bool update=true);
 
     //! Return the single gen at this slot position (not a vector, like inputs).
-    virtual GeneratorShared get_slot_gen_shared_at_index(ParameterIndexT i);
+    virtual GenPtr get_slot_gen_shared_at_index(ParameterIndexT i);
 
 };
 
 //.............................................................................
-// functions on GeneratorShared ...............................................
+// functions on GenPtr ...............................................
 //! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
-inline GeneratorShared connect_serial(GeneratorShared lhs, GeneratorShared rhs, 
+inline GenPtr connect_serial(GenPtr lhs, GenPtr rhs, 
         ParameterIndexT start=0, ParameterIndexT count=0) {
     // connect from left to right, so from lhs to rhs
     // lhs is above rhs in downard flow
@@ -527,24 +534,23 @@ inline GeneratorShared connect_serial(GeneratorShared lhs, GeneratorShared rhs,
         // we use add_* so we can do this repeatedly on the same position through multiple calls; TODO: this is not always desirable.
         rhs->add_input_by_index(i, lhs, i);
     }
-    return rhs; // this might return a reference instaed of same GeneratorShared
+    return rhs; // this might return a reference instaed of same GenPtr
 }
 
 
-//! Assign SampleValue (after being converted to a Constant) directly as an input to one or more inputs on rhs GeneratorShared.
-inline GeneratorShared connect_serial(SampleT lhs, GeneratorShared rhs, 
+//! Assign SampleValue (after being converted to a Constant) directly as an input to one or more inputs on rhs GenPtr.
+inline GenPtr connect_serial(SampleT lhs, GenPtr rhs, 
         ParameterIndexT start=0, ParameterIndexT count=0) {        
     // set environment from lhs
-	GeneratorShared g_lhs = Generator::make_with_environment(
-            Generator::ID_Constant, rhs->get_environment());
+	GenPtr g_lhs = Gen::make_with_environment(
+            Gen::ID_Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
     return aw::connect_serial(g_lhs, rhs); // will return rhs
 }
 
 
-//! Assign an Injector as an input to matching inputs on rhs GeneratorShared.
-inline GeneratorShared connect_serial(InjectorShared lhs, GeneratorShared rhs,
-        ParameterIndexT start=0, ParameterIndexT count=0) {        
+//! Assign an Injector as an input to matching inputs on rhs GenPtr.
+inline GenPtr connect_serial(InjectorPtr lhs, GenPtr rhs) {
 
     // create vector, fill with values;
     VSampleT inj;
@@ -559,57 +565,62 @@ inline GeneratorShared connect_serial(InjectorShared lhs, GeneratorShared rhs,
 }
 
 
+//! Assign an Injector as an input to matching slot positions.
+inline GenPtr connect_serial_to_slots(InjectorPtr lhs, GenPtr rhs) {
+    // create vector, fill with values;
+    VSampleT inj;
+    lhs->fill_interleaved(inj);
+    // get lesser of slot, injection size
+    ParameterIndexT availLen = std::min(rhs->get_slot_count(), inj.size());
+    for(ParameterIndexT i=0; i < availLen; ++i) {
+        // note: using set here, not add,  unlike other serial connections
+        rhs->set_slot_by_index(i, inj[i]);
+    }
+    return rhs;
+}
+
 
 // operator >> ...............................................................
 
 //! Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
-inline GeneratorShared operator>>(GeneratorShared lhs, GeneratorShared rhs) {
+inline GenPtr operator>>(GenPtr lhs, GenPtr rhs) {
     return connect_serial(lhs, rhs);
 }
 
 //! Connect a SampleT, making it into a constant.
-inline GeneratorShared operator>>(SampleT lhs, GeneratorShared rhs) {
+inline GenPtr operator>>(SampleT lhs, GenPtr rhs) {
     return connect_serial(lhs, rhs);
 }
 
-//! Connect an 1D Injector, where each element is mapped to an argument in order. It is an exception to provide more than 1 dimension. This will always set parameters, not add them. 
-inline GeneratorShared operator>>(InjectorShared lhs, GeneratorShared rhs) {
+//! Connect an 1D Injector, where each element is mapped to an argument in order. It is an exception to provide more than 1 dimension. This will always set parameters, not add them.
+inline GenPtr operator>>(InjectorPtr lhs, GenPtr rhs) {
     return connect_serial(lhs, rhs);
 }
 
 
-// TODO: add operators for setting slots: ||
-// TODO: have GenShared :: make that takes gen id, injector
+// operator || ...............................................................
 
-
-
-// operator > ................................................................
-
-//! Connect only the first output of lhs to first input of rhs.
-inline GeneratorShared operator>(GeneratorShared lhs, GeneratorShared rhs) {
-    return connect_serial(lhs, rhs, 0, 1);
+//! Connect a 1D Injector, where each element is mapped to a slot in order. It is an exception to provide more than 1 dimension. This will always set slots.
+inline GenPtr operator||(InjectorPtr lhs, GenPtr rhs) {
+    return connect_serial_to_slots(lhs, rhs);
 }
 
-//! Connect a SampleT. 
-inline GeneratorShared operator>(SampleT lhs, GeneratorShared rhs) {
-    return connect_serial(lhs, rhs, 0, 1);
-}
 
 
 
 // operator &&................................................................
 // memory (outputs storage) direct settting
 
-inline GeneratorShared operator&&(aw::InjectorShared lhs,
-        GeneratorShared rhs) {
-    //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+inline GenPtr operator&&(aw::InjectorPtr lhs,
+        GenPtr rhs) {
+    //return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
     // convert to aw::Injector
     rhs->set_outputs(lhs); // will throw if rhs is not Buffer
     return rhs;
 } 
 
-inline GeneratorShared operator&&(const std::string lhs, GeneratorShared rhs) {
-    //return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+inline GenPtr operator&&(const std::string lhs, GenPtr rhs) {
+    //return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
     // TODO: when we ahave a sound-file lookup routine, use it to convert lhs into a full, complete path; or, do this at set_outputs_from_fp. 
     rhs->set_outputs(lhs); // will throw if rhs is not Buffer
     return rhs;        
@@ -619,18 +630,18 @@ inline GeneratorShared operator&&(const std::string lhs, GeneratorShared rhs) {
 // parallel connections ......................................................
 
 //! Connect two generators as inputs into another generator, where that generator is given by the passed in GeneratorID. This is a binary operator.
-inline GeneratorShared connect_parallel(
-        GeneratorShared lhs, 
-        GeneratorShared rhs, 
-        Generator::GeneratorID gid) {
+inline GenPtr connect_parallel(
+        GenPtr lhs, 
+        GenPtr rhs, 
+        Gen::GeneratorID gid) {
     
     // get lesser of outputs between the two, then create an add with that many slots
     ParameterIndexT j = std::min(lhs->get_output_count(), 
             rhs->get_output_count());
     // use the passed in gen id, this is usually ID_Add, ID_Multiply
-    GeneratorShared g = Generator::make_with_environment(gid, 
+    GenPtr g = Gen::make_with_environment(gid, 
             lhs->get_environment());
-    // the returned Generator needs to support multiple channels; these are set as slow 0
+    // the returned Gen needs to support multiple channels; these are set as slow 0
     g->set_slot_by_index(0, j);
     // try to conect as many in to out as possible for each gen
     ParameterIndexT i;
@@ -642,42 +653,42 @@ inline GeneratorShared connect_parallel(
 }
 
 //! Variant with SampleT as left-hand side.
-inline GeneratorShared connect_parallel(
+inline GenPtr connect_parallel(
         SampleT lhs, 
-        GeneratorShared rhs, 
-        Generator::GeneratorID gid) {
-    GeneratorShared g_lhs = Generator::make_with_environment(
-            Generator::ID_Constant, rhs->get_environment());
+        GenPtr rhs, 
+        Gen::GeneratorID gid) {
+    GenPtr g_lhs = Gen::make_with_environment(
+            Gen::ID_Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); 
-    GeneratorShared g = aw::connect_parallel(g_lhs, rhs, gid);
+    GenPtr g = aw::connect_parallel(g_lhs, rhs, gid);
     return g;
 }
 
 //! Variant with SampleT as right-hand side.
-inline GeneratorShared connect_parallel(
-        GeneratorShared lhs, 
+inline GenPtr connect_parallel(
+        GenPtr lhs, 
         SampleT rhs, 
-        Generator::GeneratorID gid) {
-    GeneratorShared g_rhs = Generator::make_with_environment(
-            Generator::ID_Constant, lhs->get_environment());
+        Gen::GeneratorID gid) {
+    GenPtr g_rhs = Gen::make_with_environment(
+            Gen::ID_Constant, lhs->get_environment());
     g_rhs->set_input_by_index(0, rhs); 
-    GeneratorShared g = aw::connect_parallel(lhs, g_rhs, gid);
+    GenPtr g = aw::connect_parallel(lhs, g_rhs, gid);
     return g;
 }
 
 
 
 // operator + .................................................................
-inline GeneratorShared operator+(GeneratorShared lhs, GeneratorShared rhs) {
-    return aw::connect_parallel(lhs, rhs, Generator::ID_Add);
+inline GenPtr operator+(GenPtr lhs, GenPtr rhs) {
+    return aw::connect_parallel(lhs, rhs, Gen::ID_Add);
 }
 
-inline GeneratorShared operator+(GeneratorShared lhs, SampleT rhs) {
-    return aw::connect_parallel(lhs, rhs, Generator::ID_Add);
+inline GenPtr operator+(GenPtr lhs, SampleT rhs) {
+    return aw::connect_parallel(lhs, rhs, Gen::ID_Add);
 }
 
-inline GeneratorShared operator+(SampleT lhs, GeneratorShared rhs) {
-    return aw::connect_parallel(lhs, rhs, Generator::ID_Add);
+inline GenPtr operator+(SampleT lhs, GenPtr rhs) {
+    return aw::connect_parallel(lhs, rhs, Gen::ID_Add);
 }
 
 // Alternative opperators:
@@ -686,16 +697,16 @@ inline GeneratorShared operator+(SampleT lhs, GeneratorShared rhs) {
 
 
 // operator * .................................................................
-inline GeneratorShared operator*(GeneratorShared lhs, GeneratorShared rhs) {
-    return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+inline GenPtr operator*(GenPtr lhs, GenPtr rhs) {
+    return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
 }
 
-inline GeneratorShared operator*(GeneratorShared lhs, SampleT rhs) {
-    return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+inline GenPtr operator*(GenPtr lhs, SampleT rhs) {
+    return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
 }
 
-inline GeneratorShared operator*(SampleT lhs, GeneratorShared rhs) {
-    return aw::connect_parallel(lhs, rhs, Generator::ID_Multiply);
+inline GenPtr operator*(SampleT lhs, GenPtr rhs) {
+    return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
 } 
 
 
@@ -703,10 +714,10 @@ inline GeneratorShared operator*(SampleT lhs, GeneratorShared rhs) {
 
 
 //=============================================================================
-//! A Generator that returns a constant value, or fills its outputs vector with the same vale for all frames. 
+//! A Gen that returns a constant value, or fills its outputs vector with the same vale for all frames. 
 class Constant;
-typedef std::shared_ptr<Constant> ConstantShared;
-class Constant: public Generator {
+typedef std::shared_ptr<Constant> ConstantPtr;
+class Constant: public Gen {
 
     private://-----------------------------------------------------------------
 	//! Storage for the internal constant values. This is an array because we want to support a similar interface of applying multiple values to a single input parameter. 
@@ -715,7 +726,7 @@ class Constant: public Generator {
 
     public://------------------------------------------------------------------
 
-	explicit Constant(EnvironmentShared);
+	explicit Constant(EnvironmentPtr);
     
     virtual void init();
     
@@ -728,18 +739,18 @@ class Constant: public Generator {
 	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
 
 	//! As Constant does not compose any Generators even though it has an input defined, this overridden method must return an empty vector.     
-    virtual VGenSharedOutPair get_input_gen_shared_by_index(ParameterIndexT i);
+    virtual VGenPtrOutPair get_input_gen_shared_by_index(ParameterIndexT i);
     
-    //! This overridden method throws an exception: you cannot set a Generator to a constant.
-    virtual void set_input_by_index(ParameterIndexT i, GeneratorShared gs, 
+    //! This overridden method throws an exception: you cannot set a Gen to a constant.
+    virtual void set_input_by_index(ParameterIndexT i, GenPtr gs, 
             ParameterIndexT pos=0);    
                                         
     //! Set value as a SampleT value.
 	virtual void set_input_by_index(ParameterIndexT i, SampleT v, 
             ParameterIndexT pos=0);
     
-    //! This overridden method throws an exception: you cannot set a Generator to a constant.    
-    virtual void add_input_by_index(ParameterIndexT i, GeneratorShared gs, 
+    //! This overridden method throws an exception: you cannot set a Gen to a constant.    
+    virtual void add_input_by_index(ParameterIndexT i, GenPtr gs, 
             ParameterIndexT pos=0);    
                                         
     //! Add value as a SampleT value.                                        
@@ -753,7 +764,7 @@ class Constant: public Generator {
 //! All Generators that can process a single input (parameter slot) with the same operator (and knowing the number of inputs and starting value) (+, *, avg?) can derive from this class.
 class _BinaryCombined;
 // no shared, as an ABC
-class _BinaryCombined: public Generator {
+class _BinaryCombined: public Gen {
 
     protected://---------------------------------------------------------------
     SampleT _n_opperands;
@@ -767,7 +778,7 @@ class _BinaryCombined: public Generator {
 	void _update_for_new_slot();
 
     public://------------------------------------------------------------------
-    explicit _BinaryCombined(EnvironmentShared);
+    explicit _BinaryCombined(EnvironmentPtr);
 
     virtual void init();    
 		
@@ -781,11 +792,11 @@ class _BinaryCombined: public Generator {
 //=============================================================================
 //! A mult sums all Generators across all dimensions at its single operand input. Derives from Add, as all operators will 
 class Add;
-typedef std::shared_ptr<Add> AddShared;
+typedef std::shared_ptr<Add> AddPtr;
 class Add: public _BinaryCombined {
 
     public://------------------------------------------------------------------
-    explicit Add(EnvironmentShared);
+    explicit Add(EnvironmentPtr);
     virtual void init();
 };
 
@@ -793,11 +804,11 @@ class Add: public _BinaryCombined {
 //=============================================================================
 //! A mult sums all Generators across all dimensions at its single operand input. Derives from Add, as all operators will 
 class Multiply;
-typedef std::shared_ptr<Multiply> MultiplyShared;
+typedef std::shared_ptr<Multiply> MultiplyPtr;
 class Multiply: public _BinaryCombined {
 
     public://------------------------------------------------------------------
-    explicit Multiply(EnvironmentShared);
+    explicit Multiply(EnvironmentPtr);
     virtual void init();
 };
 
@@ -805,15 +816,15 @@ class Multiply: public _BinaryCombined {
 //=============================================================================
 //! A Buffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
 class Buffer;
-typedef std::shared_ptr<Buffer> BufferShared;
-class Buffer: public Generator {
+typedef std::shared_ptr<Buffer> BufferPtr;
+class Buffer: public Gen {
 
     protected://---------------------------------------------------------------
 	//! Overridden to apply slot settings and reset as necessary. 
 	void _update_for_new_slot();
 
     public://------------------------------------------------------------------
-    explicit Buffer(EnvironmentShared);
+    explicit Buffer(EnvironmentPtr);
 	
     virtual void init();
 	
@@ -824,26 +835,46 @@ class Buffer: public Generator {
     virtual void write_output_to_fp(const std::string& fp, 
                                     ParameterIndexT d=0) const;
         
-    //! Set the outputs of this Generator to the content of an audio file provided as an audio path. This overridden method makes the usage of libsndfile to read in a file.
+    //! Set the outputs of this Gen to the content of an audio file provided as an audio path. This overridden method makes the usage of libsndfile to read in a file.
     virtual void set_outputs_from_fp(const std::string& fp);
 
-    //! Overridden set outputs from InjectorShared
-    virtual void set_outputs(const InjectorShared bi);
+    //! Overridden set outputs from InjectorPtr
+    virtual void set_outputs(const InjectorPtr bi);
 
     //! Overridden set outputs a std::string, treated a file path.
     virtual void set_outputs(const std::string& fp);
-
-
     
 };
+
+
+
+
+//=============================================================================
+//! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
+class Breakpoints;
+typedef std::shared_ptr<Breakpoints> BreakpointsPtr;
+class Breakpoints: public Buffer {
+
+    public://------------------------------------------------------------------
+
+    explicit Breakpoints(EnvironmentPtr);
+
+    virtual void init();
+    
+    //! Breakpoints overrides _validate_outputs to make sure that this is two dimensional and that x values are increasing. This does not raise an exception to allow caller to clean up memory.
+    virtual Validity _validate_outputs();
+    
+};
+
+
 
 
 
 //=============================================================================
 //! The phasor has a ramp from 0 to 1 for each _output_count defined. Only the first _output_count of multiple dimensional inputs is used. 
 class Phasor;
-typedef std::shared_ptr<Phasor> PhasorShared;
-class Phasor: public Generator {
+typedef std::shared_ptr<Phasor> PhasorPtr;
+class Phasor: public Gen {
 
     private://-----------------------------------------------------------------
     ParameterIndexT _input_index_frequency;    
@@ -861,7 +892,7 @@ class Phasor: public Generator {
 	RenderCountT _period_samples;
 
     public://------------------------------------------------------------------
-    explicit Phasor(EnvironmentShared);
+    explicit Phasor(EnvironmentPtr);
 	
     virtual void init();    
 
@@ -877,8 +908,8 @@ class Phasor: public Generator {
 //=============================================================================
 //! A pure (calculated) sine wave. The sine has a ramp from -1 to 1 for each _output_count defined. Range is between -1 and 1. For performance, values are not mapped in this generator; use a Map instance. 
 class Sine;
-typedef std::shared_ptr<Sine> SineShared;
-class Sine: public Generator {
+typedef std::shared_ptr<Sine> SinePtr;
+class Sine: public Gen {
 
     private://-----------------------------------------------------------------
     ParameterIndexT _input_index_frequency;    
@@ -898,7 +929,7 @@ class Sine: public Generator {
 
     public://------------------------------------------------------------------
 
-    explicit Sine(EnvironmentShared);
+    explicit Sine(EnvironmentPtr);
 	
     ~Sine();
 
@@ -917,8 +948,8 @@ class Sine: public Generator {
 //=============================================================================
 //! A mapping routine that takes five parameters: source, destination min, destination max, source min, source max. Values of the source greater than min/max are truncaated and held at that value.
 class Map;
-typedef std::shared_ptr<Map> MapShared;
-class Map: public Generator {
+typedef std::shared_ptr<Map> MapPtr;
+class Map: public Gen {
 
     private://-----------------------------------------------------------------
     ParameterIndexT _input_index_src;
@@ -941,7 +972,7 @@ class Map: public Generator {
     
     
     public://------------------------------------------------------------------
-    explicit Map(EnvironmentShared);
+    explicit Map(EnvironmentPtr);
 	
     virtual void init();
     
@@ -958,8 +989,8 @@ class Map: public Generator {
 //=============================================================================
 //! An AD envelope.
 class AttackDecay;
-typedef std::shared_ptr<AttackDecay> AttackDecayShared;
-class AttackDecay: public Generator {
+typedef std::shared_ptr<AttackDecay> AttackDecayPtr;
+class AttackDecay: public Gen {
 
     private://-----------------------------------------------------------------
     ParameterIndexT _input_index_trigger;
@@ -989,7 +1020,7 @@ class AttackDecay: public Generator {
     SampleT _amp;
     
     public://------------------------------------------------------------------
-    explicit AttackDecay(EnvironmentShared);
+    explicit AttackDecay(EnvironmentPtr);
 	
     virtual void init();
     

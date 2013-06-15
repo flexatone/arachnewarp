@@ -27,27 +27,27 @@ const int FRAMES_PER_BUFFER = 64;
 // a wrapper for calling arachnewarp generators
 class AWPerformer {
 public:
-    aw::GeneratorShared root_gen;
+    aw::GenPtr root_gen;
     aw::RenderCountT render_count;
     
 	explicit AWPerformer() :
             render_count(0) {
 
         // setup objects
-        aw::EnvironmentShared e = aw::Environment::make_with_frame_size(
+        aw::EnvironmentPtr e = aw::Environment::make_with_frame_size(
                 FRAMES_PER_BUFFER);
 
-        aw::GeneratorShared g1 = aw::Generator::make_with_environment(
-                aw::Generator::ID_Sine, e);
+        aw::GenPtr g1 = aw::Gen::make_with_environment(
+                aw::Gen::ID_Sine, e);
         220 >> g1;
         
         // rate of fm
-        aw::GeneratorShared gmod = aw::Generator::make_with_environment(
-                aw::Generator::ID_Sine, e);
+        aw::GenPtr gmod = aw::Gen::make_with_environment(
+                aw::Gen::ID_Sine, e);
         8 >> gmod;
 
-        aw::GeneratorShared gmap = aw::Generator::make_with_environment(
-                aw::Generator::ID_Map, e);
+        aw::GenPtr gmap = aw::Gen::make_with_environment(
+                aw::Gen::ID_Map, e);
         // source
         gmap->set_input_by_index(0, gmod);
         gmap->set_input_by_index(1, -1);
@@ -57,12 +57,12 @@ public:
         gmap->set_input_by_index(4, 880-440);
         
         
-        aw::GeneratorShared g2 = aw::Generator::make_with_environment(
-                aw::Generator::ID_Sine, e);
+        aw::GenPtr g2 = aw::Gen::make_with_environment(
+                aw::Gen::ID_Sine, e);
         gmap >> g2;
 
-        aw::GeneratorShared genv = aw::Generator::make(
-                aw::Generator::ID_AttackDecay);
+        aw::GenPtr genv = aw::Gen::make(
+                aw::Gen::ID_AttackDecay);
         genv->set_input_by_index(1, .25); // atack/decay in sec
         genv->set_input_by_index(2, .25);
         genv->set_input_by_index(4, 1); // self cycle mode

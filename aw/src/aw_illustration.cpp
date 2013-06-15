@@ -27,7 +27,7 @@ Illustration :: ~Illustration() {}
 //    throw std::invalid_argument("not implemented");
 //}
 
-void Illustration :: draw(GeneratorShared g) {
+void Illustration :: draw(GenPtr g) {
     throw std::invalid_argument("not implemented");
 }
 
@@ -146,7 +146,7 @@ set rmargin screen 0.98 " << std::endl;
 //    draw(v, 0);
 //}
 
-void TimeDomainGraph :: draw(GeneratorShared g) {    
+void TimeDomainGraph :: draw(GenPtr g) {    
 	VSampleT v;
 	g->write_outputs_to_vector(v); // load outputs into this vecotr
     draw_vector(v, g->get_output_count());
@@ -169,8 +169,8 @@ void TimeDomainGraph :: pipe() {
 
 
 // Static dictionary returns
-std::string ColorDictionary::get(Generator::GeneratorID gid){
-    if (gid == Generator::ID_Constant) {
+std::string ColorDictionary::get(Gen::GeneratorID gid){
+    if (gid == Gen::ID_Constant) {
         return "lightsteelblue3";
     }
     else {
@@ -189,7 +189,7 @@ NetworkGraph :: ~NetworkGraph() {}
 // grpahiz colors can be found here:
 // http://www.graphviz.org/doc/info/colors.html
 
-void NetworkGraph :: _draw_generator(GeneratorShared g, 
+void NetworkGraph :: _draw_generator(GenPtr g, 
         SharedMapStringBool memo) {
 	if (!g) { // if we get an empty pointer
 		// could aternatively just return as a base case of recursion
@@ -226,9 +226,9 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
     _stream << "\" fillcolor=\"" << ColorDictionary::get(g->get_class_id()) << "\"];" << std::endl;
     
     // next, define connections
-    Generator::VGenSharedOutPair g_ins;
-    GeneratorShared g_slot;
-    Generator::VGenSharedOutPair::const_iterator k;
+    Gen::VGenPtrOutPair g_ins;
+    GenPtr g_slot;
+    Gen::VGenPtrOutPair::const_iterator k;
 
     for (pos=0; pos < g->get_slot_count(); ++pos) {    
         // a single gen shared for this position
@@ -247,8 +247,8 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
     }    
 
     ParameterIndexT g_ins_out_pos(0);
-    GeneratorShared g_in;
-    Generator::VGenSharedOutPair::const_iterator j; 
+    GenPtr g_in;
+    Gen::VGenPtrOutPair::const_iterator j; 
     // show connections by describing inputs
     // iter over each input position
     for (pos=0; pos < g->get_input_count(); ++pos) {    
@@ -284,7 +284,7 @@ void NetworkGraph :: _draw_generator(GeneratorShared g,
 
 
 
-void NetworkGraph :: draw(GeneratorShared g) {    
+void NetworkGraph :: draw(GenPtr g) {    
     // color is the the color of the outline of the box-shape
     _stream.str("");     
     // header
