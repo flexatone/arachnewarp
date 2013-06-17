@@ -876,7 +876,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_8) {
     // test basic multiplication
 
 	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Sine);
-    aw::Injector::make({200, .5}) >> g1;
+    
+    aw::Inj<aw::SampleT>({200, .5}) >> g1;
     g1->render(1);
     //g1->print_inputs();
 	        
@@ -888,7 +889,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_9) {
 
 	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
     // setting slots: channels and duratin in sec
-    aw::Injector::make({3, 1.0}) || g1;
+    aw::Inj<aw::SampleT>({3, 1.0}) || g1;
 
     BOOST_CHECK_EQUAL(g1->get_output_count(), 3);
     BOOST_CHECK_EQUAL(g1->get_outputs_size(),
@@ -1135,8 +1136,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_3) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
 	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
+
     g1->set_slot_by_index(0, 1); // must set one channel
-    aw::InjectorPtr bi = aw::InjectorPtr(new aw::Injector({0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0}));
+
+    // just create a regular instance
+    aw::Inj<aw::SampleT> bi(
+            {0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0});
+    
     g1->set_outputs(bi);
     BOOST_CHECK(g1->get_frame_size() == 13);
     BOOST_CHECK(g1->get_output_count() == 1);
@@ -1148,7 +1154,13 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
 	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Buffer);
     //{3, 1, 3, .5, 0} && g1;
     //g2->set_slot_by_index(0, 1); // must set one channel
-    bi = aw::InjectorPtr(new aw::Injector({{10, 1, 2}, {5, 4, 5}, {4, 5, 4}, {1, 2, 20}, {4, 5, 4}, {1, 2, 20}}));
+    bi = aw::Inj<aw::SampleT>({
+            {10, 1, 2},
+            {5, 4, 5},
+            {4, 5, 4},
+            {1, 2, 20},
+            {4, 5, 4},
+            {1, 2, 20}});
     g2->set_outputs(bi);
     BOOST_CHECK(g2->get_frame_size() == 6);
     BOOST_CHECK(g2->get_output_count() == 3);
@@ -1171,7 +1183,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
 	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
     
-    aw::Injector::make({3,4,5,200,2000}) && g1;
+    aw::Inj<aw::SampleT>({3,4,5,200,2000}) && g1;
     //g1->illustrate_outputs();
     BOOST_CHECK(g1->get_frame_size() == 5);
     BOOST_CHECK(g1->get_output_count() == 1);
@@ -1180,7 +1192,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
     BOOST_CHECK(g1->outputs[0][2] == 5);
 
     // will reset the existing buffer
-    aw::Injector::make({{0, .5}, {20, .1}, {40, .5},
+    aw::Inj<aw::SampleT>({{0, .5}, {20, .1}, {40, .5},
             {60, .9}, {110, .3}}) && g1;
     //g1->illustrate_outputs();
 
@@ -1198,6 +1210,20 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
     
     // but thisdoes not: TODO: have make method on BuffInjector and have op overload work on that; or find out how to fix
     //{3, 4, 5} && g1;
+
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_3) {
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
+    
+    // using templated version
+    aw::Inj<aw::SampleT>({3,4,5,200,2000}) && g1;
+    BOOST_CHECK(g1->get_frame_size() == 5);
+    BOOST_CHECK(g1->get_output_count() == 1);
+    BOOST_CHECK(g1->outputs[0][0] == 3);
+    BOOST_CHECK(g1->outputs[0][1] == 4);
+    BOOST_CHECK(g1->outputs[0][2] == 5);
 
 }
 

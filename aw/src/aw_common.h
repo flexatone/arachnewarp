@@ -168,59 +168,59 @@ inline SampleT mtof(SampleT f) {
 
 
 //! Convert a string into lower case in place. 
-inline void to_lower(std::string& src) {
-    std::transform(src.begin(), src.end(), src.begin(), ::tolower);
-}
-
-//! Remove characters from a string passed in place.
-inline void remove(std::string& src, const char target) {
-    src.erase(std::remove(src.begin(), src.end(), target), src.end());
-}
-
-
-//! Split a string by a delimiter. 
-inline void split(
-        const std::string& src,
-        const char delim,
-        std::vector<std::string>& post) {
-    std::stringstream ss(src);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        post.push_back(item);
-    }
-
-}
+//inline void to_lower(std::string& src) {
+//    std::transform(src.begin(), src.end(), src.begin(), ::tolower);
+//}
+//
+////! Remove characters from a string passed in place.
+//inline void remove(std::string& src, const char target) {
+//    src.erase(std::remove(src.begin(), src.end(), target), src.end());
+//}
+//
+//
+////! Split a string by a delimiter. 
+//inline void split(
+//        const std::string& src,
+//        const char delim,
+//        std::vector<std::string>& post) {
+//    std::stringstream ss(src);
+//    std::string item;
+//    while (std::getline(ss, item, delim)) {
+//        post.push_back(item);
+//    }
+//
+//}
 
 //! A templated function that will take a string and convert to a vector of type T, using istreingstream conversion.
-template <typename T>
-void string_to_vector(
-        const std::string& src, // input
-        std::vector<T>& post, // return collector
-        const char delim=',',
-        const std::string& remove="") {
-
-    std::vector<std::string> col; // need a temp col of strings
-    std::vector<std::string>::const_iterator i;
-    
-    T var;
-    std::istringstream iss;
-    std::string working(src); // copy to permit changing in place
-
-    for (std::string::const_iterator j=remove.begin(); j != remove.end(); ++j) {
-        aw::remove(working, *j);
-    }
-    // split in place by delim into col
-    aw::split(working, delim, col);
-    // for each part of col, make into type T
-    for(i=col.begin(); i!=col.end(); ++i) {
-        iss.clear(); // clear it on each pass
-        iss.str(*i);
-        iss >> var;
-        post.push_back(var);
-    }
-}
-
-
+//template <typename T>
+//void string_to_vector(
+//        const std::string& src, // input
+//        std::vector<T>& post, // return collector
+//        const char delim=',',
+//        const std::string& remove="") {
+//
+//    std::vector<std::string> col; // need a temp col of strings
+//    std::vector<std::string>::const_iterator i;
+//    
+//    T var;
+//    std::istringstream iss;
+//    std::string working(src); // copy to permit changing in place
+//
+//    for (std::string::const_iterator j=remove.begin(); j != remove.end(); ++j) {
+//        aw::remove(working, *j);
+//    }
+//    // split in place by delim into col
+//    aw::split(working, delim, col);
+//    // for each part of col, make into type T
+//    for(i=col.begin(); i!=col.end(); ++i) {
+//        iss.clear(); // clear it on each pass
+//        iss.str(*i);
+//        iss >> var;
+//        post.push_back(var);
+//    }
+//}
+//
+//
 
 
 
@@ -413,6 +413,109 @@ class Injector {
         void fill_interleaved(VSampleT&) const;
     
 };
+
+
+
+//! A class used to pass list and nested list values with initializer lists.
+//template <typename T>
+//class Inj;
+//
+//template <typename T>
+//typedef std::shared_ptr<T> InjPtr;
+
+template <typename T>
+class Inj {
+    private: //-----------------------------------------------------
+    
+    std::vector<T> _parsed;
+    ParameterIndexT _channels;
+    bool _equal_width;
+    
+    public: //--------------------------------------------------------
+    
+    Inj() = delete;
+    
+//    typedef std::shared_ptr<T> Ptr;
+    
+    //! A single flat list
+    Inj(std::initializer_list<T> src) {
+        // this always have 1 dimension
+        _channels = 1;
+        _parsed.reserve(src.size());
+        for (auto x : src) {
+            _parsed.push_back(x);
+        }
+    }
+        
+    //! A nested list.
+    Inj(std::initializer_list< std::initializer_list<T> > src){
+        // number of sub groups is channels;
+        // find max on first iteration; must go through all
+        _channels = 0;
+        for (auto group : src) {
+            _channels = std::max(_channels, group.size());
+        }
+        std::size_t group_count;
+        for (auto group : src) {
+            group_count = 0;
+            for (auto x : group) {
+                _parsed.push_back(x);
+                ++group_count;
+            }
+            // pad zerof for anything missing
+            while (group_count < _channels) {
+                _parsed.push_back(0);
+                ++group_count;
+            }
+        }
+    }
+
+//    static InjectorPtr make(
+//            std::initializer_list<T>);
+//
+//    static InjectorPtr make(
+//            std::initializer_list< std::initializer_list<T> >);
+
+    ParameterIndexT get_channels() const {
+        return _channels;
+    }
+
+    //! The frame size is the total number of samples per channel. 
+    OutputsSizeT get_frame_size() const {
+        return _parsed.size() / _channels;
+    }
+
+    //! Pass in vector of SampleTypes and fill it up a linear representation of the provided values.
+    void fill_interleaved(std::vector<T>& post) const {
+    // Pass in a reference to a vector and have it cleared, sized, and filled.
+        //std::cout << "fill_interleaved: " << get_frame_size() << std::endl;
+        post.clear();
+        post.reserve(_parsed.size());
+        for (auto x : _parsed) {
+            post.push_back(x);
+        }
+    }
+    
+};
+
+
+//template< typename T >
+//InjectorPtr Inj<T> :: make(std::initializer_list<T> src) {
+//    return InjPtr(new Inj(src));
+//}
+//
+//template< typename T >
+//InjectorPtr Inj<T> :: make(
+//    std::initializer_list< std::initializer_list<T> > src) {
+//    return InjPtr(new Inj(src));
+//}
+
+
+
+
+
+
+
 
 
 
