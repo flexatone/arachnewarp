@@ -164,14 +164,14 @@ class Gen: public std::enable_shared_from_this<Gen> {
     // public typedefs
 	//! A mapping of index number
     typedef std::unordered_map<ParameterIndexT, ParameterTypePtr> MapIndexToParameterTypePtr;
+
+    //! A vector of GenPtr instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
+    typedef std::vector<GenPtr> VGenPtr;
 		
     //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.
     typedef std::pair<GenPtr, ParameterIndexT> GenPtrOutPair;
     typedef std::vector<GenPtrOutPair> VGenPtrOutPair;
     typedef std::vector<VGenPtrOutPair> VVGenPtrOutPair;
-
-    //! A vector of GenPtr instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
-    typedef std::vector<GenPtr> VGenPtr;
     
     // enums    
     //! Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators. 
@@ -432,6 +432,8 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Overridden, overloaded function for setting outputs. Implemented by Buffer, but defined on base so all have access. Need a Injector because otherwise we would take more parameters for channels, etc.
     virtual void set_outputs(const InjectorPtr bi);
 
+    virtual void set_outputs(const Inj<SampleT>& bi);
+
     //! Set output swith a file path represented as a string.
     virtual void set_outputs(const std::string& fp);
 
@@ -550,11 +552,11 @@ inline GenPtr connect_serial(SampleT lhs, GenPtr rhs,
 
 
 //! Assign an Injector as an input to matching inputs on rhs GenPtr.
-inline GenPtr connect_serial(InjectorPtr lhs, GenPtr rhs) {
+inline GenPtr connect_serial(const Inj<SampleT>& lhs, GenPtr rhs) {
 
     // create vector, fill with values;
     VSampleT inj;
-    lhs->fill_interleaved(inj);
+    lhs.fill_interleaved(inj);
     // get lesser of input, injection size
     ParameterIndexT availLen = std::min(rhs->get_input_count(), inj.size());
     for(ParameterIndexT i=0; i<availLen; ++i) {
@@ -566,12 +568,14 @@ inline GenPtr connect_serial(InjectorPtr lhs, GenPtr rhs) {
 
 
 //! Assign an Injector as an input to matching slot positions.
-inline GenPtr connect_serial_to_slots(InjectorPtr lhs, GenPtr rhs) {
+inline GenPtr connect_serial_to_slots(const Inj<SampleT>& lhs,
+        GenPtr rhs) {
     // create vector, fill with values;
     VSampleT inj;
-    lhs->fill_interleaved(inj);
+    lhs.fill_interleaved(inj);
     // get lesser of slot, injection size
-    ParameterIndexT availLen = std::min(rhs->get_slot_count(), inj.size());
+    ParameterIndexT availLen = std::min(rhs->get_slot_count(),
+            inj.size());
     for(ParameterIndexT i=0; i < availLen; ++i) {
         // note: using set here, not add,  unlike other serial connections
         rhs->set_slot_by_index(i, inj[i]);
@@ -593,7 +597,7 @@ inline GenPtr operator>>(SampleT lhs, GenPtr rhs) {
 }
 
 //! Connect an 1D Injector, where each element is mapped to an argument in order. It is an exception to provide more than 1 dimension. This will always set parameters, not add them.
-inline GenPtr operator>>(InjectorPtr lhs, GenPtr rhs) {
+inline GenPtr operator>>(const Inj<SampleT>& lhs, GenPtr rhs) {
     return connect_serial(lhs, rhs);
 }
 
@@ -601,7 +605,7 @@ inline GenPtr operator>>(InjectorPtr lhs, GenPtr rhs) {
 // operator || ...............................................................
 
 //! Connect a 1D Injector, where each element is mapped to a slot in order. It is an exception to provide more than 1 dimension. This will always set slots.
-inline GenPtr operator||(InjectorPtr lhs, GenPtr rhs) {
+inline GenPtr operator||(const Inj<SampleT>& lhs, GenPtr rhs) {
     return connect_serial_to_slots(lhs, rhs);
 }
 
@@ -613,15 +617,19 @@ inline GenPtr operator||(InjectorPtr lhs, GenPtr rhs) {
 
 inline GenPtr operator&&(aw::InjectorPtr lhs,
         GenPtr rhs) {
-    //return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
-    // convert to aw::Injector
+    rhs->set_outputs(lhs); // will throw if rhs is not Buffer
+    return rhs;
+}
+
+
+inline GenPtr operator&&(const aw::Inj<SampleT>& lhs,
+        GenPtr rhs) {
     rhs->set_outputs(lhs); // will throw if rhs is not Buffer
     return rhs;
 } 
 
 inline GenPtr operator&&(const std::string lhs, GenPtr rhs) {
     //return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
-    // TODO: when we ahave a sound-file lookup routine, use it to convert lhs into a full, complete path; or, do this at set_outputs_from_fp. 
     rhs->set_outputs(lhs); // will throw if rhs is not Buffer
     return rhs;        
 } 
@@ -840,6 +848,9 @@ class Buffer: public Gen {
 
     //! Overridden set outputs from InjectorPtr
     virtual void set_outputs(const InjectorPtr bi);
+
+    //! Overridden set outputs from Inj reference.
+    virtual void set_outputs(const Inj<SampleT>& bi);
 
     //! Overridden set outputs a std::string, treated a file path.
     virtual void set_outputs(const std::string& fp);

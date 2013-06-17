@@ -149,6 +149,18 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_a) {
     
 }
 
+
+
+BOOST_AUTO_TEST_CASE(aw_inj_a) {
+
+    aw::Inj<aw::SampleT> bi({3, 6, 2, 3, 5});
+    BOOST_CHECK_EQUAL(bi.get_frame_size(), 5);
+    BOOST_CHECK_EQUAL(bi.get_channels(), 1);
+    
+}
+
+
+
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
     std::vector<aw::SampleT> post;
@@ -192,64 +204,64 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 
 
 
+//
+//
+//
+//BOOST_AUTO_TEST_CASE(aw_test_to_lower) {
+//
+//    std::string a("TESTing asdf SDF");
+//    aw::to_lower(a);
+//    BOOST_CHECK_EQUAL(a, "testing asdf sdf");
+//}
+//
+//
+//BOOST_AUTO_TEST_CASE(aw_test_split) {
+//
+//    std::vector<std::string> post;
+//    std::string a("1, 4.3, 1.2");
+//    
+//    aw::split(a, ',', post);
+//    
+//    BOOST_CHECK_EQUAL(post[0], "1");
+//    BOOST_CHECK_EQUAL(post[1], " 4.3");
+//    BOOST_CHECK_EQUAL(post[2], " 1.2");
+//    
+//}
+//
+//
+//BOOST_AUTO_TEST_CASE(aw_test_remove) {
+//
+//    std::string a("1, 4.3, 1.2");
+//    aw::remove(a, ',');
+//    BOOST_CHECK_EQUAL(a, "1 4.3 1.2");
+//    aw::remove(a, ' ');
+//    BOOST_CHECK_EQUAL(a, "14.31.2");
+//    
+//}
+//
 
-
-
-BOOST_AUTO_TEST_CASE(aw_test_to_lower) {
-
-    std::string a("TESTing asdf SDF");
-    aw::to_lower(a);
-    BOOST_CHECK_EQUAL(a, "testing asdf sdf");
-}
-
-
-BOOST_AUTO_TEST_CASE(aw_test_split) {
-
-    std::vector<std::string> post;
-    std::string a("1, 4.3, 1.2");
-    
-    aw::split(a, ',', post);
-    
-    BOOST_CHECK_EQUAL(post[0], "1");
-    BOOST_CHECK_EQUAL(post[1], " 4.3");
-    BOOST_CHECK_EQUAL(post[2], " 1.2");
-    
-}
-
-
-BOOST_AUTO_TEST_CASE(aw_test_remove) {
-
-    std::string a("1, 4.3, 1.2");
-    aw::remove(a, ',');
-    BOOST_CHECK_EQUAL(a, "1 4.3 1.2");
-    aw::remove(a, ' ');
-    BOOST_CHECK_EQUAL(a, "14.31.2");
-    
-}
-
-
-BOOST_AUTO_TEST_CASE(string_to_vector) {
-    std::string a("1, 4.3, 1.2");
-
-    std::vector<aw::SampleT> post;
-    
-    aw::string_to_vector<aw::SampleT>(a, post);
-    
-    BOOST_CHECK_EQUAL(post[0], 1);
-    BOOST_CHECK_EQUAL(post[1], 4.3);
-    BOOST_CHECK_EQUAL(post[2], 1.2);
-
-    // TODO: make this work
-    std::string b("1, (4.3, 1.2)");
-
-    post.clear();
-    aw::string_to_vector<aw::SampleT>(b, post, ',', "()");
-
-    BOOST_CHECK_EQUAL(post[0], 1);
-    BOOST_CHECK_EQUAL(post[1], 4.3);
-    BOOST_CHECK_EQUAL(post[2], 1.2);
-
-}
+//BOOST_AUTO_TEST_CASE(string_to_vector) {
+//    std::string a("1, 4.3, 1.2");
+//
+//    std::vector<aw::SampleT> post;
+//    
+//    aw::string_to_vector<aw::SampleT>(a, post);
+//    
+//    BOOST_CHECK_EQUAL(post[0], 1);
+//    BOOST_CHECK_EQUAL(post[1], 4.3);
+//    BOOST_CHECK_EQUAL(post[2], 1.2);
+//
+//    // TODO: make this work
+//    std::string b("1, (4.3, 1.2)");
+//
+//    post.clear();
+//    aw::string_to_vector<aw::SampleT>(b, post, ',', "()");
+//
+//    BOOST_CHECK_EQUAL(post[0], 1);
+//    BOOST_CHECK_EQUAL(post[1], 4.3);
+//    BOOST_CHECK_EQUAL(post[2], 1.2);
+//
+//}
 
 //
 //

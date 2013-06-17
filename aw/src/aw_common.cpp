@@ -127,7 +127,21 @@ std::string Environment :: get_fp_temp(std::string name) const {
 
 //==============================================================================
 
-// TODO: Need two types of injectors: one for values, another for simple collections of generators; could alternatively simply have >> take VGen({})
+// TODO: Need two types of injectors: one for values, another for simple collections of generators; could alternatively simply have >> take VGenPtr({})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Injector :: Injector(ILSampleT src) {
     // this always have 1 dimension
@@ -172,7 +186,7 @@ InjectorPtr Injector :: make(ILILSampleT src) {
 ParameterIndexT Injector :: get_channels() const {
     return _channels;
 }
-    
+
 OutputsSizeT Injector :: get_frame_size() const {
     return _parsed.size() / _channels;
 }

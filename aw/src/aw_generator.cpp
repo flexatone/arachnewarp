@@ -659,6 +659,12 @@ void Gen :: set_outputs(const InjectorPtr bi) {
     throw std::domain_error("not implemented on base class");
 }
 
+void Gen :: set_outputs(const Inj<SampleT>& bi) {
+    // vitual method overridden in Buffer
+    throw std::domain_error("not implemented on base class");
+}
+
+
 void Gen :: set_outputs(const std::string& fp) {
     // vitual method overridden in Buffer
     throw std::domain_error("not implemented on base class");
@@ -1288,6 +1294,20 @@ void Buffer :: set_outputs(const InjectorPtr bi) {
     // vector will be auto destroyed here
 }
 
+
+void Buffer :: set_outputs(const Inj<SampleT>& bi) {
+    // vitual method overridden in Buffer
+    //std::cout << "Buffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;    
+    VSampleT vst;
+    bi.fill_interleaved(vst);
+    ParameterIndexT ch = bi.get_channels();
+    set_slot_by_index(0, ch); // set channels
+    // will get a pointer to vst and pass to set from array
+    set_outputs_from_vector(vst, ch);
+    // vector will be auto destroyed here
+}
+
+
 void Buffer :: set_outputs(const std::string& fp) {
     // vitual method overridden in Buffer
     set_outputs_from_fp(fp);
@@ -1309,6 +1329,7 @@ void Breakpoints :: init() {
 
 
 Validity Breakpoints :: _validate_outputs() {
+    // TODO: check taht it has 2 dimensions, check that x is always increasing
     return Validity {true, "OK"};
 }
 
