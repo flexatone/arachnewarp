@@ -654,10 +654,6 @@ void Gen :: set_outputs_from_fp(const std::string& fp) {
 }
 
 
-void Gen :: set_outputs(const InjectorPtr bi) {
-    // vitual method overridden in Buffer
-    throw std::domain_error("not implemented on base class");
-}
 
 void Gen :: set_outputs(const Inj<SampleT>& bi) {
     // vitual method overridden in Buffer
@@ -710,16 +706,6 @@ ParameterIndexT Gen :: get_slot_index_from_parameter_name(
 
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
-
-Gen::VGenPtrOutPair Gen :: get_input_gen_shared_by_index(
-                        ParameterIndexT i) {
-    if (_input_count <= 0 or i >= _input_count) {
-        throw std::invalid_argument("Parameter index is not available.");		
-    }
-    // NOTE: this is copying all contents, but probably not a problem b/c just shared pointers
-    Gen::VGenPtrOutPair post(_inputs[i]);
-    return post;
-}
 
 void Gen :: set_input_by_index(
         ParameterIndexT i,
@@ -795,6 +781,23 @@ void Gen :: add_input_by_index(ParameterIndexT i, SampleT v,
 }
 
 
+Gen::VGenPtrOutPair Gen :: get_input_gens_by_index(
+                        ParameterIndexT i) {
+    if (_input_count <= 0 or i >= _input_count) {
+        throw std::invalid_argument("Parameter index is not available.");		
+    }
+    // NOTE: this is copying all contents, but probably not a problem b/c just shared pointers
+    Gen::VGenPtrOutPair post(_inputs[i]);
+    return post;
+}
+
+
+void Gen :: clear_inputs() {
+    for (ParameterIndexT i = 0; i<_input_count; ++i) {
+        _inputs[i].clear();
+    }
+}
+
 //..............................................................................
 // public slot control 
 void Gen :: set_slot_by_index(ParameterIndexT i, GenPtr gs, 
@@ -824,7 +827,7 @@ void Gen :: set_slot_by_index(ParameterIndexT i, SampleT v,
 }
 
 
-GenPtr Gen :: get_slot_gen_shared_at_index(
+GenPtr Gen :: get_slot_gen_at_index(
 										  ParameterIndexT i) {
     if (_slot_count <= 0 or i >= _slot_count) {
         throw std::invalid_argument("Parameter index is not available.");		
@@ -833,6 +836,10 @@ GenPtr Gen :: get_slot_gen_shared_at_index(
 }
 
 
+
+//void Gen :: clear_slots() {
+// do not implement
+//}
 
 
 
@@ -921,7 +928,7 @@ void Constant :: render(RenderCountT f) {
 }
 
 
-Gen::VGenPtrOutPair Constant :: get_input_gen_shared_by_index(
+Gen::VGenPtrOutPair Constant :: get_input_gens_by_index(
 										  ParameterIndexT i) {
 	// overridden virtual method
     // return an empty vector for clients to iterate over
@@ -1280,19 +1287,6 @@ void Buffer :: set_outputs_from_fp(const std::string& fp) {
     }
 }
 
-
-
-void Buffer :: set_outputs(const InjectorPtr bi) {
-    // vitual method overridden in Buffer
-    //std::cout << "Buffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;    
-    VSampleT vst;
-    bi->fill_interleaved(vst);
-    ParameterIndexT ch = bi->get_channels();
-    set_slot_by_index(0, ch); // set channels
-    // will get a pointer to vst and pass to set from array
-    set_outputs_from_vector(vst, ch);
-    // vector will be auto destroyed here
-}
 
 
 void Buffer :: set_outputs(const Inj<SampleT>& bi) {

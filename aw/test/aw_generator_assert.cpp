@@ -102,7 +102,7 @@ bool test_5() {
     g2->set_input_by_index(2, 2110);
           
     // g1 into g2
-    g2 = aw::connect_serial(g1, g2);
+    g2 = aw::connect_serial_to_inputs(g1, g2);
 
     g2->render(1);
     
