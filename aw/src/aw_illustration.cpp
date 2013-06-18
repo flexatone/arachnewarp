@@ -232,7 +232,7 @@ void NetworkGraph :: _draw_generator(GenPtr g,
 
     for (pos=0; pos < g->get_slot_count(); ++pos) {    
         // a single gen shared for this position
-        g_slot = g->get_slot_gen_shared_at_index(pos);  
+        g_slot = g->get_slot_gen_at_index(pos);  
         // show from name to this gen at this slot
         _stream << "\"" << g_slot->get_name_address() << "\":";
         // out is not defined!
@@ -253,7 +253,7 @@ void NetworkGraph :: _draw_generator(GenPtr g,
     // iter over each input position
     for (pos=0; pos < g->get_input_count(); ++pos) {    
         // a vector of gen shared/ out number pairs for this position
-        g_ins = g->get_input_gen_shared_by_index(pos);
+        g_ins = g->get_input_gens_by_index(pos);
         
         //std::cout << g << " g_ins:" << g_ins.size() << std::endl;
         // for each input position, iter over all connections to gens at outputs

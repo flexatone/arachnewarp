@@ -430,8 +430,6 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
 
     //! Overridden, overloaded function for setting outputs. Implemented by Buffer, but defined on base so all have access. Need a Injector because otherwise we would take more parameters for channels, etc.
-    virtual void set_outputs(const InjectorPtr bi);
-
     virtual void set_outputs(const Inj<SampleT>& bi);
 
     //! Set output swith a file path represented as a string.
@@ -460,11 +458,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     // TODO: must check for duplicated connections and silently skip them; 
     
-	// inputs ..............................................................    
-    //! Get a vector of GenPtr for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
-    virtual VGenPtrOutPair get_input_gen_shared_by_index(
-            ParameterIndexT i);
-    
+	// inputs ..............................................................        
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     virtual void set_input_by_index(
             ParameterIndexT i,
@@ -495,6 +489,14 @@ class Gen: public std::enable_shared_from_this<Gen> {
     virtual void add_input_by_index(ParameterIndexT i, SampleT v, 
             ParameterIndexT pos=0);
   
+  
+    //! Get a vector of GenPtr for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
+    virtual VGenPtrOutPair get_input_gens_by_index(
+            ParameterIndexT i);
+
+    //! Remove all GenPtr attacked to all inputs.
+    void clear_inputs();
+  
 	// slot ..............................................................    	
     //! Directly set a parameter to a slot given an index. This will remove/erase any parameter on this slot. The update parameter permits disabling updating a slot, useful during initial configuration. 
     virtual void set_slot_by_index(ParameterIndexT i, GenPtr gs, 
@@ -505,14 +507,18 @@ class Gen: public std::enable_shared_from_this<Gen> {
 									bool update=true);
 
     //! Return the single gen at this slot position (not a vector, like inputs).
-    virtual GenPtr get_slot_gen_shared_at_index(ParameterIndexT i);
+    virtual GenPtr get_slot_gen_at_index(ParameterIndexT i);
+    
+    // Remove all GenPtr attacked to all inputs: does not make sense to do this, because we always need one gen in each slot position
+    //void clear_slots();
+    
 
 };
 
 //.............................................................................
 // functions on GenPtr ...............................................
 //! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
-inline GenPtr connect_serial(GenPtr lhs, GenPtr rhs, 
+inline GenPtr connect_serial_to_inputs(GenPtr lhs, GenPtr rhs, 
         ParameterIndexT start=0, ParameterIndexT count=0) {
     // connect from left to right, so from lhs to rhs
     // lhs is above rhs in downard flow
@@ -541,64 +547,95 @@ inline GenPtr connect_serial(GenPtr lhs, GenPtr rhs,
 
 
 //! Assign SampleValue (after being converted to a Constant) directly as an input to one or more inputs on rhs GenPtr.
-inline GenPtr connect_serial(SampleT lhs, GenPtr rhs, 
+inline GenPtr connect_serial_to_inputs(SampleT lhs, GenPtr rhs, 
         ParameterIndexT start=0, ParameterIndexT count=0) {        
     // set environment from lhs
 	GenPtr g_lhs = Gen::make_with_environment(
             Gen::ID_Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
-    return aw::connect_serial(g_lhs, rhs); // will return rhs
+    return aw::connect_serial_to_inputs(g_lhs, rhs); // will return rhs
 }
 
 
 //! Assign an Injector as an input to matching inputs on rhs GenPtr.
-inline GenPtr connect_serial(const Inj<SampleT>& lhs, GenPtr rhs) {
-
+inline GenPtr connect_serial_to_inputs(const Inj<SampleT>& lhs, GenPtr rhs) {
     // create vector, fill with values;
     VSampleT inj;
     lhs.fill_interleaved(inj);
     // get lesser of input, injection size
-    ParameterIndexT availLen = std::min(rhs->get_input_count(), inj.size());
+    ParameterIndexT availLen = std::min(rhs->get_input_count(),
+            inj.size());
     for(ParameterIndexT i=0; i<availLen; ++i) {
-        // note: using set here, not add,  unlike other serial connections
-        rhs->set_input_by_index(i, inj[i]);
+        rhs->add_input_by_index(i, inj[i]);
+    }
+    return rhs;
+}
+
+//! Assign an Injector as an input to matching inputs on rhs GenPtr.
+inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
+    Gen::VGenPtr inj; // create vector, fill with values;
+    lhs.fill_interleaved(inj);
+    ParameterIndexT availLen = std::min(rhs->get_input_count(),
+            inj.size());
+    for(ParameterIndexT i=0; i<availLen; ++i) {
+        rhs->add_input_by_index(i, inj[i]);
     }
     return rhs;
 }
 
 
-//! Assign an Injector as an input to matching slot positions.
+
+// slot connections ..............................................
+
+//! Assign an Inj of sample values as an input to matching slot positions.
 inline GenPtr connect_serial_to_slots(const Inj<SampleT>& lhs,
         GenPtr rhs) {
-    // create vector, fill with values;
-    VSampleT inj;
+    VSampleT inj; // create vector, fill with values;
     lhs.fill_interleaved(inj);
-    // get lesser of slot, injection size
     ParameterIndexT availLen = std::min(rhs->get_slot_count(),
             inj.size());
     for(ParameterIndexT i=0; i < availLen; ++i) {
-        // note: using set here, not add,  unlike other serial connections
-        rhs->set_slot_by_index(i, inj[i]);
+        rhs->set_slot_by_index(i, inj[i]); // set, not add
     }
     return rhs;
 }
+
+//! Assign an Inj of Gen Ptrs.
+inline GenPtr connect_serial_to_slots(const Inj<GenPtr>& lhs,
+        GenPtr rhs) {
+    Gen::VGenPtr inj; // create vector, fill with values;
+    lhs.fill_interleaved(inj);
+    ParameterIndexT availLen = std::min(rhs->get_slot_count(),
+            inj.size());
+    for(ParameterIndexT i=0; i < availLen; ++i) {
+        rhs->set_slot_by_index(i, inj[i]); // set, not add
+    }
+    return rhs;
+}
+
+
 
 
 // operator >> ...............................................................
 
 //! Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
 inline GenPtr operator>>(GenPtr lhs, GenPtr rhs) {
-    return connect_serial(lhs, rhs);
+    return connect_serial_to_inputs(lhs, rhs);
 }
 
 //! Connect a SampleT, making it into a constant.
 inline GenPtr operator>>(SampleT lhs, GenPtr rhs) {
-    return connect_serial(lhs, rhs);
+    return connect_serial_to_inputs(lhs, rhs);
 }
 
 //! Connect an 1D Injector, where each element is mapped to an argument in order. It is an exception to provide more than 1 dimension. This will always set parameters, not add them.
 inline GenPtr operator>>(const Inj<SampleT>& lhs, GenPtr rhs) {
-    return connect_serial(lhs, rhs);
+    return connect_serial_to_inputs(lhs, rhs);
+}
+
+// Set inputs with an Inj refefence. Will assign as many connections as possible. 
+inline GenPtr operator>>(const Inj<GenPtr>& lhs, GenPtr rhs) {
+    return connect_serial_to_inputs(lhs, rhs);
 }
 
 
@@ -609,17 +646,15 @@ inline GenPtr operator||(const Inj<SampleT>& lhs, GenPtr rhs) {
     return connect_serial_to_slots(lhs, rhs);
 }
 
+inline GenPtr operator||(const Inj<GenPtr>& lhs, GenPtr rhs) {
+    return connect_serial_to_slots(lhs, rhs);
+}
+
 
 
 
 // operator &&................................................................
 // memory (outputs storage) direct settting
-
-inline GenPtr operator&&(aw::InjectorPtr lhs,
-        GenPtr rhs) {
-    rhs->set_outputs(lhs); // will throw if rhs is not Buffer
-    return rhs;
-}
 
 
 inline GenPtr operator&&(const aw::Inj<SampleT>& lhs,
@@ -747,7 +782,7 @@ class Constant: public Gen {
 	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
 
 	//! As Constant does not compose any Generators even though it has an input defined, this overridden method must return an empty vector.     
-    virtual VGenPtrOutPair get_input_gen_shared_by_index(ParameterIndexT i);
+    virtual VGenPtrOutPair get_input_gens_by_index(ParameterIndexT i);
     
     //! This overridden method throws an exception: you cannot set a Gen to a constant.
     virtual void set_input_by_index(ParameterIndexT i, GenPtr gs, 
@@ -845,9 +880,6 @@ class Buffer: public Gen {
         
     //! Set the outputs of this Gen to the content of an audio file provided as an audio path. This overridden method makes the usage of libsndfile to read in a file.
     virtual void set_outputs_from_fp(const std::string& fp);
-
-    //! Overridden set outputs from InjectorPtr
-    virtual void set_outputs(const InjectorPtr bi);
 
     //! Overridden set outputs from Inj reference.
     virtual void set_outputs(const Inj<SampleT>& bi);

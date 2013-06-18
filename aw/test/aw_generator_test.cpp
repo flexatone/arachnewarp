@@ -697,7 +697,7 @@ BOOST_AUTO_TEST_CASE(connect_f_1) {
     aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
     
     // this is g1 to g2
-    g2 = aw::connect_serial(g1, g2);
+    g2 = aw::connect_serial_to_inputs(g1, g2);
     g2->render(1);
     
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 3.5, .0001);
@@ -706,7 +706,7 @@ BOOST_AUTO_TEST_CASE(connect_f_1) {
     g4->set_input_by_index(0, 6.5);
     
     // g4 to g2
-    g2 = aw::connect_serial(g4, g2);    
+    g2 = aw::connect_serial_to_inputs(g4, g2);    
     g2->render(2);
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 10.0, .0001);
 }
@@ -727,11 +727,11 @@ BOOST_AUTO_TEST_CASE(connect_f_2) {
           
 
     // g1 into g2
-    g2 = aw::connect_serial(g1, g2);
+    g2 = aw::connect_serial_to_inputs(g1, g2);
 
     g2->render(1);
     //g2->illustrate_network();
-    // we are connect_serial each of three values independently
+    // we are connect_serial_to_inputs each of three values independently
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
 	BOOST_CHECK_CLOSE(g2->outputs[1][0], 305, .001);
 	BOOST_CHECK_CLOSE(g2->outputs[2][0], 6110, .001);
@@ -754,7 +754,7 @@ BOOST_AUTO_TEST_CASE(connect_f_3) {
           
 
     // connect from o/i 2, 1 length
-    g2 = aw::connect_serial(g1, g2, 2, 1);
+    g2 = aw::connect_serial_to_inputs(g1, g2, 2, 1);
 
     g2->render(1);
     //g2->illustrate_network();
@@ -833,8 +833,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_6) {
 
     aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);    
     // connect two constants to g1b
-    aw::connect_serial(20, g1);
-    aw::connect_serial(11, g1);
+    aw::connect_serial_to_inputs(20, g1);
+    aw::connect_serial_to_inputs(11, g1);
     g1->render(1);
 	BOOST_CHECK_CLOSE(g1->outputs[0][0], 31, .001);
 
@@ -876,11 +876,34 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_8) {
     // test basic multiplication
 
 	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Sine);
+    // need to remove defaults
+    g1->clear_inputs();
     
     aw::Inj<aw::SampleT>({200, .5}) >> g1;
     g1->render(1);
     //g1->print_inputs();
-	        
+    
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Sine);
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Sine);
+
+    aw::Inj<aw::GenPtr>({g2, g3}) >> g1;
+    
+    //g1->illustrate_network();
+
+    aw::Gen::VGenPtrOutPair ins;
+    
+    ins = g1->get_input_gens_by_index(0);
+    BOOST_CHECK_EQUAL(ins.size(), 2);
+    // second pair is g2
+    BOOST_CHECK_EQUAL(ins[1].first, g2);
+    
+    //BOOST_CHECK_EQUAL(ins[1].size(), 2);
+
+    ins = g1->get_input_gens_by_index(1);
+    BOOST_CHECK_EQUAL(ins.size(), 2);
+    BOOST_CHECK_EQUAL(ins[1].first, g3);
+
+    
 }
 
 

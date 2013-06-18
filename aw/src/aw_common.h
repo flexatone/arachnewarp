@@ -371,58 +371,8 @@ class Environment {
 
     	
 
-//	int x = f<double>({2, 4, 5});
-//template<class T> int f(std::initializer_list<T> args) {
-//	return args.size();
-//}
-//	int x = f<double>({2, 4, 5});
-//	x = f<std::initializer_list<double>>({{2,3}, {4,6}});
-    
-
-//! A class used to pass list and nested list values with initializer lists. 
-class Injector;
-
-typedef std::shared_ptr<Injector> InjectorPtr;
-
-class Injector {
-    private:
-        std::vector<SampleT> _parsed;
-        ParameterIndexT _channels;
-        bool _equal_width;
-    
-    public:
-    
-        Injector() = delete;
-
-        //! A single flat list
-        Injector(ILSampleT);
-    
-        //! A nested list.
-        Injector(ILILSampleT);
-    
-        static InjectorPtr make(ILSampleT);
-
-        static InjectorPtr make(ILILSampleT);
-    
-        ParameterIndexT get_channels() const;
-    
-        //! The frame size is the total number of samples per channel. 
-        OutputsSizeT get_frame_size() const;
-
-        //! Pass in vector of SampleTypes and fill it up a linear representation of the provided values.
-        void fill_interleaved(VSampleT&) const;
-    
-};
-
-
 
 //! A class used to pass list and nested list values with initializer lists.
-//template <typename T>
-//class Inj;
-//
-//template <typename T>
-//typedef std::shared_ptr<T> InjPtr;
-
 template <typename T>
 class Inj {
     private: //-----------------------------------------------------
@@ -470,12 +420,6 @@ class Inj {
         }
     }
 
-//    static InjectorPtr make(
-//            std::initializer_list<T>);
-//
-//    static InjectorPtr make(
-//            std::initializer_list< std::initializer_list<T> >);
-
     ParameterIndexT get_channels() const {
         return _channels;
     }
@@ -497,18 +441,6 @@ class Inj {
     }
     
 };
-
-
-//template< typename T >
-//InjectorPtr Inj<T> :: make(std::initializer_list<T> src) {
-//    return InjPtr(new Inj(src));
-//}
-//
-//template< typename T >
-//InjectorPtr Inj<T> :: make(
-//    std::initializer_list< std::initializer_list<T> > src) {
-//    return InjPtr(new Inj(src));
-//}
 
 
 

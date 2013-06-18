@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_a) {
 
-    aw::Injector bi({3, 6, 2, 3, 5});
+    aw::Inj<aw::SampleT> bi({3, 6, 2, 3, 5});
     BOOST_CHECK_EQUAL(bi.get_frame_size(), 5);
     BOOST_CHECK_EQUAL(bi.get_channels(), 1);
     
@@ -165,12 +165,12 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
     std::vector<aw::SampleT> post;
 
-    aw::Injector bi1({ {1, .5}, {10, .2}, {20, .5}});
+    aw::Inj<aw::SampleT> bi1({ {1, .5}, {10, .2}, {20, .5}});
     BOOST_CHECK_EQUAL(bi1.get_frame_size(), 3);
     BOOST_CHECK_EQUAL(bi1.get_channels(), 2);
 
 
-    aw::Injector bi2({ {1}, {10, .2}, {20, .5}});
+    aw::Inj<aw::SampleT> bi2({ {1}, {10, .2}, {20, .5}});
     BOOST_CHECK_EQUAL(bi2.get_frame_size(), 3);
     BOOST_CHECK_EQUAL(bi2.get_channels(), 2);
     
@@ -189,10 +189,9 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 
-    aw::InjectorPtr bi = aw::InjectorPtr(
-            new aw::Injector({3, 6, 2, 3, 5}));
+    aw::Inj<aw::SampleT> bi({3, 6, 2, 3, 5});
     std::vector<aw::SampleT> post;
-    bi->fill_interleaved(post);
+    bi.fill_interleaved(post);
     BOOST_CHECK_EQUAL(post[0], 3);
     BOOST_CHECK_EQUAL(post[1], 6);
     BOOST_CHECK_EQUAL(post[2], 2);
