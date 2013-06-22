@@ -47,7 +47,10 @@ ParameterTypePtr ParameterType :: make(ParameterTypeID q){
     }
     
     else {
-        throw std::invalid_argument("no matching ParaameterTypeID");
+        std::stringstream msg;
+        msg << "no matching ParaameterTypeID";
+        msg << "file: " << __FILE__ "line: " << __LINE__;
+        throw std::invalid_argument(msg.str());
     }
     return p;
 }
@@ -126,7 +129,10 @@ GenPtr  Gen :: make_with_environment(GeneratorID q,
     }    
     else if (q == ID_Buffer) {
         g = BufferPtr(new Buffer(e));    
-    }	
+    }
+    else if (q == ID_Breakpoints) {
+        g = BreakpointsPtr(new Breakpoints(e));
+    }	    
     else if (q == ID_Phasor) {
         g = PhasorPtr(new Phasor(e));    
     }
@@ -140,7 +146,10 @@ GenPtr  Gen :: make_with_environment(GeneratorID q,
         g = AttackDecayPtr(new AttackDecay(e));
     }
     else {
-        throw std::invalid_argument("no matching GeneratorID");
+        std::stringstream msg;
+        msg << "no matching GeneratorID";
+        msg << " file: " << __FILE__ " line: " << __LINE__;
+        throw std::invalid_argument(msg.str());    
     }
     // call subclass init, which calls baseclass init
     g->init();
@@ -626,13 +635,12 @@ Validity Gen :: set_outputs_from_array(SampleT* v, OutputsSizeT s,
 			i += 1;
 		}
 		k += 1; // increment only once for each bundle of channel infor written
-	}
-    
+	}    
     // validate the outputs; this is no op on base class, but derived for things like Breakpoint
     return _validate_outputs();
 }
 
-void Gen :: set_outputs_from_vector(VSampleT& vst, 
+void Gen :: set_outputs_from_vector(VSampleT& vst,
 								ParameterIndexT ch, bool interleaved) {
 	// this is set outputs as we will try to set all channels available
     // size is a long; cast ot std::uint32_t
@@ -1323,8 +1331,25 @@ void Breakpoints :: init() {
 
 
 Validity Breakpoints :: _validate_outputs() {
-    // TODO: check taht it has 2 dimensions, check that x is always increasing
-    return Validity {true, "OK"};
+    // TODO: check taht it has 2 dimensions, check that x is always increasing    
+    if (get_output_count() != 2) {
+        return {false, "break points must have 2 outputs for x and y"};
+    }
+    
+    // iter the frame size, and track x, y points.
+    // can x be negative; probably not
+    SampleT x_last {-1};
+    FrameSizeT frames = get_frame_size();
+    
+    for (FrameSizeT i=0; i < frames; ++i) {
+        // x is always first, at zero index
+        if (outputs[0][i] <= x_last) {
+            // if this sample is less than or eq to the previous, we have not provided a forward time point, and thus fail
+            return {false, "break points do not have an increasing X"};
+        }
+        x_last = outputs[0][i];
+    }
+    return {true, ""};
 }
 
 

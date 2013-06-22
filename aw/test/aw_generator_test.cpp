@@ -1252,6 +1252,51 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_3) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_breakpoints_a) {
+
+    // break points will evaluate coherancy when setting outputs
+	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Breakpoints);    
+    aw::Inj<aw::SampleT>(
+            {
+                {0, 1},
+                {2, .4},
+                {20, .1},
+                {45, 0},
+            }
+        ) && g1;
+    
+    BOOST_CHECK(g1->get_frame_size() == 4);
+    BOOST_CHECK(g1->get_output_count() == 2);
+
+
+	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Breakpoints);
+    aw::Inj<aw::SampleT> inj1(
+            {
+                {0, 1},
+                {20, .4},
+                {2, .1},
+            }
+        ) ;
+    // fails due to out of order x
+    BOOST_REQUIRE_THROW(inj1 && g2, std::invalid_argument);
+    // still set, however
+    BOOST_CHECK(g2->get_frame_size() == 3);
+
+
+	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Breakpoints);
+    aw::Inj<aw::SampleT> inj2(
+            {3, 4, 5}
+        ) ;
+    // fails due to out of order x
+    BOOST_REQUIRE_THROW(inj2 && g3, std::invalid_argument);
+    // still set, however
+    BOOST_CHECK(g2->get_frame_size() == 3);
+
+
+}
+
+
+
 
 
 

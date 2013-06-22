@@ -270,7 +270,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     protected://---------------------------------------------------------------
 	
     //! Validate the current contnets of the outputs data. A virtual method for overridding in derived classes (e.g., Breakpoints). Called whenever a outputs are set as a whole (aka, set by array). Will raise an exception.
-    Validity _validate_outputs();
+    virtual Validity _validate_outputs();
     
     //! Called by Generators during init() to configure the input parameters found in this Gen. ParameterTypePtr instances are stored in the Gen, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
     void _register_input_parameter_type(ParameterTypePtr pts);
