@@ -38,16 +38,16 @@ public:
                 FRAMES_PER_BUFFER);
 
         aw::GenPtr g1 = aw::Gen::make_with_environment(
-                aw::Gen::ID_Sine, e);
+                aw::GenID::Sine, e);
         220 >> g1;
         
         // rate of fm
         aw::GenPtr gmod = aw::Gen::make_with_environment(
-                aw::Gen::ID_Sine, e);
+                aw::GenID::Sine, e);
         8 >> gmod;
 
         aw::GenPtr gmap = aw::Gen::make_with_environment(
-                aw::Gen::ID_Map, e);
+                aw::GenID::Map, e);
         // source
         gmap->set_input_by_index(0, gmod);
         gmap->set_input_by_index(1, -1);
@@ -58,11 +58,11 @@ public:
         
         
         aw::GenPtr g2 = aw::Gen::make_with_environment(
-                aw::Gen::ID_Sine, e);
+                aw::GenID::Sine, e);
         gmap >> g2;
 
         aw::GenPtr genv = aw::Gen::make(
-                aw::Gen::ID_AttackDecay);
+                aw::GenID::AttackDecay);
         genv->set_input_by_index(1, .25); // atack/decay in sec
         genv->set_input_by_index(2, .25);
         genv->set_input_by_index(4, 1); // self cycle mode

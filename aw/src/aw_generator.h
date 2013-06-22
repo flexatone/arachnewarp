@@ -11,39 +11,44 @@
 
 namespace aw {
 
+
+//! Identifiers for Parameter types. 
+enum class PTypeID {
+    Value,
+    Frequency,
+    Duration,
+    Phase,
+    Channels,
+    // what about inputs that take trigger or gate in same input?
+    Trigger,
+    Cycle, // boolean for cycle control
+    LowerBoundary,
+    UpperBoundary,
+    Table // for slot in breakpoint, wavetable
+};
+
+
+
 //=============================================================================
-class ParameterType;
+class PType;
 
-//! Shared ParameterType. 
-typedef std::shared_ptr<ParameterType> ParameterTypePtr;
+//! Shared PType. 
+typedef std::shared_ptr<PType> PTypePtr;
 
-//! The ParameterType, based on subclass definition, defines the meaning of an input slot that can be filled by a Gen. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage of a Gen. 
-class ParameterType {
+//! The PType, based on subclass definition, defines the meaning of an parameter, or Generator slot that can be filled by a Gen. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage of a Gen. 
+class PType {
     public://------------------------------------------------------------------
 
-    //! Identifiers for Parameter types. 
-    enum ParameterTypeID {
-        ID_Value,
-        ID_Frequency,
-        ID_Duration,
-        ID_Phase,
-        ID_Channels,
-        // what about inputs that take trigger or gate in same input?
-        ID_Trigger,
-        ID_LowerBoundary,
-        ID_UpperBoundary,
-        ID_Table // for slot in breakpoint, wavetable
-    };
 
     //! Primary constructor static method for creating share Parameter types. 
-    static ParameterTypePtr make(ParameterTypeID);
+    static PTypePtr make(PTypeID);
 
     protected://---------------------------------------------------------------
     //! Class name set on creation. 
     std::string _class_name;
     
     //! Public parameter id, can be used for class matching.
-    ParameterTypeID _class_id;
+    PTypeID _class_id;
     
     //static const char _class_name_alt[];
 
@@ -56,12 +61,12 @@ class ParameterType {
     // can also define, for a particular instance, an expected context; that is, if fq is required, this can be defined here. then, when given another generator at a different context, conversion can happen?
 	
     public://------------------------------------------------------------------
-    explicit ParameterType();
+    explicit PType();
 
 	//! Output stream processor.
-	friend std::ostream& operator<<(std::ostream& outputs, const ParameterType& pt);
+	friend std::ostream& operator<<(std::ostream& outputs, const PType& pt);
 
-    //! Set the name of this ParameterType. Passed by const reference as assignment makes the necessary copy. This name is set by the Gen and may not be the same even if its the same ParameterType subclass. 
+    //! Set the name of this PType. Passed by const reference as assignment makes the necessary copy. This name is set by the Gen and may not be the same even if its the same PType subclass. 
     void set_instance_name(const std::string& s) {_instance_name = s;};
 
     std::string get_class_name() const {return _class_name;};
@@ -70,88 +75,111 @@ class ParameterType {
     std::string get_instance_name() const {return _instance_name;};
     
     // Return the Parameter type id. 
-    ParameterTypeID get_class_id() const {return _class_id;};
+    PTypeID get_class_id() const {return _class_id;};
     
 };
 
 
-class ParameterTypeValue;
-//! Shared ParameterTypeValue.
-typedef std::shared_ptr<ParameterTypeValue> ParameterTypeValuePtr;
-//! A subclass of ParameterType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
-class ParameterTypeValue: public ParameterType {
+class PTypeValue;
+//! Shared PTypeValue.
+typedef std::shared_ptr<PTypeValue> ParameterTypeValuePtr;
+//! A subclass of PType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
+class PTypeValue: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeValue();
+    explicit PTypeValue();
 };
 
-class ParameterTypeFrequency;
-typedef std::shared_ptr<ParameterTypeFrequency> ParameterTypeFrequencyPtr;
-//! A subclass of ParameterType that specifies a frequency; this is assumed presently to be in Hertz.
-class ParameterTypeFrequency: public ParameterType {
+class PTypeFrequency;
+typedef std::shared_ptr<PTypeFrequency> ParameterTypeFrequencyPtr;
+//! A subclass of PType that specifies a frequency; this is assumed presently to be in Hertz.
+class PTypeFrequency: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeFrequency();
+    explicit PTypeFrequency();
 };
 
-class ParameterTypeDuration;
-typedef std::shared_ptr<ParameterTypeDuration> ParameterTypeDurationPtr;
-//! A subclass of ParameterType that specifies a duration in seconds.
-class ParameterTypeDuration: public ParameterType {
+class PTypeDuration;
+typedef std::shared_ptr<PTypeDuration> ParameterTypeDurationPtr;
+//! A subclass of PType that specifies a duration in seconds.
+class PTypeDuration: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeDuration();
+    explicit PTypeDuration();
 };
 
-class ParameterTypePhase;
-typedef std::shared_ptr<ParameterTypePhase> ParameterTypePhaseShared;
-//! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
-class ParameterTypePhase: public ParameterType {
+class PTypePhase;
+typedef std::shared_ptr<PTypePhase> ParameterTypePhaseShared;
+//! A subclass of PType that specifies a phase; this is assumed presently to be in floating-point values.
+class PTypePhase: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypePhase();
+    explicit PTypePhase();
 };
 
 //! Used by some Gen to configure slots for both input and output channels, or dimensionality (frame/output count) of the internal marix. 
-class ParameterTypeChannels;
-typedef std::shared_ptr<ParameterTypeChannels> ParameterTypeChannelsShared;
-//! A subclass of ParameterType that specifies a phase; this is assumed presently to be in floating-point values.
-class ParameterTypeChannels: public ParameterType {
+class PTypeChannels;
+typedef std::shared_ptr<PTypeChannels> ParameterTypeChannelsShared;
+//! A subclass of PType that specifies a phase; this is assumed presently to be in floating-point values.
+class PTypeChannels: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeChannels();
+    explicit PTypeChannels();
 };
 
-class ParameterTypeTrigger;
-typedef std::shared_ptr<ParameterTypeTrigger> ParameterTypeTriggerShared;
+class PTypeTrigger;
+typedef std::shared_ptr<PTypeTrigger> PTypeTriggerPtr;
 //! An impulse or trigger, or a single sample at 1.
-class ParameterTypeTrigger: public ParameterType {
+class PTypeTrigger: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeTrigger();
+    explicit PTypeTrigger();
 };
 
-class ParameterTypeLowerBoundary;
-typedef std::shared_ptr<ParameterTypeLowerBoundary>
+class PTypeCycle;
+typedef std::shared_ptr<PTypeCycle> PTypeCyclePtr;
+//! An impulse or trigger, or a single sample at 1.
+class PTypeCycle: public PType {    public://------------------------------------------------------------------
+    explicit PTypeCycle();
+};
+
+
+class PTypeLowerBoundary;
+typedef std::shared_ptr<PTypeLowerBoundary>
         ParameterTypeLowerBoundaryShared;
 //! A lower boundary, likely a minimum, for dynamic sizing of a generator. 
-class ParameterTypeLowerBoundary: public ParameterType {
+class PTypeLowerBoundary: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeLowerBoundary();
+    explicit PTypeLowerBoundary();
 };
 
-class ParameterTypeUpperBoundary;
-typedef std::shared_ptr<ParameterTypeUpperBoundary>
+class PTypeUpperBoundary;
+typedef std::shared_ptr<PTypeUpperBoundary>
         ParameterTypeUpperBoundaryShared;
 //! A lower boundary, likely a maximum, for dynamic sizing of a generator. 
-class ParameterTypeUpperBoundary: public ParameterType {
+class PTypeUpperBoundary: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeUpperBoundary();
+    explicit PTypeUpperBoundary();
 };
 
 class ParameterTypeTable;
 typedef std::shared_ptr<ParameterTypeTable>
         ParameterTypeTableShared;
 //! A table, or a Buffer with 2 channels of data. 
-class ParameterTypeTable: public ParameterType {
+class ParameterTypeTable: public PType {
     public://------------------------------------------------------------------
     explicit ParameterTypeTable();
 };
 
+
+//! Class of Gen names for static constructors. Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators.
+
+enum class GenID {
+    Constant,
+    Add,
+    Multiply,
+    Buffer,
+    BreakPoints,
+    BPIntegrator,
+    Phasor,
+    Sine,
+    Map,
+    AttackDecay
+};
 
 
 //=============================================================================
@@ -163,7 +191,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     public://--------------------------=---------------------------------------
     // public typedefs
 	//! A mapping of index number
-    typedef std::unordered_map<ParameterIndexT, ParameterTypePtr> MapIndexToParameterTypePtr;
+    typedef std::unordered_map<ParameterIndexT, PTypePtr> MapIndexToParameterTypePtr;
 
     //! A vector of GenPtr instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
     typedef std::vector<GenPtr> VGenPtr;
@@ -172,28 +200,13 @@ class Gen: public std::enable_shared_from_this<Gen> {
     typedef std::pair<GenPtr, ParameterIndexT> GenPtrOutPair;
     typedef std::vector<GenPtrOutPair> VGenPtrOutPair;
     typedef std::vector<VGenPtrOutPair> VVGenPtrOutPair;
-    
-    // enums    
-    //! Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators. 
-    enum GeneratorID {
-        ID_Constant,    
-        ID_Add,
-        ID_Multiply,   
-        ID_Buffer,
-        ID_Breakpoints,
-        ID_Phasor,
-        ID_Sine,
-        ID_Map,
-        ID_AttackDecay
-    };
-        
-		
+    		
     protected://----------------------------------------------------------------
     //! The name of the class. This is set during the class constructor by the derived class, and thus needs to be protected.
     std::string _class_name;
 
     //! Public generator id, can be used for class matching. 
-    GeneratorID _class_id;
+    GenID _class_id;
 
     private://------------------------------------------------------------------
     // Rename ParameterIndexT as OutputIndexType
@@ -230,9 +243,9 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. RenderCountT must be the largest integer available.
     RenderCountT _render_count;
 	
-    //! The main storage for ParameterTypePtr instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
+    //! The main storage for PTypePtr instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
     std::unordered_map<ParameterIndexT,
-                            ParameterTypePtr> _input_parameter_type;	
+                            PTypePtr> _input_parameter_type;	
 		
     //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenPtrOutPair _inputs;
@@ -245,12 +258,12 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	
 	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
     std::unordered_map<ParameterIndexT,
-            ParameterTypePtr> _slot_parameter_type;
+            PTypePtr> _slot_parameter_type;
 	
 	
-    //! We store a ParameterTypePtr for each defined output, telling us what it is.
+    //! We store a PTypePtr for each defined output, telling us what it is.
     std::unordered_map<ParameterIndexT,
-            ParameterTypePtr> _output_parameter_type;		
+            PTypePtr> _output_parameter_type;		
 		
 
     public://------------------------------------------------------------------
@@ -269,20 +282,20 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     protected://---------------------------------------------------------------
 	
-    //! Validate the current contnets of the outputs data. A virtual method for overridding in derived classes (e.g., Breakpoints). Called whenever a outputs are set as a whole (aka, set by array). Will raise an exception.
+    //! Validate the current contnets of the outputs data. A virtual method for overridding in derived classes (e.g., BreakPoints). Called whenever a outputs are set as a whole (aka, set by array). Will raise an exception.
     virtual Validity _validate_outputs();
     
-    //! Called by Generators during init() to configure the input parameters found in this Gen. ParameterTypePtr instances are stored in the Gen, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
-    void _register_input_parameter_type(ParameterTypePtr pts);
+    //! Called by Generators during init() to configure the input parameters found in this Gen. PTypePtr instances are stored in the Gen, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
+    void _register_input_parameter_type(PTypePtr pts);
 
     //! Remove all inputs; used by slots that dynamically chagne inputs and outputs; all existing inputs will remain. 
     void _clear_input_parameter_types();
 
 	//! Called by Generators during init() to configure the slot parameters found in this Gen.
-    void _register_slot_parameter_type(ParameterTypePtr pts);
+    void _register_slot_parameter_type(PTypePtr pts);
 
 	//! Define an output. This calls _resize_outputs().
-    void _register_output_parameter_type(ParameterTypePtr pts);
+    void _register_output_parameter_type(PTypePtr pts);
 
     //! Remove all outputs; used by slots that dynamically change inputs and outputs; all existing inputs will remain. 
     void _clear_output_parameter_types();
@@ -305,11 +318,11 @@ class Gen: public std::enable_shared_from_this<Gen> {
     
     public://------------------------------------------------------------------
     //! Factory for Generators using a provided EnvironmentPtr. 
-    static GenPtr make_with_environment(GeneratorID q, 
+    static GenPtr make_with_environment(GenID q, 
             EnvironmentPtr e);
 
     //! Factory for all Generators with by generator ID alone. This creates a GenPtr, and calls its init() method.     
-    static GenPtr make(GeneratorID);
+    static GenPtr make(GenID);
 
 
     public://------------------------------------------------------------------
@@ -385,7 +398,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
-    GeneratorID get_class_id() const {return _class_id;};
+    GenID get_class_id() const {return _class_id;};
 
 
 	// display ...............................................................    
@@ -450,7 +463,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
 	//! Return the parameter index for the first-encountered parameter type id; raises an exception if not found.
     ParameterIndexT get_input_index_from_class_id(const
-            ParameterType::ParameterTypeID ptid);
+            PTypeID ptid);
 
 	//! Return the parameter slot for a named parameter.
     ParameterIndexT get_slot_index_from_parameter_name(const std::string& s);	
@@ -470,14 +483,14 @@ class Gen: public std::enable_shared_from_this<Gen> {
             SampleT v,
             ParameterIndexT pos=0);
 
-    ///! Set input by class id of the ParameterType. 
+    ///! Set input by class id of the PType. 
     void set_input_by_class_id(
-            ParameterType::ParameterTypeID ptid,
+            PTypeID ptid,
             GenPtr gs,
             ParameterIndexT pos=0);
                                         
     void set_input_by_class_id(
-            ParameterType::ParameterTypeID ptid,
+            PTypeID ptid,
             SampleT v, // accept numbers
             ParameterIndexT pos=0);
 
@@ -551,7 +564,7 @@ inline GenPtr connect_serial_to_inputs(SampleT lhs, GenPtr rhs,
         ParameterIndexT start=0, ParameterIndexT count=0) {        
     // set environment from lhs
 	GenPtr g_lhs = Gen::make_with_environment(
-            Gen::ID_Constant, rhs->get_environment());
+            GenID::Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
     return aw::connect_serial_to_inputs(g_lhs, rhs); // will return rhs
 }
@@ -664,7 +677,7 @@ inline GenPtr operator&&(const aw::Inj<SampleT>& lhs,
 } 
 
 inline GenPtr operator&&(const std::string lhs, GenPtr rhs) {
-    //return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
+    //return aw::connect_parallel(lhs, rhs, GenID::Multiply);
     rhs->set_outputs(lhs); // will throw if rhs is not Buffer
     return rhs;        
 } 
@@ -672,16 +685,16 @@ inline GenPtr operator&&(const std::string lhs, GenPtr rhs) {
 
 // parallel connections ......................................................
 
-//! Connect two generators as inputs into another generator, where that generator is given by the passed in GeneratorID. This is a binary operator.
+//! Connect two generators as inputs into another generator, where that generator is given by the passed in GenID. This is a binary operator.
 inline GenPtr connect_parallel(
         GenPtr lhs, 
         GenPtr rhs, 
-        Gen::GeneratorID gid) {
+        GenID gid) {
     
     // get lesser of outputs between the two, then create an add with that many slots
     ParameterIndexT j = std::min(lhs->get_output_count(), 
             rhs->get_output_count());
-    // use the passed in gen id, this is usually ID_Add, ID_Multiply
+    // use the passed in gen id, this is usually GenID::Add, GenID::Multiply
     GenPtr g = Gen::make_with_environment(gid, 
             lhs->get_environment());
     // the returned Gen needs to support multiple channels; these are set as slow 0
@@ -699,9 +712,9 @@ inline GenPtr connect_parallel(
 inline GenPtr connect_parallel(
         SampleT lhs, 
         GenPtr rhs, 
-        Gen::GeneratorID gid) {
+        GenID gid) {
     GenPtr g_lhs = Gen::make_with_environment(
-            Gen::ID_Constant, rhs->get_environment());
+            GenID::Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); 
     GenPtr g = aw::connect_parallel(g_lhs, rhs, gid);
     return g;
@@ -711,9 +724,9 @@ inline GenPtr connect_parallel(
 inline GenPtr connect_parallel(
         GenPtr lhs, 
         SampleT rhs, 
-        Gen::GeneratorID gid) {
+        GenID gid) {
     GenPtr g_rhs = Gen::make_with_environment(
-            Gen::ID_Constant, lhs->get_environment());
+            GenID::Constant, lhs->get_environment());
     g_rhs->set_input_by_index(0, rhs); 
     GenPtr g = aw::connect_parallel(lhs, g_rhs, gid);
     return g;
@@ -723,15 +736,15 @@ inline GenPtr connect_parallel(
 
 // operator + .................................................................
 inline GenPtr operator+(GenPtr lhs, GenPtr rhs) {
-    return aw::connect_parallel(lhs, rhs, Gen::ID_Add);
+    return aw::connect_parallel(lhs, rhs, GenID::Add);
 }
 
 inline GenPtr operator+(GenPtr lhs, SampleT rhs) {
-    return aw::connect_parallel(lhs, rhs, Gen::ID_Add);
+    return aw::connect_parallel(lhs, rhs, GenID::Add);
 }
 
 inline GenPtr operator+(SampleT lhs, GenPtr rhs) {
-    return aw::connect_parallel(lhs, rhs, Gen::ID_Add);
+    return aw::connect_parallel(lhs, rhs, GenID::Add);
 }
 
 // Alternative opperators:
@@ -741,15 +754,15 @@ inline GenPtr operator+(SampleT lhs, GenPtr rhs) {
 
 // operator * .................................................................
 inline GenPtr operator*(GenPtr lhs, GenPtr rhs) {
-    return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
+    return aw::connect_parallel(lhs, rhs, GenID::Multiply);
 }
 
 inline GenPtr operator*(GenPtr lhs, SampleT rhs) {
-    return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
+    return aw::connect_parallel(lhs, rhs, GenID::Multiply);
 }
 
 inline GenPtr operator*(SampleT lhs, GenPtr rhs) {
-    return aw::connect_parallel(lhs, rhs, Gen::ID_Multiply);
+    return aw::connect_parallel(lhs, rhs, GenID::Multiply);
 } 
 
 
@@ -894,20 +907,42 @@ class Buffer: public Gen {
 
 //=============================================================================
 //! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
-class Breakpoints;
-typedef std::shared_ptr<Breakpoints> BreakpointsPtr;
-class Breakpoints: public Buffer {
+class BreakPoints;
+typedef std::shared_ptr<BreakPoints> BreakPointsPtr;
+class BreakPoints: public Buffer {
 
     public://------------------------------------------------------------------
 
-    explicit Breakpoints(EnvironmentPtr);
+    explicit BreakPoints(EnvironmentPtr);
 
     virtual void init();
     
-    //! Breakpoints overrides _validate_outputs to make sure that this is two dimensional and that x values are increasing. This does not raise an exception to allow caller to clean up memory.
+    //! BreakPoints overrides _validate_outputs to make sure that this is two dimensional and that x values are increasing. This does not raise an exception to allow caller to clean up memory.
     virtual Validity _validate_outputs();
     
 };
+
+
+//=============================================================================
+//! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
+class BPIntegrator;
+typedef std::shared_ptr<BPIntegrator> BPIntegratorPtr;
+class BPIntegrator: public Gen {
+
+    private://-----------------------------------------------------------------
+    ParameterIndexT _input_index_trigger;    
+    ParameterIndexT _input_index_cycle;
+    ParameterIndexT _input_index_exponent;    
+
+
+    public://------------------------------------------------------------------
+
+    explicit BPIntegrator(EnvironmentPtr);
+
+    virtual void init();
+        
+};
+
 
 
 
@@ -920,7 +955,7 @@ typedef std::shared_ptr<Phasor> PhasorPtr;
 class Phasor: public Gen {
 
     private://-----------------------------------------------------------------
-    ParameterIndexT _input_index_frequency;    
+    ParameterIndexT _input_index_frequency;
     ParameterIndexT _input_index_phase;    
 	
 	// TODO: these should be Vectors of size equal to frame and filled from the input
