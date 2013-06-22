@@ -25,11 +25,14 @@
 
 #include "aw_common.h"
 
+using namespace aw;
+
+
 
 BOOST_AUTO_TEST_CASE(aw_common_test1) {
 	//std::cout << "running aw_common_test 1" << std::endl;
 
-    boost::filesystem::path home(aw::get_fp_home());
+    boost::filesystem::path home(get_fp_home());
     // std::cout << home << std::endl;
         
 }
@@ -37,7 +40,7 @@ BOOST_AUTO_TEST_CASE(aw_common_test1) {
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	//std::cout << "running aw_common_test 2" << std::endl;
 	
-	aw::EnvironmentPtr es = aw::EnvironmentPtr(new aw::Environment);
+	EnvironmentPtr es = EnvironmentPtr(new Environment);
 
 	std::string fp = es->get_fp_temp("test.txt");
 	std::string match("test.txt");
@@ -56,7 +59,7 @@ BOOST_AUTO_TEST_CASE(aw_common_test3) {
 
     std::string in("<a test {34}>");
 
-    aw::escape(in, "<>{}", "\\");
+    escape(in, "<>{}", "\\");
 
     BOOST_CHECK_EQUAL(in, "\\<a test \\{34\\}\\>");
 
@@ -66,29 +69,29 @@ BOOST_AUTO_TEST_CASE(aw_common_test3) {
 
 BOOST_AUTO_TEST_CASE(aw_common_test_inline_1) {
 
-    BOOST_CHECK_EQUAL(aw::double_limiter(.5, 0, 1), .5);
-    BOOST_CHECK_EQUAL(aw::double_limiter(1.5, 0, 1), 1);
-    BOOST_CHECK_EQUAL(aw::double_limiter(-.5, 0, 1), 0);
+    BOOST_CHECK_EQUAL(double_limiter(.5, 0, 1), .5);
+    BOOST_CHECK_EQUAL(double_limiter(1.5, 0, 1), 1);
+    BOOST_CHECK_EQUAL(double_limiter(-.5, 0, 1), 0);
 
 }
 
 BOOST_AUTO_TEST_CASE(aw_test_true_min_max) {
-    aw::SampleT min(-1);
-    aw::SampleT max(-1);
-    aw::true_min_max(100, 4, &min, &max);
+    SampleT min(-1);
+    SampleT max(-1);
+    true_min_max(100, 4, &min, &max);
 
     BOOST_CHECK_EQUAL(min, 4);
     BOOST_CHECK_EQUAL(max, 100);
     
     min = -1;
     max = -1;
-    aw::true_min_max(4, 100, &min, &max);
+    true_min_max(4, 100, &min, &max);
     BOOST_CHECK_EQUAL(min, 4);
     BOOST_CHECK_EQUAL(max, 100);
 
     min = -1;
     max = -1;
-    aw::true_min_max(3000, -12, &min, &max);
+    true_min_max(3000, -12, &min, &max);
     BOOST_CHECK_EQUAL(min, -12);
     BOOST_CHECK_EQUAL(max, 3000);
 
@@ -98,27 +101,27 @@ BOOST_AUTO_TEST_CASE(aw_test_true_min_max) {
 
 BOOST_AUTO_TEST_CASE(aw_test_mtof) {
 
-    aw::SampleT x;
-    x = aw::mtof(69);
+    SampleT x;
+    x = mtof(69);
     BOOST_CHECK_CLOSE(x, 440.0, .0001);
 
-    x = aw::mtof(69+12);
+    x = mtof(69+12);
     BOOST_CHECK_CLOSE(x, 880.0, .0001);
 
 }
 
 BOOST_AUTO_TEST_CASE(aw_test_phase_limiter_a) {
-    aw::SampleT a(3.0);
+    SampleT a(3.0);
     
-    aw::phase_limiter(a);
+    phase_limiter(a);
     BOOST_CHECK_CLOSE(a, 3.0, .0001);
     
     a = 6.8;
-    aw::phase_limiter(a);
+    phase_limiter(a);
     BOOST_CHECK_CLOSE(a, 0.516814, .001);
 
     a = -3.14 * 6;
-    aw::phase_limiter(a);
+    phase_limiter(a);
     //std::cout << "here: " << a << std::endl;
     BOOST_CHECK_CLOSE(a, 0.00955592, .001);
 }
@@ -126,10 +129,10 @@ BOOST_AUTO_TEST_CASE(aw_test_phase_limiter_a) {
 
 BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
-    aw::EnvironmentPtr e1 = aw::Environment::make();
+    EnvironmentPtr e1 = Environment::make();
     BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
 
-    aw::EnvironmentPtr e2 = aw::Environment::make_with_frame_size(128);
+    EnvironmentPtr e2 = Environment::make_with_frame_size(128);
     BOOST_CHECK_EQUAL(e2->get_common_frame_size(), 128);
 
     
@@ -143,7 +146,7 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_a) {
 
-    aw::Inj<aw::SampleT> bi({3, 6, 2, 3, 5});
+    Inj<SampleT> bi({3, 6, 2, 3, 5});
     BOOST_CHECK_EQUAL(bi.get_frame_size(), 5);
     BOOST_CHECK_EQUAL(bi.get_channels(), 1);
     
@@ -153,7 +156,7 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_a) {
 
 BOOST_AUTO_TEST_CASE(aw_inj_a) {
 
-    aw::Inj<aw::SampleT> bi({3, 6, 2, 3, 5});
+    Inj<SampleT> bi({3, 6, 2, 3, 5});
     BOOST_CHECK_EQUAL(bi.get_frame_size(), 5);
     BOOST_CHECK_EQUAL(bi.get_channels(), 1);
     
@@ -163,14 +166,14 @@ BOOST_AUTO_TEST_CASE(aw_inj_a) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
-    std::vector<aw::SampleT> post;
+    std::vector<SampleT> post;
 
-    aw::Inj<aw::SampleT> bi1({ {1, .5}, {10, .2}, {20, .5}});
+    Inj<SampleT> bi1({ {1, .5}, {10, .2}, {20, .5}});
     BOOST_CHECK_EQUAL(bi1.get_frame_size(), 3);
     BOOST_CHECK_EQUAL(bi1.get_channels(), 2);
 
 
-    aw::Inj<aw::SampleT> bi2({ {1}, {10, .2}, {20, .5}});
+    Inj<SampleT> bi2({ {1}, {10, .2}, {20, .5}});
     BOOST_CHECK_EQUAL(bi2.get_frame_size(), 3);
     BOOST_CHECK_EQUAL(bi2.get_channels(), 2);
     
@@ -189,8 +192,8 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 
-    aw::Inj<aw::SampleT> bi({3, 6, 2, 3, 5});
-    std::vector<aw::SampleT> post;
+    Inj<SampleT> bi({3, 6, 2, 3, 5});
+    std::vector<SampleT> post;
     bi.fill_interleaved(post);
     BOOST_CHECK_EQUAL(post[0], 3);
     BOOST_CHECK_EQUAL(post[1], 6);
@@ -209,7 +212,7 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 //BOOST_AUTO_TEST_CASE(aw_test_to_lower) {
 //
 //    std::string a("TESTing asdf SDF");
-//    aw::to_lower(a);
+//    to_lower(a);
 //    BOOST_CHECK_EQUAL(a, "testing asdf sdf");
 //}
 //
@@ -219,7 +222,7 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 //    std::vector<std::string> post;
 //    std::string a("1, 4.3, 1.2");
 //    
-//    aw::split(a, ',', post);
+//    split(a, ',', post);
 //    
 //    BOOST_CHECK_EQUAL(post[0], "1");
 //    BOOST_CHECK_EQUAL(post[1], " 4.3");
@@ -231,9 +234,9 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 //BOOST_AUTO_TEST_CASE(aw_test_remove) {
 //
 //    std::string a("1, 4.3, 1.2");
-//    aw::remove(a, ',');
+//    remove(a, ',');
 //    BOOST_CHECK_EQUAL(a, "1 4.3 1.2");
-//    aw::remove(a, ' ');
+//    remove(a, ' ');
 //    BOOST_CHECK_EQUAL(a, "14.31.2");
 //    
 //}
@@ -242,9 +245,9 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 //BOOST_AUTO_TEST_CASE(string_to_vector) {
 //    std::string a("1, 4.3, 1.2");
 //
-//    std::vector<aw::SampleT> post;
+//    std::vector<SampleT> post;
 //    
-//    aw::string_to_vector<aw::SampleT>(a, post);
+//    string_to_vector<SampleT>(a, post);
 //    
 //    BOOST_CHECK_EQUAL(post[0], 1);
 //    BOOST_CHECK_EQUAL(post[1], 4.3);
@@ -254,7 +257,7 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 //    std::string b("1, (4.3, 1.2)");
 //
 //    post.clear();
-//    aw::string_to_vector<aw::SampleT>(b, post, ',', "()");
+//    string_to_vector<SampleT>(b, post, ',', "()");
 //
 //    BOOST_CHECK_EQUAL(post[0], 1);
 //    BOOST_CHECK_EQUAL(post[1], 4.3);
@@ -268,41 +271,41 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 //BOOST_AUTO_TEST_CASE(as_test_nested_width) {
 //
 //    BOOST_CHECK_EQUAL(
-//        aw::nested_width("1, 4.3, 1.2", ',', '(', ')'),
+//        nested_width("1, 4.3, 1.2", ',', '(', ')'),
 //        3);
 //
 //    BOOST_CHECK_EQUAL(
-//        aw::nested_width("1, 2, 3, 20, 5", ',', '(', ')'),
+//        nested_width("1, 2, 3, 20, 5", ',', '(', ')'),
 //        5);
 //
 //    BOOST_CHECK_EQUAL(
-//        aw::nested_width("(1, 2), (3, 20), (5, 120)", ',', '(', ')'),
+//        nested_width("(1, 2), (3, 20), (5, 120)", ',', '(', ')'),
 //        2);
 //
 //    BOOST_CHECK_EQUAL(
-//        aw::nested_width("(1, 4), (1, 2)", ',', '(', ')'),
+//        nested_width("(1, 4), (1, 2)", ',', '(', ')'),
 //        2);
 //    BOOST_CHECK_EQUAL(
-//        aw::nested_width("(1, 4, 3), (1, 2, 2)", ',', '(', ')'),
+//        nested_width("(1, 4, 3), (1, 2, 2)", ',', '(', ')'),
 //        3);
 //
 //    BOOST_CHECK_EQUAL(
-//        aw::nested_width("((1, 4, 3), (0, 0, 0), (1, 2, 2))", ',', '(', ')'),
+//        nested_width("((1, 4, 3), (0, 0, 0), (1, 2, 2))", ',', '(', ')'),
 //        3);
 //
 //    // commas between groups are not required
 //    BOOST_CHECK_EQUAL(
-//        aw::nested_width("((1, 4, 3) (0, 0, 0) (1, 2, 2))",
+//        nested_width("((1, 4, 3) (0, 0, 0) (1, 2, 2))",
 //        ',', '(', ')'),
 //        3);
 //
 //    BOOST_REQUIRE_THROW(
-//            aw::nested_width("(1, 4, 3), (2, 2)", ',', '(', ')'),
+//            nested_width("(1, 4, 3), (2, 2)", ',', '(', ')'),
 //            std::invalid_argument);
 //
-////    std::cout << "here: " << (int)aw::nested_width("(1,), (2, 2)", ',', '(', ')') << std::endl;
+////    std::cout << "here: " << (int)nested_width("(1,), (2, 2)", ',', '(', ')') << std::endl;
 //    BOOST_REQUIRE_THROW(
-//            aw::nested_width("(1,), (2, 2)", ',', '(', ')'),
+//            nested_width("(1,), (2, 2)", ',', '(', ')'),
 //            std::invalid_argument);
 //
 //

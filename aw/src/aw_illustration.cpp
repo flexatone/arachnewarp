@@ -169,8 +169,8 @@ void TimeDomainGraph :: pipe() {
 
 
 // Static dictionary returns
-std::string ColorDictionary::get(Gen::GeneratorID gid){
-    if (gid == Gen::ID_Constant) {
+std::string ColorDictionary::get(GenID gid){
+    if (gid == GenID::Constant) {
         return "lightsteelblue3";
     }
     else {

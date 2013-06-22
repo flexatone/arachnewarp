@@ -92,13 +92,11 @@ Environment :: Environment(FrameSizeT fs)
 }
 
 EnvironmentPtr Environment :: make() {
-    EnvironmentPtr e = EnvironmentPtr(new Environment);
-    return e;
+    return EnvironmentPtr(new Environment);
 }
 
 EnvironmentPtr Environment :: make_with_frame_size(FrameSizeT fs) {
-    EnvironmentPtr e = EnvironmentPtr(new Environment(fs));
-    return e;
+    return EnvironmentPtr(new Environment(fs));
 }
 
 
@@ -122,8 +120,6 @@ std::string Environment :: get_fp_temp(std::string name) const {
     // this might read from a file or do other configurations
     return (_temp_directory / name).string();
 }
-
-
 
 
 

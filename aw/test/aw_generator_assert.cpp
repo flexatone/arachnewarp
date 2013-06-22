@@ -14,7 +14,7 @@ bool test_1() {
 //	aw::Constant g3;
 //    assert(g3.get_input_count() == 1);
 
-	aw::GenPtr g4 = aw::Gen::make(aw::Gen::ID_Constant);
+	aw::GenPtr g4 = aw::Gen::make(aw::GenID::Constant);
 
     //aw::ConstantPtr g4 = aw::ConstantPtr(new aw::Constant);
     assert(g4->get_input_count() == 1);
@@ -22,7 +22,7 @@ bool test_1() {
     // check that dynamically created constants are managed properly
     
     //aw::AddPtr g1 = aw::AddPtr(new aw::Add);
-	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);
+	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Add);
     
     g1->add_input_by_index(0, 1);
     g1->add_input_by_index(0, 20.5);
@@ -40,7 +40,7 @@ bool test_2() {
     // test resizing
     
     // will be initialized();
-	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
+	aw::GenPtr g2 = aw::Gen::make(aw::GenID::Add);
 
     // this will automatically create constant Generators
 	g2->add_input_by_index(0, 6);
@@ -57,7 +57,7 @@ bool test_2() {
 bool test_3() {
 	// can create the table subclass
     
-   	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
+   	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
     // set channels to 3
     
 	aw::VSampleT v;
@@ -73,7 +73,7 @@ bool test_3() {
 }
 
 bool test_4() {
-	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
     // set channels to 1
     std::string s("12518-sk1Kick.aif");
     g1->set_outputs_from_fp(s);	
@@ -89,13 +89,13 @@ bool test_4() {
 bool test_5() {
     // testing reassignemnt through connect for memory management
     
-    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Add);
+    aw::GenPtr g1 = aw::Gen::make(aw::GenID::Add);
     g1->set_slot_by_index(0, 3); // three channels
     g1->set_input_by_index(0, 10);
     g1->set_input_by_index(1, 200);
     g1->set_input_by_index(2, 4000);
           
-    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Add);
+    aw::GenPtr g2 = aw::Gen::make(aw::GenID::Add);
     g2->set_slot_by_index(0, 3); // three channels          
     g2->set_input_by_index(0, 34);
     g2->set_input_by_index(1, 105);

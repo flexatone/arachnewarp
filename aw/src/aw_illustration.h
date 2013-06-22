@@ -64,7 +64,7 @@ class TimeDomainGraph : public Illustration{
 // A mapping form generator id to a color string. 
 class ColorDictionary {
     public://-------------------------------------------------------------------
-    static std::string get(Gen::GeneratorID gid);
+    static std::string get(GenID gid);
 };
 
 

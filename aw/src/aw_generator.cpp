@@ -16,34 +16,37 @@
 namespace aw {
 
 //=============================================================================
-// ParameterType
+// PType
 
-ParameterTypePtr ParameterType :: make(ParameterTypeID q){
-    ParameterTypePtr p;
+PTypePtr PType :: make(PTypeID q){
+    PTypePtr p;
     // just get defailt environment
-    if (q == ID_Value) {
-        p = ParameterTypeValuePtr(new ParameterTypeValue);
+    if (q == PTypeID::Value) {
+        p = ParameterTypeValuePtr(new PTypeValue);
     }
-    else if (q == ID_Frequency) {
-        p = ParameterTypeFrequencyPtr(new ParameterTypeFrequency);    
+    else if (q == PTypeID::Frequency) {
+        p = ParameterTypeFrequencyPtr(new PTypeFrequency);    
     }
-    else if (q == ID_Duration) {
-        p = ParameterTypeDurationPtr(new ParameterTypeDuration);    
+    else if (q == PTypeID::Duration) {
+        p = ParameterTypeDurationPtr(new PTypeDuration);    
     }    
-    else if (q == ID_Phase) {
-        p = ParameterTypePhaseShared(new ParameterTypePhase);    
+    else if (q == PTypeID::Phase) {
+        p = ParameterTypePhaseShared(new PTypePhase);    
     }   
-    else if (q == ID_Channels) {
-        p = ParameterTypeChannelsShared(new ParameterTypeChannels);    
+    else if (q == PTypeID::Channels) {
+        p = ParameterTypeChannelsShared(new PTypeChannels);    
     }
-    else if (q == ID_Trigger) {
-        p = ParameterTypeTriggerShared(new ParameterTypeTrigger);    
+    else if (q == PTypeID::Trigger) {
+        p = PTypeTriggerPtr(new PTypeTrigger);    
     }
-    else if (q == ID_LowerBoundary) {
-        p = ParameterTypeLowerBoundaryShared(new ParameterTypeLowerBoundary);    
+    else if (q == PTypeID::Cycle) {
+        p = PTypeCyclePtr(new PTypeCycle);
     }    
-    else if (q == ID_UpperBoundary) {
-        p = ParameterTypeUpperBoundaryShared(new ParameterTypeUpperBoundary);    
+    else if (q == PTypeID::LowerBoundary) {
+        p = ParameterTypeLowerBoundaryShared(new PTypeLowerBoundary);    
+    }    
+    else if (q == PTypeID::UpperBoundary) {
+        p = ParameterTypeUpperBoundaryShared(new PTypeUpperBoundary);    
     }
     
     else {
@@ -55,99 +58,108 @@ ParameterTypePtr ParameterType :: make(ParameterTypeID q){
     return p;
 }
 
-ParameterType :: ParameterType() {
-    _class_name = "ParameterType";
+PType :: PType() {
+    _class_name = "PType";
 }
 
-std::ostream& operator<<(std::ostream& ostream, const ParameterType& pt) {
-    ostream << "<Pmtr: " << pt._class_name << ": " << pt._instance_name << ">";
+std::ostream& operator<<(std::ostream& ostream, const PType& pt) {
+    ostream << "<PType: " << pt._class_name << ": " << pt._instance_name << ">";
     return ostream; 
 }
 
 //-----------------------------------------------------------------------------
-ParameterTypeValue :: ParameterTypeValue() {
-    _class_name = "ParameterTypeValue";
-    _class_id = ID_Value;
+PTypeValue :: PTypeValue() {
+    _class_name = "PTypeValue";
+    _class_id = PTypeID::Value;
 }
 
 //-----------------------------------------------------------------------------
-ParameterTypeFrequency :: ParameterTypeFrequency() {
-    _class_name = "ParameterTypeFrequency";
-    _class_id = ID_Frequency;
+PTypeFrequency :: PTypeFrequency() {
+    _class_name = "PTypeFrequency";
+    _class_id = PTypeID::Frequency;
 }
 
 //-----------------------------------------------------------------------------
-ParameterTypeDuration :: ParameterTypeDuration() {
-    _class_name = "ParameterTypeDuration";
-    _class_id = ID_Duration;
+PTypeDuration :: PTypeDuration() {
+    _class_name = "PTypeDuration";
+    _class_id = PTypeID::Duration;
 }
 
 //-----------------------------------------------------------------------------
-ParameterTypePhase :: ParameterTypePhase() {
-    _class_name = "ParameterTypePhase";
-    _class_id = ID_Phase;
+PTypePhase :: PTypePhase() {
+    _class_name = "PTypePhase";
+    _class_id = PTypeID::Phase;
 }
 
 //-----------------------------------------------------------------------------
-ParameterTypeChannels :: ParameterTypeChannels() {
-    _class_name = "ParameterTypeChannels";
-    _class_id = ID_Channels;
+PTypeChannels :: PTypeChannels() {
+    _class_name = "PTypeChannels";
+    _class_id = PTypeID::Channels;
 }
 
 //-----------------------------------------------------------------------------
-ParameterTypeTrigger :: ParameterTypeTrigger() {
-    _class_name = "ParameterTypeTrigger";
-    _class_id = ID_Trigger;
+PTypeTrigger :: PTypeTrigger() {
+    _class_name = "PTypeTrigger";
+    _class_id = PTypeID::Trigger;
 }
 
-//-----------------------------------------------------------------------------
-ParameterTypeLowerBoundary :: ParameterTypeLowerBoundary() {
-    _class_name = "ParameterTypeLowerBoundary";
-    _class_id = ID_LowerBoundary;
-}
-
-ParameterTypeUpperBoundary :: ParameterTypeUpperBoundary() {
-    _class_name = "ParameterTypeUpperBoundary";
-    _class_id = ID_UpperBoundary;
+PTypeCycle :: PTypeCycle() {
+    _class_name = "PTypeCycle";
+    _class_id = PTypeID::Cycle;
 }
 
 
+//-----------------------------------------------------------------------------
+PTypeLowerBoundary :: PTypeLowerBoundary() {
+    _class_name = "PTypeLowerBoundary";
+    _class_id = PTypeID::LowerBoundary;
+}
+
+PTypeUpperBoundary :: PTypeUpperBoundary() {
+    _class_name = "PTypeUpperBoundary";
+    _class_id = PTypeID::UpperBoundary;
+}
+
+
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-GenPtr  Gen :: make_with_environment(GeneratorID q, 
+GenPtr  Gen :: make_with_environment(GenID q, 
             EnvironmentPtr e) {                        
     GenPtr g;    
-    if (q == ID_Constant) {
+    if (q == GenID::Constant) {
         g = ConstantPtr(new Constant(e));
     }
-    else if (q == ID_Add) {
+    else if (q == GenID::Add) {
         g = AddPtr(new Add(e));    
     }
-    else if (q == ID_Multiply) {
+    else if (q == GenID::Multiply) {
         g = MultiplyPtr(new Multiply(e));    
     }    
-    else if (q == ID_Buffer) {
+    else if (q == GenID::Buffer) {
         g = BufferPtr(new Buffer(e));    
     }
-    else if (q == ID_Breakpoints) {
-        g = BreakpointsPtr(new Breakpoints(e));
-    }	    
-    else if (q == ID_Phasor) {
+    else if (q == GenID::BreakPoints) {
+        g = BreakPointsPtr(new BreakPoints(e));
+    }
+    else if (q == GenID::BPIntegrator) {
+        g = BPIntegratorPtr(new BPIntegrator(e));
+    }
+    else if (q == GenID::Phasor) {
         g = PhasorPtr(new Phasor(e));    
     }
-    else if (q == ID_Sine) {
+    else if (q == GenID::Sine) {
         g = SinePtr(new Sine(e));    
     }
-    else if (q == ID_Map) {
+    else if (q == GenID::Map) {
         g = MapPtr(new Map(e));
     }
-    else if (q == ID_AttackDecay) {
+    else if (q == GenID::AttackDecay) {
         g = AttackDecayPtr(new AttackDecay(e));
     }
     else {
         std::stringstream msg;
-        msg << "no matching GeneratorID";
+        msg << "no matching GenID";
         msg << " file: " << __FILE__ " line: " << __LINE__;
         throw std::invalid_argument(msg.str());    
     }
@@ -157,7 +169,7 @@ GenPtr  Gen :: make_with_environment(GeneratorID q,
 }
 
 
-GenPtr  Gen :: make(GeneratorID q){
+GenPtr  Gen :: make(GenID q){
 	// just get default environment
     EnvironmentPtr e = EnvironmentPtr(new Environment);
     return make_with_environment(q, e);
@@ -193,8 +205,8 @@ void Gen :: init() {
     _sampling_rate = _environment->get_sampling_rate();
 	_nyquist = _sampling_rate / 2; // let floor
     	
-    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Value);
+    PTypePtr pt1 = PType::make( 
+            PTypeID::Value);
     pt1->set_instance_name("Gen default output");
     _register_output_parameter_type(pt1);
 }
@@ -262,7 +274,7 @@ Validity Gen :: _validate_outputs() {
     return Validity {true, "OK"};
 }
 
-void Gen :: _register_output_parameter_type(ParameterTypePtr pts) {
+void Gen :: _register_output_parameter_type(PTypePtr pts) {
 	// called in derived init() to setup a output types; this does not preprae storage ; 
     _output_parameter_type[_output_count] = pts;
     _output_count += 1;
@@ -274,7 +286,7 @@ void Gen :: _clear_output_parameter_types() {
     outputs.clear();
 }
 
-void Gen :: _register_input_parameter_type(ParameterTypePtr pts) {
+void Gen :: _register_input_parameter_type(PTypePtr pts) {
 	// called in derived init() to setup a input types and prepare storage
     // storing in an unordered map
     _input_parameter_type[_input_count] = pts;
@@ -299,7 +311,7 @@ void Gen :: _clear_input_parameter_types() {
     _summed_inputs.clear();
 }
 
-void Gen :: _register_slot_parameter_type(ParameterTypePtr pts) {
+void Gen :: _register_slot_parameter_type(PTypePtr pts) {
 	// called in derived init()
 	// set dictionary directly
     _slot_parameter_type[_slot_count] = pts;		
@@ -442,19 +454,6 @@ void Gen :: _set_frame_size(FrameSizeT f) {
     // when we set the dimension, should we set it for inputs?
 }
 
-
-//void Gen :: _set_output_count(ParameterIndexT d) {
-	//// this public method is not used during Gen::__init__
-    //// only change if different; assume already created
-	//if (d == 0) {
-		//throw std::invalid_argument("a dimension of 0 is not supported");
-	//}	
-	//_output_count = d;
-	//_resize_outputs(); // _outputs_size is set here with dimension
-	//reset(); // must reset values to zero 
-    //// when we set the dimension, should we set it for inputs?
-//}
-
 //..............................................................................
 // display methods
 
@@ -524,7 +523,7 @@ void Gen :: print_inputs(bool recursive, UINT8 recurse_level) {
     VGenPtrOutPair :: const_iterator j;
     // need an interger as key for _input_parameter_type
     for (ParameterIndexT k=0; k!=_inputs.size(); ++k) {   
-        ParameterTypePtr pts = _input_parameter_type[k];
+        PTypePtr pts = _input_parameter_type[k];
         // need to iterate over each sub vector
         std::cout << space2 << *pts << std::endl;
         for (j=_inputs[k].begin(); j!=_inputs[k].end(); ++j) {
@@ -686,7 +685,7 @@ ParameterIndexT Gen :: get_input_index_from_parameter_name(
     for (k=_input_parameter_type.begin(); 
         k != _input_parameter_type.end(); 
         ++k) {
-        // each value (second( is a ParameterTypePtr)
+        // each value (second( is a PTypePtr)
         if (s == k->second->get_instance_name()) return k->first;
     }
 	// raise an exception, or return error code?
@@ -694,13 +693,13 @@ ParameterIndexT Gen :: get_input_index_from_parameter_name(
 }
 
 ParameterIndexT Gen :: get_input_index_from_class_id(const
-        ParameterType::ParameterTypeID ptid) {
+        PTypeID ptid) {
     // match the string to the name returned by get_instance_name; 
     Gen :: MapIndexToParameterTypePtr ::const_iterator k;
     for (k = _input_parameter_type.begin();
         k != _input_parameter_type.end(); 
         ++k) {
-        // each value (second( is a ParameterTypePtr)
+        // each value (second( is a PTypePtr)
         if (ptid == k->second->get_class_id()) return k->first;
     }
 	throw std::invalid_argument("no matching parameter type");
@@ -738,7 +737,7 @@ void Gen :: set_input_by_index(
         ParameterIndexT pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
-    aw::GenPtr c = aw::Gen::make_with_environment(ID_Constant, 
+    GenPtr c = Gen::make_with_environment(GenID::Constant, 
             _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c, pos); // call overloaded
@@ -746,7 +745,7 @@ void Gen :: set_input_by_index(
 
 
 void Gen :: set_input_by_class_id(
-        ParameterType::ParameterTypeID ptid,
+        PTypeID ptid,
         GenPtr gs,
         ParameterIndexT pos){
     ParameterIndexT i = get_input_index_from_class_id(ptid);
@@ -754,7 +753,7 @@ void Gen :: set_input_by_class_id(
 }
 
 void Gen :: set_input_by_class_id(
-        ParameterType::ParameterTypeID ptid,
+        PTypeID ptid,
         SampleT v,
         ParameterIndexT pos){
     ParameterIndexT i = get_input_index_from_class_id(ptid);
@@ -782,7 +781,7 @@ void Gen :: add_input_by_index(ParameterIndexT i, SampleT v,
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
 	// pass the EnvironmentPtr to inner Gen 
-    aw::GenPtr c = aw::Gen::make_with_environment(ID_Constant, 
+    GenPtr c = Gen::make_with_environment(GenID::Constant, 
             _environment);    
     c->set_input_by_index(0, v); // this will call Constant::reset()
     add_input_by_index(i, c, pos); // other overloaded
@@ -808,8 +807,7 @@ void Gen :: clear_inputs() {
 
 //..............................................................................
 // public slot control 
-void Gen :: set_slot_by_index(ParameterIndexT i, GenPtr gs, 
-									bool update){
+void Gen :: set_slot_by_index(ParameterIndexT i, GenPtr gs, bool update){
     // if zero, none are set; current value is next available slot for registering]
 	// updat defaults to true in header	
     if (_slot_count <= 0 or i >= _slot_count) {
@@ -827,7 +825,7 @@ void Gen :: set_slot_by_index(ParameterIndexT i, SampleT v,
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
 	// updat defaults to true in header
-    aw::GenPtr c = aw::Gen::make_with_environment(ID_Constant, 
+    GenPtr c = Gen::make_with_environment(GenID::Constant, 
             _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_slot_by_index(i, c, update); // call overloaded
@@ -860,7 +858,7 @@ Constant :: Constant(EnvironmentPtr e)
 	// must initialize base class with passed arg
 	: Gen(e) {
 	_class_name = "Constant"; 
-    _class_id = ID_Constant;
+    _class_id = GenID::Constant;
 }
 
 void Constant :: init() {
@@ -871,10 +869,10 @@ void Constant :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-//    aw::ParameterTypeValuePtr pt1 = aw::ParameterTypeValuePtr(new 
-//                                       aw::ParameterTypeValue);
-    aw::ParameterTypePtr pt1 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+//    ParameterTypeValuePtr pt1 = ParameterTypeValuePtr(new 
+//                                       PTypeValue);
+    PTypePtr pt1 = PType::make(
+            PTypeID::Value);
     pt1->set_instance_name("Constant numerical value");
     _register_output_parameter_type(pt1);	
     _register_input_parameter_type(pt1);
@@ -920,7 +918,7 @@ void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
     // iterative over inputs
     for (ParameterIndexT k=0; k!=_inputs.size(); ++k) {   
         // is this doing a copy?
-        ParameterTypePtr pts = _input_parameter_type[k];
+        PTypePtr pts = _input_parameter_type[k];
         std::cout << space2 << *pts << std::endl;
         // need to iterate over stored _values
         VSampleT :: const_iterator j;
@@ -984,7 +982,7 @@ _BinaryCombined :: _BinaryCombined(EnvironmentPtr e)
     _frame_size_is_resizable = false;
     // the following need to be set in derived classes
 //	_class_name = "Add";
-//    _class_id = ID_Add;
+//    _class_id = GenID::Add;
     _op_switch = '+';
     _n_opperands_init = 0; // must be 1
 }
@@ -995,8 +993,8 @@ void _BinaryCombined :: init() {
     // must clear the default set by Gen init because slot will set directly    
     _clear_output_parameter_types();
     
-    aw::ParameterTypePtr so1 = aw::ParameterType::make(
-            aw::ParameterType::ID_Channels);
+    PTypePtr so1 = PType::make(
+            PTypeID::Channels);
                                            
     so1->set_instance_name("Channels");
 	_register_slot_parameter_type(so1);	// create deafult constant, update
@@ -1015,11 +1013,11 @@ void _BinaryCombined :: _update_for_new_slot() {
     _clear_input_parameter_types();
 	
     std::stringstream s;
-    aw::ParameterTypePtr pt;    
+    PTypePtr pt;    
     // set inputs; this will clear any existing connections
     for (ParameterIndexT i=0; i<outs; ++i) {
-        //pt = aw::ParameterTypeValuePtr(new aw::ParameterTypeValue);
-        pt = aw::ParameterType::make(aw::ParameterType::ID_Value);
+        //pt = ParameterTypeValuePtr(new PTypeValue);
+        pt = PType::make(PTypeID::Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Opperands " << i+1;
         pt->set_instance_name(s.str());
@@ -1077,7 +1075,7 @@ Add :: Add(EnvironmentPtr e)
 	// must initialize base class with passed arg
 	: _BinaryCombined(e) {
 	_class_name = "Add";  // override what is set in Add
-    _class_id = ID_Add;
+    _class_id = GenID::Add;
     _op_switch = '+';
     _n_opperands_init = 0;
 }
@@ -1091,7 +1089,7 @@ Multiply :: Multiply(EnvironmentPtr e)
 	// must initialize base class with passed arg
 	: _BinaryCombined(e) {
 	_class_name = "Multiply";  // override what is set in Add
-    _class_id = ID_Multiply;            
+    _class_id = GenID::Multiply;            
     _op_switch = '*';
     _n_opperands_init = 1; // must be 1    
 }
@@ -1113,7 +1111,7 @@ Buffer :: Buffer(EnvironmentPtr e)
 	// must initialize base class with passed arg
 	: Gen(e) {
 	_class_name = "Buffer";
-    _class_id = ID_Buffer;        
+    _class_id = GenID::Buffer;        
 	// this is the unique difference of the Buffer class 
     _frame_size_is_resizable = true;
 }
@@ -1128,14 +1126,12 @@ void Buffer :: init() {
 
     // register some slots: 
     // register slots
-    aw::ParameterTypePtr so1 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Channels);                                           
+    PTypePtr so1 = PType::make(PTypeID::Channels);
     so1->set_instance_name("Channels");
 	_register_slot_parameter_type(so1);
     set_slot_by_index(0, 1, false); // false so as to not update until dur is set
 	    
-    aw::ParameterTypePtr so2 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Duration);
+    PTypePtr so2 = PType::make(PTypeID::Duration);
     so2->set_instance_name("Duration in seconds");
 	_register_slot_parameter_type(so2);
     // set value; will call _update_for_new_slot    
@@ -1154,19 +1150,18 @@ void Buffer :: _update_for_new_slot() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     std::stringstream s;
-    aw::ParameterTypeValuePtr pt_i;
-    aw::ParameterTypeValuePtr pt_o;    	
+    ParameterTypeValuePtr pt_i;
+    ParameterTypeValuePtr pt_o;    	
     // set inputs; this will clear any existing connections
     for (ParameterIndexT i=0; i<outs; ++i) {        
-        aw::ParameterTypePtr pt_i = aw::ParameterType::make( 
-                aw::ParameterType::ID_Value);        
+        PTypePtr pt_i = PType::make(PTypeID::Value);        
         s.str(""); // clears contents; not the same as .clear()
         s << "Input " << i+1;
         pt_i->set_instance_name(s.str());
         _register_input_parameter_type(pt_i);        
 		
-        aw::ParameterTypePtr pt_o = aw::ParameterType::make( 
-                aw::ParameterType::ID_Value);
+        PTypePtr pt_o = PType::make( 
+                PTypeID::Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Output " << i+1;
         pt_o->set_instance_name(s.str());
@@ -1235,7 +1230,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
         //dims = out_to_matrix_offset; //copy entire vector     
         for (p=0; p<get_output_count(); ++p) {
             dims.push_back(p);
-        }        
+        }
         count = get_outputs_size();        
     } 
     else { // just write the single dim specified 
@@ -1318,19 +1313,19 @@ void Buffer :: set_outputs(const std::string& fp) {
 
 
 //------------------------------------------------------------------------------
-Breakpoints :: Breakpoints(EnvironmentPtr e) 
+BreakPoints :: BreakPoints(EnvironmentPtr e) 
 	// must initialize base class with passed arg
 	: Buffer(e) {
-	_class_name = "Breakpoints";  // override what is set in Add
-    _class_id = ID_Breakpoints;            
+	_class_name = "BreakPoints";  // override what is set in Add
+    _class_id = GenID::BreakPoints;            
 }
 
-void Breakpoints :: init() {
+void BreakPoints :: init() {
     Buffer::init(); // must call base init; calls Gen::init()
 }
 
 
-Validity Breakpoints :: _validate_outputs() {
+Validity BreakPoints :: _validate_outputs() {
     // TODO: check taht it has 2 dimensions, check that x is always increasing    
     if (get_output_count() != 2) {
         return {false, "break points must have 2 outputs for x and y"};
@@ -1355,6 +1350,61 @@ Validity Breakpoints :: _validate_outputs() {
 
 
 
+//------------------------------------------------------------------------------
+BPIntegrator :: BPIntegrator(EnvironmentPtr e) 
+	// must initialize base class with passed arg
+	: Gen(e) {
+	_class_name = "BPIntegrator";  // override what is set in Add
+    _class_id = GenID::BPIntegrator;            
+}
+
+void BPIntegrator :: init() {
+    Gen::init(); // must call base init; calls Gen::init()
+    _clear_output_parameter_types(); // must clear defaut by Gen init
+    
+    // input 
+    PTypePtr pt_i1 = PType::make(PTypeID::Trigger);
+    pt_i1->set_instance_name("Trigger");
+    _register_input_parameter_type(pt_i1);
+	_input_index_trigger = 0;
+
+    PTypePtr pt_i2 = PType::make(PTypeID::Cycle);
+    pt_i2->set_instance_name("Cycle on or off");
+    _register_input_parameter_type(pt_i2);
+	_input_index_cycle = 1;
+
+    PTypePtr pt_i3 = PType::make(PTypeID::Value);
+    pt_i3->set_instance_name("Exponent");
+    _register_input_parameter_type(pt_i3);
+	_input_index_exponent = 2;
+
+
+    // register slots
+    // should this be a BreakPoints type id to enforce
+    PTypePtr so1 = PType::make(PTypeID::Table);
+    so1->set_instance_name("Breakpoints");
+	_register_slot_parameter_type(so1);
+
+    PTypePtr so2 = PType::make(PTypeID::Value);
+    so2->set_instance_name("Interpolatation type");
+	_register_slot_parameter_type(so2);
+    set_slot_by_index(1, 0); // setting a default
+    
+    
+	// register outputs
+    PTypePtr pt_o1 = PType::make(PTypeID::Value);
+    pt_o1->set_instance_name("Output");
+    _register_output_parameter_type(pt_o1);	
+
+    PTypePtr pt_o2 = PType::make(PTypeID::Trigger);
+    pt_o2->set_instance_name("EOS"); // end of segment
+    _register_output_parameter_type(pt_o2);
+
+    
+}
+
+
+
 
 
 //------------------------------------------------------------------------------
@@ -1366,7 +1416,7 @@ Phasor :: Phasor(EnvironmentPtr e)
 		//_period_start_sample_pos(0)
 	{
 	_class_name = "Phasor"; 
-    _class_id = ID_Phasor;
+    _class_id = GenID::Phasor;
 }
 
 
@@ -1377,26 +1427,22 @@ void Phasor :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Frequency);                                       
+    PTypePtr pt1 = PType::make(PTypeID::Frequency);                                       
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    aw::ParameterTypePtr pt2 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Phase);
+    PTypePtr pt2 = PType::make(PTypeID::Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;	
 	
 	// register outputs
-    aw::ParameterTypePtr pt3 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Value);
+    PTypePtr pt3 = PType::make(PTypeID::Value);
     pt3->set_instance_name("Output");
     _register_output_parameter_type(pt3);	
 
-    aw::ParameterTypePtr pt4 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Trigger);
+    PTypePtr pt4 = PType::make(PTypeID::Trigger);
     pt4->set_instance_name("Trigger");
     _register_output_parameter_type(pt4);	
 
@@ -1464,7 +1510,7 @@ Sine :: Sine(EnvironmentPtr e)
 	: Gen(e)
 	{
 	_class_name = "Sine"; 
-    _class_id = ID_Sine;
+    _class_id = GenID::Sine;
 }
 
 Sine :: ~Sine() {
@@ -1476,21 +1522,21 @@ void Sine :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Frequency);                                       
+    PTypePtr pt1 = PType::make( 
+            PTypeID::Frequency);                                       
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    aw::ParameterTypePtr pt2 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Phase);
+    PTypePtr pt2 = PType::make( 
+            PTypeID::Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;
     
 	// register output
-    aw::ParameterTypePtr pt_o1 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+    PTypePtr pt_o1 = PType::make(
+            PTypeID::Value);
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
@@ -1511,30 +1557,6 @@ void Sine :: reset() {
     _cur_fq = 0;
     _phase_increment = 0;
 }
-
-
-//void Sine :: render(RenderCountT f) {
-//    while (_render_count < f) {
-//        _render_inputs(f);
-//		_sum_inputs(_frame_size);
-//        // a running count of samples
-//        _sample_count = _render_count * _frame_size;
-//		// iterate over one frame
-//		for (_i=0; _i < _frame_size; ++_i) {
-//			//_sum_frequency = ;
-//			//_sum_phase = _summed_inputs[_input_index_phase][i];
-//            // 2*pi is one cycle, times the number of samples per cycle
-//            _angle_increment = PI2 * (
-//                    _summed_inputs[_input_index_frequency][_i] /
-//                    _sampling_rate);
-//            // mult angle increment by cumulative running of samples
-//			outputs[0][_i] = sin(_angle_increment * (_sample_count + _i));            
-//		}
-//        //std::cout << "_period_samples: " << _period_samples << std::endl;        
-//        _render_count += 1;
-//    }
-//}
-
 
 
 void Sine :: render(RenderCountT f) {
@@ -1577,7 +1599,7 @@ Map :: Map(EnvironmentPtr e)
 	: Gen(e)
 	{
 	_class_name = "Map";
-    _class_id = ID_Map;
+    _class_id = GenID::Map;
 }
 
 
@@ -1588,42 +1610,34 @@ void Map :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypePtr pt1 = aw::ParameterType::make( 
-            aw::ParameterType::ID_Value);
+    PTypePtr pt1 = PType::make( PTypeID::Value);
     pt1->set_instance_name("Source");
     _register_input_parameter_type(pt1);
 	_input_index_src = 0;
 
-
-    aw::ParameterTypePtr pt4 = aw::ParameterType::make(
-            aw::ParameterType::ID_LowerBoundary);
+    PTypePtr pt4 = PType::make(PTypeID::LowerBoundary);
     pt4->set_instance_name("Source Lower");
     _register_input_parameter_type(pt4);
 	_input_index_src_lower = 1;
 
-    aw::ParameterTypePtr pt5 = aw::ParameterType::make(
-            aw::ParameterType::ID_UpperBoundary);
+    PTypePtr pt5 = PType::make(PTypeID::UpperBoundary);
     pt5->set_instance_name("Source Upper");
     _register_input_parameter_type(pt5);
 	_input_index_src_upper = 2;
-	
 
-    aw::ParameterTypePtr pt2 = aw::ParameterType::make(
-            aw::ParameterType::ID_LowerBoundary);
+    PTypePtr pt2 = PType::make(PTypeID::LowerBoundary);
     pt2->set_instance_name("Destination Lower");
     _register_input_parameter_type(pt2);	
 	_input_index_dst_lower = 3;
 
-    aw::ParameterTypePtr pt3 = aw::ParameterType::make(
-            aw::ParameterType::ID_UpperBoundary);
+    PTypePtr pt3 = PType::make(PTypeID::UpperBoundary);
     pt3->set_instance_name("Destination Upper");
     _register_input_parameter_type(pt3);
 	_input_index_dst_upper = 4;
 
 
 	// register output
-    aw::ParameterTypePtr pt_out = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+    PTypePtr pt_out = PType::make(PTypeID::Value);
     pt_out->set_instance_name("Output");
     _register_output_parameter_type(pt_out);
     
@@ -1651,20 +1665,20 @@ void Map :: render(RenderCountT f) {
 
 		for (_i=0; _i < _frame_size; ++_i) {
             // must get true min max
-            aw::true_min_max(
+            true_min_max(
                     _summed_inputs[_input_index_src_lower][_i],
                     _summed_inputs[_input_index_src_upper][_i],
                     &_min_src,
                     &_max_src
                     );
-            aw::true_min_max(
+            true_min_max(
                     _summed_inputs[_input_index_dst_lower][_i],
                     _summed_inputs[_input_index_dst_upper][_i],
                     &_min_dst,
                     &_max_dst
                     );
             // if input is beyond min/max defined as source, it is clipped
-			_limit_src = aw::double_limiter(
+			_limit_src = double_limiter(
                     _summed_inputs[_input_index_src][_i], _min_src, _max_src
                     );
             _range_src = _max_src - _min_src; // no abs necessary
@@ -1695,7 +1709,7 @@ AttackDecay :: AttackDecay(EnvironmentPtr e)
 	: Gen(e)
 	{
 	_class_name = "AttackDecay";
-    _class_id = ID_AttackDecay;
+    _class_id = GenID::AttackDecay;
 }
 
 void AttackDecay :: init() {
@@ -1705,52 +1719,43 @@ void AttackDecay :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    aw::ParameterTypePtr pt_i1 = aw::ParameterType::make(
-            aw::ParameterType::ID_Trigger);
+    PTypePtr pt_i1 = PType::make(PTypeID::Trigger);
     pt_i1->set_instance_name("Trigger");
     _register_input_parameter_type(pt_i1);
 	_input_index_trigger = 0;
 
-    aw::ParameterTypePtr pt_i2 = aw::ParameterType::make(
-            aw::ParameterType::ID_Duration);
+    PTypePtr pt_i2 = PType::make(PTypeID::Duration);
     pt_i2->set_instance_name("Attack time");
     _register_input_parameter_type(pt_i2);
 	_input_index_attack = 1;
 
-    aw::ParameterTypePtr pt_i3 = aw::ParameterType::make(
-            aw::ParameterType::ID_Duration);
+    PTypePtr pt_i3 = PType::make(PTypeID::Duration);
     pt_i3->set_instance_name("Decay time");
     _register_input_parameter_type(pt_i3);
 	_input_index_decay = 2;
 
-    aw::ParameterTypePtr pt_i4 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+    PTypePtr pt_i4 = PType::make(PTypeID::Value);
     pt_i4->set_instance_name("Exponent");
     _register_input_parameter_type(pt_i4);
 	_input_index_exponent = 3;
 
-    aw::ParameterTypePtr pt_i5 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
-    pt_i5->set_instance_name("Cycle");
+    PTypePtr pt_i5 = PType::make(PTypeID::Value);
+    pt_i5->set_instance_name("Cycle on or off");
     _register_input_parameter_type(pt_i5);
 	_input_index_cycle = 4;
 	
 
 	// register output
-    aw::ParameterTypePtr pt_o1 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+    PTypePtr pt_o1 = PType::make(PTypeID::Value);
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
-    // add outputs: EOA, EOD!
-    aw::ParameterTypePtr pt_o2 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+    PTypePtr pt_o2 = PType::make(PTypeID::Trigger);
     pt_o2->set_instance_name("EOA");
     _register_output_parameter_type(pt_o2);
     _output_index_eoa = 1;
 
-    aw::ParameterTypePtr pt_o3 = aw::ParameterType::make(
-            aw::ParameterType::ID_Value);
+    PTypePtr pt_o3 = PType::make(PTypeID::Trigger);
     pt_o3->set_instance_name("EOD");
     _register_output_parameter_type(pt_o3);
     _output_index_eod = 2;

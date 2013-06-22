@@ -16,13 +16,13 @@ bool a() {
     // this will automatically create constant Generators
     
     //g2->print_inputs(true);
-	aw::GenPtr gbuf = aw::Gen::make(aw::Gen::ID_Buffer);
+	aw::GenPtr gbuf = aw::Gen::make(aw::GenID::Buffer);
 	gbuf->set_slot_by_index(0, 2);
 	gbuf->set_slot_by_index(1, 60); // 60 sec
 
-    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Sine);
-    aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Sine);
-    //aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Sine);
+    aw::GenPtr g1 = aw::Gen::make(aw::GenID::Sine);
+    aw::GenPtr g2 = aw::Gen::make(aw::GenID::Sine);
+    //aw::GenPtr g3 = aw::Gen::make(aw::GenID::Sine);
 
     // one cycle for 4 samples
     2 >> g1;
@@ -45,16 +45,16 @@ bool a() {
 bool b() {
 
 
-    aw::GenPtr gsine2 = aw::Gen::make(aw::Gen::ID_Sine);
+    aw::GenPtr gsine2 = aw::Gen::make(aw::GenID::Sine);
     4 >> gsine2;
-    aw::GenPtr gsine3 = aw::Gen::make(aw::Gen::ID_Sine);
+    aw::GenPtr gsine3 = aw::Gen::make(aw::GenID::Sine);
     40 >> gsine3;
     
-	aw::GenPtr gbuf = aw::Gen::make(aw::Gen::ID_Buffer);
+	aw::GenPtr gbuf = aw::Gen::make(aw::GenID::Buffer);
 	gbuf->set_slot_by_index(0, 1);
 	gbuf->set_slot_by_index(1, 60);
         
-    aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Map);
+    aw::GenPtr g1 = aw::Gen::make(aw::GenID::Map);
     g1->set_input_by_index(0, gsine3);
     g1->set_input_by_index(1, 0); // source
     g1->set_input_by_index(2, 1);
@@ -73,19 +73,19 @@ bool b() {
 
 bool c() {
 
-	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	g1->set_slot_by_index(1, 60.0);
 		
 	// create 
-	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);    
+	aw::GenPtr g2 = aw::Gen::make(aw::GenID::Phasor);    
 	g2->add_input_by_index(0, 4); // a constant frequency
 	
-	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Phasor);    
+	aw::GenPtr g3 = aw::Gen::make(aw::GenID::Phasor);    
 	g3->add_input_by_index(0, 12); // a constant frequency
 
-	aw::GenPtr g4 = aw::Gen::make(aw::Gen::ID_Phasor);    
+	aw::GenPtr g4 = aw::Gen::make(aw::GenID::Phasor);    
 	g3->add_input_by_index(0, -2); // a constant frequency
 
 	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too

@@ -43,21 +43,21 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_1) {
 }
 
 BOOST_AUTO_TEST_CASE(aw_illustration_test_2) {    
-	aw::GenPtr g1 = aw::Gen::make(aw::Gen::ID_Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	// for five second
 	g1->set_slot_by_index(1, 5.0);
 		
 	// create 
-	aw::GenPtr g2 = aw::Gen::make(aw::Gen::ID_Phasor);    
+	aw::GenPtr g2 = aw::Gen::make(aw::GenID::Phasor);    
 	g2->add_input_by_index(0, 4); // a constant frequency
 	
-	aw::GenPtr g3 = aw::Gen::make(aw::Gen::ID_Phasor);    
+	aw::GenPtr g3 = aw::Gen::make(aw::GenID::Phasor);    
 	g3->add_input_by_index(0, 12); // a constant frequency
 	g3->add_input_by_index(0, -2); // a constant frequency
 
-	aw::GenPtr g4 = aw::Gen::make(aw::Gen::ID_Phasor);    
+	aw::GenPtr g4 = aw::Gen::make(aw::GenID::Phasor);    
 	g4->add_input_by_index(0, 3); // a constant frequency
 
 	// add phasor to buffer input; might scale buffer if necessary; could mix multiple too
