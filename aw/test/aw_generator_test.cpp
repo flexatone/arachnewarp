@@ -1296,15 +1296,44 @@ BOOST_AUTO_TEST_CASE(aw_breakpoints_a) {
 
 }
 
-
-
 BOOST_AUTO_TEST_CASE(aw_gen_id_enum_class_a) {
 
     BOOST_CHECK(GenID::Sine == GenID::Sine);
     
-
 }
 
+
+
+BOOST_AUTO_TEST_CASE(aw_breakpoints_b) {
+
+    // break points will evaluate coherancy when setting outputs
+	GenPtr g1 = Gen::make(GenID::BreakPoints);
+    Inj<SampleT>(
+            {
+                {0, 1},
+                {2, .4},
+                {20, .1},
+                {45, 0},
+            }
+        ) && g1;
+    
+    BOOST_CHECK(g1->get_frame_size() == 4);
+    BOOST_CHECK(g1->get_output_count() == 2);
+
+
+	GenPtr g2 = Gen::make(GenID::BPIntegrator);
+    // set slots
+    // want to do this
+    // Inj<GenPtr>({g2, 0, 1}) || g2;
+    g2->set_slot_by_index(0, g1);
+
+    // constant not permitted
+    GenPtr g3 = Gen::make(GenID::Constant);
+    
+    BOOST_REQUIRE_THROW(g2->set_slot_by_index(0, g3),
+            std::invalid_argument);
+
+}
 
 
 

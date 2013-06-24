@@ -6,10 +6,30 @@
 #include <utility> // has pair
 #include <unordered_map>
 #include <memory>
+#include <set>
 
 #include "aw_common.h"
 
 namespace aw {
+
+
+
+
+
+//! Class of Gen names for static constructors. Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators.
+enum class GenID {
+    Constant,
+    Add,
+    Multiply,
+    Buffer,
+    BreakPoints,
+    BPIntegrator,
+    Phasor,
+    Sine,
+    Map,
+    AttackDecay
+};
+
 
 
 //! Identifiers for Parameter types. 
@@ -24,7 +44,7 @@ enum class PTypeID {
     Cycle, // boolean for cycle control
     LowerBoundary,
     UpperBoundary,
-    Table // for slot in breakpoint, wavetable
+    BreakPoints, // for slot in breakpoint, wavetable
 };
 
 
@@ -52,14 +72,15 @@ class PType {
     
     //static const char _class_name_alt[];
 
-    //! The name of the parameter in the context of a specific generator. 
+    //! The name of the parameter in the context of a specific generator. This should explain selection for idscrete selectors.
     std::string _instance_name;
-
-    //! Additional description in the context of the assigned-to generator. 
-    std::string _description;
 
     // can also define, for a particular instance, an expected context; that is, if fq is required, this can be defined here. then, when given another generator at a different context, conversion can happen?
 	
+    //! A set of GenIDs that can be used as in input when this PType is declared for an input. 
+    std::set<GenID> _compatible_gen;
+    
+    
     public://------------------------------------------------------------------
     explicit PType();
 
@@ -76,6 +97,9 @@ class PType {
     
     // Return the Parameter type id. 
     PTypeID get_class_id() const {return _class_id;};
+    
+    //! Validate a GenID using _compatible_gen and return, or raise an exception.
+    void validate_gen(GenID);
     
 };
 
@@ -156,30 +180,18 @@ class PTypeUpperBoundary: public PType {
     explicit PTypeUpperBoundary();
 };
 
-class ParameterTypeTable;
-typedef std::shared_ptr<ParameterTypeTable>
-        ParameterTypeTableShared;
+
+class PTypeBreakPoints;
+typedef std::shared_ptr<PTypeBreakPoints> PTypeBreakPointsPtr;
 //! A table, or a Buffer with 2 channels of data. 
-class ParameterTypeTable: public PType {
+class PTypeBreakPoints: public PType {
     public://------------------------------------------------------------------
-    explicit ParameterTypeTable();
+    explicit PTypeBreakPoints();
 };
 
 
-//! Class of Gen names for static constructors. Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators.
 
-enum class GenID {
-    Constant,
-    Add,
-    Multiply,
-    Buffer,
-    BreakPoints,
-    BPIntegrator,
-    Phasor,
-    Sine,
-    Map,
-    AttackDecay
-};
+
 
 
 //=============================================================================
@@ -191,13 +203,13 @@ class Gen: public std::enable_shared_from_this<Gen> {
     public://--------------------------=---------------------------------------
     // public typedefs
 	//! A mapping of index number
-    typedef std::unordered_map<ParameterIndexT, PTypePtr> MapIndexToParameterTypePtr;
+    typedef std::unordered_map<PIndexT, PTypePtr> MapIndexToParameterTypePtr;
 
     //! A vector of GenPtr instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
     typedef std::vector<GenPtr> VGenPtr;
 		
     //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.
-    typedef std::pair<GenPtr, ParameterIndexT> GenPtrOutPair;
+    typedef std::pair<GenPtr, PIndexT> GenPtrOutPair;
     typedef std::vector<GenPtrOutPair> VGenPtrOutPair;
     typedef std::vector<VGenPtrOutPair> VVGenPtrOutPair;
     		
@@ -209,19 +221,19 @@ class Gen: public std::enable_shared_from_this<Gen> {
     GenID _class_id;
 
     private://------------------------------------------------------------------
-    // Rename ParameterIndexT as OutputIndexType
+    // Rename PIndexT as OutputIndexType
     //! Store the number of output channels, that this Gen is currently set up with. Storage array acount.
-    ParameterIndexT _output_count;
+    PIndexT _output_count;
     
 	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputsSizeT is expected to store size up to long multichannel audio files. Total storage size.
     OutputsSizeT _outputs_size;
     
-    // TODO: use InputIndexType ParameterIndexT 
+    // TODO: use InputIndexType PIndexT 
     //! Number of input parameters used by this Gen. More than one Gen can reside in each slot. 
-    ParameterIndexT _input_count;
+    PIndexT _input_count;
 
 	//! Number of slots used by this Gen. One Gen can reside in each slot. 
-    ParameterIndexT _slot_count;    
+    PIndexT _slot_count;    
 
 	//! Store the Envrionment instance. 
     EnvironmentPtr _environment;
@@ -244,7 +256,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     RenderCountT _render_count;
 	
     //! The main storage for PTypePtr instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
-    std::unordered_map<ParameterIndexT,
+    std::unordered_map<PIndexT,
                             PTypePtr> _input_parameter_type;	
 		
     //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
@@ -257,13 +269,11 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	VGenPtr _slots;
 	
 	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
-    std::unordered_map<ParameterIndexT,
-            PTypePtr> _slot_parameter_type;
+    std::unordered_map<PIndexT, PTypePtr> _slot_parameter_type;
 	
 	
     //! We store a PTypePtr for each defined output, telling us what it is.
-    std::unordered_map<ParameterIndexT,
-            PTypePtr> _output_parameter_type;		
+    std::unordered_map<PIndexT, PTypePtr> _output_parameter_type;
 		
 
     public://------------------------------------------------------------------
@@ -345,7 +355,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     virtual void set_default();
 
     //! Return the the number of outputs dimensions
-    ParameterIndexT get_output_count() const {return _output_count;};
+    PIndexT get_output_count() const {return _output_count;};
 
     //! Return the the outputs size, or the total number of samples used for all frames at all outputs.
     FrameSizeT get_outputs_size() const {return _outputs_size;};
@@ -354,7 +364,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     SampleT get_outputs_average() const;
 
     //! Get the average of single _output_count of outputs. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
-    SampleT get_output_average(ParameterIndexT d) const;
+    SampleT get_output_average(PIndexT d) const;
 
     //! Return a Boolean if this Gen has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
@@ -426,16 +436,16 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     //! Write out all outpout to the provided file path. If this is a Buffer, this can be used to write an audio file.
     virtual void write_output_to_fp(const std::string& fp, 
-                                    ParameterIndexT d=0) const;
+                                    PIndexT d=0) const;
 	
         
 	//! Set the outputs from an array. This low level routine is the only way outputs are directly written from a collection. The reeturned bool is the result of _validate_outputs. 
 	Validity set_outputs_from_array(SampleT* v, OutputsSizeT s,
-							ParameterIndexT ch, bool interleaved=true);
+							PIndexT ch, bool interleaved=true);
 								
 	//! Set the outputs (resizing if possible) to values passsed in from a vector of SampleT. Note this presently copies values from a vector to an array, and thus requires 2x the memory alloc. Should by a const vector but cannot yet get usage right when deriving an array pointer; but: the passed in vector should not be changed. 
 	void set_outputs_from_vector(VSampleT& vst,
-								ParameterIndexT ch, bool interleaved=true);
+								PIndexT ch, bool interleaved=true);
 
 
     //! If we are in a Buffer class, this method loads a complete file path to an audio file into the output of this Gen. This is not implemented in the base class Gen. 
@@ -452,21 +462,21 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
 	// inputs and slots ......................................................    
     //! Return the number of inputs; this is not the same as the number of Generators, as each input may have 1 or more Generators
-    ParameterIndexT get_input_count() {return _input_count;};
+    PIndexT get_input_count() {return _input_count;};
 
     //! Return the number of slots. There is only one Gen per slot. 
-    ParameterIndexT get_slot_count() {return _slot_count;};
+    PIndexT get_slot_count() {return _slot_count;};
 
 	//! Return the parameter index for a named parameter.
-    ParameterIndexT get_input_index_from_parameter_name(const
+    PIndexT get_input_index_from_parameter_name(const
             std::string& s);
 
 	//! Return the parameter index for the first-encountered parameter type id; raises an exception if not found.
-    ParameterIndexT get_input_index_from_class_id(const
+    PIndexT get_input_index_from_class_id(const
             PTypeID ptid);
 
 	//! Return the parameter slot for a named parameter.
-    ParameterIndexT get_slot_index_from_parameter_name(const std::string& s);	
+    PIndexT get_slot_index_from_parameter_name(const std::string& s);	
 
 
     // TODO: must check for duplicated connections and silently skip them; 
@@ -474,53 +484,53 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	// inputs ..............................................................        
     //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
     virtual void set_input_by_index(
-            ParameterIndexT i,
+            PIndexT i,
             GenPtr gs,
-            ParameterIndexT pos=0);
+            PIndexT pos=0);
     
     virtual void set_input_by_index(
-            ParameterIndexT i,
+            PIndexT i,
             SampleT v,
-            ParameterIndexT pos=0);
+            PIndexT pos=0);
 
     ///! Set input by class id of the PType. 
     void set_input_by_class_id(
             PTypeID ptid,
             GenPtr gs,
-            ParameterIndexT pos=0);
+            PIndexT pos=0);
                                         
     void set_input_by_class_id(
             PTypeID ptid,
             SampleT v, // accept numbers
-            ParameterIndexT pos=0);
+            PIndexT pos=0);
 
 
     //! Add a multiple input at this parameter. 
-    virtual void add_input_by_index(ParameterIndexT i, 
-            GenPtr gs, ParameterIndexT pos=0);
+    virtual void add_input_by_index(PIndexT i, 
+            GenPtr gs, PIndexT pos=0);
 
-    virtual void add_input_by_index(ParameterIndexT i, SampleT v, 
-            ParameterIndexT pos=0);
+    virtual void add_input_by_index(PIndexT i, SampleT v, 
+            PIndexT pos=0);
   
   
     //! Get a vector of GenPtr for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
     virtual VGenPtrOutPair get_input_gens_by_index(
-            ParameterIndexT i);
+            PIndexT i);
 
     //! Remove all GenPtr attacked to all inputs.
     void clear_inputs();
   
 	// slot ..............................................................    	
     //! Directly set a parameter to a slot given an index. This will remove/erase any parameter on this slot. The update parameter permits disabling updating a slot, useful during initial configuration. 
-    virtual void set_slot_by_index(ParameterIndexT i, GenPtr gs, 
+    virtual void set_slot_by_index(PIndexT i, GenPtr gs, 
 									bool update=true);
     
 	//! Overridden to handle a constant. 
-    virtual void set_slot_by_index(ParameterIndexT i, SampleT v, 
+    virtual void set_slot_by_index(PIndexT i, SampleT v, 
 									bool update=true);
 
     //! Return the single gen at this slot position (not a vector, like inputs).
-    virtual GenPtr get_slot_gen_at_index(ParameterIndexT i);
+    virtual GenPtr get_slot_gen_at_index(PIndexT i);
     
     // Remove all GenPtr attacked to all inputs: does not make sense to do this, because we always need one gen in each slot position
     //void clear_slots();
@@ -532,11 +542,11 @@ class Gen: public std::enable_shared_from_this<Gen> {
 // functions on GenPtr ...............................................
 //! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
 inline GenPtr connect_serial_to_inputs(GenPtr lhs, GenPtr rhs, 
-        ParameterIndexT start=0, ParameterIndexT count=0) {
+        PIndexT start=0, PIndexT count=0) {
     // connect from left to right, so from lhs to rhs
     // lhs is above rhs in downard flow
     // get min of lhs out and rhs in, match as many in parallel as possible    
-    ParameterIndexT availLen = std::min(
+    PIndexT availLen = std::min(
             lhs->get_output_count(), rhs->get_input_count());
     if (start >= availLen) {
         // the last available index is availLen -1
@@ -547,7 +557,7 @@ inline GenPtr connect_serial_to_inputs(GenPtr lhs, GenPtr rhs,
     if (count == 0) {
         count = availLen;
     }    
-    ParameterIndexT i;    
+    PIndexT i;    
     for (i = start; i != (start+count); ++i) {
         // count may be greater than avialLen and not be an error; just take as much as possible
         if (i >= availLen) break;
@@ -561,7 +571,7 @@ inline GenPtr connect_serial_to_inputs(GenPtr lhs, GenPtr rhs,
 
 //! Assign SampleValue (after being converted to a Constant) directly as an input to one or more inputs on rhs GenPtr.
 inline GenPtr connect_serial_to_inputs(SampleT lhs, GenPtr rhs, 
-        ParameterIndexT start=0, ParameterIndexT count=0) {        
+        PIndexT start=0, PIndexT count=0) {        
     // set environment from lhs
 	GenPtr g_lhs = Gen::make_with_environment(
             GenID::Constant, rhs->get_environment());
@@ -576,9 +586,9 @@ inline GenPtr connect_serial_to_inputs(const Inj<SampleT>& lhs, GenPtr rhs) {
     VSampleT inj;
     lhs.fill_interleaved(inj);
     // get lesser of input, injection size
-    ParameterIndexT availLen = std::min(rhs->get_input_count(),
+    PIndexT availLen = std::min(rhs->get_input_count(),
             inj.size());
-    for(ParameterIndexT i=0; i<availLen; ++i) {
+    for(PIndexT i=0; i<availLen; ++i) {
         rhs->add_input_by_index(i, inj[i]);
     }
     return rhs;
@@ -588,9 +598,9 @@ inline GenPtr connect_serial_to_inputs(const Inj<SampleT>& lhs, GenPtr rhs) {
 inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
     Gen::VGenPtr inj; // create vector, fill with values;
     lhs.fill_interleaved(inj);
-    ParameterIndexT availLen = std::min(rhs->get_input_count(),
+    PIndexT availLen = std::min(rhs->get_input_count(),
             inj.size());
-    for(ParameterIndexT i=0; i<availLen; ++i) {
+    for(PIndexT i=0; i<availLen; ++i) {
         rhs->add_input_by_index(i, inj[i]);
     }
     return rhs;
@@ -605,9 +615,9 @@ inline GenPtr connect_serial_to_slots(const Inj<SampleT>& lhs,
         GenPtr rhs) {
     VSampleT inj; // create vector, fill with values;
     lhs.fill_interleaved(inj);
-    ParameterIndexT availLen = std::min(rhs->get_slot_count(),
+    PIndexT availLen = std::min(rhs->get_slot_count(),
             inj.size());
-    for(ParameterIndexT i=0; i < availLen; ++i) {
+    for(PIndexT i=0; i < availLen; ++i) {
         rhs->set_slot_by_index(i, inj[i]); // set, not add
     }
     return rhs;
@@ -618,9 +628,9 @@ inline GenPtr connect_serial_to_slots(const Inj<GenPtr>& lhs,
         GenPtr rhs) {
     Gen::VGenPtr inj; // create vector, fill with values;
     lhs.fill_interleaved(inj);
-    ParameterIndexT availLen = std::min(rhs->get_slot_count(),
+    PIndexT availLen = std::min(rhs->get_slot_count(),
             inj.size());
-    for(ParameterIndexT i=0; i < availLen; ++i) {
+    for(PIndexT i=0; i < availLen; ++i) {
         rhs->set_slot_by_index(i, inj[i]); // set, not add
     }
     return rhs;
@@ -692,7 +702,7 @@ inline GenPtr connect_parallel(
         GenID gid) {
     
     // get lesser of outputs between the two, then create an add with that many slots
-    ParameterIndexT j = std::min(lhs->get_output_count(), 
+    PIndexT j = std::min(lhs->get_output_count(), 
             rhs->get_output_count());
     // use the passed in gen id, this is usually GenID::Add, GenID::Multiply
     GenPtr g = Gen::make_with_environment(gid, 
@@ -700,7 +710,7 @@ inline GenPtr connect_parallel(
     // the returned Gen needs to support multiple channels; these are set as slow 0
     g->set_slot_by_index(0, j);
     // try to conect as many in to out as possible for each gen
-    ParameterIndexT i;
+    PIndexT i;
     for (i = 0; i != j; ++i) {
         g->add_input_by_index(i, lhs, i);
         g->add_input_by_index(i, rhs, i);        
@@ -795,23 +805,23 @@ class Constant: public Gen {
 	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
 
 	//! As Constant does not compose any Generators even though it has an input defined, this overridden method must return an empty vector.     
-    virtual VGenPtrOutPair get_input_gens_by_index(ParameterIndexT i);
+    virtual VGenPtrOutPair get_input_gens_by_index(PIndexT i);
     
     //! This overridden method throws an exception: you cannot set a Gen to a constant.
-    virtual void set_input_by_index(ParameterIndexT i, GenPtr gs, 
-            ParameterIndexT pos=0);    
+    virtual void set_input_by_index(PIndexT i, GenPtr gs, 
+            PIndexT pos=0);    
                                         
     //! Set value as a SampleT value.
-	virtual void set_input_by_index(ParameterIndexT i, SampleT v, 
-            ParameterIndexT pos=0);
+	virtual void set_input_by_index(PIndexT i, SampleT v, 
+            PIndexT pos=0);
     
     //! This overridden method throws an exception: you cannot set a Gen to a constant.    
-    virtual void add_input_by_index(ParameterIndexT i, GenPtr gs, 
-            ParameterIndexT pos=0);    
+    virtual void add_input_by_index(PIndexT i, GenPtr gs, 
+            PIndexT pos=0);    
                                         
     //! Add value as a SampleT value.                                        
-	virtual void add_input_by_index(ParameterIndexT i, SampleT v, 
-            ParameterIndexT pos=0);
+	virtual void add_input_by_index(PIndexT i, SampleT v, 
+            PIndexT pos=0);
     
 };
 
@@ -887,9 +897,9 @@ class Buffer: public Gen {
 	//! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
     virtual void render(RenderCountT f);	
 			
-    //! Write to an audio file to given the ouput file path. The optional ParameterIndexT argument can be used to specify a single _output_count of many to write. If ParameterIndexT is 0, all outputs are written.
+    //! Write to an audio file to given the ouput file path. The optional PIndexT argument can be used to specify a single _output_count of many to write. If PIndexT is 0, all outputs are written.
     virtual void write_output_to_fp(const std::string& fp, 
-                                    ParameterIndexT d=0) const;
+                                    PIndexT d=0) const;
         
     //! Set the outputs of this Gen to the content of an audio file provided as an audio path. This overridden method makes the usage of libsndfile to read in a file.
     virtual void set_outputs_from_fp(const std::string& fp);
@@ -930,9 +940,9 @@ typedef std::shared_ptr<BPIntegrator> BPIntegratorPtr;
 class BPIntegrator: public Gen {
 
     private://-----------------------------------------------------------------
-    ParameterIndexT _input_index_trigger;    
-    ParameterIndexT _input_index_cycle;
-    ParameterIndexT _input_index_exponent;    
+    PIndexT _input_index_trigger;    
+    PIndexT _input_index_cycle;
+    PIndexT _input_index_exponent;    
 
 
     public://------------------------------------------------------------------
@@ -955,8 +965,8 @@ typedef std::shared_ptr<Phasor> PhasorPtr;
 class Phasor: public Gen {
 
     private://-----------------------------------------------------------------
-    ParameterIndexT _input_index_frequency;
-    ParameterIndexT _input_index_phase;    
+    PIndexT _input_index_frequency;
+    PIndexT _input_index_phase;    
 	
 	// TODO: these should be Vectors of size equal to frame and filled from the input
     SampleT _sum_frequency;
@@ -990,8 +1000,8 @@ typedef std::shared_ptr<Sine> SinePtr;
 class Sine: public Gen {
 
     private://-----------------------------------------------------------------
-    ParameterIndexT _input_index_frequency;    
-    ParameterIndexT _input_index_phase;    
+    PIndexT _input_index_frequency;    
+    PIndexT _input_index_phase;    
 	
     //SampleT _sum_frequency;
     // SampleT _sum_phase;
@@ -1030,11 +1040,11 @@ typedef std::shared_ptr<Map> MapPtr;
 class Map: public Gen {
 
     private://-----------------------------------------------------------------
-    ParameterIndexT _input_index_src;
-    ParameterIndexT _input_index_src_lower; 	
-    ParameterIndexT _input_index_src_upper; 	
-    ParameterIndexT _input_index_dst_lower; 	
-    ParameterIndexT _input_index_dst_upper; 	
+    PIndexT _input_index_src;
+    PIndexT _input_index_src_lower; 	
+    PIndexT _input_index_src_upper; 	
+    PIndexT _input_index_dst_lower; 	
+    PIndexT _input_index_dst_upper; 	
 
     OutputsSizeT _i;
     
@@ -1071,14 +1081,14 @@ typedef std::shared_ptr<AttackDecay> AttackDecayPtr;
 class AttackDecay: public Gen {
 
     private://-----------------------------------------------------------------
-    ParameterIndexT _input_index_trigger;
-    ParameterIndexT _input_index_attack;
-    ParameterIndexT _input_index_decay;
-    ParameterIndexT _input_index_exponent;
-    ParameterIndexT _input_index_cycle;
+    PIndexT _input_index_trigger;
+    PIndexT _input_index_attack;
+    PIndexT _input_index_decay;
+    PIndexT _input_index_exponent;
+    PIndexT _input_index_cycle;
 
-    ParameterIndexT _output_index_eoa;
-    ParameterIndexT _output_index_eod;
+    PIndexT _output_index_eoa;
+    PIndexT _output_index_eod;
 
     OutputsSizeT _i;
     

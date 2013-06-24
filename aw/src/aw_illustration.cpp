@@ -19,7 +19,7 @@ Illustration :: Illustration() {}
 
 Illustration :: ~Illustration() {}
 
-//void Illustration :: draw(const std::vector<SampleT>& v, ParameterIndexT d) {
+//void Illustration :: draw(const std::vector<SampleT>& v, PIndexT d) {
 //    throw std::invalid_argument("not implemented");
 //}
 //
@@ -53,7 +53,7 @@ TimeDomainGraph :: TimeDomainGraph() {}
 TimeDomainGraph :: ~TimeDomainGraph() {}
 
 void TimeDomainGraph :: draw_vector(const std::vector<SampleT>& v, 
-    ParameterIndexT d) {
+    PIndexT d) {
     // d is the output count in the vector
 
     // get frame size, or units per _output_count    
@@ -107,7 +107,7 @@ set rmargin screen 0.98 " << std::endl;
     double top;
     double bottom;
         
-    for (ParameterIndexT dStep=1; dStep < d + 1; ++dStep) {
+    for (PIndexT dStep=1; dStep < d + 1; ++dStep) {
         // use whole margin at top on first
         if (dStep == 1) {
             top = pos - margin; 
@@ -206,7 +206,7 @@ void NetworkGraph :: _draw_generator(GenPtr g,
     escape(label, "{}<>", "\\");
     _stream << "label = \"<doc>  " << label << " ";
 
-    ParameterIndexT pos(0);    
+    PIndexT pos(0);    
     // iterate over slots
     for (pos=0; pos < g->get_slot_count(); ++pos) {
         _stream << " | <x" << static_cast<int>(pos) << 
@@ -246,7 +246,7 @@ void NetworkGraph :: _draw_generator(GenPtr g,
         _draw_generator(g_slot, memo);
     }    
 
-    ParameterIndexT g_ins_out_pos(0);
+    PIndexT g_ins_out_pos(0);
     GenPtr g_in;
     Gen::VGenPtrOutPair::const_iterator j; 
     // show connections by describing inputs
