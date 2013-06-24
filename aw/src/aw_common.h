@@ -49,10 +49,10 @@ typedef std::uint32_t OutputsSizeT;
 
 
 //! An unsigned integer to represent the position of a parameter type, i.e., an input or output position. Assumed to never have more thean 200 parameter inputs for a Gen.
-typedef std::size_t ParameterIndexT; 
+typedef std::size_t PIndexT; 
 
 
-typedef std::vector<ParameterIndexT> VParameterIndexT;
+typedef std::vector<PIndexT> VParameterIndexT;
 
 //! A vector of frame size types. This is used for offsets into the outputs.
 typedef std::vector<FrameSizeT> VFrameSizeType;
@@ -105,6 +105,15 @@ void print(SampleT* out, FrameSizeT size);
 
 //! Return the users home directory as a const char pointer. This is what is returned by low-level calls, and is thus returned here to reduce creating temporary objects.
 const char* get_fp_home();
+
+
+//! Utility function to format an exception string.
+inline std::string str_file_line(const char* file, int line) {
+    std::stringstream msg;
+    msg << " {file: " << file << " line: " << line << "}";
+    return msg.str();
+}
+
 
 
 //! Frequency values might swing through zero, or exceed Nyquist. This inline function solves this problem by returning a minimum number of zero is hit.
@@ -378,7 +387,7 @@ class Inj {
     private: //-----------------------------------------------------
     
     std::vector<T> _parsed;
-    ParameterIndexT _channels;
+    PIndexT _channels;
     bool _equal_width;
     
     public: //--------------------------------------------------------
@@ -420,7 +429,7 @@ class Inj {
         }
     }
 
-    ParameterIndexT get_channels() const {
+    PIndexT get_channels() const {
         return _channels;
     }
 

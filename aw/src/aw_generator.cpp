@@ -46,13 +46,15 @@ PTypePtr PType :: make(PTypeID q){
         p = ParameterTypeLowerBoundaryShared(new PTypeLowerBoundary);    
     }    
     else if (q == PTypeID::UpperBoundary) {
-        p = ParameterTypeUpperBoundaryShared(new PTypeUpperBoundary);    
+        p = ParameterTypeUpperBoundaryShared(new PTypeUpperBoundary);
     }
-    
+    else if (q == PTypeID::BreakPoints) {
+        p = PTypeBreakPointsPtr(new PTypeBreakPoints);
+    }        
     else {
         std::stringstream msg;
-        msg << "no matching ParaameterTypeID";
-        msg << "file: " << __FILE__ "line: " << __LINE__;
+        msg << "no matching ParameterTypeID";
+        msg << str_file_line(__FILE__, __LINE__);
         throw std::invalid_argument(msg.str());
     }
     return p;
@@ -66,6 +68,22 @@ std::ostream& operator<<(std::ostream& ostream, const PType& pt) {
     ostream << "<PType: " << pt._class_name << ": " << pt._instance_name << ">";
     return ostream; 
 }
+
+void PType :: validate_gen(GenID candidate) {
+    // check if candates is in _compatible_gen set<GenID>
+    if (_compatible_gen.size() == 0) {
+        return; // if none defined, no problem
+    }
+    if (_compatible_gen.count(candidate)  >= 1) {
+        return;
+    }
+    std::stringstream msg;
+    msg << "assigned GenID: " << " not supported by this PType: " << *this;
+    msg << str_file_line(__FILE__, __LINE__);
+    throw std::invalid_argument(msg.str());
+}
+
+
 
 //-----------------------------------------------------------------------------
 PTypeValue :: PTypeValue() {
@@ -120,6 +138,17 @@ PTypeUpperBoundary :: PTypeUpperBoundary() {
     _class_id = PTypeID::UpperBoundary;
 }
 
+//-----------------------------------------------------------------------------
+
+PTypeBreakPoints :: PTypeBreakPoints() {
+    _class_name = "PTypeBreakPoints";
+    _class_id = PTypeID::BreakPoints;
+    _compatible_gen = {GenID::BreakPoints};
+}
+
+
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -159,9 +188,8 @@ GenPtr  Gen :: make_with_environment(GenID q,
     }
     else {
         std::stringstream msg;
-        msg << "no matching GenID";
-        msg << " file: " << __FILE__ " line: " << __LINE__;
-        throw std::invalid_argument(msg.str());    
+        msg << "no matching GenID" << str_file_line(__FILE__, __LINE__);
+        throw std::invalid_argument(msg.str());
     }
     // call subclass init, which calls baseclass init
     g->init();
@@ -212,7 +240,7 @@ void Gen :: init() {
 }
 
 void Gen :: reset() {
-    ParameterIndexT i;
+    PIndexT i;
     FrameSizeT j;
     SampleT n(0);
     for (i=0; i<_output_count; ++i) {
@@ -236,7 +264,7 @@ void Gen :: _resize_outputs() {
     // only do this once to avoid repeating
     _outputs_size = _output_count * _frame_size;
     
-    ParameterIndexT i;
+    PIndexT i;
     VVSampleT::iterator j; // not a const       
     
     // add output vectors if necessary
@@ -327,9 +355,9 @@ void Gen :: _render_inputs(RenderCountT f) {
     // this is "pulling" lower-level values up to date
     // passing render count seems somewhat wasteful as in most cases we just will be advancing by 1 more than the previous frame count value
     // this is inlined in the header
-    ParameterIndexT j;
-    ParameterIndexT gen_count_at_input(0);
-    for (ParameterIndexT i = 0; i<_input_count; ++i) {
+    PIndexT j;
+    PIndexT gen_count_at_input(0);
+    for (PIndexT i = 0; i<_input_count; ++i) {
         // inputs are a vector of Generators
         gen_count_at_input = _inputs[i].size();        
         for (j=0; j<gen_count_at_input; ++j) {
@@ -342,7 +370,7 @@ void Gen :: _render_inputs(RenderCountT f) {
 void Gen :: _reset_inputs() {
     // NOTE: this is not called on reset(), and thus this is not yet recurssive
     VGenPtrOutPair :: const_iterator j; // vector of generators    
-    for (ParameterIndexT i = 0; i<_input_count; ++i) {
+    for (PIndexT i = 0; i<_input_count; ++i) {
         // inputs are a vector of Generators
         for (j=_inputs[i].begin(); j!=_inputs[i].end(); ++j) {
             // this is a shared generator
@@ -355,10 +383,10 @@ void Gen :: _sum_inputs(FrameSizeT fs) {
     // this is inlined in render() calls
     // note that this is nearly identical to Add :: render(); here we store the results in _summed_inputs, not in outputs; we also do not render inputs
     // when reading inputs, we must assume they are the common frame size, not necessarily our frame size (like when we are a buffer)
-    ParameterIndexT i;
+    PIndexT i;
     FrameSizeT k;
-    ParameterIndexT j;
-    ParameterIndexT gen_count_at_input(0);
+    PIndexT j;
+    PIndexT gen_count_at_input(0);
 	SampleT sum(0);
     
 	// iterate over each input parameter type
@@ -391,7 +419,7 @@ void Gen :: render(RenderCountT f) {
 //..............................................................................
 SampleT Gen :: get_outputs_average() const {
     SampleT sum(0);
-    for (ParameterIndexT i=0; i<_output_count; ++i) {
+    for (PIndexT i=0; i<_output_count; ++i) {
         for (FrameSizeT j=0; j < _frame_size; ++j) {
             sum += fabs(outputs[i][j]);
         }
@@ -399,15 +427,17 @@ SampleT Gen :: get_outputs_average() const {
     return sum / _outputs_size;
 }
 
-SampleT Gen :: get_output_average(ParameterIndexT d) const {
+SampleT Gen :: get_output_average(PIndexT d) const {
     // this does single output and whole outputs averaging.
     // if d is zero, get all frames/channels, otherwise, just get rquested dimension (i.e., 2d gets vector pos 1
 	if (d > _output_count) {
-		throw std::invalid_argument("a dimension greater than the number available has been requested");
+        std::stringstream msg;
+        msg << "a dimension greater than the number available has been requested" << str_file_line(__FILE__, __LINE__);
+		throw std::invalid_argument(msg.str());
 	}	
     VParameterIndexT dims; 
     OutputsSizeT count(0); 
-    ParameterIndexT p;
+    PIndexT p;
     
 	if (d == 0) {
         // get all
@@ -418,10 +448,13 @@ SampleT Gen :: get_output_average(ParameterIndexT d) const {
     }
     else {
         // need to request from 1 less than submitted positio, as dim 0 is the first dimension; we know tha td is greater tn zero
-        ParameterIndexT dPos = d - 1;
+        PIndexT dPos = d - 1;
         if (dPos >= _output_count) {
             // this should not happend due to check above
-            throw std::invalid_argument("requested dimension is greater than that supported");
+            std::stringstream msg;
+            msg << "requested dimension is greater than that supported"
+                    << str_file_line(__FILE__, __LINE__);
+            throw std::invalid_argument(msg.str());            
         }
         // just store the start position in the outputs for the dimension requested
         dims.push_back(dPos);
@@ -442,11 +475,17 @@ void Gen :: _set_frame_size(FrameSizeT f) {
     // protected
     // only change if different; assume already created
 	if (!_frame_size_is_resizable) {
-		throw std::domain_error("this generator does not support frame size setting");
-	}	
+        std::stringstream msg;
+        msg << "this generator does not support frame size setting"
+                << str_file_line(__FILE__, __LINE__);
+        throw std::domain_error(msg.str());
+	}
 	if (f == 0) {
-		throw std::invalid_argument("a frame size of 0 is not supported");
-	}	
+        std::stringstream msg;
+        msg << "a frame size of 0 is not supported"
+                << str_file_line(__FILE__, __LINE__);
+        throw std::invalid_argument(msg.str());
+	}
 	// must always set and resize, as our output number might be different
 	_frame_size = f;
 	_resize_outputs(); // _outputs_size is set here with dimension
@@ -501,7 +540,7 @@ void Gen :: print_outputs(FrameSizeT start, FrameSizeT end) {
         start = 0;
     }
     std::cout << *this << " Output rc{" << _render_count << "} f{" << start << "-" << end << "}: ";    
-    ParameterIndexT i;
+    PIndexT i;
     FrameSizeT j;
     for (i=0; i<_output_count; ++i) {
         std::cout << std::endl << space1;            
@@ -522,7 +561,7 @@ void Gen :: print_inputs(bool recursive, UINT8 recurse_level) {
 
     VGenPtrOutPair :: const_iterator j;
     // need an interger as key for _input_parameter_type
-    for (ParameterIndexT k=0; k!=_inputs.size(); ++k) {   
+    for (PIndexT k=0; k!=_inputs.size(); ++k) {   
         PTypePtr pts = _input_parameter_type[k];
         // need to iterate over each sub vector
         std::cout << space2 << *pts << std::endl;
@@ -568,7 +607,7 @@ void Gen :: write_outputs_to_vector(VSampleT& vst) const {
     
     vst.clear(); // may not be necessary, but insures consistancy
     vst.resize(_outputs_size, SampleT(0));    
-    ParameterIndexT i;
+    PIndexT i;
     FrameSizeT j;
     OutputsSizeT n(0);
             
@@ -581,20 +620,24 @@ void Gen :: write_outputs_to_vector(VSampleT& vst) const {
 }
 
 void Gen :: write_output_to_fp(const std::string& fp, 
-                                    ParameterIndexT d) const {
-    throw std::domain_error("not implemented on base class");
+                                    PIndexT d) const {
+    std::stringstream msg;
+    msg << "not implemented on base class"
+            << str_file_line(__FILE__, __LINE__);
+    throw std::domain_error(msg.str());
 }
 
 Validity Gen :: set_outputs_from_array(SampleT* v, OutputsSizeT s,
-								ParameterIndexT ch, bool interleaved){
+								PIndexT ch, bool interleaved){
     // low level method of a raw, interleaved array as input; need size;
     // we need this b/c libsndfile uses raw arrays
 	// caller is responsible for releasing passed in array
 	// we will read in only as many channels as we currently have as outputs
 	if (s < 1) {
-        //std::cout << "passed size: " << s << std::endl;
-		throw std::domain_error(
-            "the supplied vector must have size greater than 0");
+        std::stringstream msg;
+        msg << "the supplied vector must have size greater than 0"
+                << str_file_line(__FILE__, __LINE__);
+        throw std::domain_error(msg.str());
 	}
     
 	bool reset_needed(true); 
@@ -608,13 +651,13 @@ Validity Gen :: set_outputs_from_array(SampleT* v, OutputsSizeT s,
 	if (reset_needed) reset(); 
 
 	// determine how many outputs to read; try to take all unless greater than output
-	ParameterIndexT out_count_to_take(ch);
+	PIndexT out_count_to_take(ch);
 	if (ch > _output_count) {
 		out_count_to_take = _output_count;
 	}
 	    
 	// assuming interleaved source to non-interleved destination; audio inputs are normally interleaved
-	ParameterIndexT j(0);
+	PIndexT j(0);
 	OutputsSizeT i(0); // for each sample in source
 	OutputsSizeT k(0); // for each sample we write
 	
@@ -640,7 +683,7 @@ Validity Gen :: set_outputs_from_array(SampleT* v, OutputsSizeT s,
 }
 
 void Gen :: set_outputs_from_vector(VSampleT& vst,
-								ParameterIndexT ch, bool interleaved) {
+								PIndexT ch, bool interleaved) {
 	// this is set outputs as we will try to set all channels available
     // size is a long; cast ot std::uint32_t
 	OutputsSizeT s = static_cast<OutputsSizeT>(vst.size());
@@ -649,36 +692,46 @@ void Gen :: set_outputs_from_vector(VSampleT& vst,
     // this will resize and reset if possible in dervied Gen
 	Validity ok = set_outputs_from_array(v, s, ch, interleaved);
     if (!ok.ok) {
-        throw std::invalid_argument(ok.msg);
+        std::stringstream msg;
+        msg << ok.msg; // copy over message
+        msg << str_file_line(__FILE__, __LINE__);
+        throw std::invalid_argument(msg.str());
     }
     
 }
 
 void Gen :: set_outputs_from_fp(const std::string& fp) {
     // vitual method overridden in Buffer (so as to localize use of libsndfile
-    throw std::domain_error("not implemented on base class");
-
+    std::stringstream msg;
+    msg << "not implemented on base class"
+            << str_file_line(__FILE__, __LINE__);
+    throw std::domain_error(msg.str());
 }
 
 
 
 void Gen :: set_outputs(const Inj<SampleT>& bi) {
     // vitual method overridden in Buffer
-    throw std::domain_error("not implemented on base class");
+    std::stringstream msg;
+    msg << "not implemented on base class"
+            << str_file_line(__FILE__, __LINE__);
+    throw std::domain_error(msg.str());
 }
 
 
 void Gen :: set_outputs(const std::string& fp) {
     // vitual method overridden in Buffer
-    throw std::domain_error("not implemented on base class");
-
+    std::stringstream msg;
+    msg << "not implemented on base class"
+            << str_file_line(__FILE__, __LINE__);
+    throw std::domain_error(msg.str());
 }
 
 
 //..............................................................................
 // parameter translating
 
-ParameterIndexT Gen :: get_input_index_from_parameter_name(
+PIndexT Gen :: get_input_index_from_parameter_name(
     const std::string& s) {
     // match the string to the name returned by get_instance_name; 
     Gen :: MapIndexToParameterTypePtr ::const_iterator k;
@@ -688,11 +741,13 @@ ParameterIndexT Gen :: get_input_index_from_parameter_name(
         // each value (second( is a PTypePtr)
         if (s == k->second->get_instance_name()) return k->first;
     }
-	// raise an exception, or return error code?
-	throw std::invalid_argument("no matching parameter name: " + s);
+    std::stringstream msg;
+    msg << "no matching parameter name: " << s;
+    msg << str_file_line(__FILE__, __LINE__);
+    throw std::invalid_argument(msg.str());
 }
 
-ParameterIndexT Gen :: get_input_index_from_class_id(const
+PIndexT Gen :: get_input_index_from_class_id(const
         PTypeID ptid) {
     // match the string to the name returned by get_instance_name; 
     Gen :: MapIndexToParameterTypePtr ::const_iterator k;
@@ -702,28 +757,41 @@ ParameterIndexT Gen :: get_input_index_from_class_id(const
         // each value (second( is a PTypePtr)
         if (ptid == k->second->get_class_id()) return k->first;
     }
-	throw std::invalid_argument("no matching parameter type");
+    std::stringstream msg;
+    msg << "no matching parameter type: ";
+    msg << str_file_line(__FILE__, __LINE__);
+    throw std::invalid_argument(msg.str());
+    
 }
 
-ParameterIndexT Gen :: get_slot_index_from_parameter_name(    
-    const std::string& s) {
+PIndexT Gen :: get_slot_index_from_parameter_name(    
+        const std::string& s) {
     // not yet implemented
-	throw std::invalid_argument("no matching parameter name: " + s);
+    std::stringstream msg;
+    msg << "no matching parameter name: " << s;
+    msg << str_file_line(__FILE__, __LINE__);
+    throw std::invalid_argument(msg.str());
 }
 
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
 
 void Gen :: set_input_by_index(
-        ParameterIndexT i,
+        PIndexT i,
         GenPtr gs,
-        ParameterIndexT pos){
+        PIndexT pos){
     // if zero, none are set; current value is next available slot for registering
     if (_input_count <= 0 or i >= _input_count) {
-        throw std::invalid_argument("Parameter index is not available.");                                        
+        std::stringstream msg;
+        msg << "Parameter index is not available: " << i
+                << str_file_line(__FILE__, __LINE__);
+        throw std::invalid_argument(msg.str());    
     }
     if (pos >= gs->get_output_count()) {
-        throw std::invalid_argument("position exceeds output count on passed input");    
+        std::stringstream msg;
+        msg << "position exceeds output count on passed input" << i
+                << str_file_line(__FILE__, __LINE__);
+        throw std::invalid_argument(msg.str());    
     }    
     // this removes all stored values
     _inputs[i].clear();    
@@ -732,9 +800,9 @@ void Gen :: set_input_by_index(
 }
 
 void Gen :: set_input_by_index(
-        ParameterIndexT i,
+        PIndexT i,
         SampleT v,
-        ParameterIndexT pos){
+        PIndexT pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
     GenPtr c = Gen::make_with_environment(GenID::Constant, 
@@ -747,22 +815,22 @@ void Gen :: set_input_by_index(
 void Gen :: set_input_by_class_id(
         PTypeID ptid,
         GenPtr gs,
-        ParameterIndexT pos){
-    ParameterIndexT i = get_input_index_from_class_id(ptid);
+        PIndexT pos){
+    PIndexT i = get_input_index_from_class_id(ptid);
     set_input_by_index(i, gs, pos); // call overloaded
 }
 
 void Gen :: set_input_by_class_id(
         PTypeID ptid,
         SampleT v,
-        ParameterIndexT pos){
-    ParameterIndexT i = get_input_index_from_class_id(ptid);
+        PIndexT pos){
+    PIndexT i = get_input_index_from_class_id(ptid);
     set_input_by_index(i, v, pos); // call overloaded
 }
 
 
-void Gen :: add_input_by_index(ParameterIndexT i, 
-        GenPtr gs, ParameterIndexT pos){
+void Gen :: add_input_by_index(PIndexT i, 
+        GenPtr gs, PIndexT pos){
     // pos is the output of the generator to connect into the specified input
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");
@@ -775,8 +843,8 @@ void Gen :: add_input_by_index(ParameterIndexT i,
     _inputs[i].push_back(gsop);    
 }
 
-void Gen :: add_input_by_index(ParameterIndexT i, SampleT v, 
-        ParameterIndexT pos){
+void Gen :: add_input_by_index(PIndexT i, SampleT v, 
+        PIndexT pos){
     // adding additional as a constant value
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
@@ -789,7 +857,7 @@ void Gen :: add_input_by_index(ParameterIndexT i, SampleT v,
 
 
 Gen::VGenPtrOutPair Gen :: get_input_gens_by_index(
-                        ParameterIndexT i) {
+                        PIndexT i) {
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");		
     }
@@ -800,19 +868,22 @@ Gen::VGenPtrOutPair Gen :: get_input_gens_by_index(
 
 
 void Gen :: clear_inputs() {
-    for (ParameterIndexT i = 0; i<_input_count; ++i) {
+    for (PIndexT i = 0; i<_input_count; ++i) {
         _inputs[i].clear();
     }
 }
 
 //..............................................................................
 // public slot control 
-void Gen :: set_slot_by_index(ParameterIndexT i, GenPtr gs, bool update){
+void Gen :: set_slot_by_index(PIndexT i, GenPtr gs, bool update){
     // if zero, none are set; current value is next available slot for registering]
 	// updat defaults to true in header	
     if (_slot_count <= 0 or i >= _slot_count) {
         throw std::invalid_argument("Slot index is not available.");		
-    }        
+    }
+    // will raise an exception if not valid
+    _slot_parameter_type[i]->validate_gen(gs->get_class_id());
+    
     _slots[i] = gs; // direct assignment; replaces default if not there
     // store in advance the outputs size of the input 
 	if (update) {
@@ -820,8 +891,7 @@ void Gen :: set_slot_by_index(ParameterIndexT i, GenPtr gs, bool update){
 	}
 }
 
-void Gen :: set_slot_by_index(ParameterIndexT i, SampleT v, 
-									bool update){
+void Gen :: set_slot_by_index(PIndexT i, SampleT v, bool update){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
 	// updat defaults to true in header
@@ -833,8 +903,7 @@ void Gen :: set_slot_by_index(ParameterIndexT i, SampleT v,
 }
 
 
-GenPtr Gen :: get_slot_gen_at_index(
-										  ParameterIndexT i) {
+GenPtr Gen :: get_slot_gen_at_index(PIndexT i) {
     if (_slot_count <= 0 or i >= _slot_count) {
         throw std::invalid_argument("Parameter index is not available.");		
     }
@@ -893,8 +962,8 @@ void Constant :: reset() {
     for (k = _values.begin(); k!=_values.end(); ++k) {
         v += *k;
     }
-    ParameterIndexT i;
-    ParameterIndexT outs = get_output_count();
+    PIndexT i;
+    PIndexT outs = get_output_count();
     FrameSizeT j;
     FrameSizeT frames = get_frame_size();
     
@@ -916,7 +985,7 @@ void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
     // they are the same as Gen
     std::cout << space1 << *this << " Inputs:" << std::endl;
     // iterative over inputs
-    for (ParameterIndexT k=0; k!=_inputs.size(); ++k) {   
+    for (PIndexT k=0; k!=_inputs.size(); ++k) {   
         // is this doing a copy?
         PTypePtr pts = _input_parameter_type[k];
         std::cout << space2 << *pts << std::endl;
@@ -935,18 +1004,18 @@ void Constant :: render(RenderCountT f) {
 
 
 Gen::VGenPtrOutPair Constant :: get_input_gens_by_index(
-										  ParameterIndexT i) {
+										  PIndexT i) {
 	// overridden virtual method
     // return an empty vector for clients to iterate over
     Gen::VGenPtrOutPair post;
     return post;
 }
 
-void Constant :: set_input_by_index(ParameterIndexT i, GenPtr gs, ParameterIndexT pos) {
+void Constant :: set_input_by_index(PIndexT i, GenPtr gs, PIndexT pos) {
     throw std::invalid_argument("invalid to set a GeneratoreShared as a value to a Constant");                                        
 }
 
-void Constant :: set_input_by_index(ParameterIndexT i, SampleT v, ParameterIndexT pos){
+void Constant :: set_input_by_index(PIndexT i, SampleT v, PIndexT pos){
     if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");                                        
     }
@@ -956,12 +1025,12 @@ void Constant :: set_input_by_index(ParameterIndexT i, SampleT v, ParameterIndex
     reset(); 
 }
 
-void Constant :: add_input_by_index(ParameterIndexT i, 
-                                    GenPtr gs, ParameterIndexT pos) {
+void Constant :: add_input_by_index(PIndexT i, 
+                                    GenPtr gs, PIndexT pos) {
     throw std::invalid_argument("invalid to add a GeneratoreShared as a value to a Constatn");
 }
 
-void Constant :: add_input_by_index(ParameterIndexT i, SampleT v, ParameterIndexT pos){
+void Constant :: add_input_by_index(PIndexT i, SampleT v, PIndexT pos){
     if (get_input_count() <= 0 or i >= get_input_count()) {
         throw std::invalid_argument("Parameter index is not available.");
 	}
@@ -1005,7 +1074,7 @@ void _BinaryCombined :: init() {
 
 void _BinaryCombined :: _update_for_new_slot() {
     // this is a small int; might overflow of trying to create large number of outs
-    ParameterIndexT outs = static_cast<ParameterIndexT>(_slots[0]->outputs[0][0]);
+    PIndexT outs = static_cast<PIndexT>(_slots[0]->outputs[0][0]);
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
@@ -1015,7 +1084,7 @@ void _BinaryCombined :: _update_for_new_slot() {
     std::stringstream s;
     PTypePtr pt;    
     // set inputs; this will clear any existing connections
-    for (ParameterIndexT i=0; i<outs; ++i) {
+    for (PIndexT i=0; i<outs; ++i) {
         //pt = ParameterTypeValuePtr(new PTypeValue);
         pt = PType::make(PTypeID::Value);
         s.str(""); // clears contents; not the same as .clear()
@@ -1032,13 +1101,13 @@ void _BinaryCombined :: _update_for_new_slot() {
 
 void _BinaryCombined :: render(RenderCountT f) {
 
-    ParameterIndexT i;
-    ParameterIndexT input_count(get_input_count());
+    PIndexT i;
+    PIndexT input_count(get_input_count());
     FrameSizeT k;
-    ParameterIndexT j;    
+    PIndexT j;    
 
-    ParameterIndexT gen_count_at_input(0);
-    ParameterIndexT out(0);
+    PIndexT gen_count_at_input(0);
+    PIndexT out(0);
         
     while (_render_count < f) {
         // calling render inputs updates the outputs of all inputs by calling their render functions; after doing so, the outputs are ready for reading
@@ -1141,7 +1210,7 @@ void Buffer :: init() {
 void Buffer :: _update_for_new_slot() {
 	// slot 0: channels
     // this is a small int; might overflow of trying to create large number of outs
-    ParameterIndexT outs = static_cast<ParameterIndexT>(_slots[0]->outputs[0][0]);
+    PIndexT outs = static_cast<PIndexT>(_slots[0]->outputs[0][0]);
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
@@ -1153,7 +1222,7 @@ void Buffer :: _update_for_new_slot() {
     ParameterTypeValuePtr pt_i;
     ParameterTypeValuePtr pt_o;    	
     // set inputs; this will clear any existing connections
-    for (ParameterIndexT i=0; i<outs; ++i) {        
+    for (PIndexT i=0; i<outs; ++i) {        
         PTypePtr pt_i = PType::make(PTypeID::Value);        
         s.str(""); // clears contents; not the same as .clear()
         s << "Input " << i+1;
@@ -1185,8 +1254,8 @@ void Buffer :: render(RenderCountT f) {
     FrameSizeT fs = get_frame_size();
 	RenderCountT rc(0); // must start with request for frame 1
 	OutputsSizeT i(0);
-	ParameterIndexT j(0);
-	ParameterIndexT out_count(get_output_count()); // out is always same as in 
+	PIndexT j(0);
+	PIndexT out_count(get_output_count()); // out is always same as in 
 	RenderCountT pos(0);
     
 	// ignore render count for now; just fill buffer
@@ -1211,7 +1280,7 @@ void Buffer :: render(RenderCountT f) {
 }
 
 void Buffer :: write_output_to_fp(const std::string& fp, 
-                                    ParameterIndexT d) const {
+                                    PIndexT d) const {
     // default is d is 0, which is all 
     // if want ch 2 of stereo, d is 2
     if (d > get_output_count()) {
@@ -1222,9 +1291,9 @@ void Buffer :: write_output_to_fp(const std::string& fp,
                                     
     VParameterIndexT dims; 
     OutputsSizeT count(0);
-    ParameterIndexT p;    
+    PIndexT p;    
     
-    ParameterIndexT reqDim(1); // one if requested a specific dim
+    PIndexT reqDim(1); // one if requested a specific dim
     if (d==0) {
         reqDim = get_output_count(); // number of dims
         //dims = out_to_matrix_offset; //copy entire vector     
@@ -1234,7 +1303,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
         count = get_outputs_size();        
     } 
     else { // just write the single dim specified 
-        ParameterIndexT dPos = d - 1; // if request dim 2, want offset for 1
+        PIndexT dPos = d - 1; // if request dim 2, want offset for 1
         //dims.push_back(out_to_matrix_offset[dPos]);    
         dims.push_back(dPos);        
         count = get_frame_size(); // only need one frame
@@ -1297,7 +1366,7 @@ void Buffer :: set_outputs(const Inj<SampleT>& bi) {
     //std::cout << "Buffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;    
     VSampleT vst;
     bi.fill_interleaved(vst);
-    ParameterIndexT ch = bi.get_channels();
+    PIndexT ch = bi.get_channels();
     set_slot_by_index(0, ch); // set channels
     // will get a pointer to vst and pass to set from array
     set_outputs_from_vector(vst, ch);
@@ -1381,15 +1450,20 @@ void BPIntegrator :: init() {
 
     // register slots
     // should this be a BreakPoints type id to enforce
-    PTypePtr so1 = PType::make(PTypeID::Table);
+    PTypePtr so1 = PType::make(PTypeID::BreakPoints);
     so1->set_instance_name("Breakpoints");
 	_register_slot_parameter_type(so1);
 
     PTypePtr so2 = PType::make(PTypeID::Value);
-    so2->set_instance_name("Interpolatation type");
+    so2->set_instance_name("Interpolatation type ()");
 	_register_slot_parameter_type(so2);
     set_slot_by_index(1, 0); // setting a default
     
+    PTypePtr so3 = PType::make(PTypeID::Value);
+    so3->set_instance_name("TimeContext (samples, seconds)");
+	_register_slot_parameter_type(so3);
+    set_slot_by_index(2, 0); // setting a default
+
     
 	// register outputs
     PTypePtr pt_o1 = PType::make(PTypeID::Value);
