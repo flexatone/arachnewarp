@@ -265,7 +265,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	//! For each render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types. This is done to make render() methods cleaner and remove redundancy.
 	VVSampleT _summed_inputs;    
     
-	//! A std::vector of GeneratorsShared that are used for configuration of this Gen. Unlike inputs, only one Gen can occupy a slot position. Example: a buffer has a slot for duration of that buffer. It is not yet decided if generators in slots shold be rendered. Further, which output of the generator slot is alos not yet assigned.
+	//! A std::vector of GeneratorsShared that are used internall for configuration of this Gen. Unlike inputs, only one Gen can occupy a slot position, and these are protected, not public (a suggestion that these are for internal use only). Example: a buffer has a slot for duration of that buffer. It is not yet decided if generators in slots shold be rendered, but at least only once per render step. Further, which output channels of the generator slot to use is decided internally or with another parameter.
 	VGenPtr _slots;
 	
 	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
@@ -940,17 +940,51 @@ typedef std::shared_ptr<BPIntegrator> BPIntegratorPtr;
 class BPIntegrator: public Gen {
 
     private://-----------------------------------------------------------------
-    PIndexT _input_index_trigger;    
-    PIndexT _input_index_cycle;
-    PIndexT _input_index_exponent;    
 
+    PIndexT _input_index_trigger;
+    PIndexT _input_index_cycle;
+    PIndexT _input_index_exponent;
+
+    PIndexT _slot_index_bps;
+    PIndexT _slot_index_interp;
+    PIndexT _slot_index_t_context;
+
+    FrameSizeT _points_len;
+    FrameSizeT _point_count;
+    bool _running;
+    bool _start;
+    
+    OutputsSizeT _samps_in_bp;
+    OutputsSizeT _samps_last_point;
+    OutputsSizeT _samps_next_point;
+    OutputsSizeT _samps_width;
+    
+    bool _t_seconds;
+
+    SampleT _x_src;
+    SampleT _x_dst;
+    SampleT _y_src;
+    SampleT _y_dst;
+    
+	SampleT _amp;
+	SampleT _amp_prev;		
+    
+    
+    protected://---------------------------------------------------------------
+
+    virtual void _update_for_new_slot();
 
     public://------------------------------------------------------------------
 
     explicit BPIntegrator(EnvironmentPtr);
 
     virtual void init();
-        
+
+    virtual void reset();
+
+    virtual void render(RenderCountT f);
+
+    
 };
 
 
