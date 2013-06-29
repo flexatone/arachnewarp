@@ -887,6 +887,7 @@ void Gen :: set_slot_by_index(PIndexT i, GenPtr gs, bool update){
     _slots[i] = gs; // direct assignment; replaces default if not there
     // store in advance the outputs size of the input 
 	if (update) {
+        // update should be called for each change, but when making bulk changes, and defer this update until the last
 		_update_for_new_slot();
 	}
 }
@@ -1453,16 +1454,26 @@ void BPIntegrator :: init() {
     PTypePtr so1 = PType::make(PTypeID::BreakPoints);
     so1->set_instance_name("Breakpoints");
 	_register_slot_parameter_type(so1);
+	_slot_index_bps = 0;
+    
+    // must have a default for first usage, otherwise update for new slot will be broken
+	GenPtr g1 = Gen::make(GenID::BreakPoints);
+    Inj<SampleT>({{0, 0},{.25, 1},{1, 0}}) && g1;
+    set_slot_by_index(0, g1, false); // setting a default
+    
 
     PTypePtr so2 = PType::make(PTypeID::Value);
-    so2->set_instance_name("Interpolatation type ()");
+    so2->set_instance_name("Interpolatation type (step, linear)");
 	_register_slot_parameter_type(so2);
-    set_slot_by_index(1, 0); // setting a default
+	_slot_index_interp = 1;
+    
+    set_slot_by_index(1, 0, false); // setting a default
     
     PTypePtr so3 = PType::make(PTypeID::Value);
     so3->set_instance_name("TimeContext (samples, seconds)");
 	_register_slot_parameter_type(so3);
-    set_slot_by_index(2, 0); // setting a default
+	_slot_index_t_context = 2;    
+    set_slot_by_index(2, 0, true); // setting a default, now update
 
     
 	// register outputs
@@ -1474,9 +1485,138 @@ void BPIntegrator :: init() {
     pt_o2->set_instance_name("EOS"); // end of segment
     _register_output_parameter_type(pt_o2);
 
+}
+
+
+void BPIntegrator :: _update_for_new_slot() {
+    // std::cout << *this << ": _update_for_new_slot()" << std::endl;    
+    _points_len = _slots[_slot_index_bps]->get_frame_size();
+    
+//    std::cout << "slot 0 outputs:" << std::endl;
+//    _slots[_slot_index_bps]->illustrate_outputs();
+    
     
 }
 
+void BPIntegrator :: reset() {
+    Gen::reset();
+    
+    _point_count = 0; // index of current point
+    _running = false;
+    _samps_in_bp = 0;
+    _samps_next_point = 0; // needs to be set at non-zero
+    _amp = 0;
+}
+
+// bp: {0, 0}, {1, .5}, {2, 0}
+// samps x 0, 44000, 88000
+// height (y): 0, .5, 0
+
+
+void BPIntegrator :: render(RenderCountT f) {
+
+    // temporary: need to transalte slot SampleT into an enum, then bool
+    _t_seconds = true;
+
+    // need to get two at a time, wher last is n-2, n-1 (n is length
+    while (_render_count < f) {
+
+        _render_inputs(f);
+		_sum_inputs(_frame_size);
+        // assume that break_points will not be resized within a frame
+        // the number of frames is the number of points
+
+        // translate to an enum in the Ptype and get enum value from Ptype
+        // _points = slots[_slot_index_t_context]
+        
+		for (FrameSizeT i=0; i < _frame_size; ++i) {
+            // if cycle is active and not runnin start
+            if (_summed_inputs[_input_index_cycle][i] > TRIG_THRESH &&
+                    _running == false) {
+                _running = true;
+                _start = true; // if nto alreayd running then we are in start
+                std::cout << "cycling: reset running to true" << std::endl;                
+            }
+            // if cycle and running, no start
+            else if (_summed_inputs[_input_index_cycle][i] > TRIG_THRESH &&
+                    _running == true) {
+                _running = true;
+                _start = false; // l
+            } // no matter if we are running, need to trigger start sequence            
+            else if (_summed_inputs[_input_index_trigger][i] > TRIG_THRESH) {
+                _running = true;
+                _start = true;
+            }
+                        
+            // if not runnign, set amp to zero and continue?
+            if (!_running) {
+                // if not running, do we cary the last value or 0; the last is probably best; though, this might mean that we have to get amp in advance: what if we are  waiting for a first trigger? might need to project first value a constant
+                outputs[0][i] = _amp;
+                continue;
+            }
+        
+            if (_start) {
+                _samps_in_bp = 0; // must reset
+                _samps_next_point = 0; // reset to go to normal mechanism
+                _point_count = 0; // get first point pair
+                _start = false;
+            }
+        
+            // swith between pairs of active points
+            // _samps_in_bp incremented after writing a value, below
+            // both are zero only at start
+            if (_samps_in_bp == _samps_next_point) {
+                std::cout << "_samps_in_bp: " << _samps_in_bp << " _samps_next_point: " << _samps_next_point << " _running" << _running << " _start" << _start << std::endl;
+            
+                //if (_point_count < _points_len - 1) {
+                // if we get here, we must still have this and the next point pair
+                assert(_point_count + 1 < _points_len);
+                // difference between this and the next; already validated to be incremental, so no abs or pos/neg check nec
+                _x_src = _slots[_slot_index_bps]->outputs[0][_point_count];
+                _x_dst = _slots[_slot_index_bps]->outputs[0][_point_count + 1];
+                _y_src = _slots[_slot_index_bps]->outputs[1][_point_count];
+                _y_dst = _slots[_slot_index_bps]->outputs[1][_point_count + 1];
+                if (_t_seconds) {
+                    // must do as seperate step to avoid truncating
+                    // TODO: averaged, or floored?                
+                    _samps_width = (_x_dst - _x_src) *
+                            static_cast<SampleT>(_sampling_rate);
+                }
+                else { // integer subtractionof samples
+                    _samps_width = _x_dst - _x_src;
+                }
+                _samps_last_point = _samps_next_point; // store before update
+                // this is cumulative position
+                _samps_next_point += _samps_width;
+                
+                std::cout << "    _samps_width: " << _samps_width << " _x_src: " << _x_src << " _x_dst: " << _x_dst << " _samps_last_point " << _samps_last_point << " _samps_next_point " << _samps_next_point <<  std::endl;
+                
+            }
+            // do interpolation
+            // progress is width - (_samps_next_point - _samps_in_bp)
+            _amp = (((_samps_in_bp - _samps_last_point) /
+                    static_cast<SampleT>(_samps_width)) *
+                    (_y_dst - _y_src)) + _y_src;
+            // store to use as last value
+            //_amp = _y_src;
+			outputs[0][i] = _amp;
+            
+            // incr after adding a new value
+            ++_samps_in_bp;
+            // check to see if we reached the end of a point after incrementing
+            if (_samps_in_bp == _samps_next_point) {
+                ++_point_count;
+                // check if we are out of points
+                if (_point_count >= _points_len - 1) {
+                    _running = false; // must restart, and reinit
+                }
+            }
+            
+		}
+        _render_count += 1;
+    }
+    
+}
 
 
 

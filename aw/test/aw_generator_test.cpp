@@ -1311,9 +1311,9 @@ BOOST_AUTO_TEST_CASE(aw_breakpoints_b) {
     Inj<SampleT>(
             {
                 {0, 1},
-                {2, .4},
-                {20, .1},
-                {45, 0},
+                {.2, .4},
+                {.5, .1},
+                {1, 0},
             }
         ) && g1;
     
@@ -1327,13 +1327,56 @@ BOOST_AUTO_TEST_CASE(aw_breakpoints_b) {
     // Inj<GenPtr>({g2, 0, 1}) || g2;
     g2->set_slot_by_index(0, g1);
 
-    // constant not permitted
+    // constant is not permitted
     GenPtr g3 = Gen::make(GenID::Constant);
-    
     BOOST_REQUIRE_THROW(g2->set_slot_by_index(0, g3),
             std::invalid_argument);
 
 }
+
+
+BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
+
+	GenPtr g1 = Gen::make(GenID::BreakPoints);
+    Inj<SampleT>(
+            {
+                {0, 0},
+                {.1, .8},
+                {.3, .4},
+                {.4, .1},
+                {.5, 0},
+            }
+        ) && g1;
+	GenPtr g2 = Gen::make(GenID::BPIntegrator);
+    g2->set_slot_by_index(0, g1);
+    
+    // trig, cycle, exponent
+    Inj<SampleT>({0, 1, 1}) >> g2;
+    
+	GenPtr gbuf = Gen::make(GenID::Buffer);
+    // 1 ch, 1 sec
+    Inj<SampleT>({1, 1}) || gbuf;
+    
+    g2 >> gbuf;
+    
+    gbuf->render(1);
+    gbuf->illustrate_outputs();
+    // set slots
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
