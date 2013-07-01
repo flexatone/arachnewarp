@@ -29,7 +29,7 @@ PTypePtr PType :: make(PTypeID q){
     }
     else if (q == PTypeID::Duration) {
         p = ParameterTypeDurationPtr(new PTypeDuration);    
-    }    
+    }
     else if (q == PTypeID::Phase) {
         p = ParameterTypePhaseShared(new PTypePhase);    
     }   
@@ -82,6 +82,8 @@ void PType :: validate_gen(GenID candidate) {
     msg << str_file_line(__FILE__, __LINE__);
     throw std::invalid_argument(msg.str());
 }
+
+
 
 
 
@@ -232,9 +234,9 @@ void Gen :: init() {
     _frame_size = _environment->get_common_frame_size();    
     _sampling_rate = _environment->get_sampling_rate();
 	_nyquist = _sampling_rate / 2; // let floor
-    	
-    PTypePtr pt1 = PType::make( 
-            PTypeID::Value);
+    
+    // we create one output to start
+    PTypePtr pt1 = PType::make(PTypeID::Value);
     pt1->set_instance_name("Gen default output");
     _register_output_parameter_type(pt1);
 }
@@ -289,8 +291,8 @@ void Gen :: _resize_outputs() {
 		// this will also set all values to 0.0
 		(*j).resize(_frame_size, n);
     }
-	// reset to set all values to zero and reset render count
-	reset();
+	// reset only with the base class, so as to clear data values and reset render count; we do not want to call the virtual resets, as they might be expecting slots in this reset routine. 
+	Gen::reset();
     
 }
 
@@ -435,7 +437,7 @@ SampleT Gen :: get_output_average(PIndexT d) const {
         msg << "a dimension greater than the number available has been requested" << str_file_line(__FILE__, __LINE__);
 		throw std::invalid_argument(msg.str());
 	}	
-    VParameterIndexT dims; 
+    VPIndexT dims; 
     OutputsSizeT count(0); 
     PIndexT p;
     
@@ -462,7 +464,7 @@ SampleT Gen :: get_output_average(PIndexT d) const {
     }
     SampleT sum(0);    
     // get average of one dim or all 
-    for (VParameterIndexT::const_iterator i=dims.begin(); i!=dims.end(); ++i) {
+    for (VPIndexT::const_iterator i=dims.begin(); i!=dims.end(); ++i) {
         // from start of dim to 1 less than frame plus start
         for (FrameSizeT j=0; j < _frame_size; ++j) {
             sum += outputs[*i][j];
@@ -1290,7 +1292,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
     // can select format here
 	int format = SF_FORMAT_AIFF | SF_FORMAT_PCM_16;
                                     
-    VParameterIndexT dims; 
+    VPIndexT dims; 
     OutputsSizeT count(0);
     PIndexT p;    
     
@@ -1328,7 +1330,7 @@ void Buffer :: write_output_to_fp(const std::string& fp,
     // interleave dimensions if more than one requested
     // iterate over frame size; for each frame, we will write that many dimensiosn
     for (i = 0; i < frameSize; ++i) {
-        for (VParameterIndexT::const_iterator p = dims.begin(); p != dims.end(); ++p) {
+        for (VPIndexT::const_iterator p = dims.begin(); p != dims.end(); ++p) {
             // if we are stereo, for each frame point we write two points, one at each offset position
             v[j] = outputs[*p][i];
             ++j; // abs position
@@ -1439,7 +1441,7 @@ void BPIntegrator :: init() {
 	_input_index_trigger = 0;
 
     PTypePtr pt_i2 = PType::make(PTypeID::Cycle);
-    pt_i2->set_instance_name("Cycle on or off");
+    pt_i2->set_instance_name("Cycle (on or off)");
     _register_input_parameter_type(pt_i2);
 	_input_index_cycle = 1;
 
@@ -1448,6 +1450,11 @@ void BPIntegrator :: init() {
     _register_input_parameter_type(pt_i3);
 	_input_index_exponent = 2;
 
+// possibly implement; might give expressive options if dynamically varried; but if we have a width scalar, we also need a positions scalar
+//    PTypePtr pt_i4 = PType::make(PTypeID::Value);
+//    pt_i4->set_instance_name("Width (unit interval scalar of integration time)");
+//    _register_input_parameter_type(pt_i4);
+//	_input_index_width = 3;
 
     // register slots
     // should this be a BreakPoints type id to enforce
@@ -1456,26 +1463,25 @@ void BPIntegrator :: init() {
 	_register_slot_parameter_type(so1);
 	_slot_index_bps = 0;
     
-    // must have a default for first usage, otherwise update for new slot will be broken
+    // must have a default for first usage, otherwise update for new slot will be broken; must have slot call _update_for_new_slot, as we need get points len and last amp
 	GenPtr g1 = Gen::make(GenID::BreakPoints);
     Inj<SampleT>({{0, 0},{.25, 1},{1, 0}}) && g1;
-    set_slot_by_index(0, g1, false); // setting a default
+    set_slot_by_index(_slot_index_bps, g1, true); // setting a default
     
 
     PTypePtr so2 = PType::make(PTypeID::Value);
     so2->set_instance_name("Interpolatation type (step, linear)");
 	_register_slot_parameter_type(so2);
 	_slot_index_interp = 1;
-    
-    set_slot_by_index(1, 0, false); // setting a default
+    set_slot_by_index(_slot_index_interp, OptInterpolate::Linear, false); // setting a default
     
     PTypePtr so3 = PType::make(PTypeID::Value);
     so3->set_instance_name("TimeContext (samples, seconds)");
 	_register_slot_parameter_type(so3);
-	_slot_index_t_context = 2;    
-    set_slot_by_index(2, 0, true); // setting a default, now update
+	_slot_index_t_context = 2;
+    // update after last default
+    set_slot_by_index(_slot_index_t_context, OptTimeContext::Seconds, true); 
 
-    
 	// register outputs
     PTypePtr pt_o1 = PType::make(PTypeID::Value);
     pt_o1->set_instance_name("Output");
@@ -1485,27 +1491,28 @@ void BPIntegrator :: init() {
     pt_o2->set_instance_name("EOS"); // end of segment
     _register_output_parameter_type(pt_o2);
 
+    // reset and set defaults
+    reset();
+
 }
 
 
 void BPIntegrator :: _update_for_new_slot() {
-    // std::cout << *this << ": _update_for_new_slot()" << std::endl;    
+    //std::cout << *this << ": _update_for_new_slot()" << std::endl;
     _points_len = _slots[_slot_index_bps]->get_frame_size();
-    
-//    std::cout << "slot 0 outputs:" << std::endl;
-//    _slots[_slot_index_bps]->illustrate_outputs();
-    
-    
+    // set to last y value of all bps
+    _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1];
 }
 
 void BPIntegrator :: reset() {
+    std::cout << *this << ": reset()" << std::endl;
     Gen::reset();
-    
     _point_count = 0; // index of current point
     _running = false;
     _samps_in_bp = 0;
     _samps_next_point = 0; // needs to be set at non-zero
-    _amp = 0;
+    // set to last y value of all bps
+    _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1];
 }
 
 // bp: {0, 0}, {1, .5}, {2, 0}
@@ -1515,8 +1522,12 @@ void BPIntegrator :: reset() {
 
 void BPIntegrator :: render(RenderCountT f) {
 
-    // temporary: need to transalte slot SampleT into an enum, then bool
-    _t_seconds = true;
+    // once per render call, or per render frame?
+    _t_context = OptTimeContext::resolve(
+            _slots[_slot_index_t_context]->outputs[0][0]);
+    _interp = OptInterpolate::resolve(
+            _slots[_slot_index_t_context]->outputs[0][0]);
+    
 
     // need to get two at a time, wher last is n-2, n-1 (n is length
     while (_render_count < f) {
@@ -1550,7 +1561,7 @@ void BPIntegrator :: render(RenderCountT f) {
                         
             // if not runnign, set amp to zero and continue?
             if (!_running) {
-                // if not running, do we cary the last value or 0; the last is probably best; though, this might mean that we have to get amp in advance: what if we are  waiting for a first trigger? might need to project first value a constant
+                // if not running, do we cary the last value or 0; the last is probably best; but what about a late start: shoud we set amp in advance if we are  waiting for a first trigger?
                 outputs[0][i] = _amp;
                 continue;
             }
@@ -1561,7 +1572,6 @@ void BPIntegrator :: render(RenderCountT f) {
                 _point_count = 0; // get first point pair
                 _start = false;
             }
-        
             // swith between pairs of active points
             // _samps_in_bp incremented after writing a value, below
             // both are zero only at start
@@ -1576,8 +1586,10 @@ void BPIntegrator :: render(RenderCountT f) {
                 _x_dst = _slots[_slot_index_bps]->outputs[0][_point_count + 1];
                 _y_src = _slots[_slot_index_bps]->outputs[1][_point_count];
                 _y_dst = _slots[_slot_index_bps]->outputs[1][_point_count + 1];
-                if (_t_seconds) {
-                    // must do as seperate step to avoid truncating
+                
+                //if (_t_context == OptTimeContext::Seconds) { // not zero
+                if (_t_context) {
+                    // must do as seperate step to avoid truncating in assignment
                     // TODO: averaged, or floored?                
                     _samps_width = (_x_dst - _x_src) *
                             static_cast<SampleT>(_sampling_rate);

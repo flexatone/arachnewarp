@@ -1342,8 +1342,9 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
             {
                 {0, 0},
                 {.1, .8},
-                {.3, .4},
-                {.4, .1},
+                {.2, .5},
+                {.3, .1},
+                {.4, .3},
                 {.5, 0},
             }
         ) && g1;
@@ -1360,7 +1361,7 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
     g2 >> gbuf;
     
     gbuf->render(1);
-    gbuf->illustrate_outputs();
+    //gbuf->illustrate_outputs();
     // set slots
 
 }
@@ -1368,7 +1369,29 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
+	// testing creation
+	//PTypePtr pt1 = PType::make(PTypeID::Switch);
+    
+//    OptBinary::resolve
+//    OptBinary::Opt::Off
+//    OptBinary::Opt::On
+    BOOST_CHECK_EQUAL(OptBinary::resolve(0.2), OptBinary::Off);
+    BOOST_CHECK_EQUAL(OptBinary::resolve(0.7), OptBinary::On);
 
+    BOOST_CHECK_EQUAL(OptTimeContext::resolve(0.2), OptTimeContext::Samples);
+    BOOST_CHECK_EQUAL(OptTimeContext::resolve(0.7), OptTimeContext::Seconds);
+
+    BOOST_CHECK_EQUAL(OptInterpolate::resolve(0),
+            OptInterpolate::Flat);
+    BOOST_CHECK_EQUAL(OptInterpolate::resolve(1),
+            OptInterpolate::Linear);
+    BOOST_CHECK_EQUAL(OptInterpolate::resolve(1),
+            OptInterpolate::Linear);
+
+
+
+}
 
 
 

@@ -34,6 +34,7 @@ enum class GenID {
 
 //! Identifiers for Parameter types. 
 enum class PTypeID {
+    Switch,
     Value,
     Frequency,
     Duration,
@@ -46,6 +47,55 @@ enum class PTypeID {
     UpperBoundary,
     BreakPoints, // for slot in breakpoint, wavetable
 };
+
+
+//=============================================================================
+// options: for converting from SampleType to an enum or integer. We use old style enums so that we can use these as inputs in greating generators!
+
+//! Binary options.
+class OptBinary {
+    public: //-----------------------------------------------------------------
+    enum Opt { // old style enum
+        On,
+        Off
+    };
+    inline static Opt resolve(SampleT x) {
+        return x >= 0.5 ? Opt::On : Opt::Off;
+    };
+
+};
+
+
+//! Time context switch. 
+class OptTimeContext {
+    public: //-----------------------------------------------------------------
+    enum Opt { // old style enum
+        Samples,
+        Seconds
+    };
+    inline static Opt resolve(SampleT x) {
+        return x >= -0.5 && x < 0.5 ? Opt::Samples : Opt::Seconds;
+    };
+
+};
+
+
+//! Interpolation options
+class OptInterpolate {
+    public: //-----------------------------------------------------------------
+    enum Opt {
+        Flat,
+        Linear,
+    };
+    inline static Opt resolve(SampleT x) {
+        return x < 0.5 ? Flat :
+                x < 1.5 ? Linear
+                : Linear; // if out of upper range
+    };
+
+};
+
+
 
 
 
@@ -102,6 +152,7 @@ class PType {
     void validate_gen(GenID);
     
 };
+
 
 
 class PTypeValue;
@@ -188,6 +239,10 @@ class PTypeBreakPoints: public PType {
     public://------------------------------------------------------------------
     explicit PTypeBreakPoints();
 };
+
+
+
+
 
 
 
@@ -334,6 +389,8 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Factory for all Generators with by generator ID alone. This creates a GenPtr, and calls its init() method.     
     static GenPtr make(GenID);
 
+
+    // TODO: add make with sample SampleT for easy constant creation
 
     public://------------------------------------------------------------------
 
@@ -959,7 +1016,10 @@ class BPIntegrator: public Gen {
     OutputsSizeT _samps_next_point;
     OutputsSizeT _samps_width;
     
-    bool _t_seconds;
+    // these will be PIndexT; or enum class? maybe too slow
+    //bool _t_context;
+    OptTimeContext::Opt _t_context;
+    OptInterpolate::Opt _interp;
 
     SampleT _x_src;
     SampleT _x_dst;
