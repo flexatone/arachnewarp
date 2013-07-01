@@ -52,7 +52,7 @@ typedef std::uint32_t OutputsSizeT;
 typedef std::size_t PIndexT; 
 
 
-typedef std::vector<PIndexT> VParameterIndexT;
+typedef std::vector<PIndexT> VPIndexT;
 
 //! A vector of frame size types. This is used for offsets into the outputs.
 typedef std::vector<FrameSizeT> VFrameSizeType;
@@ -170,6 +170,15 @@ inline SampleT mtof(SampleT f) {
     else if (f > 1499) return mtof(1499);
     else return pow(2, (f-69) / 12.0) * 440.0;
 }
+
+
+
+
+
+
+
+
+
 
 
 
