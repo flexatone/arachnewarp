@@ -172,11 +172,19 @@ inline SampleT mtof(SampleT f) {
 }
 
 
+//! Round a SampleT to the nearest int-like Sample T
+inline SampleT rounded(SampleT x){
+    // replace with static cast
+    return x > 0.0 ? std::floor(x + 0.5) : std::ceil(x - 0.5);
+}
 
 
-
-
-
+//double round( double a )
+//{
+//    if( a >= 0 ) return (double)(long)( a + .5 );
+//    else return (double)(long)( a - .5 );
+//}
+//
 
 
 
@@ -249,12 +257,7 @@ inline SampleT mtof(SampleT f) {
 
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------
-//double round( double a )
-//{
-//    if( a >= 0 ) return (double)(long)( a + .5 );
-//    else return (double)(long)( a - .5 );
-//}
-//
+
 //
 //double trunc( double a )
 //{
