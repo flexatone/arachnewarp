@@ -15,7 +15,7 @@ UNAME := $(shell uname)
 
 ifeq ($(UNAME), Darwin)
 	CFLAGS=-I $(PATH_TO_SRC) -c -Wall 
-	CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -l sndfile -Wall -g 
+	CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -Wall -g 
 endif
 ifeq ($(UNAME), Linux)
 	# need: % export LD_LIBRARY_PATH=/usr/local/lib
