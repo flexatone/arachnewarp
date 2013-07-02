@@ -14,15 +14,24 @@ PATH_TO_TEST = ../test/
 
 # the -c option only compiles, producing object files
 
-# this is for basic compiling to .o files
-CFLAGS=-I $(PATH_TO_SRC) -c -Wall 
-
-# this is the text ececutable
-CFLAGS_TEST=-I $(PATH_TO_SRC) -l boost_filesystem -l boost_system -l boost_unit_test_framework -l sndfile -Wall	
-
-CFLAGS_SHARED=-shared -l boost_filesystem -l boost_system -l sndfile -Wall -O3
 
 # had to remove -std=c++0x because cannot get gcc4.4 on macos yet
+
+# dyn lib name is platform dependent
+ifeq ($(UNAME), Darwin)
+	CFLAGS=-I $(PATH_TO_SRC) -c -Wall 
+	CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -l sndfile -Wall -g 
+	CFLAGS_SHARED=-shared -l boost_filesystem -l boost_system -l sndfile -Wall -O3
+    DYN_LIB=libarachnewarp.dylib
+endif
+ifeq ($(UNAME), Linux)
+	# % export LD_LIBRARY_PATH=/usr/local/lib
+	# add -L/usr/local/lib to get most-recent boost headers
+	CFLAGS=-I $(PATH_TO_SRC) -L /usr/local/lib -c -Wall 	
+	CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -L /usr/local/lib -l boost_filesystem -l boost_system -l boost_unit_test_framework -l sndfile -Wall -g 
+	CFLAGS_SHARED=-shared -L /usr/local/lib -l boost_filesystem -l boost_system -l sndfile -Wall -O3
+    DYN_LIB=libarachnewarp.so    
+endif
 
 
 
@@ -69,13 +78,8 @@ aw_illustration.o: $(PATH_TO_SRC)aw_illustration.h $(PATH_TO_SRC)aw_illustration
 # EXE_TEST=aw_test 
 STATIC_LIB=libarachnewarp.a
 
-# dyn lib name is platform dependent
-ifeq ($(UNAME), Darwin)
-    DYN_LIB=libarachnewarp.dylib
-endif
-ifeq ($(UNAME), Linux)
-    DYN_LIB=libarachnewarp.so
-endif
+
+
 
 
 # testing command
