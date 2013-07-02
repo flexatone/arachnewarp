@@ -1336,7 +1336,7 @@ BOOST_AUTO_TEST_CASE(aw_breakpoints_b) {
 
 
 BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
-
+    // half a second for looping
 	GenPtr g1 = Gen::make(GenID::BreakPoints);
     Inj<SampleT>(
             {
@@ -1350,19 +1350,27 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
         ) && g1;
 	GenPtr g2 = Gen::make(GenID::BPIntegrator);
     g2->set_slot_by_index(0, g1);
+    g2->set_slot_by_index(1, OptInterpolate::Flat);
+    g2->set_slot_by_index(2, OptTimeContext::Seconds);
     
     // trig, cycle, exponent
     Inj<SampleT>({0, 1, 1}) >> g2;
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);
-    // 1 ch, 1 sec
-    Inj<SampleT>({1, 1}) || gbuf;
+	GenPtr gbuf = Gen::make(GenID::Buffer);    
+    Inj<SampleT>({2, 1}) || gbuf; // 1 ch, 1 sec
     
     g2 >> gbuf;
     
     gbuf->render(1);
-    //gbuf->illustrate_outputs();
-    // set slots
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][.1*44100], .8, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][.2*44100], .5, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][.3*44100], .1, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][.4*44100], .3, .0001);
+    // set to loop
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][.6*44100], .8, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][.9*44100], .3, .0001);
+    
+    gbuf->illustrate_outputs();
 
 }
 
@@ -1386,10 +1394,50 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
             OptInterpolate::Flat);
     BOOST_CHECK_EQUAL(OptInterpolate::resolve(1),
             OptInterpolate::Linear);
-    BOOST_CHECK_EQUAL(OptInterpolate::resolve(1),
-            OptInterpolate::Linear);
+    BOOST_CHECK_EQUAL(OptInterpolate::resolve(2),
+            OptInterpolate::Exponential);
+}
 
 
+BOOST_AUTO_TEST_CASE(aw_bb_integrator_b) {
+    // half a second for looping
+	GenPtr g1 = Gen::make(GenID::BreakPoints);
+    Inj<SampleT>(
+            {
+                {0, 0},
+                {2, -1},
+                {6, 1},
+                {12, -1},
+                {19, 0},
+            }
+        ) && g1;
+	GenPtr g2 = Gen::make(GenID::BPIntegrator);
+    g2->set_slot_by_index(0, g1);
+    g2->set_slot_by_index(1, OptInterpolate::Linear);
+    g2->set_slot_by_index(2, OptTimeContext::Samples);
+    
+    // trig, cycle, exponent
+    Inj<SampleT>({0, 1, 1}) >> g2;
+    
+	GenPtr gbuf = Gen::make(GenID::Buffer);
+    Inj<SampleT>({1, .01}) || gbuf; // 1 ch, 441 samps
+    
+    g2 >> gbuf;
+    
+    gbuf->render(1);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][2], -1, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][3], -.5, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][4], 0, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][5], .5, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][6], 1, .0001);
+
+    BOOST_CHECK_EQUAL(gbuf->get_frame_size(), 441);
+    
+    // TODO: add more tests
+    // cycles at 20 samps, as defined last point at 19
+    //BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][20]), 0);
+    //BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][22]), -1);
+    
 
 }
 

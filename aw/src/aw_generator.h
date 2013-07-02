@@ -50,7 +50,7 @@ enum class PTypeID {
 
 
 //=============================================================================
-// options: for converting from SampleType to an enum or integer. We use old style enums so that we can use these as inputs in greating generators!
+// options: for converting from SampleType to an enum or integer. We use old style enums so that we can use these as inputs in greating generators! These might be attached to, or included within, PTypes (and then used from the class, not ptr); but seems less elegant than having as independent classes.
 
 //! Binary options.
 class OptBinary {
@@ -86,11 +86,16 @@ class OptInterpolate {
     enum Opt {
         Flat,
         Linear,
+        Exponential,
+        HalfCosine,
+        Cubic
     };
     inline static Opt resolve(SampleT x) {
         return x < 0.5 ? Flat :
-                x < 1.5 ? Linear
-                : Linear; // if out of upper range
+                x < 1.5 ? Linear :
+                x < 2.5 ? Exponential :
+                x < 3.5 ? HalfCosine :
+                Cubic; // if out of upper range
     };
 
 };

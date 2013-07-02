@@ -1470,7 +1470,7 @@ void BPIntegrator :: init() {
     
 
     PTypePtr so2 = PType::make(PTypeID::Value);
-    so2->set_instance_name("Interpolatation type (step, linear)");
+    so2->set_instance_name("Interpolatation (flat, linear)");
 	_register_slot_parameter_type(so2);
 	_slot_index_interp = 1;
     set_slot_by_index(_slot_index_interp, OptInterpolate::Linear, false); // setting a default
@@ -1482,13 +1482,14 @@ void BPIntegrator :: init() {
     // update after last default
     set_slot_by_index(_slot_index_t_context, OptTimeContext::Seconds, true); 
 
+
 	// register outputs
     PTypePtr pt_o1 = PType::make(PTypeID::Value);
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);	
 
     PTypePtr pt_o2 = PType::make(PTypeID::Trigger);
-    pt_o2->set_instance_name("EOS"); // end of segment
+    pt_o2->set_instance_name("SOS (start of segment)"); // start of segment
     _register_output_parameter_type(pt_o2);
 
     // reset and set defaults
@@ -1512,23 +1513,19 @@ void BPIntegrator :: reset() {
     _samps_in_bp = 0;
     _samps_next_point = 0; // needs to be set at non-zero
     // set to last y value of all bps
+    _points_len = _slots[_slot_index_bps]->get_frame_size();    
     _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1];
 }
-
-// bp: {0, 0}, {1, .5}, {2, 0}
-// samps x 0, 44000, 88000
-// height (y): 0, .5, 0
 
 
 void BPIntegrator :: render(RenderCountT f) {
 
     // once per render call, or per render frame?
+    _interp = OptInterpolate::resolve(
+            _slots[_slot_index_interp]->outputs[0][0]);    
     _t_context = OptTimeContext::resolve(
             _slots[_slot_index_t_context]->outputs[0][0]);
-    _interp = OptInterpolate::resolve(
-            _slots[_slot_index_t_context]->outputs[0][0]);
     
-
     // need to get two at a time, wher last is n-2, n-1 (n is length
     while (_render_count < f) {
 
@@ -1536,7 +1533,7 @@ void BPIntegrator :: render(RenderCountT f) {
 		_sum_inputs(_frame_size);
         // assume that break_points will not be resized within a frame
         // the number of frames is the number of points
-
+        
         // translate to an enum in the Ptype and get enum value from Ptype
         // _points = slots[_slot_index_t_context]
         
@@ -1546,7 +1543,8 @@ void BPIntegrator :: render(RenderCountT f) {
                     _running == false) {
                 _running = true;
                 _start = true; // if nto alreayd running then we are in start
-                std::cout << "cycling: reset running to true" << std::endl;                
+                std::cout << "cycling: reset running to true" << std::endl;
+                std::cout << "_interp: " << _interp;
             }
             // if cycle and running, no start
             else if (_summed_inputs[_input_index_cycle][i] > TRIG_THRESH &&
@@ -1558,37 +1556,32 @@ void BPIntegrator :: render(RenderCountT f) {
                 _running = true;
                 _start = true;
             }
-                        
-            // if not runnign, set amp to zero and continue?
+            // running/sart now set
             if (!_running) {
                 // if not running, do we cary the last value or 0; the last is probably best; but what about a late start: shoud we set amp in advance if we are  waiting for a first trigger?
                 outputs[0][i] = _amp;
                 continue;
             }
-        
             if (_start) {
                 _samps_in_bp = 0; // must reset
                 _samps_next_point = 0; // reset to go to normal mechanism
                 _point_count = 0; // get first point pair
                 _start = false;
             }
-            // swith between pairs of active points
+            // pairs of active points
             // _samps_in_bp incremented after writing a value, below
             // both are zero only at start
             if (_samps_in_bp == _samps_next_point) {
-                std::cout << "_samps_in_bp: " << _samps_in_bp << " _samps_next_point: " << _samps_next_point << " _running" << _running << " _start" << _start << std::endl;
-            
-                //if (_point_count < _points_len - 1) {
-                // if we get here, we must still have this and the next point pair
-                assert(_point_count + 1 < _points_len);
-                // difference between this and the next; already validated to be incremental, so no abs or pos/neg check nec
+                //std::cout << "_samps_in_bp: " << _samps_in_bp << " _samps_next_point: " << _samps_next_point << " _running" << _running << " _start" << _start << std::endl;
+                // assert(_point_count + 1 < _points_len);
+                // already validated to be incremental, so x dif is never zero
                 _x_src = _slots[_slot_index_bps]->outputs[0][_point_count];
                 _x_dst = _slots[_slot_index_bps]->outputs[0][_point_count + 1];
                 _y_src = _slots[_slot_index_bps]->outputs[1][_point_count];
                 _y_dst = _slots[_slot_index_bps]->outputs[1][_point_count + 1];
                 
-                //if (_t_context == OptTimeContext::Seconds) { // not zero
-                if (_t_context) {
+                if (_t_context == OptTimeContext::Seconds) { // not zero
+                //if (_t_context) {
                     // must do as seperate step to avoid truncating in assignment
                     // TODO: averaged, or floored?                
                     _samps_width = (_x_dst - _x_src) *
@@ -1601,16 +1594,33 @@ void BPIntegrator :: render(RenderCountT f) {
                 // this is cumulative position
                 _samps_next_point += _samps_width;
                 
-                std::cout << "    _samps_width: " << _samps_width << " _x_src: " << _x_src << " _x_dst: " << _x_dst << " _samps_last_point " << _samps_last_point << " _samps_next_point " << _samps_next_point <<  std::endl;
-                
+                //std::cout << "    _samps_width: " << _samps_width << " _x_src: " << _x_src << " _x_dst: " << _x_dst << " _samps_last_point " << _samps_last_point << " _samps_next_point " << _samps_next_point <<  std::endl;
+                // set start of segment
+                outputs[1][i] = 1;
+            }
+            else { // not a start of segment
+                outputs[1][i] = 0;
             }
             // do interpolation
-            // progress is width - (_samps_next_point - _samps_in_bp)
-            _amp = (((_samps_in_bp - _samps_last_point) /
-                    static_cast<SampleT>(_samps_width)) *
-                    (_y_dst - _y_src)) + _y_src;
-            // store to use as last value
-            //_amp = _y_src;
+            if (_interp == OptInterpolate::Flat) {
+                // if we were to use
+                _amp = _y_src;
+            }
+            else if (_interp == OptInterpolate::Linear) {
+                _amp = (((_samps_in_bp - _samps_last_point) /
+                        static_cast<SampleT>(_samps_width)) *
+                        (_y_dst - _y_src)) + _y_src;
+            }
+            else if (_interp == OptInterpolate::Exponential) {
+                _amp = _y_src;
+            }
+            else if (_interp == OptInterpolate::HalfCosine) {
+                _amp = _y_src;
+            }            
+            else if (_interp == OptInterpolate::Cubic) {
+                _amp = _y_src;            
+            }
+            
 			outputs[0][i] = _amp;
             
             // incr after adding a new value
