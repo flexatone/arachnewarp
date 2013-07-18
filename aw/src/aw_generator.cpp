@@ -50,7 +50,14 @@ PTypePtr PType :: make(PTypeID q){
     }
     else if (q == PTypeID::BreakPoints) {
         p = PTypeBreakPointsPtr(new PTypeBreakPoints);
+    }
+    else if (q == PTypeID::Interpolation) {
+        p = PTypeInterpolationPtr(new PTypeInterpolate);
     }        
+    else if (q == PTypeID::TimeContext) {
+        p = PTypeTimeContextPtr(new PTypeTimeContext);
+    }        
+    
     else {
         std::stringstream msg;
         msg << "no matching ParameterTypeID";
@@ -145,7 +152,20 @@ PTypeUpperBoundary :: PTypeUpperBoundary() {
 PTypeBreakPoints :: PTypeBreakPoints() {
     _class_name = "PTypeBreakPoints";
     _class_id = PTypeID::BreakPoints;
-    _compatible_gen = {GenID::BreakPoints};
+    _compatible_gen = {GenID::BreakPoints}; // note gen constraint
+}
+
+
+//-----------------------------------------------------------------------------
+
+PTypeInterpolate :: PTypeInterpolate() {
+    _class_name = "PTypeInterpolate";
+    _class_id = PTypeID::Interpolation;
+}
+
+PTypeTimeContext :: PTypeTimeContext() {
+    _class_name = "PTypeTimeContext";
+    _class_id = PTypeID::TimeContext;
 }
 
 
@@ -155,9 +175,8 @@ PTypeBreakPoints :: PTypeBreakPoints() {
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-GenPtr  Gen :: make_with_environment(GenID q, 
-            EnvironmentPtr e) {                        
-    GenPtr g;    
+GenPtr Gen :: make_with_environment(GenID q, EnvironmentPtr e) {                        
+    GenPtr g;
     if (q == GenID::Constant) {
         g = ConstantPtr(new Constant(e));
     }
@@ -199,11 +218,24 @@ GenPtr  Gen :: make_with_environment(GenID q,
 }
 
 
-GenPtr  Gen :: make(GenID q){
+GenPtr Gen :: make(GenID q){
 	// just get default environment
-    EnvironmentPtr e = EnvironmentPtr(new Environment);
+    //EnvironmentPtr e = EnvironmentPtr(new Environment);
+    EnvironmentPtr e = Environment::get_default_env();
     return make_with_environment(q, e);
 }
+
+
+GenPtr Gen :: make(SampleT v){
+	// just get default environment
+    // replace with get default environment call
+    //EnvironmentPtr e = EnvironmentPtr(new Environment);
+    EnvironmentPtr e = Environment::get_default_env();
+    GenPtr c = make_with_environment(GenID::Constant, e);
+    c->set_input_by_index(0, v);
+    return c;
+}
+
 
 //.............................................................................
 Gen :: Gen(EnvironmentPtr e) 
@@ -223,8 +255,6 @@ Gen :: Gen(EnvironmentPtr e)
 
     _frame_size_is_resizable{false},
     _render_count{0} {
-	//outputs(NULL) {
-    //std::cout << "Gen (1 arg): Constructor" << std::endl;
 }
 
 
@@ -570,7 +600,7 @@ void Gen :: print_inputs(bool recursive, UINT8 recurse_level) {
         for (j=_inputs[k].begin(); j!=_inputs[k].end(); ++j) {
             // deref
             GenPtr g = (*j).first;
-            if (g == NULL) { // an empty GenPtr
+            if (g == nullptr) { // an empty GenPtr
                 std::cout << space3 << "<Empty>" << std::endl;                
             }
             else {
@@ -711,7 +741,6 @@ void Gen :: set_outputs_from_fp(const std::string& fp) {
 }
 
 
-
 void Gen :: set_outputs(const Inj<SampleT>& bi) {
     // vitual method overridden in Buffer
     std::stringstream msg;
@@ -807,8 +836,7 @@ void Gen :: set_input_by_index(
         PIndexT pos){
     // overridden method for setting a value: generates a constant
 	// pass the GeneratorConfig to produce same dimensionality requested
-    GenPtr c = Gen::make_with_environment(GenID::Constant, 
-            _environment);
+    GenPtr c = Gen::make_with_environment(GenID::Constant, _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c, pos); // call overloaded
 }
@@ -1398,7 +1426,7 @@ void BreakPoints :: init() {
 
 
 Validity BreakPoints :: _validate_outputs() {
-    // TODO: check taht it has 2 dimensions, check that x is always increasing    
+    // check that it has 2 dimensions, check that x is always increasing
     if (get_output_count() != 2) {
         return {false, "break points must have 2 outputs for x and y"};
     }
@@ -1469,18 +1497,18 @@ void BPIntegrator :: init() {
     set_slot_by_index(_slot_index_bps, g1, true); // setting a default
     
 
-    PTypePtr so2 = PType::make(PTypeID::Value);
+    PTypePtr so2 = PType::make(PTypeID::Interpolation);
     so2->set_instance_name("Interpolatation (flat, linear)");
 	_register_slot_parameter_type(so2);
 	_slot_index_interp = 1;
-    set_slot_by_index(_slot_index_interp, OptInterpolate::Linear, false); // setting a default
+    set_slot_by_index(_slot_index_interp, PTypeInterpolate::Linear, false); // setting a default
     
-    PTypePtr so3 = PType::make(PTypeID::Value);
+    PTypePtr so3 = PType::make(PTypeID::TimeContext);
     so3->set_instance_name("TimeContext (samples, seconds)");
 	_register_slot_parameter_type(so3);
 	_slot_index_t_context = 2;
     // update after last default
-    set_slot_by_index(_slot_index_t_context, OptTimeContext::Seconds, true); 
+    set_slot_by_index(_slot_index_t_context, PTypeTimeContext::Seconds, true);
 
 
 	// register outputs
@@ -1506,7 +1534,7 @@ void BPIntegrator :: _update_for_new_slot() {
 }
 
 void BPIntegrator :: reset() {
-    std::cout << *this << ": reset()" << std::endl;
+    //std::cout << *this << ": reset()" << std::endl;
     Gen::reset();
     _point_count = 0; // index of current point
     _running = false;
@@ -1514,16 +1542,16 @@ void BPIntegrator :: reset() {
     _samps_next_point = 0; // needs to be set at non-zero
     // set to last y value of all bps
     _points_len = _slots[_slot_index_bps]->get_frame_size();    
-    _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1];
+    _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1]; // last y
 }
 
 
 void BPIntegrator :: render(RenderCountT f) {
-
+    // note that witht this implementation we do not actually ever get to the last y value in the break points; we interpolate across the suggested interval but will not actually get to the last value; this is useful for looping but perhaps not intuitive in all cases
     // once per render call, or per render frame?
-    _interp = OptInterpolate::resolve(
+    _interp = PTypeInterpolate::resolve(
             _slots[_slot_index_interp]->outputs[0][0]);    
-    _t_context = OptTimeContext::resolve(
+    _t_context = PTypeTimeContext::resolve(
             _slots[_slot_index_t_context]->outputs[0][0]);
     
     // need to get two at a time, wher last is n-2, n-1 (n is length
@@ -1543,22 +1571,22 @@ void BPIntegrator :: render(RenderCountT f) {
                     _running == false) {
                 _running = true;
                 _start = true; // if nto alreayd running then we are in start
-                std::cout << "cycling: reset running to true" << std::endl;
-                std::cout << "_interp: " << _interp;
+                //std::cout << "cycling: reset running to true" << std::endl;
+                //std::cout << "_interp: " << _interp;
             }
             // if cycle and running, no start
             else if (_summed_inputs[_input_index_cycle][i] > TRIG_THRESH &&
                     _running == true) {
                 _running = true;
-                _start = false; // l
+                _start = false; 
             } // no matter if we are running, need to trigger start sequence            
             else if (_summed_inputs[_input_index_trigger][i] > TRIG_THRESH) {
                 _running = true;
                 _start = true;
             }
-            // running/sart now set
+            // running/start now set
             if (!_running) {
-                // if not running, do we cary the last value or 0; the last is probably best; but what about a late start: shoud we set amp in advance if we are  waiting for a first trigger?
+                // if not running, do we cary the last value or 0; the last is probably best; but what about a late start: we set amp in advance if we are  waiting for a first trigger?
                 outputs[0][i] = _amp;
                 continue;
             }
@@ -1580,7 +1608,7 @@ void BPIntegrator :: render(RenderCountT f) {
                 _y_src = _slots[_slot_index_bps]->outputs[1][_point_count];
                 _y_dst = _slots[_slot_index_bps]->outputs[1][_point_count + 1];
                 
-                if (_t_context == OptTimeContext::Seconds) { // not zero
+                if (_t_context == PTypeTimeContext::Seconds) { // not zero
                 //if (_t_context) {
                     // must do as seperate step to avoid truncating in assignment
                     // TODO: averaged, or floored?                
@@ -1590,8 +1618,10 @@ void BPIntegrator :: render(RenderCountT f) {
                 else { // integer subtractionof samples
                     _samps_width = _x_dst - _x_src;
                 }
+                _y_span = _y_dst - _y_src;
+                // this is the last position in samples
                 _samps_last_point = _samps_next_point; // store before update
-                // this is cumulative position
+                // this is cumulative position in samples
                 _samps_next_point += _samps_width;
                 
                 //std::cout << "    _samps_width: " << _samps_width << " _x_src: " << _x_src << " _x_dst: " << _x_dst << " _samps_last_point " << _samps_last_point << " _samps_next_point " << _samps_next_point <<  std::endl;
@@ -1602,22 +1632,25 @@ void BPIntegrator :: render(RenderCountT f) {
                 outputs[1][i] = 0;
             }
             // do interpolation
-            if (_interp == OptInterpolate::Flat) {
-                // if we were to use
+            if (_interp == PTypeInterpolate::Flat) {
                 _amp = _y_src;
             }
-            else if (_interp == OptInterpolate::Linear) {
+            else if (_interp == PTypeInterpolate::Linear) {
                 _amp = (((_samps_in_bp - _samps_last_point) /
                         static_cast<SampleT>(_samps_width)) *
-                        (_y_dst - _y_src)) + _y_src;
+                        _y_span) + _y_src;
             }
-            else if (_interp == OptInterpolate::Exponential) {
-                _amp = _y_src;
+            else if (_interp == PTypeInterpolate::Exponential) {
+                // note : the stpe size is asymetrical in ascend/descnet; figure out how to fix later
+                _amp = (pow((_samps_in_bp - _samps_last_point) /
+                        static_cast<SampleT>(_samps_width),
+                        _summed_inputs[_input_index_exponent][i]
+                        ) * _y_span) + _y_src;
             }
-            else if (_interp == OptInterpolate::HalfCosine) {
+            else if (_interp == PTypeInterpolate::HalfCosine) {
                 _amp = _y_src;
             }            
-            else if (_interp == OptInterpolate::Cubic) {
+            else if (_interp == PTypeInterpolate::Cubic) {
                 _amp = _y_src;            
             }
             
@@ -1631,6 +1664,9 @@ void BPIntegrator :: render(RenderCountT f) {
                 // check if we are out of points
                 if (_point_count >= _points_len - 1) {
                     _running = false; // must restart, and reinit
+                    // set amp to last y (never met in interpolation)
+                    _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1];
+                    
                 }
             }
             
@@ -2035,7 +2071,6 @@ void AttackDecay :: render(RenderCountT f) {
                     static_cast<SampleT>(_sampling_rate));
             _d_samps = fabs(_summed_inputs[_input_index_decay][_i] *
                     static_cast<SampleT>(_sampling_rate));
-
 
             // attack can be triggered by two conditions: if in cycle mode and envl stage is 0 (after completion of release), or if we get a normal trigger. 
             if (_summed_inputs[_input_index_cycle][_i] > TRIG_THRESH &&
