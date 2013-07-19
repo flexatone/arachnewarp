@@ -46,58 +46,8 @@ enum class PTypeID {
     LowerBoundary,
     UpperBoundary,
     BreakPoints, // for slot in breakpoint, wavetable
-};
-
-
-//=============================================================================
-// options: for converting from SampleType to an enum or integer. We use old style enums so that we can use these as inputs in greating generators! These might be attached to, or included within, PTypes (and then used from the class, not ptr); but seems less elegant than having as independent classes.
-
-//! Binary options.
-class OptBinary {
-    public: //-----------------------------------------------------------------
-    enum Opt { // old style enum
-        On,
-        Off
-    };
-    inline static Opt resolve(SampleT x) {
-        return x >= 0.5 ? Opt::On : Opt::Off;
-    };
-
-};
-
-
-//! Time context switch. 
-class OptTimeContext {
-    public: //-----------------------------------------------------------------
-    enum Opt { // old style enum
-        Samples,
-        Seconds
-    };
-    inline static Opt resolve(SampleT x) {
-        return x >= -0.5 && x < 0.5 ? Opt::Samples : Opt::Seconds;
-    };
-
-};
-
-
-//! Interpolation options
-class OptInterpolate {
-    public: //-----------------------------------------------------------------
-    enum Opt {
-        Flat,
-        Linear,
-        Exponential,
-        HalfCosine,
-        Cubic
-    };
-    inline static Opt resolve(SampleT x) {
-        return x < 0.5 ? Flat :
-                x < 1.5 ? Linear :
-                x < 2.5 ? Exponential :
-                x < 3.5 ? HalfCosine :
-                Cubic; // if out of upper range
-    };
-
+    Interpolation,
+    TimeContext,
 };
 
 
@@ -243,6 +193,49 @@ typedef std::shared_ptr<PTypeBreakPoints> PTypeBreakPointsPtr;
 class PTypeBreakPoints: public PType {
     public://------------------------------------------------------------------
     explicit PTypeBreakPoints();
+};
+
+
+//! A parameter (used as a slot) to select various interpoaltion types.
+class PTypeInterpolate;
+typedef std::shared_ptr<PTypeInterpolate> PTypeInterpolationPtr;
+class PTypeInterpolate: public PType {
+    public://------------------------------------------------------------------
+    explicit PTypeInterpolate();
+    
+    enum Opt {
+        Flat,
+        Linear,
+        Exponential,
+        HalfCosine,
+        Cubic
+    };
+    inline static Opt resolve(SampleT x) {
+        return x < 0.5 ? Flat :
+                x < 1.5 ? Linear :
+                x < 2.5 ? Exponential :
+                x < 3.5 ? HalfCosine :
+                Cubic; // if out of upper range
+    };
+    
+};
+
+
+//! A parameter (used as a slot) to select time context forn break-point segments.
+class PTypeTimeContext;
+typedef std::shared_ptr<PTypeTimeContext> PTypeTimeContextPtr;
+class PTypeTimeContext: public PType {
+    public://------------------------------------------------------------------
+    explicit PTypeTimeContext();
+
+    enum Opt { 
+        Samples,
+        Seconds
+    };
+    inline static Opt resolve(SampleT x) {
+        return x >= -0.5 && x < 0.5 ? Opt::Samples : Opt::Seconds;
+    };
+    
 };
 
 
@@ -393,6 +386,9 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     //! Factory for all Generators with by generator ID alone. This creates a GenPtr, and calls its init() method.     
     static GenPtr make(GenID);
+
+    //! Factory for creating constants given just a numeric type.     
+    static GenPtr make(SampleT);
 
 
     // TODO: add make with sample SampleT for easy constant creation
@@ -996,7 +992,7 @@ class BreakPoints: public Buffer {
 
 
 //=============================================================================
-//! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
+//! A break point integrator, interpolating between two or more time points, value pairs as defined with a BreakPoints Gen. Note that the last time point y values is never explicitly reached in transition from last-1 to last; however, when triggered the sustained value is this last value; when looped, a smoth interpolation to start can be made by last value being the same as the first value. 
 class BPIntegrator;
 typedef std::shared_ptr<BPIntegrator> BPIntegratorPtr;
 class BPIntegrator: public Gen {
@@ -1021,19 +1017,16 @@ class BPIntegrator: public Gen {
     OutputsSizeT _samps_next_point;
     OutputsSizeT _samps_width;
     
-    // these will be PIndexT; or enum class? maybe too slow
-    //bool _t_context;
-    OptTimeContext::Opt _t_context;
-    OptInterpolate::Opt _interp;
+    PTypeTimeContext::Opt _t_context;
+    PTypeInterpolate::Opt _interp;
 
     SampleT _x_src;
     SampleT _x_dst;
     SampleT _y_src;
     SampleT _y_dst;
+    SampleT _y_span;
     
-	SampleT _amp;
-	SampleT _amp_prev;		
-    
+	SampleT _amp;    
     
     protected://---------------------------------------------------------------
 

@@ -82,7 +82,8 @@ const char* get_fp_home() {
 //==============================================================================
 // utility classes
 
-// TODO: add a static variable to store a default environment instance, and a static method to get and set the default
+// must initialize private static member attribute in impl file
+EnvironmentPtr Environment::_default_env = nullptr;
 
 Environment :: Environment(FrameSizeT fs) 
 	: _sampling_rate{44100},
@@ -91,16 +92,30 @@ Environment :: Environment(FrameSizeT fs)
     _load_defaults(); // file paths, not frame size
 }
 
-EnvironmentPtr Environment :: make() {
-    return EnvironmentPtr(new Environment);
-}
-
 EnvironmentPtr Environment :: make_with_frame_size(FrameSizeT fs) {
+    // static method
     return EnvironmentPtr(new Environment(fs));
 }
 
+//EnvironmentPtr Environment :: make() {
+//    // static method
+//    return make_with_frame_size();
+//}
 
-// Environment :: ~Environment() {}
+void Environment :: set_default_env(EnvironmentPtr env) {
+    // static method
+    _default_env = env;
+}
+
+EnvironmentPtr Environment :: get_default_env() {
+    // static method
+    if (_default_env == nullptr) {
+        // get default configuration
+        set_default_env(make_with_frame_size());
+    }
+    return _default_env;
+}
+
 
 void Environment :: _load_defaults() {
     // this method is called on init
