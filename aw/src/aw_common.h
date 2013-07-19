@@ -174,80 +174,8 @@ inline SampleT mtof(SampleT f) {
 
 //! Round a SampleT to the nearest int-like Sample T
 inline SampleT rounded(SampleT x){
-    // replace with static cast
     return x > 0.0 ? std::floor(x + 0.5) : std::ceil(x - 0.5);
 }
-
-
-//double round( double a )
-//{
-//    if( a >= 0 ) return (double)(long)( a + .5 );
-//    else return (double)(long)( a - .5 );
-//}
-//
-
-
-
-
-
-// string procs ===============================================================
-
-
-//! Convert a string into lower case in place. 
-//inline void to_lower(std::string& src) {
-//    std::transform(src.begin(), src.end(), src.begin(), ::tolower);
-//}
-//
-////! Remove characters from a string passed in place.
-//inline void remove(std::string& src, const char target) {
-//    src.erase(std::remove(src.begin(), src.end(), target), src.end());
-//}
-//
-//
-////! Split a string by a delimiter. 
-//inline void split(
-//        const std::string& src,
-//        const char delim,
-//        std::vector<std::string>& post) {
-//    std::stringstream ss(src);
-//    std::string item;
-//    while (std::getline(ss, item, delim)) {
-//        post.push_back(item);
-//    }
-//
-//}
-
-//! A templated function that will take a string and convert to a vector of type T, using istreingstream conversion.
-//template <typename T>
-//void string_to_vector(
-//        const std::string& src, // input
-//        std::vector<T>& post, // return collector
-//        const char delim=',',
-//        const std::string& remove="") {
-//
-//    std::vector<std::string> col; // need a temp col of strings
-//    std::vector<std::string>::const_iterator i;
-//    
-//    T var;
-//    std::istringstream iss;
-//    std::string working(src); // copy to permit changing in place
-//
-//    for (std::string::const_iterator j=remove.begin(); j != remove.end(); ++j) {
-//        aw::remove(working, *j);
-//    }
-//    // split in place by delim into col
-//    aw::split(working, delim, col);
-//    // for each part of col, make into type T
-//    for(i=col.begin(); i!=col.end(); ++i) {
-//        iss.clear(); // clear it on each pass
-//        iss.str(*i);
-//        iss >> var;
-//        post.push_back(var);
-//    }
-//}
-//
-//
-
 
 
 
@@ -361,20 +289,29 @@ class Environment {
 	
     //! Load default directories.
     void _load_defaults();
-	
-    public://-------------------------------------------------------------------
+    
+    //! We store a static (class wid) default environment that is used and set. 
+    static EnvironmentPtr _default_env;
 
-    // need to =delete the default constructor
     
-    explicit Environment(FrameSizeT fs=64);
+    public://-------------------------------------------------------------------
     
-    //~Environment();
+    explicit Environment(FrameSizeT fs);
+
+    Environment() = delete;
 	
-    //! Factory method that sets defaults.
-    static EnvironmentPtr make();    
+    // REDO to require setting frame size and sampling rate. 
+//    static EnvironmentPtr make();    
 
     //! Factory method that provides frame size defaults. Could by 'make from'. 
     static EnvironmentPtr make_with_frame_size(FrameSizeT fs=64);
+    
+    //! Set a default environment. If called with no args, will reset the default to nullptr, forcing new creation of a default on text run. 
+    static void set_default_env(EnvironmentPtr env=nullptr);
+    
+    //! Get the last set default environment, or a default created on demand.
+    static EnvironmentPtr get_default_env();
+    
     
     //! Return the sampling rate
 	OutputsSizeT get_sampling_rate() const {return _sampling_rate;};
@@ -462,12 +399,6 @@ class Inj {
     }
     
 };
-
-
-
-
-
-
 
 
 

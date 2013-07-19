@@ -20,7 +20,7 @@ using namespace aw;
 
 BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 
-    EnvironmentPtr e = Environment::make();
+    EnvironmentPtr e = Environment::get_default_env();
 	Gen g1 = Gen(e);
     g1.init();
 	//g1.print_outputs();
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_1) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     // basic test of constant
-    EnvironmentPtr e = Environment::make();
+    EnvironmentPtr e = Environment::get_default_env();
 	Constant g3(e);
     g3.init();
     //g3.print_inputs();
@@ -114,6 +114,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
 	g3.render(4);
     BOOST_CHECK_CLOSE(g3.outputs[0][0], 30, .0000001);
 }
+
 
 
 
@@ -247,10 +248,23 @@ BOOST_AUTO_TEST_CASE(aw_generator_make_1) {
 	g1->render(50);
 	//g1->print_outputs();
 	//g1->print_inputs(true);
-	
     BOOST_CHECK_CLOSE(g1->outputs[0][0], 2.7, .0000001);
 
+
+    // creating a constant number
+	GenPtr g2 = Gen::make(24.3);
+    BOOST_CHECK_CLOSE(g2->outputs[0][0], 24.3, .0000001);
+
+    // creating a constant number
+	GenPtr g3 = Gen::make(300);
+    BOOST_CHECK_CLOSE(g3->outputs[0][0], 300, .0000001);
+
+
 }
+
+
+
+
 
 BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 	// test auto constant creation when adding a sample type
@@ -1322,10 +1336,13 @@ BOOST_AUTO_TEST_CASE(aw_breakpoints_b) {
 
 
 	GenPtr g2 = Gen::make(GenID::BPIntegrator);
-    // set slots
-    // want to do this
-    // Inj<GenPtr>({g2, 0, 1}) || g2;
-    g2->set_slot_by_index(0, g1);
+    // set slots: bps, interpolation, time context
+    Inj<GenPtr>({
+        g1,
+        Gen::make(PTypeInterpolate::Linear),
+        Gen::make(PTypeTimeContext::Seconds)}) || g2;
+    
+    //g2->set_slot_by_index(0, g1);
 
     // constant is not permitted
     GenPtr g3 = Gen::make(GenID::Constant);
@@ -1345,19 +1362,21 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
                 {.2, .5},
                 {.3, .1},
                 {.4, .3},
-                {.5, 0},
+                {.5, 0}, // does not get to this point, but loops
             }
         ) && g1;
-	GenPtr g2 = Gen::make(GenID::BPIntegrator);
-    g2->set_slot_by_index(0, g1);
-    g2->set_slot_by_index(1, OptInterpolate::Flat);
-    g2->set_slot_by_index(2, OptTimeContext::Seconds);
     
+	GenPtr g2 = Gen::make(GenID::BPIntegrator);
+    Inj<GenPtr>({
+        g1,
+        Gen::make(PTypeInterpolate::Flat),
+        Gen::make(PTypeTimeContext::Seconds)}) || g2;
+        
     // trig, cycle, exponent
     Inj<SampleT>({0, 1, 1}) >> g2;
     
 	GenPtr gbuf = Gen::make(GenID::Buffer);    
-    Inj<SampleT>({2, 1}) || gbuf; // 1 ch, 1 sec
+    Inj<SampleT>({2, 1}) || gbuf; // 2 ch, 1 sec
     
     g2 >> gbuf;
     
@@ -1370,7 +1389,7 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
     BOOST_CHECK_CLOSE(gbuf->outputs[0][.6*44100], .8, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[0][.9*44100], .3, .0001);
     
-    gbuf->illustrate_outputs();
+    //gbuf->illustrate_outputs();
 
 }
 
@@ -1384,37 +1403,39 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
 //    OptBinary::resolve
 //    OptBinary::Opt::Off
 //    OptBinary::Opt::On
-    BOOST_CHECK_EQUAL(OptBinary::resolve(0.2), OptBinary::Off);
-    BOOST_CHECK_EQUAL(OptBinary::resolve(0.7), OptBinary::On);
+//    BOOST_CHECK_EQUAL(OptBinary::resolve(0.2), OptBinary::Off);
+//    BOOST_CHECK_EQUAL(OptBinary::resolve(0.7), OptBinary::On);
 
-    BOOST_CHECK_EQUAL(OptTimeContext::resolve(0.2), OptTimeContext::Samples);
-    BOOST_CHECK_EQUAL(OptTimeContext::resolve(0.7), OptTimeContext::Seconds);
+    BOOST_CHECK_EQUAL(PTypeTimeContext::resolve(0.2),
+            PTypeTimeContext::Samples);
+    BOOST_CHECK_EQUAL(PTypeTimeContext::resolve(0.7),
+            PTypeTimeContext::Seconds);
 
-    BOOST_CHECK_EQUAL(OptInterpolate::resolve(0),
-            OptInterpolate::Flat);
-    BOOST_CHECK_EQUAL(OptInterpolate::resolve(1),
-            OptInterpolate::Linear);
-    BOOST_CHECK_EQUAL(OptInterpolate::resolve(2),
-            OptInterpolate::Exponential);
+    BOOST_CHECK_EQUAL(PTypeInterpolate::resolve(0),
+            PTypeInterpolate::Flat);
+    BOOST_CHECK_EQUAL(PTypeInterpolate::resolve(1),
+            PTypeInterpolate::Linear);
+    BOOST_CHECK_EQUAL(PTypeInterpolate::resolve(2),
+            PTypeInterpolate::Exponential);
 }
 
 
+
 BOOST_AUTO_TEST_CASE(aw_bb_integrator_b) {
-    // half a second for looping
 	GenPtr g1 = Gen::make(GenID::BreakPoints);
+
+    // cycle length will be 4 samples (0, 1, 2, 3); we will not articulate the zero at sample 4, but get just close enough to it
     Inj<SampleT>(
             {
                 {0, 0},
                 {2, -1},
-                {6, 1},
-                {12, -1},
-                {19, 0},
+                {4, 0},
             }
         ) && g1;
 	GenPtr g2 = Gen::make(GenID::BPIntegrator);
     g2->set_slot_by_index(0, g1);
-    g2->set_slot_by_index(1, OptInterpolate::Linear);
-    g2->set_slot_by_index(2, OptTimeContext::Samples);
+    g2->set_slot_by_index(1, PTypeInterpolate::Linear);
+    g2->set_slot_by_index(2, PTypeTimeContext::Samples);
     
     // trig, cycle, exponent
     Inj<SampleT>({0, 1, 1}) >> g2;
@@ -1425,31 +1446,194 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_b) {
     g2 >> gbuf;
     
     gbuf->render(1);
+    //gbuf->illustrate_outputs();
+    //gbuf->print_outputs();
+    
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][0], 0, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][1], -.5, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][2], -1, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][3], -.5, .0001);
+    // repeat here
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][4], 0, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][5], -.5, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][6], -1, .0001);    
+}
+
+
+
+BOOST_AUTO_TEST_CASE(aw_bb_integrator_c) {
+    // half a second for looping
+	GenPtr g1 = Gen::make(GenID::BreakPoints);
+
+    // cycle length will be 20 samples, though we will not ever get to the last 0, but interpolat around to 0
+    Inj<SampleT>(
+            {
+                {0, 0},
+                {2, -1},
+                {6, 1},
+                {12, -1},
+                {20, 0},
+            }
+        ) && g1;
+    
+	GenPtr g2 = Gen::make(GenID::BPIntegrator);
+    
+    // set slots all at once
+    Inj<GenPtr>({
+        g1,
+        Gen::make(PTypeInterpolate::Linear),
+        Gen::make(PTypeTimeContext::Samples)}) || g2;
+    
+    // trig, cycle, exponent
+    Inj<SampleT>({0, 1, 1}) >> g2;
+    
+	GenPtr gbuf = Gen::make(GenID::Buffer);
+    Inj<SampleT>({1, .01}) || gbuf; // 1 ch, 441 samps
+    BOOST_CHECK_EQUAL(gbuf->get_frame_size(), 441);
+    
+    g2 >> gbuf;
+    
+    gbuf->render(1);
+    //gbuf->illustrate_outputs();
+    //gbuf->print_outputs();
+    
     BOOST_CHECK_CLOSE(gbuf->outputs[0][2], -1, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[0][3], -.5, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[0][4], 0, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[0][5], .5, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[0][6], 1, .0001);
 
-    BOOST_CHECK_EQUAL(gbuf->get_frame_size(), 441);
-    
-    // TODO: add more tests
-    // cycles at 20 samps, as defined last point at 19
-    //BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][20]), 0);
-    //BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][22]), -1);
-    
+    // checking cycle at 20 amples
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][20]), 0);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][22]), -1);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][26]), 1);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][32]), -1);
+
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][40]), 0);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][42]), -1);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][46]), 1);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][52]), -1);
 
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_bb_integrator_d) {
+    // test triggering of bp shape
+	GenPtr bps = Gen::make(GenID::BreakPoints);
+    Inj<SampleT>({
+                {0, 0},
+                {1, .1},
+                {2, .2},
+                {3, .4},
+                {4, .8},
+                {6, -1},
+                {8,  0},
+        
+            }) && bps;
+    
+	GenPtr bpi = Gen::make(GenID::BPIntegrator);
+    
+    Inj<GenPtr>({
+        bps,
+        Gen::make(PTypeInterpolate::Linear),
+        Gen::make(PTypeTimeContext::Samples)}) || bpi;
+    
+    GenPtr gtrig = Gen::make(GenID::Phasor);
+    Inj<SampleT>({1000}) >> gtrig;
+    // trig, cycle, exponent
+    
+    Inj<SampleT>({0, 0, 1}) >> bpi;
+    // set output 1 from gtrig to input 0 of bpi
+    bpi->set_input_by_index(0, gtrig, 1);
+    
+	GenPtr gbuf = Gen::make(GenID::Buffer);
+    Inj<SampleT>({2, .01}) || gbuf; // 2 ch, 441 samps
+
+    Inj<GenPtr>({gtrig, bpi}) >> gbuf;
+    
+    gbuf->render(1);
+    //gbuf->illustrate_outputs();
+    //gbuf->print_outputs();
+
+    // second output is bpi, first is phasor
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][4], 0.80, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][6], -1.00, .0001);
+    // sustain between pulses is last y
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][10]), 0);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][11]), 0);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][12]), 0);
+    
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][44+4], .8, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][44+6], -1, .0001);
+
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][44+10]), 0);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][44+11]), 0);
+    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][44+12]), 0);
+
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][88+4], .8, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][88+6], -1, .0001);
+    
+}
 
 
+BOOST_AUTO_TEST_CASE(aw_bb_integrator_e) {
+	GenPtr g1 = Gen::make(GenID::BreakPoints);
 
+    Inj<SampleT>(
+            {
+                {0, 0},
+                {20, 1},
+                {40, .5},
+                {60, .25},
+                {80, .75},
+                {100, 0},
+            }
+        ) && g1;
+	GenPtr g2 = Gen::make(GenID::BPIntegrator);
+    
+    Inj<GenPtr>({
+        g1,
+        Gen::make(PTypeInterpolate::Exponential),
+        Gen::make(PTypeTimeContext::Samples)}) || g2;
+    
+    // trig, cycle, exponent
+    Inj<SampleT>({0, 1, 4 }) >> g2;
+    
+	GenPtr gbuf = Gen::make(GenID::Buffer);
+    Inj<SampleT>({1, .01}) || gbuf; // 1 ch, 441 samps
+    
+    g2 >> gbuf;
+    
+    gbuf->render(1);
+    //gbuf->illustrate_outputs();
+    //gbuf->print_outputs();
+    
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][0], 0, .0001);
+    // expoonential, will bow under .5
+    BOOST_CHECK(gbuf->outputs[0][10] < .5);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][20], 1, .0001);
+    // we are bowing out on descent; this might hcange
+    BOOST_CHECK(gbuf->outputs[0][30] > .75);    
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][40], .5, .0001);
+    BOOST_CHECK(gbuf->outputs[0][50] > .375);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][60], .25, .0001);
+    BOOST_CHECK(gbuf->outputs[0][70] < .5);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][80], .75, .0001);
 
-
-
-
-
+    // periodicity
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][100], 0, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][100+20], 1, .0001);
+    
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][200], 0, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][200+20], 1, .0001);
+    
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][300], 0, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][300+20], 1, .0001);
+    
+    // repeat here
+    
+    // 45 - (41.. - 30)
+}
 
 
 

@@ -40,8 +40,10 @@ BOOST_AUTO_TEST_CASE(aw_common_test1) {
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	//std::cout << "running aw_common_test 2" << std::endl;
 	
-	EnvironmentPtr es = EnvironmentPtr(new Environment);
+	//EnvironmentPtr es = EnvironmentPtr(new Environment);
 
+    EnvironmentPtr es = Environment::get_default_env();
+    
 	std::string fp = es->get_fp_temp("test.txt");
 	std::string match("test.txt");
 	// give starting position, in source, length of target, target
@@ -129,8 +131,8 @@ BOOST_AUTO_TEST_CASE(aw_test_phase_limiter_a) {
 
 BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
-    EnvironmentPtr e1 = Environment::make();
-    BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
+//    EnvironmentPtr e1 = Environment::make();
+//    BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
 
     EnvironmentPtr e2 = Environment::make_with_frame_size(128);
     BOOST_CHECK_EQUAL(e2->get_common_frame_size(), 128);
@@ -139,8 +141,30 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 }	
 
 
+BOOST_AUTO_TEST_CASE(aw_test_environment_2) {
+    // test setting and making the default environment
+    EnvironmentPtr e1 = Environment::get_default_env();
+    BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
+
+    EnvironmentPtr e2 = Environment::make_with_frame_size(128);
+    Environment::set_default_env(e2);
+    EnvironmentPtr e3 = Environment::get_default_env();
+    BOOST_CHECK_EQUAL(e3->get_common_frame_size(), 128);
+    
+    // call with no args to clear newly set value
+    Environment::set_default_env();
+
+}	
 
 
+BOOST_AUTO_TEST_CASE(aw_test_rounded) {
+
+    BOOST_CHECK_EQUAL(rounded(1.5), 2);
+    BOOST_CHECK_EQUAL(rounded(1.4), 1);
+    BOOST_CHECK_EQUAL(rounded(-1.4), -1);
+    BOOST_CHECK_EQUAL(rounded(-1.5), -2);
+    
+}
 
 
 
@@ -198,122 +222,7 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
     BOOST_CHECK_EQUAL(post[0], 3);
     BOOST_CHECK_EQUAL(post[1], 6);
     BOOST_CHECK_EQUAL(post[2], 2);
-
-
-
 }
-
-
-
-
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_test_to_lower) {
-//
-//    std::string a("TESTing asdf SDF");
-//    to_lower(a);
-//    BOOST_CHECK_EQUAL(a, "testing asdf sdf");
-//}
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_test_split) {
-//
-//    std::vector<std::string> post;
-//    std::string a("1, 4.3, 1.2");
-//    
-//    split(a, ',', post);
-//    
-//    BOOST_CHECK_EQUAL(post[0], "1");
-//    BOOST_CHECK_EQUAL(post[1], " 4.3");
-//    BOOST_CHECK_EQUAL(post[2], " 1.2");
-//    
-//}
-//
-//
-//BOOST_AUTO_TEST_CASE(aw_test_remove) {
-//
-//    std::string a("1, 4.3, 1.2");
-//    remove(a, ',');
-//    BOOST_CHECK_EQUAL(a, "1 4.3 1.2");
-//    remove(a, ' ');
-//    BOOST_CHECK_EQUAL(a, "14.31.2");
-//    
-//}
-//
-
-//BOOST_AUTO_TEST_CASE(string_to_vector) {
-//    std::string a("1, 4.3, 1.2");
-//
-//    std::vector<SampleT> post;
-//    
-//    string_to_vector<SampleT>(a, post);
-//    
-//    BOOST_CHECK_EQUAL(post[0], 1);
-//    BOOST_CHECK_EQUAL(post[1], 4.3);
-//    BOOST_CHECK_EQUAL(post[2], 1.2);
-//
-//    // TODO: make this work
-//    std::string b("1, (4.3, 1.2)");
-//
-//    post.clear();
-//    string_to_vector<SampleT>(b, post, ',', "()");
-//
-//    BOOST_CHECK_EQUAL(post[0], 1);
-//    BOOST_CHECK_EQUAL(post[1], 4.3);
-//    BOOST_CHECK_EQUAL(post[2], 1.2);
-//
-//}
-
-//
-//
-//
-//BOOST_AUTO_TEST_CASE(as_test_nested_width) {
-//
-//    BOOST_CHECK_EQUAL(
-//        nested_width("1, 4.3, 1.2", ',', '(', ')'),
-//        3);
-//
-//    BOOST_CHECK_EQUAL(
-//        nested_width("1, 2, 3, 20, 5", ',', '(', ')'),
-//        5);
-//
-//    BOOST_CHECK_EQUAL(
-//        nested_width("(1, 2), (3, 20), (5, 120)", ',', '(', ')'),
-//        2);
-//
-//    BOOST_CHECK_EQUAL(
-//        nested_width("(1, 4), (1, 2)", ',', '(', ')'),
-//        2);
-//    BOOST_CHECK_EQUAL(
-//        nested_width("(1, 4, 3), (1, 2, 2)", ',', '(', ')'),
-//        3);
-//
-//    BOOST_CHECK_EQUAL(
-//        nested_width("((1, 4, 3), (0, 0, 0), (1, 2, 2))", ',', '(', ')'),
-//        3);
-//
-//    // commas between groups are not required
-//    BOOST_CHECK_EQUAL(
-//        nested_width("((1, 4, 3) (0, 0, 0) (1, 2, 2))",
-//        ',', '(', ')'),
-//        3);
-//
-//    BOOST_REQUIRE_THROW(
-//            nested_width("(1, 4, 3), (2, 2)", ',', '(', ')'),
-//            std::invalid_argument);
-//
-////    std::cout << "here: " << (int)nested_width("(1,), (2, 2)", ',', '(', ')') << std::endl;
-//    BOOST_REQUIRE_THROW(
-//            nested_width("(1,), (2, 2)", ',', '(', ')'),
-//            std::invalid_argument);
-//
-//
-//}
-//
-//
-
-
 
 
 
