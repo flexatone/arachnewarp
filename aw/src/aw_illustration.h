@@ -1,5 +1,5 @@
-#ifndef _AW_PLOTTER_H_
-#define _AW_PLOTTER_H_
+#ifndef _AW_ILLUSTRATION_H_
+#define _AW_ILLUSTRATION_H_
 
 #include <memory>
 #include <vector>
@@ -97,4 +97,4 @@ class NetworkGraph : public Illustration{
 
 } // end namespace aw
 
-#endif // ends _AW_PLOTTER_H_
+#endif // ends _AW_ILLUSTRATION_H_

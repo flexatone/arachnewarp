@@ -1,5 +1,4 @@
-#ifndef _AW_ILLUSTRATION_H_
-#define _AW_ILLUSTRATION_H_
+
 
 #include <cstdio> // for popen and related 
 
@@ -325,6 +324,5 @@ void NetworkGraph :: pipe() {
 
 
 } // end namespace aw
-#endif // ends _AW_ILLUSTRATION_H_
 
 

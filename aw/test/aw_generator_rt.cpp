@@ -15,6 +15,8 @@
 
 // ----------------------------------------------------------------------------
 
+using namespace aw;
+
 
 // Some constants:
 const int NUM_SECONDS = 5;
@@ -27,27 +29,25 @@ const int FRAMES_PER_BUFFER = 64;
 // a wrapper for calling arachnewarp generators
 class AWPerformer {
 public:
-    aw::GenPtr root_gen;
-    aw::RenderCountT render_count;
+    GenPtr root_gen;
+    RenderCountT render_count;
     
 	explicit AWPerformer() :
             render_count(0) {
 
         // setup objects
-        aw::EnvironmentPtr e = aw::Environment::make_with_frame_size(
+        EnvironmentPtr e = Environment::make_with_frame_size(
                 FRAMES_PER_BUFFER);
-
-        aw::GenPtr g1 = aw::Gen::make_with_environment(
-                aw::GenID::Sine, e);
-        220 >> g1;
+        Environment::set_default_env(e);
         
+        
+        GenPtr g1 = Gen::make(GenID::Sine);
+        220 >> g1;
         // rate of fm
-        aw::GenPtr gmod = aw::Gen::make_with_environment(
-                aw::GenID::Sine, e);
+        GenPtr gmod = Gen::make(GenID::Sine);
         8 >> gmod;
 
-        aw::GenPtr gmap = aw::Gen::make_with_environment(
-                aw::GenID::Map, e);
+        GenPtr gmap = Gen::make(GenID::Map);
         // source
         gmap->set_input_by_index(0, gmod);
         gmap->set_input_by_index(1, -1);
@@ -57,12 +57,10 @@ public:
         gmap->set_input_by_index(4, 880-440);
         
         
-        aw::GenPtr g2 = aw::Gen::make_with_environment(
-                aw::GenID::Sine, e);
+        GenPtr g2 = Gen::make(GenID::Sine);
         gmap >> g2;
 
-        aw::GenPtr genv = aw::Gen::make(
-                aw::GenID::AttackDecay);
+        GenPtr genv = Gen::make(GenID::AttackDecay);
         genv->set_input_by_index(1, .25); // atack/decay in sec
         genv->set_input_by_index(2, .25);
         genv->set_input_by_index(4, 1); // self cycle mode
@@ -103,9 +101,7 @@ public:
 
 // ---------------------------------------------------------------------------
 // main:
-int main(int, char *[]);
-int main(int, char *[])
-{
+int main(int, char *[]) {
 	try
 	{
 		// Create a SineGenerator object:

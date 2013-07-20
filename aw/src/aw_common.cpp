@@ -82,6 +82,11 @@ const char* get_fp_home() {
 //==============================================================================
 // utility classes
 
+
+
+// must initialize private static member attribute in impl file
+Random::_Core Random::_core = Random::_Core();
+
 // must initialize private static member attribute in impl file
 EnvironmentPtr Environment::_default_env = nullptr;
 

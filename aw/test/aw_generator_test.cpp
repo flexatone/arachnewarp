@@ -1504,15 +1504,15 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_c) {
     BOOST_CHECK_CLOSE(gbuf->outputs[0][6], 1, .0001);
 
     // checking cycle at 20 amples
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][20]), 0);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][22]), -1);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][26]), 1);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][32]), -1);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][20]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][22]), -1);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][26]), 1);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][32]), -1);
 
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][40]), 0);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][42]), -1);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][46]), 1);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[0][52]), -1);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][40]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][42]), -1);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][46]), 1);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[0][52]), -1);
 
 }
 
@@ -1559,16 +1559,16 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_d) {
     BOOST_CHECK_CLOSE(gbuf->outputs[1][4], 0.80, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[1][6], -1.00, .0001);
     // sustain between pulses is last y
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][10]), 0);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][11]), 0);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][12]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[1][10]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[1][11]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[1][12]), 0);
     
     BOOST_CHECK_CLOSE(gbuf->outputs[1][44+4], .8, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[1][44+6], -1, .0001);
 
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][44+10]), 0);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][44+11]), 0);
-    BOOST_CHECK_EQUAL(rounded(gbuf->outputs[1][44+12]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[1][44+10]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[1][44+11]), 0);
+    BOOST_CHECK_EQUAL(std::round(gbuf->outputs[1][44+12]), 0);
 
     BOOST_CHECK_CLOSE(gbuf->outputs[1][88+4], .8, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[1][88+6], -1, .0001);
