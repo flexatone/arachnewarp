@@ -12,6 +12,7 @@
 #include <memory>
 #include <unordered_map>
 #include <initializer_list>
+#include <random>
 
 #include <boost/filesystem.hpp>
 #include <boost/exception/all.hpp> // needed for filesystem?
@@ -93,6 +94,10 @@ SampleT const TRIG_THRESH(.99999);
 std::uint8_t const INDENT_SIZE(2);
 
 
+
+
+
+
 // functions ===================================================================
 
 //! Escape one or more characters privided by a string and a single prefix. Changes are made in place to the passed in string. 
@@ -170,15 +175,6 @@ inline SampleT mtof(SampleT f) {
     else if (f > 1499) return mtof(1499);
     else return pow(2, (f-69) / 12.0) * 440.0;
 }
-
-
-//! Round a SampleT to the nearest int-like Sample T
-inline SampleT rounded(SampleT x){
-    return x > 0.0 ? std::floor(x + 0.5) : std::ceil(x - 0.5);
-}
-
-
-
 
 
     
@@ -270,6 +266,50 @@ inline SampleT rounded(SampleT x){
 
 
 // utility classes =============================================================
+
+
+//! Utility class for sourcing random values using static functions. 
+class Random {
+    private://-----------------------------------------------------------------
+
+    //! Struct storage of core engines and distributions, shared across by a single static instance.
+    struct _Core {
+        // basic and high-precision engeinges
+        std::minstd_rand re_lin_congruential {std::random_device{}()};
+        std::mt19937 re_marsenne {std::random_device{}()};
+        
+        // useful distributions
+        std::uniform_real_distribution<SampleT> uniform_dist {0, 1};
+
+    };
+
+    //! Core random engines and distributions, shared by a single static attribute. Initialized in implementation file.
+    static _Core _core;
+
+    public://-------------------------------------------------------------------
+    
+    //! A random unform distribution between 0 and 1. 
+    static inline SampleT uniform() {
+        return _core.uniform_dist(_core.re_lin_congruential);
+    }
+
+    //! Probabilistic rounding for a number to nearest integer based on random weighting.
+    static inline SampleT round(SampleT v) {
+        // need just the floating point component
+        SampleT v_tail = v - std::floor(v);
+        // e.g.: if les then .7, then ceil, else foloor
+        if (_core.uniform_dist(_core.re_lin_congruential) <= v_tail) {
+            return std::ceil(v);
+        }
+        else {
+            return std::floor(v);
+        }
+    }
+    
+    
+};
+
+
 
 class Environment;
 //! The shared Environment is always const: it cannot be changed from the outside.

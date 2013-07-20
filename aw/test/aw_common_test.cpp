@@ -159,10 +159,10 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_2) {
 
 BOOST_AUTO_TEST_CASE(aw_test_rounded) {
 
-    BOOST_CHECK_EQUAL(rounded(1.5), 2);
-    BOOST_CHECK_EQUAL(rounded(1.4), 1);
-    BOOST_CHECK_EQUAL(rounded(-1.4), -1);
-    BOOST_CHECK_EQUAL(rounded(-1.5), -2);
+    BOOST_CHECK_EQUAL(std::round(1.5), 2);
+    BOOST_CHECK_EQUAL(std::round(1.4), 1);
+    BOOST_CHECK_EQUAL(std::round(-1.4), -1);
+    BOOST_CHECK_EQUAL(std::round(-1.5), -2);
     
 }
 
@@ -212,10 +212,7 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_b) {
 }
 
 
-
-
 BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
-
     Inj<SampleT> bi({3, 6, 2, 3, 5});
     std::vector<SampleT> post;
     bi.fill_interleaved(post);
@@ -223,6 +220,38 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
     BOOST_CHECK_EQUAL(post[1], 6);
     BOOST_CHECK_EQUAL(post[2], 2);
 }
+
+
+BOOST_AUTO_TEST_CASE(aw_random_a) {
+
+    std::list<int> col;
+    for (int x=0;x<5;++x) {
+//        std::cout << "Random::uniform(): " << Random::uniform() << std::endl;
+        col.push_back(Random::uniform());
+    }
+    for (int x=0;x<10;++x) {
+//        std::cout << "Random::round(11.7): " << Random::round(11.7) << std::endl;
+        col.push_back(Random::round(11.7));
+        
+    }
+    for (int x=0;x<10;++x) {
+//        std::cout << "Random::round(8.1): " << Random::round(8.1) << std::endl;
+        col.push_back(Random::round(8.1));
+        
+    }
+    
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
