@@ -7,7 +7,6 @@
 #include "aw_generator.h"
 
 
-
 namespace aw {
 
 
