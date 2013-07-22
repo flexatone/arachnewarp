@@ -72,7 +72,7 @@ PType :: PType() {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const PType& pt) {
-    ostream << "<PType: " << pt._class_name << ": " << pt._instance_name << ">";
+    ostream << pt._class_name << ": " << pt._instance_name << ">";
     return ostream; 
 }
 
@@ -1070,10 +1070,6 @@ void Constant :: add_input_by_index(PIndexT i, SampleT v, PIndexT pos){
 }
 
 
-
-
-
-
 //------------------------------------------------------------------------------
 _BinaryCombined :: _BinaryCombined(EnvironmentPtr e) 
 	// must initialize base class with passed arg
@@ -1081,8 +1077,6 @@ _BinaryCombined :: _BinaryCombined(EnvironmentPtr e)
 	_n_opperands(0) { // end intitializer list
     _frame_size_is_resizable = false;
     // the following need to be set in derived classes
-//	_class_name = "Add";
-//    _class_id = GenID::Add;
     _op_switch = '+';
     _n_opperands_init = 0; // must be 1
 }
