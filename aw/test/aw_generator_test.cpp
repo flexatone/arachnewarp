@@ -1630,12 +1630,16 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_e) {
     BOOST_CHECK_CLOSE(gbuf->outputs[0][300], 0, .0001);
     BOOST_CHECK_CLOSE(gbuf->outputs[0][300+20], 1, .0001);
     
-    // repeat here
-    
-    // 45 - (41.. - 30)
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_white_1) {
+    // half a second for looping
+	GenPtr g1 = Gen::make(GenID::White);
+	g1->render(1);
+	//g1->illustrate_outputs();
+
+}
 
 
 

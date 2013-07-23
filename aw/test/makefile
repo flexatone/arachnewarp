@@ -1,5 +1,3 @@
-CC=g++-4.7 -std=c++11
-
 # this is the abs directory for this file 
 # TOP := $(dir $(CURDIR)/$(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST)))
 
@@ -14,11 +12,13 @@ UNAME := $(shell uname)
 # this is for basic compiling to .o files
 
 ifeq ($(UNAME), Darwin)
+	CC=g++-4.7 -std=c++11
 	CFLAGS=-I $(PATH_TO_SRC) -c -Wall 
 	CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -Wall -g 
 endif
 ifeq ($(UNAME), Linux)
 	# need: % export LD_LIBRARY_PATH=/usr/local/lib
+	CC=LD_LIBRARY_PATH=/usr/local/lib g++-4.7 -std=c++11
 	# add -L/usr/local/lib to get most-recent boost headers
 	CFLAGS=-I $(PATH_TO_SRC) -L /usr/local/lib -c -Wall 	
 	CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -L /usr/local/lib -Wall -g 
