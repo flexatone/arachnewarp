@@ -27,7 +27,8 @@ enum class GenID {
     Phasor,
     Sine,
     Map,
-    AttackDecay
+    AttackDecay,
+    White,
 };
 
 
@@ -1214,6 +1215,29 @@ class AttackDecay: public Gen {
 
 
 	
+//=============================================================================
+//! A white-npose generator
+class White;
+typedef std::shared_ptr<White> WhitePtr;
+class White: public Gen {
+
+    private://-----------------------------------------------------------------
+    OutputsSizeT _i;
+        
+    public://------------------------------------------------------------------
+    explicit White(EnvironmentPtr);
+    
+    virtual void init();
+            
+    virtual void reset();
+    
+    //! Perform the noise
+    virtual void render(RenderCountT f);
+};
+
+
+
+
 
 
 

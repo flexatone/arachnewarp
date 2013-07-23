@@ -229,6 +229,10 @@ BOOST_AUTO_TEST_CASE(aw_random_a) {
 //        std::cout << "Random::uniform(): " << Random::uniform() << std::endl;
         col.push_back(Random::uniform());
     }
+    for (int x=0;x<5;++x) {
+        //std::cout << "Random::uniform_bi_polar(): " << Random::uniform_bi_polar() << std::endl;
+        col.push_back(Random::uniform_bi_polar());
+    }    
     for (int x=0;x<10;++x) {
 //        std::cout << "Random::round(11.7): " << Random::round(11.7) << std::endl;
         col.push_back(Random::round(11.7));

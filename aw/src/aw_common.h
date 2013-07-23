@@ -94,10 +94,6 @@ SampleT const TRIG_THRESH(.99999);
 std::uint8_t const INDENT_SIZE(2);
 
 
-
-
-
-
 // functions ===================================================================
 
 //! Escape one or more characters privided by a string and a single prefix. Changes are made in place to the passed in string. 
@@ -281,6 +277,8 @@ class Random {
         // useful distributions
         std::uniform_real_distribution<SampleT> uniform_dist {0, 1};
 
+        std::uniform_real_distribution<SampleT> uniform_dist_bi_polar {-1, 1};
+
     };
 
     //! Core random engines and distributions, shared by a single static attribute. Initialized in implementation file.
@@ -293,6 +291,10 @@ class Random {
         return _core.uniform_dist(_core.re_lin_congruential);
     }
 
+    static inline SampleT uniform_bi_polar() {
+        return _core.uniform_dist_bi_polar(_core.re_lin_congruential);
+
+    }
     //! Probabilistic rounding for a number to nearest integer based on random weighting.
     static inline SampleT round(SampleT v) {
         // need just the floating point component

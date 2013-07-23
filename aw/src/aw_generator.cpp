@@ -207,6 +207,9 @@ GenPtr Gen :: make_with_environment(GenID q, EnvironmentPtr e) {
     else if (q == GenID::AttackDecay) {
         g = AttackDecayPtr(new AttackDecay(e));
     }
+    else if (q == GenID::White) {
+        g = WhitePtr(new White(e));
+    }
     else {
         std::stringstream msg;
         msg << "no matching GenID" << str_file_line(__FILE__, __LINE__);
@@ -2134,6 +2137,43 @@ void AttackDecay :: render(RenderCountT f) {
 }
 
 
+
+
+
+
+//-----------------------------------------------------------------------------
+White :: White(EnvironmentPtr e) 
+    : Gen(e) {
+    _class_name = "White";
+    _class_id = GenID::White;
+}
+
+void White :: init() {
+    // the init must configure the names and types of parameters
+    Gen::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+    
+    // register output
+    PTypePtr pt_o1 = PType::make(PTypeID::Value);
+    pt_o1->set_instance_name("Output");
+    _register_output_parameter_type(pt_o1);
+    
+    //set_default();
+    reset();
+}
+
+void White :: reset() {
+    Gen::reset();
+}
+
+void White :: render(RenderCountT f) {
+    while (_render_count < f) {
+        for (_i=0; _i < _frame_size; ++_i) {
+            outputs[0][_i] = Random::uniform_bi_polar();
+        }
+        _render_count += 1;
+    }
+}
 
 
 
