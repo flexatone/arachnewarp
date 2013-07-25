@@ -164,7 +164,8 @@ class PTypeTrigger: public PType {
 class PTypeCycle;
 typedef std::shared_ptr<PTypeCycle> PTypeCyclePtr;
 //! An impulse or trigger, or a single sample at 1.
-class PTypeCycle: public PType {    public://------------------------------------------------------------------
+class PTypeCycle: public PType {    
+    public://------------------------------------------------------------------
     explicit PTypeCycle();
 };
 
@@ -238,12 +239,6 @@ class PTypeTimeContext: public PType {
     };
     
 };
-
-
-
-
-
-
 
 
 
@@ -1047,10 +1042,6 @@ class BPIntegrator: public Gen {
 };
 
 
-
-
-
-
 //=============================================================================
 //! The phasor has a ramp from 0 to 1 for each _output_count defined. Only the first _output_count of multiple dimensional inputs is used. 
 class Phasor;
@@ -1082,8 +1073,6 @@ class Phasor: public Gen {
 	//! Render the phasor. 
     virtual void render(RenderCountT f);
 };
-
-
 
 
 //=============================================================================
@@ -1123,7 +1112,6 @@ class Sine: public Gen {
 	//! Render the pure sine..
     virtual void render(RenderCountT f);
 };
-
 
 
 //=============================================================================
@@ -1216,7 +1204,7 @@ class AttackDecay: public Gen {
 
 	
 //=============================================================================
-//! A white-npose generator
+//! A white-noise generator.
 class White;
 typedef std::shared_ptr<White> WhitePtr;
 class White: public Gen {
