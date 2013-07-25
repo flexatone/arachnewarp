@@ -2008,7 +2008,7 @@ void AttackDecay :: init() {
     _register_input_parameter_type(pt_i4);
 	_input_index_exponent = 3;
 
-    PTypePtr pt_i5 = PType::make(PTypeID::Value);
+    PTypePtr pt_i5 = PType::make(PTypeID::Cycle);
     pt_i5->set_instance_name("Cycle on or off");
     _register_input_parameter_type(pt_i5);
 	_input_index_cycle = 4;
@@ -2135,10 +2135,6 @@ void AttackDecay :: render(RenderCountT f) {
     }
     
 }
-
-
-
-
 
 
 //-----------------------------------------------------------------------------
