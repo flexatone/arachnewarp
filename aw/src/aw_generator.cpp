@@ -1791,21 +1791,18 @@ void Sine :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    PTypePtr pt1 = PType::make( 
-            PTypeID::Frequency);                                       
+    PTypePtr pt1 = PType::make(PTypeID::Frequency);                                       
     pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    PTypePtr pt2 = PType::make( 
-            PTypeID::Phase);
+    PTypePtr pt2 = PType::make(PTypeID::Phase);
     pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;
     
 	// register output
-    PTypePtr pt_o1 = PType::make(
-            PTypeID::Value);
+    PTypePtr pt_o1 = PType::make(PTypeID::Value);
     pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
