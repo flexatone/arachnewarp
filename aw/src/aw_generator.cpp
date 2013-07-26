@@ -1845,6 +1845,10 @@ void Sine :: render(RenderCountT f) {
             if (_summed_inputs[_input_index_frequency][_i] != _cur_fq) {
                 _cur_fq = _summed_inputs[_input_index_frequency][_i];
                 // could pre-callc 2 pi over sr
+                // find scalar (proportion) of how much each processing sample is of a cycle
+                // e.g., fq 441 in 44100 sr, each proc sample is .01 of a complete osc
+                // if time context is samples, 100 means a .01 scalar; thus 1 / samples
+                // if time context is seconds, 1 / (sec * sr) # check this
                 _angle_increment = PI2 * _cur_fq / _sampling_rate;
             }
             _cur_phase += _angle_increment;
