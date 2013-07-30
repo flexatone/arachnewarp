@@ -144,7 +144,6 @@ inline SampleT double_limiter(SampleT src, SampleT min,
 }
 
 
-
 //! Detect and assign true min / max, based on comparison. Min and max are set by passing in pointers to to the value that are set in place.
 inline void true_min_max(
         SampleT lower,
@@ -307,9 +306,20 @@ class Random {
             return std::floor(v);
         }
     }
-    
-    
 };
+
+
+
+class IndexIterator {
+    //std::random_shuffle(cards_.begin(), cards_.end())
+    // create with a given length size
+    // take an a parameter to control Direction
+};
+
+
+
+
+
 
 
 
