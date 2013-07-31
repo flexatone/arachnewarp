@@ -76,24 +76,24 @@ typedef std::unordered_map<std::string, bool> MapStringBool;
 typedef std::shared_ptr<MapStringBool> SharedMapStringBool;
 
 
-SampleT const PI(3.14159265358979323846264338);
-SampleT const PI2(3.14159265358979323846264338 * 2.0);
-SampleT const LOGTWO(0.69314718055994528623);
-SampleT const LOGTEN(2.302585092994);
+SampleT const PI {3.14159265358979323846264338};
+SampleT const PI2 {3.14159265358979323846264338 * 2.0};
+SampleT const LOGTWO {0.69314718055994528623};
+SampleT const LOGTEN {2.302585092994};
 
 //! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
 SampleT const MIN_FQ {.00001};
 
 // -120 dB, or pow(10, -120/20), or 1e-06
-SampleT const MIN_AMP(.000001);
+SampleT const MIN_AMP {.000001};
 
 
 //! The trigger threshold, or the value above which we determine that we have a trigger.
-SampleT const TRIG_THRESH(.99999);
+SampleT const TRIG_THRESH {.99999};
 
 
 //! Defined for all text-based hierarchical displays. 
-std::uint8_t const INDENT_SIZE(2);
+std::uint8_t const INDENT_SIZE {2};
 
 
 // functions ===================================================================

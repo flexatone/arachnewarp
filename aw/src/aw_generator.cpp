@@ -175,7 +175,26 @@ PTypeTimeContext :: PTypeTimeContext() {
 
 DirectedIndex :: DirectedIndex(FrameSizeT size) 
     : _size{size}  {
+    if (_size <= _max_size_for_random_permutation) {
+        _can_use_random_permutation = true;
+        _indices.resize(_size, 0); // initialize to zero and size
+
+    }
+    else {
+        _can_use_random_permutation = false;
+    }
+    reset();    
 }
+
+
+DirectedIndex :: reset() {
+    if (_direction == PTypeDirection::Opt::Reverse) {
+        _last_value = 0; // make next size
+    }
+    else {
+        _last_value = _size; // make next zero
+    }
+} 
 
 
 //-----------------------------------------------------------------------------
