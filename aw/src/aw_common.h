@@ -4,11 +4,12 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <limits>
 #include <list>
 #include <algorithm>
 #include <iostream>
 #include <cmath>
-#include <cstdint> // has uint32_t
+#include <cstdint>
 #include <memory>
 #include <unordered_map>
 #include <initializer_list>
@@ -43,6 +44,7 @@ typedef std::vector<VSampleT> VVSampleT;
 
     
 //! The size of a single frame (or vector), or the number of samples processed per computation cycle or stored in a single channel of output data. This is a very large integer as we might need to accomodate loading in large audio files as a single frame.
+// 32 bit int is 2,147,483,647, which gives over 13.5 hours at 44.1 sr
 typedef std::uint32_t FrameSizeT;
 
 //! Output size. Was uint16_t, but for handling audio files was increased to uint32_t. In general, the outputs is the frame size times the number of outputs, so outputs is always greater than or equal to frame size. 
@@ -80,7 +82,7 @@ SampleT const LOGTWO(0.69314718055994528623);
 SampleT const LOGTEN(2.302585092994);
 
 //! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
-SampleT const MIN_FQ(.00001);
+SampleT const MIN_FQ {.00001};
 
 // -120 dB, or pow(10, -120/20), or 1e-06
 SampleT const MIN_AMP(.000001);
@@ -307,15 +309,6 @@ class Random {
         }
     }
 };
-
-
-
-class IndexIterator {
-    //std::random_shuffle(cards_.begin(), cards_.end())
-    // create with a given length size
-    // take an a parameter to control Direction
-};
-
 
 
 

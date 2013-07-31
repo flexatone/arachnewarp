@@ -222,7 +222,6 @@ class PTypeInterpolate: public PType {
     
 };
 
-
 //! A parameter (used as a slot) to select time context forn break-point segments.
 class PTypeTimeContext;
 typedef std::shared_ptr<PTypeTimeContext> PTypeTimeContextPtr;
@@ -239,6 +238,84 @@ class PTypeTimeContext: public PType {
     };
     
 };
+
+
+class PTypeDirection;
+typedef std::shared_ptr<PTypeDirection> PTypeDirectionPtr;
+class PTypeDirection: public PType {
+    public://------------------------------------------------------------------
+    explicit PTypeDirection();
+    
+    enum Opt {
+        Forward,
+        Reverse,
+        Cycle,
+        RandomSelect,
+        RandomWalk,
+        RandomPermutate,
+    };
+    inline static Opt resolve(SampleT x) {
+        return x < 0.5 ? Forward :
+                x < 1.5 ? Reverse :
+                x < 2.5 ? Cycle :
+                x < 3.5 ? RandomSelect :
+                x < 4.5 ? RandomWalk :
+                RandomPermutate; // if out of upper range
+    };
+    
+};
+
+
+
+
+//=============================================================================
+//! Utility class for managing directions of indices. Used in Counter and Sequncer generators.
+class DirectedIndex {
+    //std::random_shuffle(cards_.begin(), cards_.end())
+    // create with a given length size
+    // take an a parameter to control Direction
+    private:
+
+    //! If we permit random permutation, we have to store all indices
+    std::vector<FrameSizeT> _indices;
+
+    //! If size is zero, we assume max size for this type. We set size at creation and do not change it.
+    FrameSizeT _size;
+
+    //! Store the last value returned; in random permutation, we store the index used.
+    FrameSizeT _last_value;
+
+    //! The max size is the largest int available. 
+    const static FrameSizeT _max {std::numeric_limits<FrameSizeT>::max()};
+
+    //! If the size is greater than this value, requests for random permutation will degrade to random choice. Experiment to find optimum value. 
+    const static FrameSizeT _max_size_for_random_permutation {1000}; 
+
+    //! Direction is an old-style enum. 
+    PTypeDirection::Opt _direction;
+
+
+    public:
+    explicit DirectedIndex(FrameSizeT size);
+
+    // if we pass in last, we can do random walk, forward, backward, random 
+    FrameSizeT next();
+
+    //! The reset returns the index to first postion, which is always zero.  
+    void reset();
+
+    //! Must be able to set direction at any time; this does not reset.
+    void set_direction(PTypeDirection::Opt d) {_direction = d;};
+
+};
+
+
+
+
+
+
+
+
 
 
 

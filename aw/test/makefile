@@ -18,7 +18,7 @@ ifeq ($(UNAME), Darwin)
 endif
 ifeq ($(UNAME), Linux)
 	# need: % export LD_LIBRARY_PATH=/usr/local/lib
-	CC=LD_LIBRARY_PATH=/usr/local/lib g++-4.7 -std=c++11
+	CC=export LD_LIBRARY_PATH=/usr/local/lib; g++-4.7 -std=c++11
 	# add -L/usr/local/lib to get most-recent boost headers
 	CFLAGS=-I $(PATH_TO_SRC) -L /usr/local/lib -c -Wall 	
 	CFLAGS_TEST=-I $(PATH_TO_SRC) -DSTAND_ALONE -L /usr/local/lib -Wall -g 
