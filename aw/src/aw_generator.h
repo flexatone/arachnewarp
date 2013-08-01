@@ -466,8 +466,10 @@ class Gen: public std::enable_shared_from_this<Gen> {
     static GenPtr make(SampleT);
 
 
-    // TODO: add make with sample SampleT for easy constant creation
-
+    //! Produce documentation for all generators. 
+    static void doc();
+    
+    
     public://------------------------------------------------------------------
 
 	//! Main constructor that takes a generator config.
@@ -543,6 +545,10 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     GenID get_class_id() const {return _class_id;};
 
+    
+    PTypePtr get_output_parameter_type(PIndexT i) {
+        return _output_parameter_type[i];
+    };
 
 	// display ...............................................................    
     //! Print the outputs buffer for all dimensions at the current render count. The optional start/end values can specify vaules within the frame range
@@ -647,8 +653,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
   
   
     //! Get a vector of GenPtr for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
-    virtual VGenPtrOutPair get_input_gens_by_index(
-            PIndexT i);
+    virtual VGenPtrOutPair get_input_gens_by_index(PIndexT i);
 
     //! Remove all GenPtr attacked to all inputs.
     void clear_inputs();

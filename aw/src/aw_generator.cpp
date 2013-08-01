@@ -187,7 +187,7 @@ DirectedIndex :: DirectedIndex(FrameSizeT size)
 }
 
 
-DirectedIndex :: reset() {
+void DirectedIndex :: reset() {
     if (_direction == PTypeDirection::Opt::Reverse) {
         _last_value = 0; // make next size
     }
@@ -261,6 +261,33 @@ GenPtr Gen :: make(SampleT v){
     GenPtr c = make_with_environment(GenID::Constant, e);
     c->set_input_by_index(0, v);
     return c;
+}
+
+
+void Gen :: doc() {
+    std::vector<GenID> gen_ids {
+        GenID::Constant,
+        GenID::Add,
+        GenID::Multiply,
+        GenID::Buffer,
+        GenID::BreakPoints,
+        GenID::BPIntegrator,
+        GenID::Phasor,
+        GenID::Sine,
+        GenID::Map,
+        GenID::AttackDecay,
+        GenID::White,
+    };
+    
+    for (auto gid : gen_ids) {
+        GenPtr g = make(gid);
+        std::cout << GREEN << g->get_class_name() << std::endl;
+        for (PIndexT i=0; i < g->get_output_count(); ++i) {
+            PTypePtr p = g->get_output_parameter_type(i);
+            std::cout << BLUE << p->get_class_name()
+                << '\t' << RESET << p->get_instance_name() << std::endl;
+        }
+    }
 }
 
 
