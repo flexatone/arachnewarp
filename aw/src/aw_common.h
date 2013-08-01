@@ -96,6 +96,13 @@ SampleT const TRIG_THRESH {.99999};
 std::uint8_t const INDENT_SIZE {2};
 
 
+const char GREEN[]   = "\x1b[32m";
+const char RESET[] = "\x1b[0m";
+const char BLUE[] = "\x1b[34m";
+
+
+
+   
 // functions ===================================================================
 
 //! Escape one or more characters privided by a string and a single prefix. Changes are made in place to the passed in string. 
