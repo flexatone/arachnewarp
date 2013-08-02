@@ -266,26 +266,42 @@ GenPtr Gen :: make(SampleT v){
 
 void Gen :: doc() {
     std::vector<GenID> gen_ids {
-        GenID::Constant,
         GenID::Add,
-        GenID::Multiply,
+        GenID::AttackDecay,        
         GenID::Buffer,
         GenID::BreakPoints,
         GenID::BPIntegrator,
+        GenID::Constant,          
+        GenID::Map,        
+        GenID::Multiply,
         GenID::Phasor,
         GenID::Sine,
-        GenID::Map,
-        GenID::AttackDecay,
         GenID::White,
     };
     
     for (auto gid : gen_ids) {
         GenPtr g = make(gid);
-        std::cout << GREEN << g->get_class_name() << std::endl;
+        // class header
+        std::cout << BOLDWHITE << g->get_class_name() << RESET << std::endl;
+
+        for (PIndexT i=0; i < g->get_slot_count(); ++i) {
+            PTypePtr p = g->get_slot_parameter_type(i);
+            std::cout << color_embrace(SLOT_SYMBOL, YELLOW)
+                << '\t' << p->get_class_name()
+                << '\t' << p->get_instance_name() << std::endl;
+        }        
+
+        for (PIndexT i=0; i < g->get_input_count(); ++i) {
+            PTypePtr p = g->get_input_parameter_type(i);
+            std::cout << color_embrace(IN_SYMBOL, RED)
+                << '\t' << RESET << p->get_class_name()
+                << '\t' << p->get_instance_name() << std::endl;
+        }        
         for (PIndexT i=0; i < g->get_output_count(); ++i) {
             PTypePtr p = g->get_output_parameter_type(i);
-            std::cout << BLUE << p->get_class_name()
-                << '\t' << RESET << p->get_instance_name() << std::endl;
+            std::cout << color_embrace(OUT_SYMBOL, BLUE)
+                << '\t' << p->get_class_name()
+                << '\t' << p->get_instance_name() << std::endl;
         }
     }
 }
@@ -599,9 +615,9 @@ std::string Gen :: get_label_address() const {
 std::string Gen :: get_label() const {
     std::stringstream s;
     s << "<" << get_label_address() << 
-        " x{" << static_cast<int>(_slot_count) << "}" <<     
-        "i{" << static_cast<int>(_input_count) << "}" <<    
-        "o{" << static_cast<int>(_output_count) << "}" <<         
+        " " << SLOT_SYMBOL << "{" << static_cast<int>(_slot_count) << "}" <<     
+        IN_SYMBOL << "{" << static_cast<int>(_input_count) << "}" <<    
+        OUT_SYMBOL << "{" << static_cast<int>(_output_count) << "}" <<         
         ">";    
     return s.str();
 } 
