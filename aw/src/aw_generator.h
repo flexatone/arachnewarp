@@ -384,8 +384,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     RenderCountT _render_count;
 	
     //! The main storage for PTypePtr instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
-    std::unordered_map<PIndexT,
-                            PTypePtr> _input_parameter_type;	
+    std::unordered_map<PIndexT, PTypePtr> _input_parameter_type;	
 		
     //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
     VVGenPtrOutPair _inputs;
@@ -545,9 +544,17 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     GenID get_class_id() const {return _class_id;};
 
+
+    PTypePtr get_slot_parameter_type(PIndexT i) {
+        return _slot_parameter_type[i];
+    };
     
     PTypePtr get_output_parameter_type(PIndexT i) {
         return _output_parameter_type[i];
+    };
+
+    PTypePtr get_input_parameter_type(PIndexT i) {
+        return _input_parameter_type[i];
     };
 
 	// display ...............................................................    

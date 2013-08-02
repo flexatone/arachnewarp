@@ -95,13 +95,35 @@ SampleT const TRIG_THRESH {.99999};
 //! Defined for all text-based hierarchical displays. 
 std::uint8_t const INDENT_SIZE {2};
 
+const std::string OUT_SYMBOL {"o"};
+const std::string IN_SYMBOL {"i"};
+const std::string SLOT_SYMBOL {"-"};
 
-const char GREEN[]   = "\x1b[32m";
-const char RESET[] = "\x1b[0m";
-const char BLUE[] = "\x1b[34m";
+const std::string RESET {"\033[0m"};
+const std::string BLACK {"\033[30m"};
+const std::string RED {"\033[31m"};
+const std::string GREEN {"\033[32m"};
+const std::string YELLOW {"\033[33m"};
+const std::string BLUE {"\033[34m"};
+const std::string MAGENTA {"\033[35m"};
+const std::string CYAN {"\033[36m"};
+const std::string WHITE[] {"\033[37m"};
+const std::string BOLDBLACK {"\033[1m\033[30m"};
+const std::string BOLDRED {"\033[1m\033[31m"};
+const std::string BOLDGREEN {"\033[1m\033[32m"};
+const std::string BOLDYELLOW {"\033[1m\033[33m"};
+const std::string BOLDBLUE {"\033[1m\033[34m"};
+const std::string BOLDMAGENTA {"\033[1m\033[35m"};
+const std::string BOLDCYAN {"\033[1m\033[36m"};
+const std::string BOLDWHITE {"\033[1m\033[37m"};
 
 
-
+inline std::string color_embrace(std::string body, std::string color, 
+            char left='{', char right='}') {
+    std::stringstream msg;
+    msg << color << left << RESET << body << color << right << RESET;
+    return msg.str();
+}
    
 // functions ===================================================================
 
