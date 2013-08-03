@@ -178,10 +178,12 @@ DirectedIndex :: DirectedIndex(FrameSizeT size)
     if (_size <= _max_size_for_random_permutation) {
         _can_use_random_permutation = true;
         _indices.resize(_size, 0); // initialize to zero and size
-
     }
     else {
         _can_use_random_permutation = false;
+    }
+    if (_size == 0) {
+        _size = _max;
     }
     reset();    
 }
@@ -194,7 +196,57 @@ void DirectedIndex :: reset() {
     else {
         _last_value = _size; // make next zero
     }
+    _forward = true;
 } 
+
+FrameSizeT DirectedIndex :: next() {
+    // handle trivial case of size of 1
+    if (_size == 1) {
+        return 0;
+    }
+
+    if (_direction == PTypeDirection::Opt::Forward) {
+        if (_last_value >= _size-1) {
+            _last_value = 0;
+        }
+        else {
+            ++_last_value;
+        }
+    }
+    else if (_direction == PTypeDirection::Opt::Reverse) {
+        if (_last_value == 0) {
+            _last_value = _size-1;
+        }
+        else {
+            --_last_value;
+        }         
+    }
+    else if (_direction == PTypeDirection::Opt::Cycle) {
+        if (_last_value == _size) { // triggers reset
+            _last_value = 0;
+            _forward = true;
+        }
+        else if (_last_value == _size-1) { // triggers reset
+            _forward = false;
+        }
+        else if (_last_value == 0) { // triggers reset
+            _forward = true;
+        }
+
+        if (_forward) {
+            ++_last_value;
+        }     
+        else {
+            --_last_value;            
+        }    
+    }
+
+    return _last_value;
+}
+
+
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -283,24 +335,32 @@ void Gen :: doc() {
         GenPtr g = make(gid);
         // class header
         std::cout << BOLDWHITE << g->get_class_name() << RESET << std::endl;
+        std::stringstream msg;
+        int w {36}; // disable to just get tab sep
 
         for (PIndexT i=0; i < g->get_slot_count(); ++i) {
+            msg.str("");
+            msg << SLOT_SYMBOL << ':' << i;
             PTypePtr p = g->get_slot_parameter_type(i);
-            std::cout << color_embrace(SLOT_SYMBOL, YELLOW)
-                << '\t' << p->get_class_name()
+            std::cout << color_embrace(msg.str(), YELLOW)
+                << '\t' << std::setw(w) << color_embrace(p->get_class_name(), YELLOW)
                 << '\t' << p->get_instance_name() << std::endl;
         }        
 
         for (PIndexT i=0; i < g->get_input_count(); ++i) {
             PTypePtr p = g->get_input_parameter_type(i);
-            std::cout << color_embrace(IN_SYMBOL, RED)
-                << '\t' << RESET << p->get_class_name()
+            msg.str("");
+            msg << IN_SYMBOL << ':' << i;            
+            std::cout << color_embrace(msg.str(), RED)
+                << '\t' << std::setw(w) << color_embrace(p->get_class_name(), RED)
                 << '\t' << p->get_instance_name() << std::endl;
         }        
         for (PIndexT i=0; i < g->get_output_count(); ++i) {
             PTypePtr p = g->get_output_parameter_type(i);
-            std::cout << color_embrace(OUT_SYMBOL, BLUE)
-                << '\t' << p->get_class_name()
+            msg.str("");
+            msg << OUT_SYMBOL << ':' << i;            
+            std::cout << color_embrace(msg.str(), BLUE)
+                << '\t' << std::setw(w) << color_embrace(p->get_class_name(), BLUE)
                 << '\t' << p->get_instance_name() << std::endl;
         }
     }

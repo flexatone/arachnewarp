@@ -292,12 +292,15 @@ class DirectedIndex {
     const static std::size_t _max_size_for_random_permutation {1000}; 
 
     bool _can_use_random_permutation;
+    bool _forward;
 
     //! Direction is an old-style enum. 
-    PTypeDirection::Opt _direction;
+    PTypeDirection::Opt _direction {PTypeDirection::Opt::Forward};
 
 
     public:
+    DirectedIndex() = delete;
+
     explicit DirectedIndex(FrameSizeT size);
 
     // if we pass in last, we can do random walk, forward, backward, random 
