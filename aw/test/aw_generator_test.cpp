@@ -1642,10 +1642,22 @@ BOOST_AUTO_TEST_CASE(aw_white_1) {
 }
 
 
-BOOST_AUTO_TEST_CASE(aw_doc_1) {
+// BOOST_AUTO_TEST_CASE(aw_doc_1) {
+//     Gen::doc();    
+// }
+
+
+BOOST_AUTO_TEST_CASE(aw_directed_index_A) {
     // half a second for looping
-    Gen::doc();    
+	DirectedIndex d(3);
+	d.set_direction(PTypeDirection::Opt::Forward);
+    BOOST_CHECK_EQUAL(d.next(), 0);
+    BOOST_CHECK_EQUAL(d.next(), 1);
+    BOOST_CHECK_EQUAL(d.next(), 2);
+    BOOST_CHECK_EQUAL(d.next(), 0);
+
 }
+
 
 
 
