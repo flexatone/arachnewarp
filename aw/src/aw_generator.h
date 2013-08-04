@@ -31,6 +31,16 @@ enum class GenID {
     White,
 };
 
+//! Old-styl inum for iteration. 
+enum ConnID {
+    Slot,
+    Input,
+    Output,
+};
+
+static const std::vector<ConnID> ConnIDs {Slot, Input, Output};
+static const std::vector<std::string> ConnColor {
+        COLOR_SLOT, COLOR_INPUT, COLOR_OUTPUT};
 
 
 //! Identifiers for Parameter types. 
@@ -527,11 +537,22 @@ class Gen: public std::enable_shared_from_this<Gen> {
     
 	// info strings ...........................................................    
 
+//    std::string get_label_slot(PIndexT) const;
+//
+//    std::string get_label_input(PIndexT) const;
+//
+//    std::string get_label_output(PIndexT) const;
+
+    std::string get_conn_label(PIndexT n, ConnID conn) const;
+
     //! Get the name and address (memory start) for this Gen, as a single string.
     std::string get_name_address() const;
     
     //! Get the name and addres for this Gen, labeling the name with "Gen" and wrapping the address in braces. This is used for a more readable presentation.
     std::string get_label_address() const;
+
+    //! Get the specification for this Gen, or the number of slots, ins, and outs.
+    std::string get_label_specification() const;
     
     //! Get a complete label for this generator. This includes the get_label_address() presentation, alongwith the input and output count. 
     std::string get_label() const;
@@ -548,17 +569,8 @@ class Gen: public std::enable_shared_from_this<Gen> {
     GenID get_class_id() const {return _class_id;};
 
 
-    PTypePtr get_slot_parameter_type(PIndexT i) {
-        return _slot_parameter_type[i];
-    };
-    
-    PTypePtr get_output_parameter_type(PIndexT i) {
-        return _output_parameter_type[i];
-    };
-
-    PTypePtr get_input_parameter_type(PIndexT i) {
-        return _input_parameter_type[i];
-    };
+    //! Get a parameter type given an index and a connection type
+    PTypePtr get_parameter_type(PIndexT i, ConnID conn);
 
 	// display ...............................................................    
     //! Print the outputs buffer for all dimensions at the current render count. The optional start/end values can specify vaules within the frame range

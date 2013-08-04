@@ -5,13 +5,13 @@
 #include <cmath>
 #include <vector>
 #include <cassert>
+#include <functional>
 
 // needed for Buffer
 #include <sndfile.hh>
 
 #include "aw_generator.h"
 #include "aw_illustration.h"
-
 
 namespace aw {
 
@@ -331,37 +331,28 @@ void Gen :: doc() {
         GenID::White,
     };
     
+    int w {40}; // disable to just get tab sep
+    
     for (auto gid : gen_ids) {
         GenPtr g = make(gid);
-        // class header
-        std::cout << BOLDWHITE << g->get_class_name() << RESET << std::endl;
-        std::stringstream msg;
-        int w {36}; // disable to just get tab sep
-
-        for (PIndexT i=0; i < g->get_slot_count(); ++i) {
-            msg.str("");
-            msg << SLOT_SYMBOL << ':' << i;
-            PTypePtr p = g->get_slot_parameter_type(i);
-            std::cout << color_embrace(msg.str(), YELLOW)
-                << '\t' << std::setw(w) << color_embrace(p->get_class_name(), YELLOW)
-                << '\t' << p->get_instance_name() << std::endl;
-        }        
-
-        for (PIndexT i=0; i < g->get_input_count(); ++i) {
-            PTypePtr p = g->get_input_parameter_type(i);
-            msg.str("");
-            msg << IN_SYMBOL << ':' << i;            
-            std::cout << color_embrace(msg.str(), RED)
-                << '\t' << std::setw(w) << color_embrace(p->get_class_name(), RED)
-                << '\t' << p->get_instance_name() << std::endl;
-        }        
-        for (PIndexT i=0; i < g->get_output_count(); ++i) {
-            PTypePtr p = g->get_output_parameter_type(i);
-            msg.str("");
-            msg << OUT_SYMBOL << ':' << i;            
-            std::cout << color_embrace(msg.str(), BLUE)
-                << '\t' << std::setw(w) << color_embrace(p->get_class_name(), BLUE)
-                << '\t' << p->get_instance_name() << std::endl;
+        // get counts in order
+        std::vector<PIndexT> counts {
+            g->get_slot_count(),
+            g->get_input_count(),
+            g->get_output_count()};
+        
+        std::cout << COLOR_H1 << g->get_class_name() << COLOR_RESET
+            << '\t' << std::setw(w)
+            << g->get_label_specification() << std::endl;
+        
+        for (auto conn_id: ConnIDs) {
+            for (PIndexT i=0; i < counts[conn_id]; ++i) {
+                PTypePtr p = g->get_parameter_type(i, conn_id);
+                std::cout << g->get_conn_label(i, conn_id)
+                    << '\t' << std::setw(w)
+                    << color_embrace(p->get_class_name(), ConnColor[conn_id])
+                    << '\t' << p->get_instance_name() << std::endl;
+            }
         }
     }
 }
@@ -656,7 +647,45 @@ void Gen :: _set_frame_size(FrameSizeT f) {
 }
 
 //..............................................................................
-// display methods
+
+
+std::string Gen :: get_conn_label(PIndexT n, ConnID conn) const {
+    if (conn == ConnID::Slot) {
+        return color_symbol_embrace(SLOT_SYMBOL, n, COLOR_SLOT);
+    }
+    else if (conn == ConnID::Input) {
+        return color_symbol_embrace(IN_SYMBOL, n, COLOR_INPUT);
+    }
+    else if (conn == ConnID::Output) {
+        return color_symbol_embrace(OUT_SYMBOL, n, COLOR_OUTPUT);
+    }
+    else {
+        std::stringstream msg;
+        msg << "invaliad connection id"
+                << str_file_line(__FILE__, __LINE__);
+        throw std::domain_error(msg.str());    
+    }
+}
+
+
+PTypePtr Gen :: get_parameter_type(PIndexT i, ConnID conn) {
+
+    if (conn == ConnID::Slot) {
+        return _slot_parameter_type[i];
+    }
+    else if (conn == ConnID::Input) {
+        return _input_parameter_type[i];
+    }
+    else if (conn == ConnID::Output) {
+        return _output_parameter_type[i];
+    }
+    else {
+        std::stringstream msg;
+        msg << "invaliad connection id"
+                << str_file_line(__FILE__, __LINE__);
+        throw std::domain_error(msg.str());    
+    }
+}
 
 std::string Gen :: get_name_address() const {
     std::stringstream s;
@@ -668,17 +697,23 @@ std::string Gen :: get_name_address() const {
 std::string Gen :: get_label_address() const {
     std::stringstream s;
     // get address of self, dereferenced
-    s << "Gen::" << _class_name << "{" << &(*this) << "}"; 
+    s << _class_name << "{" << &(*this) << "}"; 
+    return s.str();
+} 
+
+std::string Gen :: get_label_specification() const {
+    std::vector<PIndexT> counts {_slot_count, _input_count, _output_count};
+    std::stringstream s;
+    for (auto conn_id : ConnIDs) {
+        s << get_conn_label(counts[conn_id], conn_id);
+    }
     return s.str();
 } 
 
 std::string Gen :: get_label() const {
     std::stringstream s;
     s << "<" << get_label_address() << 
-        " " << SLOT_SYMBOL << "{" << static_cast<int>(_slot_count) << "}" <<     
-        IN_SYMBOL << "{" << static_cast<int>(_input_count) << "}" <<    
-        OUT_SYMBOL << "{" << static_cast<int>(_output_count) << "}" <<         
-        ">";    
+        " " << get_label_specification() << ">";
     return s.str();
 } 
 
