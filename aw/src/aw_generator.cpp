@@ -175,9 +175,13 @@ PTypeTimeContext :: PTypeTimeContext() {
 
 DirectedIndex :: DirectedIndex(FrameSizeT size) 
     : _size{size}  {
-    if (_size <= _max_size_for_random_permutation) {
+    if (_size > 0 && _size <= _max_size_for_random_permutation) {
         _can_use_random_permutation = true;
         _indices.resize(_size, 0); // initialize to zero and size
+        // fill vector with integers for shuffling
+        for (std::size_t i=0; i<_size; ++i) {
+            _indices[i] = i;
+        }
     }
     else {
         _can_use_random_permutation = false;
@@ -185,7 +189,10 @@ DirectedIndex :: DirectedIndex(FrameSizeT size)
     if (_size == 0) {
         _size = _max;
     }
-    reset();    
+    //! We want anything smaller than the integer size
+    _size_for_random_select = std::nextafter(static_cast<SampleT>(_size), 0.0); 
+    // std::cout << "_size_for_random_select" << std::setprecision(100) << _size_for_random_select << std::endl;
+    reset();
 }
 
 
@@ -240,6 +247,13 @@ FrameSizeT DirectedIndex :: next() {
             --_last_value;            
         }    
     }
+
+    else if (_direction == PTypeDirection::Opt::RandomSelect) {
+        // cast not required, but making explicit here just for clarity
+        _last_value = static_cast<FrameSizeT>(Random::uniform() * 
+                _size_for_random_select); 
+    }
+
 
     return _last_value;
 }

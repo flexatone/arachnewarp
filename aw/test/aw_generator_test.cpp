@@ -1696,7 +1696,22 @@ BOOST_AUTO_TEST_CASE(aw_directed_index_b) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_directed_index_c) {
+	// testing minimally small case
+	// need to test mean
+	SampleT sum {0};
+	SampleT count {100000};
+	DirectedIndex d(10);
+	d.set_direction(PTypeDirection::Opt::RandomSelect);
+	for (std::size_t i=0; i<count; ++i) {
+		sum += d.next();
+	}
+	// should be about 4.5
+	SampleT mean = static_cast<SampleT>(sum) / count;
 
+	BOOST_CHECK(mean >= 4.48 && mean <= 4.52);
+	std::cout << "mean: " <<  mean << std::endl;
+}
 
 
 

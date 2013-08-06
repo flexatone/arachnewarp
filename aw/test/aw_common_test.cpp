@@ -239,8 +239,14 @@ BOOST_AUTO_TEST_CASE(aw_random_a) {
         
     }
     for (int x=0;x<10;++x) {
-//        std::cout << "Random::round(8.1): " << Random::round(8.1) << std::endl;
+        //std::cout << "Random::round(8.1): " << Random::round(8.1) << std::endl;
         col.push_back(Random::round(8.1));
+        
+    }
+
+    for (int x=0;x<10;++x) {
+        //std::cout << "Random::uniform_switch(): " << Random::uniform_switch() << std::endl;
+        col.push_back(Random::uniform_switch());
         
     }
     
