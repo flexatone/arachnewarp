@@ -229,7 +229,7 @@ FrameSizeT DirectedIndex :: next() {
         else if (_last_value == _size-1) { // triggers reset
             _forward = false;
         }
-        else if (_last_value == 0) { // triggers reset
+        else if (_last_value == 0) { // lower bound osc
             _forward = true;
         }
 
@@ -341,8 +341,7 @@ void Gen :: doc() {
             g->get_input_count(),
             g->get_output_count()};
         
-        std::cout << COLOR_H1 << g->get_class_name() << COLOR_RESET
-            << '\t' << std::setw(w)
+        std::cout << COLOR_H1 << g->get_class_name() << COLOR_RESET << ' '
             << g->get_label_specification() << std::endl;
         
         for (auto conn_id: ConnIDs) {
