@@ -326,6 +326,8 @@ class Random {
 
         std::uniform_real_distribution<SampleT> uniform_dist_bi_polar {-1, 1};
 
+        std::uniform_int_distribution<UINT8> uniform_switch {0, 1};
+
     };
 
     //! Core random engines and distributions, shared by a single static attribute. Initialized in implementation file.
@@ -336,6 +338,10 @@ class Random {
     //! A random unform distribution between 0 and 1. 
     static inline SampleT uniform() {
         return _core.uniform_dist(_core.re_lin_congruential);
+    }
+
+    static inline SampleT uniform_switch() {
+        return _core.uniform_switch(_core.re_lin_congruential);
     }
 
     static inline SampleT uniform_bi_polar() {
@@ -354,6 +360,8 @@ class Random {
             return std::floor(v);
         }
     }
+
+
 };
 
 

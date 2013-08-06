@@ -292,6 +292,9 @@ class DirectedIndex {
     //! If size is zero, we assume max size for this type. We set size at creation and do not change it.
     FrameSizeT _size;
 
+    //! We store a floating point size for scaling against random select
+    SampleT _size_for_random_select;
+
     //! Store the last value returned; in random permutation, we store the index used.
     FrameSizeT _last_value;
 
@@ -302,6 +305,7 @@ class DirectedIndex {
     const static std::size_t _max_size_for_random_permutation {1000}; 
 
     bool _can_use_random_permutation;
+
     bool _forward;
 
     //! Direction is an old-style enum. 
