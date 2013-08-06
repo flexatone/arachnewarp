@@ -1642,12 +1642,12 @@ BOOST_AUTO_TEST_CASE(aw_white_1) {
 }
 
 
-BOOST_AUTO_TEST_CASE(aw_doc_1) {
-     Gen::doc();    
-}
+// BOOST_AUTO_TEST_CASE(aw_doc_1) {
+//     Gen::doc();    
+// }
 
 
-BOOST_AUTO_TEST_CASE(aw_directed_index_A) {
+BOOST_AUTO_TEST_CASE(aw_directed_index_a) {
     // half a second for looping
 	DirectedIndex d(3);
 	d.set_direction(PTypeDirection::Opt::Forward);
@@ -1655,10 +1655,45 @@ BOOST_AUTO_TEST_CASE(aw_directed_index_A) {
     BOOST_CHECK_EQUAL(d.next(), 1);
     BOOST_CHECK_EQUAL(d.next(), 2);
     BOOST_CHECK_EQUAL(d.next(), 0);
+    BOOST_CHECK_EQUAL(d.next(), 1);
 
+	d.set_direction(PTypeDirection::Opt::Reverse);
+    BOOST_CHECK_EQUAL(d.next(), 0);
+    BOOST_CHECK_EQUAL(d.next(), 2);
+    BOOST_CHECK_EQUAL(d.next(), 1);
+
+    d.reset();
+    BOOST_CHECK_EQUAL(d.next(), 2); // reverse goes to the size
+    BOOST_CHECK_EQUAL(d.next(), 1); 
+    BOOST_CHECK_EQUAL(d.next(), 0); 
+
+	d.set_direction(PTypeDirection::Opt::Cycle);
+    BOOST_CHECK_EQUAL(d.next(), 1); 
+    BOOST_CHECK_EQUAL(d.next(), 2); 
+    BOOST_CHECK_EQUAL(d.next(), 1); 
+    BOOST_CHECK_EQUAL(d.next(), 0); 
+    BOOST_CHECK_EQUAL(d.next(), 1); 
+    BOOST_CHECK_EQUAL(d.next(), 2); 
+    BOOST_CHECK_EQUAL(d.next(), 1); 
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_directed_index_b) {
+	// testing minimally small case
+	DirectedIndex d(2);
+	d.set_direction(PTypeDirection::Opt::Forward);
+    BOOST_CHECK_EQUAL(d.next(), 0);
+    BOOST_CHECK_EQUAL(d.next(), 1);
+    BOOST_CHECK_EQUAL(d.next(), 0);
+    BOOST_CHECK_EQUAL(d.next(), 1);
+
+	d.set_direction(PTypeDirection::Opt::Cycle);
+    BOOST_CHECK_EQUAL(d.next(), 0);
+    BOOST_CHECK_EQUAL(d.next(), 1);
+    BOOST_CHECK_EQUAL(d.next(), 0);
+    BOOST_CHECK_EQUAL(d.next(), 1);	
+
+}
 
 
 

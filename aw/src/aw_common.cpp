@@ -51,10 +51,6 @@ void print(SampleT* out, FrameSizeT size) {
     for (FrameSizeT i=0; i<size; ++i) {
         std::cout << out[i] << ' ';
     }
-    // TODO: figure out how to do this idiom    
-    //while (out < out+size) {
-        //std::cout << *out++ << ' ';
-    //}    
     std::cout << '>' << std::endl;
 }	
 
