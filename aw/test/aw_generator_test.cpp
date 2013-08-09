@@ -1715,7 +1715,17 @@ BOOST_AUTO_TEST_CASE(aw_directed_index_c) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_directed_index_d) {	
+	SampleT sum {0};
+	SampleT count {1000};
+	DirectedIndex d(10);
+	d.set_direction(PTypeDirection::Opt::RandomWalk);
 
+	for (std::size_t i=0; i<count; ++i) {
+		std::cout << d.next() << ' ';
+	}
+	std::cout << std::endl;
+}
 
 
 

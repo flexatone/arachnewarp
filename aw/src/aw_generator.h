@@ -292,6 +292,9 @@ class DirectedIndex {
     //! If size is zero, we assume max size for this type. We set size at creation and do not change it.
     FrameSizeT _size;
 
+    //! We pre calc one less than size for efficiency.
+    FrameSizeT _size_less_one;
+
     //! We store a floating point size for scaling against random select
     SampleT _size_for_random_select;
 
