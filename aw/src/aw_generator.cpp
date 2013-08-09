@@ -189,6 +189,8 @@ DirectedIndex :: DirectedIndex(FrameSizeT size)
     if (_size == 0) {
         _size = _max;
     }
+    // do this after max adjustment
+    _size_less_one = _size - 1;
     //! We want anything smaller than the integer size
     _size_for_random_select = std::nextafter(static_cast<SampleT>(_size), 0.0); 
     // std::cout << "_size_for_random_select" << std::setprecision(100) << _size_for_random_select << std::endl;
@@ -213,7 +215,7 @@ FrameSizeT DirectedIndex :: next() {
     }
 
     if (_direction == PTypeDirection::Opt::Forward) {
-        if (_last_value >= _size-1) {
+        if (_last_value >= _size_less_one) {
             _last_value = 0;
         }
         else {
@@ -222,7 +224,7 @@ FrameSizeT DirectedIndex :: next() {
     }
     else if (_direction == PTypeDirection::Opt::Reverse) {
         if (_last_value == 0) {
-            _last_value = _size-1;
+            _last_value = _size_less_one;
         }
         else {
             --_last_value;
@@ -233,7 +235,7 @@ FrameSizeT DirectedIndex :: next() {
             _last_value = 0;
             _forward = true;
         }
-        else if (_last_value == _size-1) { // triggers reset
+        else if (_last_value == _size_less_one) { // triggers reset
             _forward = false;
         }
         else if (_last_value == 0) { // lower bound osc
@@ -253,7 +255,24 @@ FrameSizeT DirectedIndex :: next() {
         _last_value = static_cast<FrameSizeT>(Random::uniform() * 
                 _size_for_random_select); 
     }
-
+    else if (_direction == PTypeDirection::Opt::RandomWalk) {
+            // cast not required, but making explicit here just for clarity
+        if (Random::uniform_switch()) {
+            ++_last_value;
+            // will be greater on reset when we set it to size
+            if (_last_value >= _size) { // wrap
+                _last_value = 0;
+            }
+        }
+        else { // decrement
+            if (_last_value == 0) {
+                _last_value = _size_less_one;
+            }
+            else {
+                --_last_value;
+            }                
+        }
+    }
 
     return _last_value;
 }
