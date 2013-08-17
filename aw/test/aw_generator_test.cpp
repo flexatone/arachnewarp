@@ -1709,24 +1709,44 @@ BOOST_AUTO_TEST_CASE(aw_directed_index_c) {
 	// should be about 4.5
 	SampleT mean = static_cast<SampleT>(sum) / count;
 
-	BOOST_CHECK(mean >= 4.48 && mean <= 4.52);
-	std::cout << "mean: " <<  mean << std::endl;
+	BOOST_CHECK(mean >= 4.47 && mean <= 4.53);
+	//std::cout << "mean: " <<  mean << std::endl;
 }
 
-
-
 BOOST_AUTO_TEST_CASE(aw_directed_index_d) {	
-	SampleT sum {0};
 	SampleT count {1000};
 	DirectedIndex d(10);
 	d.set_direction(PTypeDirection::Opt::RandomWalk);
 
+	std::size_t last{10};
+	std::size_t current;
+
 	for (std::size_t i=0; i<count; ++i) {
-		std::cout << d.next() << ' ';
+		current = d.next();
+		BOOST_CHECK ((last - current) == 1 || (last - current) > 8);
+		last = current;
+	}
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_directed_index_e) {	
+	SampleT sum {0};
+
+	SampleT count {1000};
+	DirectedIndex d(4);
+	d.set_direction(PTypeDirection::Opt::RandomPermutate);
+
+	for (std::size_t i=0; i<count; ++i) {
+		// 4 possible vlaues
+		if (i % 4 == 0 && i != 0) {
+			//std::cout << "sum:: " << sum << std::endl;
+			BOOST_CHECK (sum == 6);
+			sum = 0;
+		}
+		sum +=  d.next();
 	}
 	std::cout << std::endl;
 }
-
 
 
 

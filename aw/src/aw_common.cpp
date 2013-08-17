@@ -81,7 +81,7 @@ const char* get_fp_home() {
 
 
 // must initialize private static member attribute in impl file
-Random::_Core Random::_core = Random::_Core();
+Random::Core Random::core = Random::Core();
 
 // must initialize private static member attribute in impl file
 EnvironmentPtr Environment::_default_env = nullptr;

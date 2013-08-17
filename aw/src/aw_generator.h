@@ -281,9 +281,7 @@ class PTypeDirection: public PType {
 //=============================================================================
 //! Utility class for managing directions of indices. Used in Counter and Sequncer generators. Size is fixed over the life of the object. If size changes, then we must create a new object. 
 class DirectedIndex {
-    //std::random_shuffle(cards_.begin(), cards_.end())
-    // create with a given length size
-    // take an a parameter to control Direction
+
     private:
 
     //! If we permit random permutation, we have to store all indices
@@ -301,6 +299,9 @@ class DirectedIndex {
     //! Store the last value returned; in random permutation, we store the index used.
     FrameSizeT _last_value;
 
+    //! Only used by random permutatee.
+    FrameSizeT _temp_value;
+
     //! The max size is the largest int available. 
     const static FrameSizeT _max {std::numeric_limits<FrameSizeT>::max()};
 
@@ -313,6 +314,7 @@ class DirectedIndex {
 
     //! Direction is an old-style enum. 
     PTypeDirection::Opt _direction {PTypeDirection::Opt::Forward};
+
 
 
     public:
