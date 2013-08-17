@@ -314,9 +314,10 @@ inline SampleT mtof(SampleT f) {
 //! Utility class for sourcing random values using static functions. 
 class Random {
     private://-----------------------------------------------------------------
+    public://-------------------------------------------------------------------
 
     //! Struct storage of core engines and distributions, shared across by a single static instance.
-    struct _Core {
+    struct Core {
         // basic and high-precision engeinges
         std::minstd_rand re_lin_congruential {std::random_device{}()};
         std::mt19937 re_marsenne {std::random_device{}()};
@@ -331,21 +332,20 @@ class Random {
     };
 
     //! Core random engines and distributions, shared by a single static attribute. Initialized in implementation file.
-    static _Core _core;
+    static Core core;
 
-    public://-------------------------------------------------------------------
     
     //! A random unform distribution between 0 and 1. 
     static inline SampleT uniform() {
-        return _core.uniform_dist(_core.re_lin_congruential);
+        return core.uniform_dist(core.re_lin_congruential);
     }
 
     static inline SampleT uniform_switch() {
-        return _core.uniform_switch(_core.re_lin_congruential);
+        return core.uniform_switch(core.re_lin_congruential);
     }
 
     static inline SampleT uniform_bi_polar() {
-        return _core.uniform_dist_bi_polar(_core.re_lin_congruential);
+        return core.uniform_dist_bi_polar(core.re_lin_congruential);
 
     }
     //! Probabilistic rounding for a number to nearest integer based on random weighting.
@@ -353,7 +353,7 @@ class Random {
         // need just the floating point component
         SampleT v_tail = v - std::floor(v);
         // e.g.: if les then .7, then ceil, else foloor
-        if (_core.uniform_dist(_core.re_lin_congruential) <= v_tail) {
+        if (core.uniform_dist(core.re_lin_congruential) <= v_tail) {
             return std::ceil(v);
         }
         else {

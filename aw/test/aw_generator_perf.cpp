@@ -1,6 +1,6 @@
-// g++ aw_generator_perf.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_timer.cpp ../src/aw_illustration.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -O3 -o aw_generator_perf
+// g++-4.7 -std=c++11 aw_generator_perf.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_timer.cpp ../src/aw_illustration.cpp -l boost_filesystem -l boost_system -l sndfile -L /usr/local/lib -Wall -O3 -o aw_generator_perf
 
-
+// g++-4.7 -std=c++11 -I ../src  aw_generator_test.cpp ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp -DSTAND_ALONE -l boost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -g -o aw_generator_test
 
 #include <cassert>
 #include <cmath>
@@ -11,6 +11,7 @@
 #include "aw_timer.h"
 
 
+using namespace aw;
 
 bool a() {
     // this will automatically create constant Generators
@@ -105,19 +106,78 @@ bool c() {
 
 bool d() {
     // test some math opperations for comparison
-    aw::OutputsSizeT y;
     aw::OutputsSizeT x;
+    aw::OutputsSizeT y;
 
     aw::Timer t1("calling sine through iterated numbers");
     t1.start();
     for (x=0; x<(44100*60); ++x) {
-        y = sin(x); // just doing an assignment
+        y += sin(x); // just doing an assignment
     }
 	//g1->illustrate_outputs();
     std::cout << "total time for 60 seconds (" << x << " samples) of audio: " << t1 << std::endl;
     return true;
 }
 
+
+bool e() {
+    unsigned int i;
+    unsigned int count {44100*60};
+
+    DirectedIndex d1(100);    
+    d1.set_direction(PTypeDirection::Opt::RandomPermutate);
+    aw::Timer t1("random permutation");    
+    for (i=0; i<count; ++i) {
+        d1.next();
+    }
+    std::cout << "iterations " << i << ": " << t1 << std::endl;
+
+
+    DirectedIndex d2(100);    
+    d2.set_direction(PTypeDirection::Opt::RandomWalk);
+    aw::Timer t2("random walk");    
+    for (i=0; i<count; ++i) {
+        d2.next();
+    }
+    std::cout << "iterations " << i << ": " << t2 << std::endl;
+
+
+    DirectedIndex d3(100);    
+    d3.set_direction(PTypeDirection::Opt::RandomSelect);
+    aw::Timer t3("random select");    
+    for (i=0; i<count; ++i) {
+        d3.next();
+    }
+    std::cout << "iterations " << i << ": " << t3 << std::endl;
+
+
+    DirectedIndex d4(100);    
+    d4.set_direction(PTypeDirection::Opt::Cycle);
+    aw::Timer t4("cycle");    
+    for (i=0; i<count; ++i) {
+        d4.next();
+    }
+    std::cout << "iterations " << i << ": " << t4 << std::endl;
+
+    DirectedIndex d5(100);    
+    d5.set_direction(PTypeDirection::Opt::Forward);
+    aw::Timer t5("forward");    
+    for (i=0; i<count; ++i) {
+        d5.next();
+    }
+    std::cout << "iterations " << i << ": " << t5 << std::endl;
+
+    DirectedIndex d6(100);    
+    d6.set_direction(PTypeDirection::Opt::Reverse);
+    aw::Timer t6("reverse");
+    for (i=0; i<count; ++i) {
+        d6.next();
+    }
+    std::cout << "iterations " << i << ": " << t6 << std::endl;
+
+
+    return true;
+}
 
 
 int main() {
@@ -126,7 +186,8 @@ int main() {
         a() &&
         b() &&
         c() &&
-        d() 
+        d() &&
+        e() 
         );
     
 }

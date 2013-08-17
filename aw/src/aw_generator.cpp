@@ -213,7 +213,6 @@ FrameSizeT DirectedIndex :: next() {
     if (_size == 1) {
         return 0;
     }
-
     if (_direction == PTypeDirection::Opt::Forward) {
         if (_last_value >= _size_less_one) {
             _last_value = 0;
@@ -249,12 +248,6 @@ FrameSizeT DirectedIndex :: next() {
             --_last_value;            
         }    
     }
-
-    else if (_direction == PTypeDirection::Opt::RandomSelect) {
-        // cast not required, but making explicit here just for clarity
-        _last_value = static_cast<FrameSizeT>(Random::uniform() * 
-                _size_for_random_select); 
-    }
     else if (_direction == PTypeDirection::Opt::RandomWalk) {
             // cast not required, but making explicit here just for clarity
         if (Random::uniform_switch()) {
@@ -273,12 +266,29 @@ FrameSizeT DirectedIndex :: next() {
             }                
         }
     }
+    else if (_direction == PTypeDirection::Opt::RandomSelect ||
+            (_direction == PTypeDirection::Opt::RandomPermutate && 
+                !_can_use_random_permutation)
+        ) {
+        // cast not required, but making explicit here just for clarity
+        _last_value = static_cast<FrameSizeT>(Random::uniform() * 
+                _size_for_random_select); 
+    }
+    // assume all casses of selecting this direction and ! _can_use_random_permutation are catched above
+    else if (_direction == PTypeDirection::Opt::RandomPermutate) {
+        if (_last_value >= _size) {
+            // TODO: cannot use Random::core.re_lin_congruential here for some reason; can use in related context in suffle01.cpp
+            std::random_shuffle(_indices.begin(), _indices.end());
+            _last_value = 0;
 
+        }
+        // we do not return _last_value; it is our index in the shuffled deck
+        _temp_value = _indices[_last_value];
+        ++_last_value;
+        return _temp_value;
+    }
     return _last_value;
 }
-
-
-
 
 
 
