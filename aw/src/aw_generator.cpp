@@ -208,11 +208,23 @@ void DirectedIndex :: reset() {
     _forward = true;
 } 
 
+void DirectedIndex :: set_direction(PTypeDirection::Opt d) {
+    // override setting of random permutatio nif not permitted
+    if (d == PTypeDirection::Opt::RandomPermutate && 
+            !_can_use_random_permutation) {
+        _direction = PTypeDirection::Opt::RandomSelect;
+    }
+    else {
+        _direction = d;
+    }
+}
+
 FrameSizeT DirectedIndex :: next() {
     // handle trivial case of size of 1
     if (_size == 1) {
         return 0;
     }
+
     if (_direction == PTypeDirection::Opt::Forward) {
         if (_last_value >= _size_less_one) {
             _last_value = 0;
@@ -249,8 +261,8 @@ FrameSizeT DirectedIndex :: next() {
         }    
     }
     else if (_direction == PTypeDirection::Opt::RandomWalk) {
-            // cast not required, but making explicit here just for clarity
-        if (Random::uniform_switch()) {
+        // faster than using uniform_switch()
+        if (Random::uniform() >= .5) {
             ++_last_value;
             // will be greater on reset when we set it to size
             if (_last_value >= _size) { // wrap
@@ -266,21 +278,17 @@ FrameSizeT DirectedIndex :: next() {
             }                
         }
     }
-    else if (_direction == PTypeDirection::Opt::RandomSelect ||
-            (_direction == PTypeDirection::Opt::RandomPermutate && 
-                !_can_use_random_permutation)
-        ) {
+    else if (_direction == PTypeDirection::Opt::RandomSelect) {
         // cast not required, but making explicit here just for clarity
         _last_value = static_cast<FrameSizeT>(Random::uniform() * 
                 _size_for_random_select); 
     }
-    // assume all casses of selecting this direction and ! _can_use_random_permutation are catched above
+    // we make sure this is possible when calling set_direction()
     else if (_direction == PTypeDirection::Opt::RandomPermutate) {
         if (_last_value >= _size) {
             // TODO: cannot use Random::core.re_lin_congruential here for some reason; can use in related context in suffle01.cpp
             std::random_shuffle(_indices.begin(), _indices.end());
             _last_value = 0;
-
         }
         // we do not return _last_value; it is our index in the shuffled deck
         _temp_value = _indices[_last_value];
