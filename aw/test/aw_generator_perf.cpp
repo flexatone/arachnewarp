@@ -107,7 +107,7 @@ bool c() {
 bool d() {
     // test some math opperations for comparison
     aw::OutputsSizeT x;
-    aw::OutputsSizeT y;
+    SampleT y;
 
     aw::Timer t1("calling sine through iterated numbers");
     t1.start();
@@ -126,7 +126,8 @@ bool e() {
 
     DirectedIndex d1(100);    
     d1.set_direction(PTypeDirection::Opt::RandomPermutate);
-    aw::Timer t1("random permutation");    
+    aw::Timer t1("random permutation");
+    t1.start();    
     for (i=0; i<count; ++i) {
         d1.next();
     }
@@ -135,7 +136,8 @@ bool e() {
 
     DirectedIndex d2(100);    
     d2.set_direction(PTypeDirection::Opt::RandomWalk);
-    aw::Timer t2("random walk");    
+    aw::Timer t2("random walk");
+    t2.start();    
     for (i=0; i<count; ++i) {
         d2.next();
     }
@@ -144,7 +146,8 @@ bool e() {
 
     DirectedIndex d3(100);    
     d3.set_direction(PTypeDirection::Opt::RandomSelect);
-    aw::Timer t3("random select");    
+    aw::Timer t3("random select");
+    t3.start();    
     for (i=0; i<count; ++i) {
         d3.next();
     }
@@ -153,7 +156,8 @@ bool e() {
 
     DirectedIndex d4(100);    
     d4.set_direction(PTypeDirection::Opt::Cycle);
-    aw::Timer t4("cycle");    
+    aw::Timer t4("cycle");
+    t4.start();    
     for (i=0; i<count; ++i) {
         d4.next();
     }
@@ -162,19 +166,28 @@ bool e() {
     DirectedIndex d5(100);    
     d5.set_direction(PTypeDirection::Opt::Forward);
     aw::Timer t5("forward");    
+    t5.start();
     for (i=0; i<count; ++i) {
         d5.next();
     }
     std::cout << "iterations " << i << ": " << t5 << std::endl;
 
-    DirectedIndex d6(100);    
+    DirectedIndex d6(100);
     d6.set_direction(PTypeDirection::Opt::Reverse);
     aw::Timer t6("reverse");
+    t6.start();        
     for (i=0; i<count; ++i) {
         d6.next();
     }
     std::cout << "iterations " << i << ": " << t6 << std::endl;
 
+    long int t7_sum;
+    aw::Timer t7("++ incrementing on long int");
+    t7.start();
+    for (i=0; i<count; ++i) {
+        ++t7_sum;
+    }
+    std::cout << "iterations " << i << ": " << t7 << std::endl;
 
     return true;
 }

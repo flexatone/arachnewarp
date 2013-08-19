@@ -29,9 +29,10 @@ enum class GenID {
     Map,
     AttackDecay,
     White,
+    Counter,
 };
 
-//! Old-styl inum for iteration. 
+//! Old-style inum for iteration. 
 enum ConnID {
     Slot,
     Input,
@@ -59,6 +60,7 @@ enum class PTypeID {
     BreakPoints, // for slot in breakpoint, wavetable
     Interpolation,
     TimeContext,
+    Modulus,
 };
 
 
@@ -299,7 +301,7 @@ class DirectedIndex {
     //! Store the last value returned; in random permutation, we store the index used.
     FrameSizeT _last_value;
 
-    //! Only used by random permutatee.
+    //! Only used by random permutate.
     FrameSizeT _temp_value;
 
     //! The max size is the largest int available. 
@@ -312,7 +314,7 @@ class DirectedIndex {
 
     bool _forward;
 
-    //! Direction is an old-style enum. 
+    //! Direction is an old-style enum; set default to forward.
     PTypeDirection::Opt _direction {PTypeDirection::Opt::Forward};
 
 
@@ -329,7 +331,7 @@ class DirectedIndex {
     void reset();
 
     //! Must be able to set direction at any time; this does not reset.
-    void set_direction(PTypeDirection::Opt d) {_direction = d;};
+    void set_direction(PTypeDirection::Opt d);
 
 };
 
