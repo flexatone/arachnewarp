@@ -60,7 +60,9 @@ enum class PTypeID {
     BreakPoints, // for slot in breakpoint, wavetable
     Interpolation,
     TimeContext,
-    Modulus,
+
+    Modulus, // for counter
+    Direction // 
 };
 
 
@@ -80,6 +82,9 @@ class PType {
 
     //! Primary constructor static method for creating share Parameter types. 
     static PTypePtr make(PTypeID);
+
+    static PTypePtr make_with_name(PTypeID id, const std::string& s);
+
 
     protected://---------------------------------------------------------------
     //! Class name set on creation. 
@@ -1341,6 +1346,26 @@ class White: public Gen {
 };
 
 
+    
+//=============================================================================
+//! A white-noise generator.
+class Counter;
+typedef std::shared_ptr<Counter> CounterPtr;
+class Counter: public Gen {
+
+    private://-----------------------------------------------------------------
+    OutputsSizeT _i;
+        
+    public://------------------------------------------------------------------
+    explicit Counter(EnvironmentPtr);
+    
+    virtual void init();
+            
+    virtual void reset();
+    
+    //! Perform the noise
+    virtual void render(RenderCountT f);
+};
 
 
 
