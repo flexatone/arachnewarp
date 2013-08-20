@@ -67,6 +67,13 @@ PTypePtr PType :: make(PTypeID q){
     return p;
 }
 
+
+PTypePtr PType :: make_with_name(PTypeID q, const std::string& s){
+    PTypePtr p = PType::make(q);
+    p->set_instance_name(s);
+    return p;
+}
+
 PType :: PType() {
     _class_name = "PType";
 }
@@ -437,8 +444,8 @@ void Gen :: init() {
 	_nyquist = _sampling_rate / 2; // let floor
     
     // we create one output to start
-    PTypePtr pt1 = PType::make(PTypeID::Value);
-    pt1->set_instance_name("Gen default output");
+    PTypePtr pt1 = PType::make_with_name(PTypeID::Value, "Default");
+    //pt1->set_instance_name("Default");
     _register_output_parameter_type(pt1);
 }
 
@@ -1186,9 +1193,9 @@ void Constant :: init() {
     // register some parameters
 //    ParameterTypeValuePtr pt1 = ParameterTypeValuePtr(new 
 //                                       PTypeValue);
-    PTypePtr pt1 = PType::make(
-            PTypeID::Value);
-    pt1->set_instance_name("Constant numerical value");
+    PTypePtr pt1 = PType::make_with_name(
+            PTypeID::Value, "Constant numerical value");
+    //pt1->set_instance_name("Constant numerical value");
     _register_output_parameter_type(pt1);	
     _register_input_parameter_type(pt1);
 	
@@ -1302,10 +1309,10 @@ void _BinaryCombined :: init() {
     // must clear the default set by Gen init because slot will set directly    
     _clear_output_parameter_types();
     
-    PTypePtr so1 = PType::make(
-            PTypeID::Channels);
+    PTypePtr so1 = PType::make_with_name(
+            PTypeID::Channels, "Channels");
                                            
-    so1->set_instance_name("Channels");
+    //so1->set_instance_name("Channels");
 	_register_slot_parameter_type(so1);	// create deafult constant, update
     // set value to 1; will call _update_for_new_slot    
     set_slot_by_index(0, 1);
@@ -1326,10 +1333,11 @@ void _BinaryCombined :: _update_for_new_slot() {
     // set inputs; this will clear any existing connections
     for (PIndexT i=0; i<outs; ++i) {
         //pt = ParameterTypeValuePtr(new PTypeValue);
-        pt = PType::make(PTypeID::Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Opperands " << i+1;
-        pt->set_instance_name(s.str());
+        pt = PType::make_with_name(PTypeID::Value, s.str());
+
+        // pt->set_instance_name(s.str());
 		// we can use the same pt for both i/o
 	    _register_output_parameter_type(pt);			
         _register_input_parameter_type(pt);        
@@ -1435,13 +1443,13 @@ void Buffer :: init() {
 
     // register some slots: 
     // register slots
-    PTypePtr so1 = PType::make(PTypeID::Channels);
-    so1->set_instance_name("Channels");
+    PTypePtr so1 = PType::make_with_name(PTypeID::Channels, "Channels");
+    //so1->set_instance_name("Channels");
 	_register_slot_parameter_type(so1);
     set_slot_by_index(0, 1, false); // false so as to not update until dur is set
 	    
-    PTypePtr so2 = PType::make(PTypeID::Duration);
-    so2->set_instance_name("Duration in seconds");
+    PTypePtr so2 = PType::make_with_name(PTypeID::Duration, "Duration in seconds");
+    // so2->set_instance_name("Duration in seconds");
 	_register_slot_parameter_type(so2);
     // set value; will call _update_for_new_slot    
     set_slot_by_index(1, 1, true); // one second, update now 
@@ -1599,8 +1607,6 @@ void Buffer :: set_outputs_from_fp(const std::string& fp) {
     }
 }
 
-
-
 void Buffer :: set_outputs(const Inj<SampleT>& bi) {
     // vitual method overridden in Buffer
     //std::cout << "Buffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;    
@@ -1612,7 +1618,6 @@ void Buffer :: set_outputs(const Inj<SampleT>& bi) {
     set_outputs_from_vector(vst, ch);
     // vector will be auto destroyed here
 }
-
 
 void Buffer :: set_outputs(const std::string& fp) {
     // vitual method overridden in Buffer
@@ -1672,18 +1677,18 @@ void BPIntegrator :: init() {
     _clear_output_parameter_types(); // must clear defaut by Gen init
     
     // input 
-    PTypePtr pt_i1 = PType::make(PTypeID::Trigger);
-    pt_i1->set_instance_name("Trigger");
+    PTypePtr pt_i1 = PType::make_with_name(PTypeID::Trigger, "Trigger");
+    //pt_i1->set_instance_name("Trigger");
     _register_input_parameter_type(pt_i1);
 	_input_index_trigger = 0;
 
-    PTypePtr pt_i2 = PType::make(PTypeID::Cycle);
-    pt_i2->set_instance_name("Cycle (on or off)");
+    PTypePtr pt_i2 = PType::make_with_name(PTypeID::Cycle, "Cycle (on or off)");
+    //pt_i2->set_instance_name("Cycle (on or off)");
     _register_input_parameter_type(pt_i2);
 	_input_index_cycle = 1;
 
-    PTypePtr pt_i3 = PType::make(PTypeID::Value);
-    pt_i3->set_instance_name("Exponent");
+    PTypePtr pt_i3 = PType::make_with_name(PTypeID::Value, "Exponent");
+    //pt_i3->set_instance_name("Exponent");
     _register_input_parameter_type(pt_i3);
 	_input_index_exponent = 2;
 
@@ -1695,8 +1700,8 @@ void BPIntegrator :: init() {
 
     // register slots
     // should this be a BreakPoints type id to enforce
-    PTypePtr so1 = PType::make(PTypeID::BreakPoints);
-    so1->set_instance_name("Breakpoints");
+    PTypePtr so1 = PType::make_with_name(PTypeID::BreakPoints, "Breakpoints");
+    //so1->set_instance_name("Breakpoints");
 	_register_slot_parameter_type(so1);
 	_slot_index_bps = 0;
     
@@ -1706,14 +1711,16 @@ void BPIntegrator :: init() {
     set_slot_by_index(_slot_index_bps, g1, true); // setting a default
     
 
-    PTypePtr so2 = PType::make(PTypeID::Interpolation);
-    so2->set_instance_name("Interpolatation (flat, linear)");
+    PTypePtr so2 = PType::make_with_name(PTypeID::Interpolation, 
+            "Interpolatation (flat, linear)");
+    //so2->set_instance_name("Interpolatation (flat, linear)");
 	_register_slot_parameter_type(so2);
 	_slot_index_interp = 1;
     set_slot_by_index(_slot_index_interp, PTypeInterpolate::Linear, false); // setting a default
     
-    PTypePtr so3 = PType::make(PTypeID::TimeContext);
-    so3->set_instance_name("TimeContext (samples, seconds)");
+    PTypePtr so3 = PType::make_with_name(PTypeID::TimeContext, 
+            "TimeContext (samples, seconds)");
+    //so3->set_instance_name("TimeContext (samples, seconds)");
 	_register_slot_parameter_type(so3);
 	_slot_index_t_context = 2;
     // update after last default
@@ -1721,12 +1728,12 @@ void BPIntegrator :: init() {
 
 
 	// register outputs
-    PTypePtr pt_o1 = PType::make(PTypeID::Value);
-    pt_o1->set_instance_name("Output");
+    PTypePtr pt_o1 = PType::make_with_name(PTypeID::Value, "Output");
+    //pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);	
 
-    PTypePtr pt_o2 = PType::make(PTypeID::Trigger);
-    pt_o2->set_instance_name("SOS (start of segment)"); // start of segment
+    PTypePtr pt_o2 = PType::make_with_name(PTypeID::Trigger, "SOS (start of segment)");
+    //pt_o2->set_instance_name("SOS (start of segment)"); // start of segment
     _register_output_parameter_type(pt_o2);
 
     // reset and set defaults
@@ -1908,23 +1915,23 @@ void Phasor :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    PTypePtr pt1 = PType::make(PTypeID::Frequency);                                       
-    pt1->set_instance_name("Frequency");
+    PTypePtr pt1 = PType::make_with_name(PTypeID::Frequency, "Frequency");                                       
+    //pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    PTypePtr pt2 = PType::make(PTypeID::Phase);
-    pt2->set_instance_name("Phase");
+    PTypePtr pt2 = PType::make_with_name(PTypeID::Phase, "Phase");
+    //pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;	
 	
 	// register outputs
-    PTypePtr pt3 = PType::make(PTypeID::Value);
-    pt3->set_instance_name("Output");
+    PTypePtr pt3 = PType::make_with_name(PTypeID::Value, "Output");
+    //pt3->set_instance_name("Output");
     _register_output_parameter_type(pt3);	
 
-    PTypePtr pt4 = PType::make(PTypeID::Trigger);
-    pt4->set_instance_name("Trigger");
+    PTypePtr pt4 = PType::make_with_name(PTypeID::Trigger, "Trigger (on start)");
+    //pt4->set_instance_name("Trigger");
     _register_output_parameter_type(pt4);	
 
     reset();
@@ -2003,19 +2010,19 @@ void Sine :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    PTypePtr pt1 = PType::make(PTypeID::Frequency);                                       
-    pt1->set_instance_name("Frequency");
+    PTypePtr pt1 = PType::make_with_name(PTypeID::Frequency, "Frequency");                                       
+    //pt1->set_instance_name("Frequency");
     _register_input_parameter_type(pt1);
 	_input_index_frequency = 0;
 	
-    PTypePtr pt2 = PType::make(PTypeID::Phase);
-    pt2->set_instance_name("Phase");
+    PTypePtr pt2 = PType::make_with_name(PTypeID::Phase, "Phase");
+    //pt2->set_instance_name("Phase");
     _register_input_parameter_type(pt2);	
 	_input_index_phase = 1;
     
 	// register output
-    PTypePtr pt_o1 = PType::make(PTypeID::Value);
-    pt_o1->set_instance_name("Output");
+    PTypePtr pt_o1 = PType::make_with_name(PTypeID::Value, "Output");
+    //pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
     set_default();
@@ -2027,7 +2034,6 @@ void Sine :: set_default() {
     set_input_by_index(_input_index_phase, 0);
 }
 
-
 void Sine :: reset() {
     Gen::reset();
     // will get set on first render call
@@ -2035,7 +2041,6 @@ void Sine :: reset() {
     _cur_fq = 0;
     _phase_increment = 0;
 }
-
 
 void Sine :: render(RenderCountT f) {
     while (_render_count < f) {
@@ -2092,35 +2097,35 @@ void Map :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    PTypePtr pt1 = PType::make( PTypeID::Value);
-    pt1->set_instance_name("Source");
+    PTypePtr pt1 = PType::make_with_name( PTypeID::Value, "Source");
+    //pt1->set_instance_name("Source");
     _register_input_parameter_type(pt1);
 	_input_index_src = 0;
 
-    PTypePtr pt4 = PType::make(PTypeID::LowerBoundary);
-    pt4->set_instance_name("Source Lower");
+    PTypePtr pt4 = PType::make_with_name(PTypeID::LowerBoundary, "Source Lower");
+    //pt4->set_instance_name("Source Lower");
     _register_input_parameter_type(pt4);
 	_input_index_src_lower = 1;
 
-    PTypePtr pt5 = PType::make(PTypeID::UpperBoundary);
-    pt5->set_instance_name("Source Upper");
+    PTypePtr pt5 = PType::make_with_name(PTypeID::UpperBoundary, "Source Upper");
+    //pt5->set_instance_name("Source Upper");
     _register_input_parameter_type(pt5);
 	_input_index_src_upper = 2;
 
-    PTypePtr pt2 = PType::make(PTypeID::LowerBoundary);
-    pt2->set_instance_name("Destination Lower");
+    PTypePtr pt2 = PType::make_with_name(PTypeID::LowerBoundary, "Destination Lower");
+    //pt2->set_instance_name("Destination Lower");
     _register_input_parameter_type(pt2);	
 	_input_index_dst_lower = 3;
 
-    PTypePtr pt3 = PType::make(PTypeID::UpperBoundary);
-    pt3->set_instance_name("Destination Upper");
+    PTypePtr pt3 = PType::make_with_name(PTypeID::UpperBoundary, "Destination Upper");
+    //pt3->set_instance_name("Destination Upper");
     _register_input_parameter_type(pt3);
 	_input_index_dst_upper = 4;
 
 
 	// register output
-    PTypePtr pt_out = PType::make(PTypeID::Value);
-    pt_out->set_instance_name("Output");
+    PTypePtr pt_out = PType::make_with_name(PTypeID::Value, "Output");
+    //pt_out->set_instance_name("Output");
     _register_output_parameter_type(pt_out);
     
     // set default
@@ -2201,44 +2206,44 @@ void AttackDecay :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    PTypePtr pt_i1 = PType::make(PTypeID::Trigger);
-    pt_i1->set_instance_name("Trigger");
+    PTypePtr pt_i1 = PType::make_with_name(PTypeID::Trigger, "Trigger");
+    //pt_i1->set_instance_name("Trigger");
     _register_input_parameter_type(pt_i1);
 	_input_index_trigger = 0;
 
-    PTypePtr pt_i2 = PType::make(PTypeID::Duration);
-    pt_i2->set_instance_name("Attack time");
+    PTypePtr pt_i2 = PType::make_with_name(PTypeID::Duration, "Attack time");
+    //pt_i2->set_instance_name("Attack time");
     _register_input_parameter_type(pt_i2);
 	_input_index_attack = 1;
 
-    PTypePtr pt_i3 = PType::make(PTypeID::Duration);
-    pt_i3->set_instance_name("Decay time");
+    PTypePtr pt_i3 = PType::make_with_name(PTypeID::Duration, "Decay time");
+    //pt_i3->set_instance_name("Decay time");
     _register_input_parameter_type(pt_i3);
 	_input_index_decay = 2;
 
-    PTypePtr pt_i4 = PType::make(PTypeID::Value);
-    pt_i4->set_instance_name("Exponent");
+    PTypePtr pt_i4 = PType::make_with_name(PTypeID::Value, "Exponent");
+    //pt_i4->set_instance_name("Exponent");
     _register_input_parameter_type(pt_i4);
 	_input_index_exponent = 3;
 
-    PTypePtr pt_i5 = PType::make(PTypeID::Cycle);
-    pt_i5->set_instance_name("Cycle on or off");
+    PTypePtr pt_i5 = PType::make_with_name(PTypeID::Cycle, "Cycle on or off");
+    //pt_i5->set_instance_name("Cycle on or off");
     _register_input_parameter_type(pt_i5);
 	_input_index_cycle = 4;
 	
 
 	// register output
-    PTypePtr pt_o1 = PType::make(PTypeID::Value);
-    pt_o1->set_instance_name("Output");
+    PTypePtr pt_o1 = PType::make_with_name(PTypeID::Value, "Output");
+    //pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
-    PTypePtr pt_o2 = PType::make(PTypeID::Trigger);
-    pt_o2->set_instance_name("EOA");
+    PTypePtr pt_o2 = PType::make_with_name(PTypeID::Trigger, "EOA");
+    //pt_o2->set_instance_name("EOA");
     _register_output_parameter_type(pt_o2);
     _output_index_eoa = 1;
 
-    PTypePtr pt_o3 = PType::make(PTypeID::Trigger);
-    pt_o3->set_instance_name("EOD");
+    PTypePtr pt_o3 = PType::make_with_name(PTypeID::Trigger, "EOD");
+    //pt_o3->set_instance_name("EOD");
     _register_output_parameter_type(pt_o3);
     _output_index_eod = 2;
     
@@ -2363,8 +2368,8 @@ void White :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
     
     // register output
-    PTypePtr pt_o1 = PType::make(PTypeID::Value);
-    pt_o1->set_instance_name("Output");
+    PTypePtr pt_o1 = PType::make_with_name(PTypeID::Value, "Output");
+    //pt_o1->set_instance_name("Output");
     _register_output_parameter_type(pt_o1);
     
     //set_default();
@@ -2383,6 +2388,43 @@ void White :: render(RenderCountT f) {
         _render_count += 1;
     }
 }
+
+
+
+//-----------------------------------------------------------------------------
+Counter :: Counter(EnvironmentPtr e) 
+    : Gen(e) {
+    _class_name = "Counter";
+    _class_id = GenID::Counter;
+}
+
+void Counter :: init() {
+    // the init must configure the names and types of parameters
+    Gen::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+    
+    // register output
+    PTypePtr pt_o1 = PType::make_with_name(PTypeID::Value, "Output");
+    //pt_o1->set_instance_name("Output");
+    _register_output_parameter_type(pt_o1);
+    
+    //set_default();
+    reset();
+}
+
+void Counter :: reset() {
+    Gen::reset();
+}
+
+void Counter :: render(RenderCountT f) {
+    while (_render_count < f) {
+        for (_i=0; _i < _frame_size; ++_i) {
+            outputs[0][_i] = Random::uniform_bi_polar();
+        }
+        _render_count += 1;
+    }
+}
+
 
 
 
