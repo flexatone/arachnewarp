@@ -30,6 +30,7 @@ enum class GenID {
     AttackDecay,
     White,
     Counter,
+    Panner,
 };
 
 //! Old-style inum for iteration. 
@@ -257,6 +258,18 @@ class PTypeTimeContext: public PType {
 };
 
 
+
+class PTypeModulus;
+typedef std::shared_ptr<PTypeModulus> PTypeModulusPtr;
+//! A table, or a Buffer with 2 channels of data. 
+class PTypeModulus: public PType {
+    public://------------------------------------------------------------------
+    explicit PTypeModulus();
+};
+
+
+
+
 class PTypeDirection;
 typedef std::shared_ptr<PTypeDirection> PTypeDirectionPtr;
 class PTypeDirection: public PType {
@@ -287,6 +300,8 @@ class PTypeDirection: public PType {
 
 //=============================================================================
 //! Utility class for managing directions of indices. Used in Counter and Sequncer generators. Size is fixed over the life of the object. If size changes, then we must create a new object. 
+class DirectedIndex;
+typedef std::shared_ptr<DirectedIndex> DirectedIndexPtr;
 class DirectedIndex {
 
     private:
@@ -452,16 +467,16 @@ class Gen: public std::enable_shared_from_this<Gen> {
     virtual Validity _validate_outputs();
     
     //! Called by Generators during init() to configure the input parameters found in this Gen. PTypePtr instances are stored in the Gen, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
-    void _register_input_parameter_type(PTypePtr pts);
+    PIndexT _register_input_parameter_type(PTypePtr pts);
 
     //! Remove all inputs; used by slots that dynamically chagne inputs and outputs; all existing inputs will remain. 
     void _clear_input_parameter_types();
 
 	//! Called by Generators during init() to configure the slot parameters found in this Gen.
-    void _register_slot_parameter_type(PTypePtr pts);
+    PIndexT _register_slot_parameter_type(PTypePtr pts);
 
 	//! Define an output. This calls _resize_outputs().
-    void _register_output_parameter_type(PTypePtr pts);
+    PIndexT _register_output_parameter_type(PTypePtr pts);
 
     //! Remove all outputs; used by slots that dynamically change inputs and outputs; all existing inputs will remain. 
     void _clear_output_parameter_types();
@@ -1346,7 +1361,6 @@ class White: public Gen {
 };
 
 
-    
 //=============================================================================
 //! A white-noise generator.
 class Counter;
@@ -1355,18 +1369,61 @@ class Counter: public Gen {
 
     private://-----------------------------------------------------------------
     OutputsSizeT _i;
+    PIndexT _input_index_trigger;
+    PIndexT _input_index_reset;
+    PIndexT _input_index_direction;
+
+    PIndexT _slot_index_modulus;
+
+    // dynamically create based on slot setting; no need for shared pointer
+    DirectedIndexPtr _di {nullptr};
         
     public://------------------------------------------------------------------
     explicit Counter(EnvironmentPtr);
     
     virtual void init();
+
+    virtual void set_default();
             
     virtual void reset();
     
+    virtual void _update_for_new_slot();
+
     //! Perform the noise
     virtual void render(RenderCountT f);
 };
 
+
+
+//=============================================================================
+//! A stereo panner.
+class Panner;
+typedef std::shared_ptr<Panner> PannerPtr;
+class Panner: public Gen {
+
+    private://-----------------------------------------------------------------
+    OutputsSizeT _i;
+    PIndexT _input_index_value;
+    PIndexT _input_index_position;
+    PIndexT _output_index_left;
+    PIndexT _output_index_right;
+    
+    SampleT _cos_angle;
+    SampleT _sin_angle;
+    SampleT _angle
+
+    public://------------------------------------------------------------------
+    explicit Panner(EnvironmentPtr);
+    
+    virtual void init();
+            
+    virtual void reset();
+    
+    virtual void set_default();
+
+    //! Perform the pan
+    virtual void render(RenderCountT f);
+};
 
 
 

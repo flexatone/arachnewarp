@@ -1751,3 +1751,22 @@ BOOST_AUTO_TEST_CASE(aw_directed_index_e) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_counter_a) {	
+
+	GenPtr g1 = Gen::make(GenID::Counter);
+
+
+
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_panner_a) {	
+
+	GenPtr g1 = Gen::make(GenID::Panner);
+
+	
+
+}
+
