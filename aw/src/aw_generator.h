@@ -1410,7 +1410,7 @@ class Panner: public Gen {
     
     SampleT _cos_angle;
     SampleT _sin_angle;
-    SampleT _angle
+    SampleT _angle;
 
     public://------------------------------------------------------------------
     explicit Panner(EnvironmentPtr);
