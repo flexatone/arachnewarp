@@ -1764,9 +1764,48 @@ BOOST_AUTO_TEST_CASE(aw_counter_a) {
 
 BOOST_AUTO_TEST_CASE(aw_panner_a) {	
 
-	GenPtr g1 = Gen::make(GenID::Panner);
-
+	GenPtr gpan = Gen::make(GenID::Panner);
+    GenPtr gnoise = Gen::make(GenID::White);
+    
+    
+    
 	
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

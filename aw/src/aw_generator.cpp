@@ -2461,12 +2461,12 @@ void Panner :: reset() {
     Gen::reset();
 }
 
-void Panner :: render(RenderCountT f) {    
+void Panner :: render(RenderCountT f) {
+    // old max/msp	implementaiton used !- 1 and value through sqrt~; requres two sqrt calls per sample
     while (_render_count < f) {
         _render_inputs(f);
         _sum_inputs(_frame_size);        
         for (_i=0; _i < _frame_size; ++_i) {
-
             // position between -1 and 1
             _angle = (_summed_inputs[_input_index_position][_i] * 
                     PIOVER2 * 0.5);
@@ -2479,7 +2479,7 @@ void Panner :: render(RenderCountT f) {
 
             outputs[_output_index_right][_i] = (SQRT2OVER2 * 
                     _summed_inputs[_input_index_value][_i] * 
-                    (_cos_angle + _sin_angle);            
+                    (_cos_angle + _sin_angle));
         }
         _render_count += 1;
     }
