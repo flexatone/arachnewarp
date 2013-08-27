@@ -729,6 +729,9 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
 };
 
+// TODO: do not dd inputs, but replace!
+// TODO: accept nullptr as a non-assignment
+
 //.............................................................................
 // functions on GenPtr ...............................................
 //! Parsimonious serial connection: connect the min of a and b in straight connections. If count is zero, we set all available connections from start to end.
