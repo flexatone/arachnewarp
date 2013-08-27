@@ -81,7 +81,7 @@ SampleT const PI2 {PI * 2.0};
 SampleT const LOGTWO {0.69314718055994528623};
 SampleT const LOGTEN {2.302585092994};
 // used for panning calcs
-SampleT const PIOVER2 = {PI * 0.5};
+SampleT const PIOVER4 = {PI * 0.25};
 SampleT const SQRT2OVER2 = {sqrt(2.0) * 0.5};
 
 //! We store a minimum frequency value, necessary for handling case where the frequency goes through zero and we need to shift to a non-zero value. This value (.00001) is approx 28 hours, or more than 1 day. 
