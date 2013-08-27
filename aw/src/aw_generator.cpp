@@ -2453,7 +2453,7 @@ void Panner :: init() {
 
 void Panner :: set_default() {
     // only set default on init
-    set_input_by_index(_input_index_position, 0);
+    //set_input_by_index(_input_index_position, 0);
 }
 
 
@@ -2462,6 +2462,10 @@ void Panner :: reset() {
 }
 
 void Panner :: render(RenderCountT f) {
+    // temporary
+    SampleT _pan_l;
+    SampleT _pan_r;
+
     // old max/msp	implementaiton used !- 1 and value through sqrt~; requres two sqrt calls per sample
     while (_render_count < f) {
         _render_inputs(f);
@@ -2469,17 +2473,20 @@ void Panner :: render(RenderCountT f) {
         for (_i=0; _i < _frame_size; ++_i) {
             // position between -1 and 1
             _angle = (_summed_inputs[_input_index_position][_i] * 
-                    PIOVER2 * 0.5);
+                    PIOVER4);
             _cos_angle = cos(_angle);
             _sin_angle = sin(_angle);
 
-            outputs[_output_index_left][_i] = (SQRT2OVER2 * 
-                    _summed_inputs[_input_index_value][_i] * 
-                    (_cos_angle - _sin_angle));
+            _pan_l = SQRT2OVER2 * (_cos_angle - _sin_angle);
+            _pan_r = SQRT2OVER2 * (_cos_angle + _sin_angle);
 
-            outputs[_output_index_right][_i] = (SQRT2OVER2 * 
-                    _summed_inputs[_input_index_value][_i] * 
-                    (_cos_angle + _sin_angle));
+            //std::cout << "pan_l: " << _pan_l << " pan_r: " << _pan_r << std::endl;
+
+            outputs[_output_index_left][_i] = (
+                _summed_inputs[_input_index_value][_i] * _pan_l);
+
+            outputs[_output_index_right][_i] = (
+                _summed_inputs[_input_index_value][_i] * _pan_r);
         }
         _render_count += 1;
     }

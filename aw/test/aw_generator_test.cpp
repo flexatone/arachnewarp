@@ -1766,9 +1766,30 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
 
 	GenPtr gpan = Gen::make(GenID::Panner);
     GenPtr gnoise = Gen::make(GenID::White);
+
+    GenPtr gctrl = Gen::make(GenID::Phasor);
+    Inj<SampleT>({20, 0}) >> gctrl;   
+
+    GenPtr gctrl_mapped = Gen::make(GenID::Map);
+    //src lower, upper, dst lower uppper
+    Inj<GenPtr>({
+    		gctrl, 
+    		Gen::make(0), 
+    		Gen::make(1), 
+    		Gen::make(-1), 
+    		Gen::make(1)}) >> gctrl_mapped;   
+
+    // pan from left to right over 1/10th a sec
+    Inj<GenPtr>({gnoise, gctrl_mapped}) >> gpan;
+
+	GenPtr gbuf = Gen::make(GenID::Buffer);
+    Inj<SampleT>({2, .01}) || gbuf; // 2 ch, 441 samps    
     
-    
-    
+    gpan >> gbuf;
+    gbuf->render(1);
+    gbuf->illustrate_network();    
+    gctrl_mapped->illustrate_outputs();    
+    gbuf->illustrate_outputs();
 	
 
 }
