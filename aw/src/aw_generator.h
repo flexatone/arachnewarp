@@ -751,13 +751,19 @@ inline GenPtr connect_serial_to_inputs(GenPtr lhs, GenPtr rhs,
     if (count == 0) {
         count = availLen;
     }    
-    PIndexT i;    
+    PIndexT i;
+
+    // a null lhs changes nothing and does not get assingned
+    if (lhs == nullptr) {
+        return rhs;
+    }
+
     for (i = start; i != (start+count); ++i) {
         // count may be greater than avialLen and not be an error; just take as much as possible
         if (i >= availLen) break;
         // in, gen, out of that gen
-        // we use add_* so we can do this repeatedly on the same position through multiple calls; TODO: this is not always desirable.
-        rhs->add_input_by_index(i, lhs, i);
+        // can use add_input_* here, but not likely needed, and can produce surprising results
+        rhs->set_input_by_index(i, lhs, i);        
     }
     return rhs; // this might return a reference instaed of same GenPtr
 }
@@ -783,7 +789,7 @@ inline GenPtr connect_serial_to_inputs(const Inj<SampleT>& lhs, GenPtr rhs) {
     PIndexT availLen = std::min(rhs->get_input_count(),
             inj.size());
     for(PIndexT i=0; i<availLen; ++i) {
-        rhs->add_input_by_index(i, inj[i]);
+        rhs->set_input_by_index(i, inj[i]);
     }
     return rhs;
 }
@@ -795,7 +801,9 @@ inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
     PIndexT availLen = std::min(rhs->get_input_count(),
             inj.size());
     for(PIndexT i=0; i<availLen; ++i) {
-        rhs->add_input_by_index(i, inj[i]);
+        // skip a nullptr assignment
+        if (inj[i] == nullptr) continue;
+        rhs->set_input_by_index(i, inj[i]);
     }
     return rhs;
 }
@@ -825,6 +833,7 @@ inline GenPtr connect_serial_to_slots(const Inj<GenPtr>& lhs,
     PIndexT availLen = std::min(rhs->get_slot_count(),
             inj.size());
     for(PIndexT i=0; i < availLen; ++i) {
+        if (inj[i] == nullptr) continue;        
         rhs->set_slot_by_index(i, inj[i]); // set, not add
     }
     return rhs;
@@ -904,6 +913,7 @@ inline GenPtr connect_parallel(
     // the returned Gen needs to support multiple channels; these are set as slow 0
     g->set_slot_by_index(0, j);
     // try to conect as many in to out as possible for each gen
+    // note: does not need to be set_input, as this is a fresh gen
     PIndexT i;
     for (i = 0; i != j; ++i) {
         g->add_input_by_index(i, lhs, i);
