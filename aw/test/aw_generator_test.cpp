@@ -1780,7 +1780,7 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
     GenPtr gnoise = Gen::make(GenID::White);
 
     GenPtr gctrl = Gen::make(GenID::Phasor);
-    Inj<SampleT>({20, 0}) >> gctrl;   
+    Inj<SampleT>({100, 0}) >> gctrl;   
 
     GenPtr gctrl_mapped = Gen::make(GenID::Map);
     //src lower, upper, dst lower uppper
@@ -1799,8 +1799,11 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
     
     gpan >> gbuf;
     gbuf->render(1);
-    gbuf->illustrate_network();    
-    gctrl_mapped->illustrate_outputs();    
+    //gbuf->illustrate_network();    
+    //gctrl_mapped->illustrate_outputs();   
+   	gctrl->print_outputs();     
+   	gpan->print_outputs();     
+   	gctrl_mapped->print_outputs();
     gbuf->illustrate_outputs();
 	
 

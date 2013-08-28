@@ -865,6 +865,9 @@ inline GenPtr operator>>(const Inj<GenPtr>& lhs, GenPtr rhs) {
 }
 
 
+// TODO: might add alternative >> method that adds inputs, not just sets, such that you can repeatedly add inputs and mix on the fly
+
+
 // operator || ...............................................................
 
 //! Connect a 1D Injector, where each element is mapped to a slot in order. It is an exception to provide more than 1 dimension. This will always set slots.
