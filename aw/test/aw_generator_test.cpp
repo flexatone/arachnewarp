@@ -721,7 +721,8 @@ BOOST_AUTO_TEST_CASE(connect_f_1) {
     g4->set_input_by_index(0, 6.5);
     
     // g4 to g2
-    g2 = connect_serial_to_inputs(g4, g2);    
+    //g2 = connect_serial_to_inputs(g4, g2);
+    g2->add_input_by_index(0, g4);    
     g2->render(2);
     BOOST_CHECK_CLOSE(g2->outputs[0][0], 10.0, .0001);
 }
@@ -742,7 +743,10 @@ BOOST_AUTO_TEST_CASE(connect_f_2) {
           
 
     // g1 into g2
-    g2 = connect_serial_to_inputs(g1, g2);
+    //g2 = connect_serial_to_inputs(g1, g2);
+    g2->add_input_by_index(0, g1, 0);
+    g2->add_input_by_index(1, g1, 1);
+    g2->add_input_by_index(2, g1, 2);
 
     g2->render(1);
     //g2->illustrate_network();
@@ -769,7 +773,8 @@ BOOST_AUTO_TEST_CASE(connect_f_3) {
           
 
     // connect from o/i 2, 1 length
-    g2 = connect_serial_to_inputs(g1, g2, 2, 1);
+    //g2 = connect_serial_to_inputs(g1, g2, 2, 1);
+    g2->add_input_by_index(2, g1, 2);
 
     g2->render(1);
     //g2->illustrate_network();
@@ -792,7 +797,8 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
     GenPtr g2 = Gen::make(GenID::Add);
     g2->set_input_by_index(0, 7);
 
-    g1a >> g2;
+    //g1a >> g2;
+    g2->add_input_by_index(0, g1a);
 
     g2->render(1);
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 11, .001);
@@ -800,8 +806,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_3) {
     GenPtr g1b = Gen::make(GenID::Constant);
     g1b->set_input_by_index(0, 12.5);
 
-    // can connect another input to g2 
-    g1b >> g2;
+    // can no longer connect another input to g2 
+    //g1b >> g2;
+    g2->add_input_by_index(0, g1b);
 
     g2->render(2);
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 23.5, .001);
@@ -821,9 +828,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_4) {
           
     GenPtr g2 = Gen::make(GenID::Add);
     g2->set_slot_by_index(0, 3); // three channels          
-    g2->set_input_by_index(0, 34);
-    g2->set_input_by_index(1, 105);
-    g2->set_input_by_index(2, 2110);
+    // g2->set_input_by_index(0, 34);
+    // g2->set_input_by_index(1, 105);
+    // g2->set_input_by_index(2, 2110);
 
     // connect all of 1 to all fo 2
     g1 >> g2;
@@ -831,9 +838,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_4) {
     g2->render(1);
     //g2->illustrate_network();
     // only o2 gets the added values
-	BOOST_CHECK_CLOSE(g2->outputs[0][0], 44, .001);
-	BOOST_CHECK_CLOSE(g2->outputs[1][0], 305, .001);
-	BOOST_CHECK_CLOSE(g2->outputs[2][0], 6110, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[0][0], 10, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[1][0], 200, .001);
+	BOOST_CHECK_CLOSE(g2->outputs[2][0], 4000, .001);
 
 }
 
@@ -849,13 +856,16 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_6) {
     GenPtr g1 = Gen::make(GenID::Add);    
     // connect two constants to g1b
     connect_serial_to_inputs(20, g1);
-    connect_serial_to_inputs(11, g1);
+    //connect_serial_to_inputs(11, g1);
+    g1->add_input_by_index(0, 11);
     g1->render(1);
 	BOOST_CHECK_CLOSE(g1->outputs[0][0], 31, .001);
 
     GenPtr g2 = Gen::make(GenID::Add);    
     23.5 >> g2;
-    100.5 >> g2;
+    //100.5 >> g2;
+    // have to explicitly add now
+    g2->add_input_by_index(0, 100.5);
     g2->render(1);
 	BOOST_CHECK_CLOSE(g2->outputs[0][0], 124.0, .001);
     
@@ -901,8 +911,10 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_8) {
 	GenPtr g2 = Gen::make(GenID::Sine);
 	GenPtr g3 = Gen::make(GenID::Sine);
 
-    Inj<GenPtr>({g2, g3}) >> g1;
-    
+    //Inj<GenPtr>({g2, g3}) >> g1;
+    g1->add_input_by_index(0, g2);
+    g1->add_input_by_index(1, g3);
+
     //g1->illustrate_network();
 
     Gen::VGenPtrOutPair ins;
