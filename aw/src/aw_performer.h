@@ -19,7 +19,8 @@ class PAPerformer {
         //! Storage for callback
         GenPtr root_gen;
         RenderCountT render_count;
-        
+        RenderCountT channels;
+
         //! Callback routine
         int render_mono(
                 const void* inputBuffer,
@@ -29,11 +30,19 @@ class PAPerformer {
                 PaStreamCallbackFlags statusFlags
                 );
         
-        //int render_stereo();
+        int render_stereo(
+                const void* inputBuffer,
+                void* outputBuffer, 
+                unsigned long framesPerBuffer, 
+                const PaStreamCallbackTimeInfo* timeInfo,
+                PaStreamCallbackFlags statusFlags
+                );
         
     
     };
 
+    typedef portaudio::MemFunCallbackStream<Callback>
+        PACallbackStream;
     
     private://-----------------------------------------------------------------
 

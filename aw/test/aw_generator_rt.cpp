@@ -2,7 +2,7 @@
 
 
 
-// g++-4.7 -std=c++11 aw_generator_rt.cpp -I ../src ../src/aw_generator.cpp ../src/aw_performer.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -Wall -O3 -o aw_generator_rt
+// g++-4.7 -std=c++11 aw_generator_rt.cpp -I ../src ../src/aw_generator.cpp ../src/aw_performer.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -L /usr/local/lib -Wall -O3 -o aw_generator_rt
 
 
 
@@ -19,8 +19,7 @@
 using namespace aw;
 
 
-int main() {
-
+void am_test() {
 
     EnvironmentPtr e = Environment::make_with_frame_size(64);
     Environment::set_default_env(e);
@@ -55,9 +54,43 @@ int main() {
     GenPtr root_gen = (g1 + g2) * genv;
     root_gen->print_inputs(true);
     
-    
     PAPerformer pap(root_gen);
-    pap(6);
+    pap(6);    
+
+}
+
+void pan_test() {
+
+    GenPtr gpan = Gen::make(GenID::Panner);
+    GenPtr gnoise = Gen::make(GenID::White);
+
+    GenPtr gctrl = Gen::make(GenID::Phasor);
+    Inj<SampleT>({2, 0}) >> gctrl;   
+
+    GenPtr gctrl_mapped = Gen::make(GenID::Map);
+    //src lower, upper, dst lower uppper
+    Inj<GenPtr>({
+            gctrl, 
+            Gen::make(0), 
+            Gen::make(1), 
+            Gen::make(-1), 
+            Gen::make(1)}) >> gctrl_mapped;   
+
+    // pan from left to right over 1/10th a sec
+    Inj<GenPtr>({gnoise, gctrl_mapped}) >> gpan;
+
+    GenPtr root_gen = gpan;
+    PAPerformer pap(root_gen);
+    pap(6);    
+
+
+}
+
+
+
+int main() {
+
+    pan_test();
 
 }
 

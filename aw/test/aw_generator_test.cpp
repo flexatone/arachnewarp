@@ -1799,12 +1799,14 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
     
     gpan >> gbuf;
     gbuf->render(1);
+
+    
     //gbuf->illustrate_network();    
     //gctrl_mapped->illustrate_outputs();   
-   	gctrl->print_outputs();     
-   	gpan->print_outputs();     
-   	gctrl_mapped->print_outputs();
-    gbuf->illustrate_outputs();
+   	//gctrl->print_outputs();     
+   	//gpan->print_outputs();     
+   	//gctrl_mapped->print_outputs();
+    //gbuf->illustrate_outputs();
 	
 
 }
