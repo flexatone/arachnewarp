@@ -86,30 +86,30 @@ void pan_test() {
 
     // pan from left to right over 1/10th a sec
     GenPtr pan_1 = Gen::make(GenID::Panner);
-    Inj<GenPtr>({src_1 * 0, pan_ctrl_1}) >> pan_1;
+    Inj<GenPtr>({src_1 * .4, pan_ctrl_1}) >> pan_1;
 
+    // multiplication does not take proxy into account
     GenPtr pan_2 = Gen::make(GenID::Panner);
-    // want to wrap src_2 in a way that gives me the second output as the first
-    Inj<GenPtr>({src_2 * .5, pan_ctrl_2}) >> pan_2;
-    pan_2->set_input_by_index(0, src_2, 1);
-	
+    Inj<GenPtr>({(src_2 % 1) * .5, pan_ctrl_2}) >> pan_2;
 
     GenPtr pan_3 = Gen::make(GenID::Panner);
-    Inj<GenPtr>({src_3 * 0, pan_ctrl_3}) >> pan_3;
+    Inj<GenPtr>({src_3 * .2, pan_ctrl_3}) >> pan_3;
 
 
-    GenPtr root_gen = pan_1 + pan_2 + pan_3;
+    GenPtr root_gen = pan_2; //pan_1 + pan_2 + pan_3;
     std::cout << root_gen->get_output_count() << std::endl;
+
     root_gen->illustrate_network();
-//    PAPerformer pap(root_gen);
-//    pap(6);    
+
+    PAPerformer pap(root_gen);
+    pap(6);    
 
     // to record and write
-	GenPtr buf = Gen::make(GenID::Buffer);
-    Inj<SampleT>({2, 6}) || buf; // 2 ch, 6 seconds
-    root_gen >> buf;
-    buf->render(1);
-    buf->write_output_to_fp("pan_test.aif");
+	// GenPtr buf = Gen::make(GenID::Buffer);
+ //    Inj<SampleT>({2, 6}) || buf; // 2 ch, 6 seconds
+ //    root_gen >> buf;
+ //    buf->render(1);
+ //    buf->write_output_to_fp("pan_test.aif");
 
 
 //    Inj<GenPtr>({

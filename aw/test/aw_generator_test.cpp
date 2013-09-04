@@ -1814,6 +1814,22 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_output_proxy) {
+	// test auto constant creation when adding a sample type
+    
+	GenPtr phasor = Gen::make(GenID::Phasor);
+	GenPtr cycle = Gen::make(GenID::Sine);	
+	GenPtr panner = Gen::make(GenID::Panner);
+	// will assign out 1 to pan in 1
+   	Inj<GenPtr>({phasor % 1, cycle}) >> panner;
+
+   	panner->print_inputs();
+
+	
+
+}
+
+
 
 
 

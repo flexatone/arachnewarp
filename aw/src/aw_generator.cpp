@@ -85,7 +85,7 @@ PType :: PType() {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const PType& pt) {
-    ostream << pt._class_name << ": " << pt._instance_name << ">";
+    ostream << "<" << pt._class_name << ": " << pt._instance_name << ">";
     return ostream; 
 }
 
@@ -838,19 +838,20 @@ void Gen :: print_outputs(FrameSizeT start, FrameSizeT end) {
     std::cout << std::endl;
 }
 
-void Gen :: print_inputs(bool recursive, UINT8 recurse_level) {
+void Gen :: print_inputs(bool recursive, UINT8 recurse_level, 
+        std::string prefix) {
     //std::cout << "recurse_level: " << (int)recurse_level << std::endl;
     std::string space1 = std::string(recurse_level*INDENT_SIZE, ' ');
     std::string space2 = std::string((recurse_level+1)*INDENT_SIZE, ' '); 
     std::string space3 = std::string((recurse_level+2)*INDENT_SIZE, ' '); 
 
-    std::cout << space1 << *this << " Inputs:" << std::endl;
+    std::cout << space1 << prefix << *this << std::endl;
     VGenPtrOutPair :: const_iterator j;
     // need an interger as key for _input_parameter_type
     for (PIndexT k=0; k!=_inputs.size(); ++k) {   
         PTypePtr pts = _input_parameter_type[k];
         // need to iterate over each sub vector
-        std::cout << space2 << *pts << std::endl;
+        std::cout << space2 << get_conn_label(k, Input) << *pts << std::endl;
         for (j=_inputs[k].begin(); j!=_inputs[k].end(); ++j) {
             // deref
             GenPtr g = (*j).first;
@@ -859,10 +860,14 @@ void Gen :: print_inputs(bool recursive, UINT8 recurse_level) {
             }
             else {
                 if (recursive) {
-                    g->print_inputs(recursive, recurse_level+2);
+                    // pass the conn label as the prefix
+                    g->print_inputs(recursive, recurse_level+2,
+                         get_conn_label((*j).second, Output));
                 }
                 else { // need to deref the shared generator
-                    std::cout << "        " << *g << std::endl;
+                    std::cout << space3 
+                    << get_conn_label((*j).second, Output) 
+                    << *g << std::endl;
                 }
             }
         }
@@ -1086,7 +1091,8 @@ void Gen :: set_input_by_index(
     // this removes all stored values
     _inputs[i].clear();
     // we alway set the proxied, even though it is usually the same instance
-    GenPtrOutPair gsop(gs->get_proxied(), pos);  
+    GenPtrOutPair gsop(gs->get_proxied(), 
+            pos + gs->get_output_count_shift());  
     _inputs[i].push_back(gsop);    
 }
 
@@ -1128,7 +1134,8 @@ void Gen :: add_input_by_index(PIndexT i,
         throw std::invalid_argument("position exceeds output count on passed input");    
     }
     // adding additiona, with a generator
-    GenPtrOutPair gsop(gs->get_proxied(), pos);     
+    GenPtrOutPair gsop(gs->get_proxied(), 
+            pos + gs->get_output_count_shift());      
     _inputs[i].push_back(gsop);    
 }
 
@@ -1269,14 +1276,15 @@ void Constant :: reset() {
     _render_count = 0;
 }
 
-void Constant :: print_inputs(bool recursive, UINT8 recurse_level) {
+void Constant :: print_inputs(bool recursive, UINT8 recurse_level, 
+        std::string prefix) {
     // need overridden print because this is terminal in recursive searches
     std::string space1 = std::string(recurse_level*INDENT_SIZE, ' ');
     std::string space2 = std::string((recurse_level+1)*INDENT_SIZE, ' '); 
     std::string space3 = std::string((recurse_level+2)*INDENT_SIZE, ' ');     
     // this cannot recurse so nothing to do with parameters; just so that
     // they are the same as Gen
-    std::cout << space1 << *this << " Inputs:" << std::endl;
+    std::cout << space1 << prefix << *this << std::endl;
     // iterative over inputs
     for (PIndexT k=0; k!=_inputs.size(); ++k) {   
         // is this doing a copy?
@@ -2442,7 +2450,7 @@ void Panner :: init() {
 
     // inputs
     _input_index_value = _register_input_parameter_type(
-            PType::make_with_name(PTypeID::Value, "Value"));
+            PType::make_with_name(PTypeID::Value, "Opperand"));
 
     _input_index_position = _register_input_parameter_type(
             PType::make_with_name(
