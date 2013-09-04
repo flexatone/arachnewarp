@@ -409,6 +409,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
 	//! Store the Envrionment instance. 
     EnvironmentPtr _environment;
+
 	
     protected://---------------------------------------------------------------
 
@@ -533,7 +534,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     virtual void set_default();
 
     //! Return the the number of outputs dimensions
-    PIndexT get_output_count() const {return _output_count;};
+    virtual PIndexT get_output_count() const {return _output_count;};
 
     //! Return the the outputs size, or the total number of samples used for all frames at all outputs.
     FrameSizeT get_outputs_size() const {return _outputs_size;};
@@ -564,6 +565,13 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
 	//! Get the nyquist frequency. 
     OutputsSizeT get_nyquist() const {return _nyquist;};	
+
+    // methods for proxy gens ...........................................................    
+
+    //! ProxyGens can override this method to return a wrapped GenPtr. 
+    virtual GenPtr get_proxied() {return shared_from_this();};
+
+    virtual PIndexT get_output_count_shift() {return 0;};
 
     
 	// info strings ...........................................................    
@@ -660,15 +668,15 @@ class Gen: public std::enable_shared_from_this<Gen> {
     PIndexT get_slot_count() {return _slot_count;};
 
 	//! Return the parameter index for a named parameter.
-    PIndexT get_input_index_from_parameter_name(const
-            std::string& s);
+    // PIndexT get_input_index_from_parameter_name(const
+    //         std::string& s);
 
-	//! Return the parameter index for the first-encountered parameter type id; raises an exception if not found.
-    PIndexT get_input_index_from_class_id(const
-            PTypeID ptid);
+	// //! Return the parameter index for the first-encountered parameter type id; raises an exception if not found.
+ //    PIndexT get_input_index_from_class_id(const
+ //            PTypeID ptid);
 
-	//! Return the parameter slot for a named parameter.
-    PIndexT get_slot_index_from_parameter_name(const std::string& s);	
+	// //! Return the parameter slot for a named parameter.
+ //    PIndexT get_slot_index_from_parameter_name(const std::string& s);	
 
 
     // TODO: must check for duplicated connections and silently skip them; 
@@ -686,15 +694,15 @@ class Gen: public std::enable_shared_from_this<Gen> {
             PIndexT pos=0);
 
     ///! Set input by class id of the PType. 
-    void set_input_by_class_id(
-            PTypeID ptid,
-            GenPtr gs,
-            PIndexT pos=0);
+    // void set_input_by_class_id(
+    //         PTypeID ptid,
+    //         GenPtr gs,
+    //         PIndexT pos=0);
                                         
-    void set_input_by_class_id(
-            PTypeID ptid,
-            SampleT v, // accept numbers
-            PIndexT pos=0);
+    // void set_input_by_class_id(
+    //         PTypeID ptid,
+    //         SampleT v, // accept numbers
+    //         PIndexT pos=0);
 
 
     //! Add a multiple input at this parameter. 
@@ -913,7 +921,7 @@ inline GenPtr connect_parallel(
     // use the passed in gen id, this is usually GenID::Add, GenID::Multiply
     GenPtr g = Gen::make_with_environment(gid, 
             lhs->get_environment());
-    // the returned Gen needs to support multiple channels; these are set as slow 0
+    // the returned Gen needs to support multiple channels; these are set as slot 0: TODO: need to validate this somehow
     g->set_slot_by_index(0, j);
     // try to conect as many in to out as possible for each gen
     // note: does not need to be set_input, as this is a fresh gen
@@ -982,6 +990,44 @@ inline GenPtr operator*(SampleT lhs, GenPtr rhs) {
     return aw::connect_parallel(lhs, rhs, GenID::Multiply);
 } 
 
+
+//=============================================================================
+//! A GenPtr wraperr to permit default-setting not the first input when constructing signal graphs. Not a permanant object, but a temporary used. 
+class GenProxyOutputShift;
+typedef std::shared_ptr<GenProxyOutputShift> GenProxyOutputShiftPtr;
+class GenProxyOutputShift: public Gen {
+
+    private://-----------------------------------------------------------------
+
+    GenPtr _proxied;
+
+    PIndexT _output_count_shift;
+
+    public://-----------------------------------------------------------------
+
+    explicit GenProxyOutputShift(EnvironmentPtr e, GenPtr gp, 
+            PIndexT shift);
+
+    //! ProxyGens can override this method to return a wrapped GenPtr. 
+    virtual GenPtr get_proxied() {return _proxied;};
+
+    virtual PIndexT get_output_count_shift() {return _output_count_shift;};
+
+    virtual PIndexT get_output_count() const;
+
+};
+
+
+// operator % .................................................................
+
+
+//! Return this Gen wrapped in a GenProxyOutputShift wrapper. 
+inline GenPtr operator%(GenPtr lhs, PIndexT shift) {
+    // this wrapped obj need not delegate all methods, as 
+    return GenProxyOutputShiftPtr(
+            new GenProxyOutputShift(
+            lhs->get_environment(), lhs, shift));
+}
 
 
 
