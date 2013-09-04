@@ -95,9 +95,9 @@ BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     //g3.print_inputs();
 
     BOOST_CHECK_EQUAL(g3.get_input_count(), 1);
-    BOOST_CHECK_EQUAL(g3.get_input_index_from_parameter_name("Constant numerical value"), 0);
+    // BOOST_CHECK_EQUAL(g3.get_input_index_from_parameter_name("Constant numerical value"), 0);
     // check index out of range
-    BOOST_CHECK_EQUAL(g3.get_input_index_from_class_id(PTypeID::Value), 0);
+    // BOOST_CHECK_EQUAL(g3.get_input_index_from_class_id(PTypeID::Value), 0);
     
     BOOST_REQUIRE_THROW(g3.set_input_by_index(2, 30), std::invalid_argument);
     BOOST_REQUIRE_THROW(g3.set_input_by_index(1, 23), std::invalid_argument);

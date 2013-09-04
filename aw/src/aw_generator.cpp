@@ -845,7 +845,6 @@ void Gen :: print_inputs(bool recursive, UINT8 recurse_level) {
     std::string space3 = std::string((recurse_level+2)*INDENT_SIZE, ' '); 
 
     std::cout << space1 << *this << " Inputs:" << std::endl;
-
     VGenPtrOutPair :: const_iterator j;
     // need an interger as key for _input_parameter_type
     for (PIndexT k=0; k!=_inputs.size(); ++k) {   
@@ -1017,62 +1016,67 @@ void Gen :: set_outputs(const std::string& fp) {
 //..............................................................................
 // parameter translating
 
-PIndexT Gen :: get_input_index_from_parameter_name(
-    const std::string& s) {
-    // match the string to the name returned by get_instance_name; 
-    Gen :: MapIndexToParameterTypePtr ::const_iterator k;
-    for (k=_input_parameter_type.begin(); 
-        k != _input_parameter_type.end(); 
-        ++k) {
-        // each value (second( is a PTypePtr)
-        if (s == k->second->get_instance_name()) return k->first;
-    }
-    std::stringstream msg;
-    msg << "no matching parameter name: " << s;
-    msg << str_file_line(__FILE__, __LINE__);
-    throw std::invalid_argument(msg.str());
-}
+// PIndexT Gen :: get_input_index_from_parameter_name(
+//     const std::string& s) {
+//     // match the string to the name returned by get_instance_name; 
+//     Gen :: MapIndexToParameterTypePtr ::const_iterator k;
+//     for (k=_input_parameter_type.begin(); 
+//         k != _input_parameter_type.end(); 
+//         ++k) {
+//         // each value (second( is a PTypePtr)
+//         if (s == k->second->get_instance_name()) return k->first;
+//     }
+//     std::stringstream msg;
+//     msg << "no matching parameter name: " << s;
+//     msg << str_file_line(__FILE__, __LINE__);
+//     throw std::invalid_argument(msg.str());
+// }
 
-PIndexT Gen :: get_input_index_from_class_id(const
-        PTypeID ptid) {
-    // match the string to the name returned by get_instance_name; 
-    Gen :: MapIndexToParameterTypePtr ::const_iterator k;
-    for (k = _input_parameter_type.begin();
-        k != _input_parameter_type.end(); 
-        ++k) {
-        // each value (second( is a PTypePtr)
-        if (ptid == k->second->get_class_id()) return k->first;
-    }
-    std::stringstream msg;
-    msg << "no matching parameter type: ";
-    msg << str_file_line(__FILE__, __LINE__);
-    throw std::invalid_argument(msg.str());
+// PIndexT Gen :: get_input_index_from_class_id(const
+//         PTypeID ptid) {
+//     // match the string to the name returned by get_instance_name; 
+//     Gen :: MapIndexToParameterTypePtr ::const_iterator k;
+//     for (k = _input_parameter_type.begin();
+//         k != _input_parameter_type.end(); 
+//         ++k) {
+//         // each value (second( is a PTypePtr)
+//         if (ptid == k->second->get_class_id()) return k->first;
+//     }
+//     std::stringstream msg;
+//     msg << "no matching parameter type: ";
+//     msg << str_file_line(__FILE__, __LINE__);
+//     throw std::invalid_argument(msg.str());
     
-}
+// }
 
-PIndexT Gen :: get_slot_index_from_parameter_name(    
-        const std::string& s) {
-    // not yet implemented
-    std::stringstream msg;
-    msg << "no matching parameter name: " << s;
-    msg << str_file_line(__FILE__, __LINE__);
-    throw std::invalid_argument(msg.str());
-}
+// PIndexT Gen :: get_slot_index_from_parameter_name(    
+//         const std::string& s) {
+//     // not yet implemented
+//     std::stringstream msg;
+//     msg << "no matching parameter name: " << s;
+//     msg << str_file_line(__FILE__, __LINE__);
+//     throw std::invalid_argument(msg.str());
+// }
 
 //..............................................................................
 // parameter setting and adding; all overloaded for taking generator or sample type values, whcich auto-creates constants.
+
+
+// If we have GenProxyOutputShift set at 2, that would mean that the first output seen on that GenProxy would be output index 2. A request for out 0 would get out 2; a request for out 1 would try to get out 3, which may not exist. (Thus, overridden get_output_count() will need to subtract the shift value from get_output_count (3 would get 1)); we would also need to be able to query the proxy and get the output_count_shift value (0 on the base class.)
 
 void Gen :: set_input_by_index(
         PIndexT i,
         GenPtr gs,
         PIndexT pos){
-    // if zero, none are set; current value is next available slot for registering
+
+    // check if the requested input exists in this Gen
     if (_input_count <= 0 or i >= _input_count) {
         std::stringstream msg;
         msg << "Parameter index is not available: " << i
                 << str_file_line(__FILE__, __LINE__);
         throw std::invalid_argument(msg.str());    
     }
+    // check if the position is available in the input Gen's output
     if (pos >= gs->get_output_count()) {
         std::stringstream msg;
         msg << "position exceeds output count on passed input" << i
@@ -1080,8 +1084,9 @@ void Gen :: set_input_by_index(
         throw std::invalid_argument(msg.str());    
     }    
     // this removes all stored values
-    _inputs[i].clear();    
-    GenPtrOutPair gsop(gs, pos);  
+    _inputs[i].clear();
+    // we alway set the proxied, even though it is usually the same instance
+    GenPtrOutPair gsop(gs->get_proxied(), pos);  
     _inputs[i].push_back(gsop);    
 }
 
@@ -1090,28 +1095,27 @@ void Gen :: set_input_by_index(
         SampleT v,
         PIndexT pos){
     // overridden method for setting a value: generates a constant
-	// pass the GeneratorConfig to produce same dimensionality requested
     GenPtr c = Gen::make_with_environment(GenID::Constant, _environment);
     c->set_input_by_index(0, v); // this will call Constant::reset()
     set_input_by_index(i, c, pos); // call overloaded
 }
 
 
-void Gen :: set_input_by_class_id(
-        PTypeID ptid,
-        GenPtr gs,
-        PIndexT pos){
-    PIndexT i = get_input_index_from_class_id(ptid);
-    set_input_by_index(i, gs, pos); // call overloaded
-}
+// void Gen :: set_input_by_class_id(
+//         PTypeID ptid,
+//         GenPtr gs,
+//         PIndexT pos){
+//     PIndexT i = get_input_index_from_class_id(ptid);
+//     set_input_by_index(i, gs, pos); // call overloaded
+// }
 
-void Gen :: set_input_by_class_id(
-        PTypeID ptid,
-        SampleT v,
-        PIndexT pos){
-    PIndexT i = get_input_index_from_class_id(ptid);
-    set_input_by_index(i, v, pos); // call overloaded
-}
+// void Gen :: set_input_by_class_id(
+//         PTypeID ptid,
+//         SampleT v,
+//         PIndexT pos){
+//     PIndexT i = get_input_index_from_class_id(ptid);
+//     set_input_by_index(i, v, pos); // call overloaded
+// }
 
 
 void Gen :: add_input_by_index(PIndexT i, 
@@ -1124,7 +1128,7 @@ void Gen :: add_input_by_index(PIndexT i,
         throw std::invalid_argument("position exceeds output count on passed input");    
     }
     // adding additiona, with a generator
-    GenPtrOutPair gsop(gs, pos);     
+    GenPtrOutPair gsop(gs->get_proxied(), pos);     
     _inputs[i].push_back(gsop);    
 }
 
@@ -1141,8 +1145,7 @@ void Gen :: add_input_by_index(PIndexT i, SampleT v,
 }
 
 
-Gen::VGenPtrOutPair Gen :: get_input_gens_by_index(
-                        PIndexT i) {
+Gen::VGenPtrOutPair Gen :: get_input_gens_by_index(PIndexT i) {
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");		
     }
@@ -1197,14 +1200,21 @@ GenPtr Gen :: get_slot_gen_at_index(PIndexT i) {
 }
 
 
+//------------------------------------------------------------------------------
 
-//void Gen :: clear_slots() {
-// do not implement
-//}
+GenProxyOutputShift :: GenProxyOutputShift(EnvironmentPtr e,
+        GenPtr gp, PIndexT shift) 
+    : Gen(e),
+    _proxied{gp}, 
+    _output_count_shift{shift}
+    {
+    // should validate that _output_count_shift is not >= gp->get_output_count()
+    // should validate that gp is not nulllptr
+}
 
-
-
-
+PIndexT GenProxyOutputShift :: get_output_count() const {
+    return _proxied->get_output_count() - _output_count_shift;
+}
 
 
 
