@@ -96,7 +96,7 @@ SampleT const TRIG_THRESH {.99999};
 
 
 //! Defined for all text-based hierarchical displays. 
-std::uint8_t const INDENT_SIZE {2};
+std::uint8_t const INDENT_SIZE {3};
 
 const std::string OUT_SYMBOL {"o"};
 const std::string IN_SYMBOL {"i"};
@@ -123,9 +123,9 @@ const std::string SLOT_SYMBOL {"-"};
 const std::string COLOR_NONE {""};
 const std::string COLOR_RESET {"\033[0m"};
 const std::string COLOR_H1 {"\033[1m\033[37m"}; // bold white
-const std::string COLOR_SLOT {"\033[33m"};
-const std::string COLOR_INPUT {"\033[31m"};
-const std::string COLOR_OUTPUT {"\033[34m"};
+const std::string COLOR_SLOT {"\033[37m"};
+const std::string COLOR_INPUT {"\033[35m"};
+const std::string COLOR_OUTPUT {"\033[32m"};
 
 
 inline std::string color_embrace(std::string body, std::string color,

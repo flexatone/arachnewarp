@@ -41,6 +41,7 @@ enum ConnID {
 };
 
 static const std::vector<ConnID> ConnIDs {Slot, Input, Output};
+
 static const std::vector<std::string> ConnColor {
         COLOR_SLOT, COLOR_INPUT, COLOR_OUTPUT};
 
@@ -616,7 +617,8 @@ class Gen: public std::enable_shared_from_this<Gen> {
     void print_outputs(FrameSizeT start=0, FrameSizeT end=0);
 
     //! Print the the hierarchical list of all input values. This is virtual because Constant must print inputs in as different way. No other generator should need to specialize. 
-    virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
+    virtual void print_inputs(bool recursive=false, 
+        UINT8 recurse_level=0, std::string prefix="");
 
     //! Render the requested frame if not already rendered. This is virtual because every Gen renders in a different way. 
     virtual void render(RenderCountT f); 
@@ -909,7 +911,7 @@ inline GenPtr operator&&(const std::string lhs, GenPtr rhs) {
 
 // parallel connections ......................................................
 
-//! Connect two generators as inputs into another generator, where that generator is given by the passed in GenID. This is a binary operator.
+//! Connect two generators as inputs into another generator, where that generator is given by the passed in GenID. This is a binary operator. Note that this adds, it does not set, the input.
 inline GenPtr connect_parallel(
         GenPtr lhs, 
         GenPtr rhs, 
@@ -1011,6 +1013,7 @@ class GenProxyOutputShift: public Gen {
     //! ProxyGens can override this method to return a wrapped GenPtr. 
     virtual GenPtr get_proxied() {return _proxied;};
 
+    //! Get the number of outputs to shift. This is used in set_input_by_index to start assignment.
     virtual PIndexT get_output_count_shift() {return _output_count_shift;};
 
     virtual PIndexT get_output_count() const;
@@ -1055,7 +1058,8 @@ class Constant: public Gen {
     virtual void render(RenderCountT f); 	
 	
 	//! This derived function is necessary to handle displaying internal input components.
-	virtual void print_inputs(bool recursive=false, UINT8 recurse_level=0);
+	virtual void print_inputs(bool recursive=false, 
+        UINT8 recurse_level=0, std::string prefix="");
 
 	//! As Constant does not compose any Generators even though it has an input defined, this overridden method must return an empty vector.     
     virtual VGenPtrOutPair get_input_gens_by_index(PIndexT i);
