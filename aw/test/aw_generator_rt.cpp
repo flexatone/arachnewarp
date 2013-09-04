@@ -61,31 +61,64 @@ void am_test() {
 
 void pan_test() {
 
-    GenPtr gpan = Gen::make(GenID::Panner);
-    GenPtr gnoise = Gen::make(GenID::White);
+    GenPtr src_1 = Gen::make(GenID::Sine);
+    330 >> src_1;
+    GenPtr pan_ctrl_1 = Gen::make(GenID::Sine);
+    2 >> pan_ctrl_1;	
 
-    GenPtr gctrl = Gen::make(GenID::Phasor);
-    Inj<SampleT>({2, 0}) >> gctrl;   
 
-    GenPtr gctrl_mapped = Gen::make(GenID::Map);
+    GenPtr src_2 = Gen::make(GenID::Phasor);
+    8 >> src_2;
+    GenPtr pan_ctrl_2 = Gen::make(GenID::Sine);
+    1 >> pan_ctrl_2;
+
+
+    GenPtr src_3 = Gen::make(GenID::Sine);
+    783 >> src_3;
+    GenPtr pan_ctrl_3 = Gen::make(GenID::Sine);
+    .33333 >> pan_ctrl_3;
+
+
+
+    //Inj<SampleT>({2, 0}) >> gctrl;
+    //GenPtr gctrl_mapped = Gen::make(GenID::Map);
     //src lower, upper, dst lower uppper
-    Inj<GenPtr>({
-            gctrl, 
-            Gen::make(0), 
-            Gen::make(1), 
-            Gen::make(-1), 
-            Gen::make(1)}) >> gctrl_mapped;   
 
     // pan from left to right over 1/10th a sec
-    Inj<GenPtr>({gnoise, gctrl_mapped}) >> gpan;
+    GenPtr pan_1 = Gen::make(GenID::Panner);
+    Inj<GenPtr>({src_1 * 0, pan_ctrl_1}) >> pan_1;
 
-    GenPtr root_gen = gpan;
-    PAPerformer pap(root_gen);
-    pap(6);    
+    GenPtr pan_2 = Gen::make(GenID::Panner);
+    // want to wrap src_2 in a way that gives me the second output as the first
+    Inj<GenPtr>({src_2 * .5, pan_ctrl_2}) >> pan_2;
+    pan_2->set_input_by_index(0, src_2, 1);
+	
+
+    GenPtr pan_3 = Gen::make(GenID::Panner);
+    Inj<GenPtr>({src_3 * 0, pan_ctrl_3}) >> pan_3;
 
 
+    GenPtr root_gen = pan_1 + pan_2 + pan_3;
+    std::cout << root_gen->get_output_count() << std::endl;
+    root_gen->illustrate_network();
+//    PAPerformer pap(root_gen);
+//    pap(6);    
+
+    // to record and write
+	GenPtr buf = Gen::make(GenID::Buffer);
+    Inj<SampleT>({2, 6}) || buf; // 2 ch, 6 seconds
+    root_gen >> buf;
+    buf->render(1);
+    buf->write_output_to_fp("pan_test.aif");
+
+
+//    Inj<GenPtr>({
+//            gctrl, 
+//            Gen::make(0), 
+//            Gen::make(1), 
+//            Gen::make(-1), 
+//            Gen::make(1)}) >> gctrl_mapped;   }
 }
-
 
 
 int main() {
@@ -95,154 +128,6 @@ int main() {
 }
 
 
-
-
-
-
-
-
-
-// Some constants:
-//const int NUM_SECONDS = 5;
-//const double SAMPLE_RATE = 44100.0;
-//const int FRAMES_PER_BUFFER = 64;
-//
-//
-//// ----------------------------------------------------------------------------
-//
-//// a wrapper for calling arachnewarp generators
-//class AWPerformer {
-//public:
-//    GenPtr root_gen;
-//    RenderCountT render_count;
-//    
-//	explicit AWPerformer() :
-//            render_count(0) {
-//
-//        // setup objects
-//        EnvironmentPtr e = Environment::make_with_frame_size(
-//                FRAMES_PER_BUFFER);
-//        Environment::set_default_env(e);
-//        
-//        
-//        GenPtr g1 = Gen::make(GenID::Sine);
-//        220 >> g1;
-//        // rate of fm
-//        GenPtr gmod = Gen::make(GenID::Sine);
-//        8 >> gmod;
-//
-//        GenPtr gmap = Gen::make(GenID::Map);
-//        // source
-//        gmap->set_input_by_index(0, gmod);
-//        gmap->set_input_by_index(1, -1);
-//        gmap->set_input_by_index(2, 1);
-//        // dst
-//        gmap->set_input_by_index(3, 880+440);
-//        gmap->set_input_by_index(4, 880-440);
-//        
-//        
-//        GenPtr g2 = Gen::make(GenID::Sine);
-//        gmap >> g2;
-//
-//        GenPtr genv = Gen::make(GenID::AttackDecay);
-//        genv->set_input_by_index(1, .25); // atack/decay in sec
-//        genv->set_input_by_index(2, .25);
-//        genv->set_input_by_index(4, 1); // self cycle mode
-//        
-//        root_gen = (g1 + g2) * genv;
-//        
-//        std::cout << "initialized root_gen" << std::endl;
-//        root_gen->print_inputs();
-//        
-//	}
-//    
-//    // generate the wave form
-//	int generate(
-//            const void* inputBuffer, // will not change input
-//            void* outputBuffer, // will write ti output
-//            unsigned long framesPerBuffer, 
-//            const PaStreamCallbackTimeInfo* timeInfo, 
-//            PaStreamCallbackFlags statusFlags) {
-//        
-//        root_gen->render(render_count);
-//        ++render_count;
-//        
-//        // cast to a multi-dimensionalal array
-//		float** out = static_cast<float **>(outputBuffer);
-//		for (unsigned int i=0; i < framesPerBuffer; ++i) { 
-//			out[0][i] = root_gen->outputs[0][i];
-//			out[1][i] = root_gen->outputs[0][i];
-//
-//		}
-//		return paContinue;
-//	}
-//
-//};
-//
-//
-//
-//
-//
-//// ---------------------------------------------------------------------------
-//// main:
-//int main(int, char *[]) {
-//	try
-//	{
-//		// Create a SineGenerator object:
-//		AWPerformer awp;
-//
-//		std::cout << "Setting up PortAudio..." << std::endl;
-//
-//		// Set up the System:
-//		portaudio::AutoSystem autoSys;
-//		portaudio::System& sys = portaudio::System::instance();
-//
-//		// Set up the parameters required to open a (Callback)Stream:
-//		portaudio::DirectionSpecificStreamParameters outParams(
-//                sys.defaultOutputDevice(),
-//                2,
-//                portaudio::FLOAT32,
-//                false,
-//                sys.defaultOutputDevice().defaultLowOutputLatency(),
-//                NULL);
-//
-//		portaudio::StreamParameters params(
-//                portaudio::DirectionSpecificStreamParameters::null(),
-//                outParams,
-//                SAMPLE_RATE,
-//                FRAMES_PER_BUFFER,
-//                paClipOff);
-//
-//		// pass function call back
-//		portaudio::MemFunCallbackStream<AWPerformer> stream(
-//                params,
-//                awp, // pass instance
-//                &AWPerformer::generate); // pass function by reference
-//
-//
-//		std::cout << "Starting playback" << std::endl;
-//		stream.start();
-//		sys.sleep(NUM_SECONDS * 1000); // sleep sustains playback:
-//
-//		stream.stop();
-//		stream.close();
-//		sys.terminate();
-//	}
-//	catch (const portaudio::PaException &e) {
-//		std::cout << "A PortAudio error occured: " << e.paErrorText() << std::endl;
-//	}
-//	catch (const portaudio::PaCppException &e) {
-//		std::cout << "A PortAudioCpp error occured: " << e.what() << std::endl;
-//	}
-//	catch (const std::exception &e) {
-//		std::cout << "A generic exception occured: " << e.what() << std::endl;
-//	}
-//	catch (...) {
-//		std::cout << "An unknown exception occured." << std::endl;
-//	}
-//	return 0;
-//}
-//
 
 
 
