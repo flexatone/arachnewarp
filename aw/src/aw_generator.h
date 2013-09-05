@@ -341,8 +341,10 @@ class DirectedIndex {
 
 
     public:
+    //! Remove the default constructor. 
     DirectedIndex() = delete;
 
+    //! Must supply a size at creation (no size is 0);
     explicit DirectedIndex(FrameSizeT size);
 
     // if we pass in last, we can do random walk, forward, backward, random 
@@ -1428,7 +1430,7 @@ class White: public Gen {
 
 
 //=============================================================================
-//! A white-noise generator.
+//! A counter, advacning with triggers and exposing all direction types available. 
 class Counter;
 typedef std::shared_ptr<Counter> CounterPtr;
 class Counter: public Gen {
@@ -1443,6 +1445,13 @@ class Counter: public Gen {
 
     // dynamically create based on slot setting; no need for shared pointer
     DirectedIndexPtr _di {nullptr};
+
+    //! SampltT casted outpout of DirecteIndex
+    SampleT _last_pos;
+    //! Track to test when changes; do not need to initialize
+    PIndexT _last_direction;    
+    bool _has_first_pos; 
+
         
     public://------------------------------------------------------------------
     explicit Counter(EnvironmentPtr);

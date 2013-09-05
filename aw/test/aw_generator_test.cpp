@@ -1823,11 +1823,45 @@ BOOST_AUTO_TEST_CASE(aw_generator_output_proxy) {
 	// will assign out 1 to pan in 1
    	Inj<GenPtr>({phasor % 1, cycle}) >> panner;
 
-   	panner->print_inputs();
+	// out 1 i set to listen to in 0
+	Gen::VGenPtrOutPair x = panner->get_input_gens_by_index(0);
+	BOOST_CHECK_EQUAL(x[0].second, 1);	
+	BOOST_CHECK_EQUAL(x[0].first->get_class_name(), "Phasor");	
 
+}
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
+	// test auto constant creation when adding a sample type
+    
+	GenPtr phasor = Gen::make(GenID::Phasor);    
+	GenPtr reset = Gen::make(GenID::Phasor);    
+
+	GenPtr count = Gen::make(GenID::Counter);
+   	
+   	10000 >> phasor;
+   	1000 >> reset;   	
+   	Inj<GenPtr>({phasor % 1, reset, Gen::make(1)}) >> count;
+
+   	// set modulus to 5
+   	Gen::make(5) || count;
+
+	GenPtr gbuf = Gen::make(GenID::Buffer);
+    Inj<SampleT>({3, .01}) || gbuf; // 2 ch, 441 samps        
+    Inj<GenPtr>({phasor % 1, reset % 1, count}) >> gbuf;
+    gbuf->render(1);
+    gbuf->illustrate_outputs();
+    //gbuf->illustrate_network();
 	
 
 }
+
+
+
+
 
 
 

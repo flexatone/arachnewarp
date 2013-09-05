@@ -2394,14 +2394,13 @@ void Counter :: init() {
             PType::make_with_name(PTypeID::Direction, "Direction"));
 
     //slots                 
-    // can only update modulus via slot, as it requires creating a new directed index instance;                
+    // can only update modulus via slot, as it requires creating a new directed index instance, and we are not going to do that in render();
     _slot_index_modulus = _register_slot_parameter_type(
             PType::make_with_name(
             PTypeID::Modulus, "Modulus")); 
-    // set default to zero
-    set_slot_by_index(_slot_index_modulus, 0, true);
 
-    // register output
+    // register outputs
+    // TODO: add second output for start of new value trigger
     _register_output_parameter_type(
             PType::make_with_name(PTypeID::Value, "Output"));
     
@@ -2411,22 +2410,52 @@ void Counter :: init() {
 
 
 void Counter :: set_default() {
-    // only set default on init
+    set_input_by_index(_input_index_reset, 0);
+    set_input_by_index(_input_index_direction, 0);
+
+    // set default to zero, allow updating
     set_slot_by_index(_slot_index_modulus, 0);
+
 }
 
 void Counter :: reset() {
     Gen::reset();
+    _di->reset();
+    _has_first_pos = false;
 }
 
 void Counter :: _update_for_new_slot() {
-    // create new di
+    // alwasy read from first index position
+    _di = DirectedIndexPtr(new DirectedIndex(
+            _slots[_slot_index_modulus]->outputs[0][0]));
+    //! After changing the modulus, we have to restart, as we might be out of range of the old setting. 
+    _has_first_pos = false;
 }
 
 void Counter :: render(RenderCountT f) {
     while (_render_count < f) {
+        _render_inputs(f);
+        _sum_inputs(_frame_size);
         for (_i=0; _i < _frame_size; ++_i) {
-            outputs[0][_i] = Random::uniform_bi_polar();
+            // reset di; values will not be updated on output unitl next rigger
+            if (_summed_inputs[_input_index_reset][_i] > TRIG_THRESH) {
+                _di->reset();
+            }
+            // last direction can be uninitializd, because we will always at least update it once here. Must lookfor ! _has_first_pos, as if this is a new DI, we need to set the direction (even if we have the right _last_direction)
+            if (_summed_inputs[_input_index_direction][_i] != 
+                        _last_direction || !_has_first_pos) {
+                _last_direction = _summed_inputs[_input_index_direction][_i];
+                _di->set_direction(PTypeDirection::resolve(_last_direction));
+            }
+            // Update _last_pos (calling next()) whenever we get a trigger, or if we have ! _has_first_pos
+            if (_summed_inputs[_input_index_trigger][_i] > TRIG_THRESH ||
+                !_has_first_pos) {
+                _last_pos = static_cast<SampleT>(_di->next());
+                // turn off this value only if off
+                if (!_has_first_pos) _has_first_pos = true;
+                
+            }
+            outputs[0][_i] = _last_pos;
         }
         _render_count += 1;
     }
