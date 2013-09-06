@@ -1839,21 +1839,34 @@ BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
     
 	GenPtr phasor = Gen::make(GenID::Phasor);    
 	GenPtr reset = Gen::make(GenID::Phasor);    
+	GenPtr trig_direction = Gen::make(GenID::Phasor);    
 
 	GenPtr count = Gen::make(GenID::Counter);
    	
    	10000 >> phasor;
-   	1000 >> reset;   	
-   	Inj<GenPtr>({phasor % 1, reset, Gen::make(1)}) >> count;
+   	1000 >> reset;
+   	500 >> trig_direction;	
 
-   	// set modulus to 5
-   	Gen::make(5) || count;
+	GenPtr dir_count = Gen::make(GenID::Counter);
+   	Inj<GenPtr>({trig_direction % 1, Gen::make(0), Gen::make(0)}) >> dir_count;
+   	5 || dir_count;
+
+
+   	Inj<GenPtr>({phasor % 1, reset, dir_count}) >> count;
+	BOOST_CHECK_EQUAL(count->get_slot_count(), 1);	
+   	7 || count;
+
+
+	//count->set_slot_by_index(0, 4);
+
+	BOOST_CHECK_EQUAL(count->get_slot_gen_at_index(0)->outputs[0][0], 7);	
 
 	GenPtr gbuf = Gen::make(GenID::Buffer);
-    Inj<SampleT>({3, .01}) || gbuf; // 2 ch, 441 samps        
-    Inj<GenPtr>({phasor % 1, reset % 1, count}) >> gbuf;
+    Inj<SampleT>({4, .01}) || gbuf; // 3 ch, 441 samps    
+
+    Inj<GenPtr>({phasor % 1, reset % 1, dir_count, count}) >> gbuf;
     gbuf->render(1);
-    gbuf->illustrate_outputs();
+    //gbuf->illustrate_outputs();
     //gbuf->illustrate_network();
 	
 
