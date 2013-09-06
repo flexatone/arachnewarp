@@ -781,17 +781,6 @@ inline GenPtr connect_serial_to_inputs(GenPtr lhs, GenPtr rhs,
 }
 
 
-//! Assign SampleValue (after being converted to a Constant) directly as an input to one or more inputs on rhs GenPtr.
-inline GenPtr connect_serial_to_inputs(SampleT lhs, GenPtr rhs, 
-        PIndexT start=0, PIndexT count=0) {        
-    // set environment from lhs
-	GenPtr g_lhs = Gen::make_with_environment(
-            GenID::Constant, rhs->get_environment());
-    g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
-    return aw::connect_serial_to_inputs(g_lhs, rhs); // will return rhs
-}
-
-
 //! Assign an Injector as an input to matching inputs on rhs GenPtr.
 inline GenPtr connect_serial_to_inputs(const Inj<SampleT>& lhs, GenPtr rhs) {
     // create vector, fill with values;
@@ -804,6 +793,16 @@ inline GenPtr connect_serial_to_inputs(const Inj<SampleT>& lhs, GenPtr rhs) {
         rhs->set_input_by_index(i, inj[i]);
     }
     return rhs;
+}
+
+//! Assign SampleValue (after being converted to a Constant) directly as an input to one or more inputs on rhs GenPtr.
+inline GenPtr connect_serial_to_inputs(SampleT lhs, GenPtr rhs, 
+        PIndexT start=0, PIndexT count=0) {        
+    // set environment from lhs
+    GenPtr g_lhs = Gen::make_with_environment(
+            GenID::Constant, rhs->get_environment());
+    g_lhs->set_input_by_index(0, lhs); // this will call Constant::reset()
+    return aw::connect_serial_to_inputs(g_lhs, rhs); // will return rhs
 }
 
 //! Assign an Injector as an input to matching inputs on rhs GenPtr.
@@ -823,6 +822,21 @@ inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
 
 
 // slot connections ..............................................
+
+//! For now, we just set lhs in position zero.
+inline GenPtr connect_serial_to_slots(GenPtr lhs,
+        GenPtr rhs) {
+    rhs->set_slot_by_index(0, lhs); // this will call 
+    return rhs;
+}
+
+inline GenPtr connect_serial_to_slots(SampleT lhs,
+        GenPtr rhs) {
+    GenPtr g_lhs = Gen::make_with_environment(
+            GenID::Constant, rhs->get_environment());
+    g_lhs->set_input_by_index(0, lhs); // this will call 
+    return connect_serial_to_slots(g_lhs, rhs);
+}
 
 //! Assign an Inj of sample values as an input to matching slot positions.
 inline GenPtr connect_serial_to_slots(const Inj<SampleT>& lhs,
@@ -854,6 +868,8 @@ inline GenPtr connect_serial_to_slots(const Inj<GenPtr>& lhs,
 
 
 
+
+
 // operator >> ...............................................................
 
 //! Connect all outputs available from lhs to all inputs available from rhs. Chained connectison, e.g., are permitted. a >> b >> c
@@ -881,6 +897,14 @@ inline GenPtr operator>>(const Inj<GenPtr>& lhs, GenPtr rhs) {
 
 
 // operator || ...............................................................
+
+inline GenPtr operator||(GenPtr lhs, GenPtr rhs) {
+    return connect_serial_to_slots(lhs, rhs);
+}
+
+inline GenPtr operator||(SampleT lhs, GenPtr rhs) {
+    return connect_serial_to_slots(lhs, rhs);
+}
 
 //! Connect a 1D Injector, where each element is mapped to a slot in order. It is an exception to provide more than 1 dimension. This will always set slots.
 inline GenPtr operator||(const Inj<SampleT>& lhs, GenPtr rhs) {

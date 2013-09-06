@@ -246,6 +246,7 @@ void DirectedIndex :: set_direction(PTypeDirection::Opt d) {
 }
 
 FrameSizeT DirectedIndex :: next() {
+    //std::cout << "DI next() _last_value " << _last_value << " _size_less_one " << _size_less_one << std::endl; 
     // handle trivial case of size of 1
     if (_size == 1) {
         return 0;
@@ -268,7 +269,14 @@ FrameSizeT DirectedIndex :: next() {
         }         
     }
     else if (_direction == PTypeDirection::Opt::Cycle) {
-        if (_last_value == _size) { // triggers reset
+        if (_forward) {
+            ++_last_value;
+        }     
+        else {
+            --_last_value;            
+        }    
+
+        if (_last_value >= _size) { // triggers reset
             _last_value = 0;
             _forward = true;
         }
@@ -279,12 +287,6 @@ FrameSizeT DirectedIndex :: next() {
             _forward = true;
         }
 
-        if (_forward) {
-            ++_last_value;
-        }     
-        else {
-            --_last_value;            
-        }    
     }
     else if (_direction == PTypeDirection::Opt::RandomWalk) {
         // faster than using uniform_switch()
@@ -2400,7 +2402,6 @@ void Counter :: init() {
             PTypeID::Modulus, "Modulus")); 
 
     // register outputs
-    // TODO: add second output for start of new value trigger
     _register_output_parameter_type(
             PType::make_with_name(PTypeID::Value, "Output"));
     
@@ -2412,7 +2413,6 @@ void Counter :: init() {
 void Counter :: set_default() {
     set_input_by_index(_input_index_reset, 0);
     set_input_by_index(_input_index_direction, 0);
-
     // set default to zero, allow updating
     set_slot_by_index(_slot_index_modulus, 0);
 
@@ -2450,11 +2450,12 @@ void Counter :: render(RenderCountT f) {
             // Update _last_pos (calling next()) whenever we get a trigger, or if we have ! _has_first_pos
             if (_summed_inputs[_input_index_trigger][_i] > TRIG_THRESH ||
                 !_has_first_pos) {
+                // cast from stored integer to sampltT
                 _last_pos = static_cast<SampleT>(_di->next());
                 // turn off this value only if off
-                if (!_has_first_pos) _has_first_pos = true;
-                
+                if (!_has_first_pos) _has_first_pos = true;                
             }
+
             outputs[0][_i] = _last_pos;
         }
         _render_count += 1;
