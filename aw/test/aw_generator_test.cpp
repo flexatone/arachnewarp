@@ -1841,7 +1841,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
 	GenPtr reset = Gen::make(GenID::Phasor);    
 	GenPtr trig_direction = Gen::make(GenID::Phasor);    
 
-	GenPtr count = Gen::make(GenID::Counter);
    	
    	10000 >> phasor;
    	1000 >> reset;
@@ -1849,11 +1848,11 @@ BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
 
 	GenPtr dir_count = Gen::make(GenID::Counter);
    	Inj<GenPtr>({trig_direction % 1, Gen::make(0), Gen::make(0)}) >> dir_count;
-   	5 || dir_count;
+   	5 || dir_count; // cycle through 0-4 directions
 
 
+	GenPtr count = Gen::make(GenID::Counter);
    	Inj<GenPtr>({phasor % 1, reset, dir_count}) >> count;
-	BOOST_CHECK_EQUAL(count->get_slot_count(), 1);	
    	7 || count;
 
 
@@ -1866,7 +1865,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
 
     Inj<GenPtr>({phasor % 1, reset % 1, dir_count, count}) >> gbuf;
     gbuf->render(1);
-    //gbuf->illustrate_outputs();
+    gbuf->illustrate_outputs();
     //gbuf->illustrate_network();
 	
 
