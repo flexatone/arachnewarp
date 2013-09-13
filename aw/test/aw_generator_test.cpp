@@ -1757,7 +1757,7 @@ BOOST_AUTO_TEST_CASE(aw_directed_index_e) {
 		}
 		sum +=  d.next();
 	}
-	std::cout << std::endl;
+	//std::cout << std::endl;
 }
 
 
@@ -1777,7 +1777,7 @@ BOOST_AUTO_TEST_CASE(aw_counter_a) {
 BOOST_AUTO_TEST_CASE(aw_panner_a) {	
 
 	GenPtr gpan = Gen::make(GenID::Panner);
-    GenPtr gnoise = Gen::make(GenID::White);
+    //GenPtr gnoise = Gen::make(GenID::White);
 
     GenPtr gctrl = Gen::make(GenID::Phasor);
     Inj<SampleT>({100, 0}) >> gctrl;   
@@ -1792,7 +1792,8 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
     		Gen::make(1)}) >> gctrl_mapped;   
 
     // pan from left to right over 1/10th a sec
-    Inj<GenPtr>({gnoise, gctrl_mapped}) >> gpan;
+    // pan value of 1 for testing
+    Inj<GenPtr>({Gen::make(1), gctrl_mapped}) >> gpan;
 
 	GenPtr gbuf = Gen::make(GenID::Buffer);
     Inj<SampleT>({2, .01}) || gbuf; // 2 ch, 441 samps    
@@ -1800,6 +1801,16 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
     gpan >> gbuf;
     gbuf->render(1);
 
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][0], 1, .0001);
+    BOOST_CHECK_CLOSE(std::round(gbuf->outputs[1][0]), 0, .0001);
+
+    //std::cout << gbuf->outputs[1][220] << std::endl;
+    // mid point
+    BOOST_CHECK_CLOSE(gbuf->outputs[0][220], 0.7071067, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][220], 0.7071067, .0001);
+
+    BOOST_CHECK_CLOSE(std::round(gbuf->outputs[0][440]), 0, .0001);
+    BOOST_CHECK_CLOSE(gbuf->outputs[1][440], 1, .0001);
     
     //gbuf->illustrate_network();    
     //gctrl_mapped->illustrate_outputs();   
@@ -1865,7 +1876,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
 
     Inj<GenPtr>({phasor % 1, reset % 1, dir_count, count}) >> gbuf;
     gbuf->render(1);
-    gbuf->illustrate_outputs();
+    //gbuf->illustrate_outputs();
     //gbuf->illustrate_network();
 	
 
