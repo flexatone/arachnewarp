@@ -61,8 +61,8 @@ enum class PTypeID {
     UpperBoundary,
     BreakPoints, // for slot in breakpoint, wavetable
     Interpolation,
-    TimeContext,
-
+    TimeContext, // rename duration context?
+    RateContext,
     Modulus, // for counter
     Direction // 
 };
@@ -241,7 +241,7 @@ class PTypeInterpolate: public PType {
     
 };
 
-//! A parameter (used as a slot) to select time context forn break-point segments.
+//! A parameter (used as a slot) to select time context for break-point segments.
 class PTypeTimeContext;
 typedef std::shared_ptr<PTypeTimeContext> PTypeTimeContextPtr;
 class PTypeTimeContext: public PType {
@@ -256,6 +256,30 @@ class PTypeTimeContext: public PType {
         return x >= -0.5 && x < 0.5 ? Opt::Samples : Opt::Seconds;
     };
     
+};
+
+
+//! A parameter (used as a slot) to select rate context for an oscillator
+class PTypeRateContext;
+typedef std::shared_ptr<PTypeRateContext> PTypeRateContextPtr;
+class PTypeRateContext: public PType {
+    public://------------------------------------------------------------------
+    explicit PTypeRateContext();
+
+    enum Opt { 
+        Hertz,
+        Pitch,
+        BPM,
+        Samples,
+        Seconds,
+    };
+    inline static Opt resolve(SampleT x) {
+        return x < 0.5 ? Hertz :
+                x < 1.5 ? Pitch :
+                x < 2.5 ? BPM :                
+                x < 3.5 ? Samples :
+                Seconds;
+    };    
 };
 
 
@@ -1280,6 +1304,7 @@ class Phasor: public Gen {
     private://-----------------------------------------------------------------
     PIndexT _input_index_frequency;
     PIndexT _input_index_phase;    
+    PTypeRateContext::Opt _r_context;
 	
 	// TODO: these should be Vectors of size equal to frame and filled from the input
     SampleT _sum_frequency;
@@ -1288,6 +1313,7 @@ class Phasor: public Gen {
 	// state variables used for wave calc
 	//SampleT _period_seconds;
 	SampleT _amp;
+    SampleT _amp_threshold{1.0 + MIN_AMP};    
 	SampleT _amp_prev;		
 	
 	RenderCountT _period_samples;
@@ -1313,6 +1339,7 @@ class Sine: public Gen {
     private://-----------------------------------------------------------------
     PIndexT _input_index_frequency;    
     PIndexT _input_index_phase;    
+    PTypeRateContext::Opt _r_context;
 	
     //SampleT _sum_frequency;
     // SampleT _sum_phase;
