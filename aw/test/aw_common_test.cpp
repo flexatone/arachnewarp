@@ -254,7 +254,21 @@ BOOST_AUTO_TEST_CASE(aw_random_a) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_to_samp) {
+    BOOST_CHECK_EQUAL(mtof(69), 440.0);
+    BOOST_CHECK_EQUAL(mtof(60), 261.62556530059862);
 
+    // thes return an integer
+    BOOST_CHECK_EQUAL(ftosamps(2, 44100, 22050), 22050);
+    BOOST_CHECK_EQUAL(ftosamps(441, 44100, 22050), 100);
+
+    // checks for min fq to avoid divide by zero
+    BOOST_CHECK_EQUAL(ftosamps(0, 44100, 22050), 4410000000);
+
+
+    BOOST_CHECK_EQUAL(mtosamps(69, 44100, 22050), 100);
+        
+}
 
 
 

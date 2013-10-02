@@ -217,13 +217,30 @@ inline void true_min_max(
 //! Convert midi to frequency. 	
 inline SampleT mtof(SampleT f) {
     // midi to frequency
-    if (f <= -1500) return 0;
+    if (f <= -1500) return MIN_FQ;
     else if (f > 1499) return mtof(1499);
     else return pow(2, (f-69) / 12.0) * 440.0;
 }
 
+inline SampleT ftosamps(SampleT f, OutputsSizeT sr, 
+        OutputsSizeT nq) {
+    // todo: add frequency limiter here?
+    return floor((static_cast<SampleT>(sr) / 
+        frequency_limiter(f, nq)) + 0.5);
+}
 
-    
+inline SampleT mtosamps(SampleT f, OutputsSizeT sr,
+        OutputsSizeT nq) {
+    return ftosamps(mtof(f), sr, nq);
+}
+
+inline SampleT stosamps(SampleT f, OutputsSizeT sr) {
+    return f * sr;
+}
+
+inline SampleT bpmtosamps(SampleT f, OutputsSizeT sr) {
+    return (60.0 / f) * sr;
+}
 
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------

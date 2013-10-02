@@ -990,7 +990,6 @@ void Gen :: set_outputs_from_vector(VSampleT& vst,
         msg << str_file_line(__FILE__, __LINE__);
         throw std::invalid_argument(msg.str());
     }
-    
 }
 
 void Gen :: set_outputs_from_fp(const std::string& fp) {
@@ -1997,7 +1996,7 @@ void Phasor :: render(RenderCountT f) {
 					(_period_samples - 1)));
 			// if amp is at or above 1, set to zero
             // TODO: need to formalize this min gap
-			if (_amp > 1.00001) {
+			if (_amp >= _amp_threshold) {
                 _amp = 0.0;
                 outputs[1][i] = 1; // set trigger           
             }
@@ -2084,9 +2083,8 @@ void Sine :: render(RenderCountT f) {
             if (_summed_inputs[_input_index_frequency][_i] != _cur_fq) {
                 _cur_fq = _summed_inputs[_input_index_frequency][_i];
                 // could pre-callc 2 pi over sr
-                // find scalar (proportion) of how much each processing sample is of a cycle
-                // e.g., fq 441 in 44100 sr, each proc sample is .01 of a complete osc
-                // if time context is samples, 100 means a .01 scalar; thus 1 / samples
+                // find scalar (proportion) of how much each processing sample is of a cycle; e.g., fq 441 in 44100 sr, each proc sample is .01 of a complete osc
+                // if rate context is samples, 100 means a .01 scalar; thus 1 / samples
                 // if time context is seconds, 1 / (sec * sr) # check this
                 _angle_increment = PI2 * _cur_fq / _sampling_rate;
             }
