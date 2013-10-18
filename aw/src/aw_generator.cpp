@@ -56,7 +56,10 @@ PTypePtr PType :: make(PTypeID q){
     }        
     else if (q == PTypeID::TimeContext) {
         p = PTypeTimeContextPtr(new PTypeTimeContext);
-    }        
+    }
+    else if (q == PTypeID::RateContext) {
+        p = PTypeRateContextPtr(new PTypeRateContext);
+    }    
     else if (q == PTypeID::Modulus) {
         p = PTypeModulusPtr(new PTypeModulus);
     }        
@@ -181,7 +184,10 @@ PTypeTimeContext :: PTypeTimeContext() {
     _class_id = PTypeID::TimeContext;
 }
 
-
+PTypeRateContext :: PTypeRateContext() {
+    _class_name = "PTypeRateContext";
+    _class_id = PTypeID::RateContext;
+}
 
 PTypeModulus :: PTypeModulus() {
     _class_name = "PTypeModulus";
@@ -631,8 +637,8 @@ void Gen :: _sum_inputs(FrameSizeT fs) {
     PIndexT i;
     FrameSizeT k;
     PIndexT j;
-    PIndexT gen_count_at_input(0);
-	SampleT sum(0);
+    PIndexT gen_count_at_input;
+	SampleT sum;
     
 	// iterate over each input parameter type
     for (i=0; i<_input_count; ++i) {
@@ -640,15 +646,24 @@ void Gen :: _sum_inputs(FrameSizeT fs) {
         gen_count_at_input = _inputs[i].size();        
 		// for each frame, read across all input
 		for (k=0; k < fs; ++k) {
-			sum = 0;
-			// now iterate over each gen in this input
-			for (j=0; j<gen_count_at_input; ++j) {
-				sum += _inputs[i][j].first->outputs[
-                            _inputs[i][j].second // the output to read
+            // optimize for simple case of 1 gen
+            if (gen_count_at_input == 1) {
+                _summed_inputs[i][k] = _inputs[i][0].first->outputs[
+                            _inputs[i][0].second // the output to read
                         ][k];
-			}
-			// sum of all gens at this sample frame
-            _summed_inputs[i][k] = sum;
+            }
+            else {
+                // otherwise iterate
+    			sum = 0;
+    			// now iterate over each gen in this input
+    			for (j=0; j<gen_count_at_input; ++j) {
+    				sum += _inputs[i][j].first->outputs[
+                                _inputs[i][j].second // the output to read
+                            ][k];
+    			}
+    			// sum of all gens at this sample frame
+                _summed_inputs[i][k] = sum;
+            }
 		}
 	}
 }
@@ -1905,15 +1920,12 @@ void BPIntegrator :: render(RenderCountT f) {
                 if (_point_count >= _points_len - 1) {
                     _running = false; // must restart, and reinit
                     // set amp to last y (never met in interpolation)
-                    _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1];
-                    
+                    _amp = _slots[_slot_index_bps]->outputs[1][_points_len-1];                    
                 }
             }
-            
 		}
         _render_count += 1;
     }
-    
 }
 
 
@@ -1939,24 +1951,28 @@ void Phasor :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    PTypePtr pt1 = PType::make_with_name(PTypeID::Frequency, "Frequency");                                       
-    //pt1->set_instance_name("Frequency");
-    _register_input_parameter_type(pt1);
-	_input_index_frequency = 0;
+
+    _input_index_rate = _register_input_parameter_type(
+            PType::make_with_name(PTypeID::Frequency, "Frequency"));
 	
-    PTypePtr pt2 = PType::make_with_name(PTypeID::Phase, "Phase");
-    //pt2->set_instance_name("Phase");
-    _register_input_parameter_type(pt2);	
-	_input_index_phase = 1;	
+    _input_index_phase = _register_input_parameter_type(
+            PType::make_with_name(PTypeID::Phase, "Phase"));	
 	
 	// register outputs
-    PTypePtr pt3 = PType::make_with_name(PTypeID::Value, "Output");
-    //pt3->set_instance_name("Output");
-    _register_output_parameter_type(pt3);	
+    _register_output_parameter_type(
+            PType::make_with_name(PTypeID::Value, "Output"));	
 
-    PTypePtr pt4 = PType::make_with_name(PTypeID::Trigger, "Trigger (on start)");
-    //pt4->set_instance_name("Trigger");
-    _register_output_parameter_type(pt4);	
+    _register_output_parameter_type(
+            PType::make_with_name(
+            PTypeID::Trigger, "Trigger (on start)"));	
+
+    // register slots
+    _slot_index_rate_context = _register_slot_parameter_type(
+            PType::make_with_name(
+            PTypeID::RateContext, "RateContext"));
+
+    // default to hertz
+    set_slot_by_index(0, PTypeRateContext::Hertz, true); 
 
     reset();
 }
@@ -1966,6 +1982,7 @@ void Phasor :: reset() {
     Gen::reset();
     _amp = 0;
     _amp_prev = 1;
+    _rate_prev = 0; // should never be zero, so a good init
 }
 
 void Phasor :: render(RenderCountT f) {
@@ -1986,10 +2003,21 @@ void Phasor :: render(RenderCountT f) {
 		
 		for (i=0; i < _frame_size; ++i) {
 			// for each frame position, must get sum across all frequency values calculated.
-			_sum_frequency = _summed_inputs[_input_index_frequency][i];
+			_sum_rate = _summed_inputs[_input_index_rate][i];
 			// we might dither this to increase accuracy over time; we floor+.5 to get an int period for now; period must not be zero or 1 (div by zero)
-			_period_samples = floor((static_cast<SampleT>(_sampling_rate) /
-					frequency_limiter(_sum_frequency, _nyquist)) + 0.5);
+			// _period_samples = floor((static_cast<SampleT>(_sampling_rate) /
+			// 		frequency_limiter(_sum_rate, _nyquist)) + 0.5);
+
+            if (_sum_rate != _rate_prev) {
+                _rate_prev = _sum_rate;
+                _period_samples = rate_context_to_samples(
+                        _sum_rate,
+                        PTypeRateContext::resolve(
+                        _slots[_slot_index_rate_context]->outputs[0][0]),
+                        _sampling_rate,
+                        _nyquist
+                        );
+            }
                      
 			// add amp increment to previous amp; do not care about where we are in the cycle, only that we get to 1 and reset amp
 			_amp = _amp_prev + (1.0 / static_cast<SampleT>(
@@ -2034,17 +2062,16 @@ void Sine :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     // register some parameters
-    PTypePtr pt1 = PType::make_with_name(PTypeID::Frequency, "Frequency");                                       
-    _register_input_parameter_type(pt1);
-	_input_index_frequency = 0;
+    _input_index_rate = _register_input_parameter_type(
+            PType::make_with_name(
+            PTypeID::Frequency, "Frequency"));
 	
-    PTypePtr pt2 = PType::make_with_name(PTypeID::Phase, "Phase");
-    _register_input_parameter_type(pt2);	
-	_input_index_phase = 1;
+    _input_index_phase = _register_input_parameter_type(
+            PType::make_with_name(PTypeID::Phase, "Phase"));	
     
 	// register output
-    PTypePtr pt_o1 = PType::make_with_name(PTypeID::Value, "Output");
-    _register_output_parameter_type(pt_o1);
+    _register_output_parameter_type(
+            PType::make_with_name(PTypeID::Value, "Output"));
     
     set_default();
     reset();
@@ -2058,10 +2085,13 @@ void Sine :: set_default() {
 void Sine :: reset() {
     Gen::reset();
     // will get set on first render call
-    _cur_phase = 0;
-    _cur_fq = 0;
+    _phase_cur = 0;
+    _rate_cur = 0;
     _phase_increment = 0;
 }
+
+
+// TODO: add usage of rate_context_to_angle_increment, add rate_context as a slot
 
 void Sine :: render(RenderCountT f) {
     while (_render_count < f) {
@@ -2073,24 +2103,22 @@ void Sine :: render(RenderCountT f) {
             // whne phase input changes, set cur value to that value; not sure this is the right way to do this but maybe, as an phasor driving 1 to 2IP would oscillate
             if (_summed_inputs[_input_index_phase][_i] != _phase_increment) {
                 _phase_increment = _summed_inputs[_input_index_phase][_i];
-                _cur_phase = _phase_increment; 
+                _phase_cur = _phase_increment; 
             }
-            phase_limiter(_cur_phase); // inllined, in place
+            phase_limiter(_phase_cur); // inllined, in place
         
             // phase input is a phase offset                 
-            outputs[0][_i] = sin(_cur_phase);
+            outputs[0][_i] = sin(_phase_cur);
             
-            if (_summed_inputs[_input_index_frequency][_i] != _cur_fq) {
-                _cur_fq = _summed_inputs[_input_index_frequency][_i];
+            if (_summed_inputs[_input_index_rate][_i] != _rate_cur) {
+                _rate_cur = _summed_inputs[_input_index_rate][_i];
                 // could pre-callc 2 pi over sr
                 // find scalar (proportion) of how much each processing sample is of a cycle; e.g., fq 441 in 44100 sr, each proc sample is .01 of a complete osc
-                // if rate context is samples, 100 means a .01 scalar; thus 1 / samples
-                // if time context is seconds, 1 / (sec * sr) # check this
-                _angle_increment = PI2 * _cur_fq / _sampling_rate;
+                _angle_increment = PI2 * _rate_cur / _sampling_rate;
             }
-            _cur_phase += _angle_increment;
+            _phase_cur += _angle_increment;
             
-            phase_limiter(_cur_phase); // inllined, in place
+            phase_limiter(_phase_cur); // inllined, in place
         }
         
         _render_count += 1;

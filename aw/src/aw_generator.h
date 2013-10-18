@@ -283,7 +283,6 @@ class PTypeRateContext: public PType {
 };
 
 
-
 class PTypeModulus;
 typedef std::shared_ptr<PTypeModulus> PTypeModulusPtr;
 //! A table, or a Buffer with 2 channels of data. 
@@ -291,8 +290,6 @@ class PTypeModulus: public PType {
     public://------------------------------------------------------------------
     explicit PTypeModulus();
 };
-
-
 
 
 class PTypeDirection;
@@ -362,8 +359,6 @@ class DirectedIndex {
     //! Direction is an old-style enum; set default to forward.
     PTypeDirection::Opt _direction {PTypeDirection::Opt::Forward};
 
-
-
     public:
     //! Remove the default constructor. 
     DirectedIndex() = delete;
@@ -385,11 +380,71 @@ class DirectedIndex {
 
 
 
+//=============================================================================
+
+//! Convert from a rate value to samples, assuming the raw value is the rate context specified. Should retrun an integer-like value. 
+inline SampleT rate_context_to_samples(SampleT raw, 
+        PTypeRateContext::Opt c,
+        OutputsSizeT sr,
+        OutputsSizeT nq){
+
+    if (c == PTypeRateContext::Samples) {
+        return raw;
+    }
+    else if (c == PTypeRateContext::Seconds) {
+        return raw * sr;
+    }    
+    else if (c == PTypeRateContext::Hertz) {
+        // we limit frequency such that it is not zero and is not beyond nyquist
+        return floor((static_cast<SampleT>(sr) / 
+            frequency_limiter(raw, nq)) + 0.5);
+    }
+    else if (c == PTypeRateContext::Pitch) {
+        //if (raw <= -1500) return MIN_FQ;
+        // round or not?
+        return floor((static_cast<SampleT>(sr) / (pow(2, (raw-69) / 12.0) * 440.0)) + 0.5);
+    }        
+    else if (c == PTypeRateContext::BPM) {
+        return (60.0 / raw) * static_cast<SampleT>(sr);
+    }
+    else {
+        return 0; // error, will cause massive failures 
+    }
+}
 
 
+//! Convert from a rate value to angle increment, assuming the raw value is the rate context specified. Does not need to br rounded.
+inline SampleT rate_context_to_angle_increment(SampleT raw, 
+        PTypeRateContext::Opt c,
+        OutputsSizeT sr,
+        OutputsSizeT nq){
 
+    // basic form: PI2 * hz / _sampling_rate, or the fraction of PI2 per sample (where the duration of each sample is the sampling rate)
+    // increasing the rate increase the scalar applied to PI2 (a bigger chunk of PI2 per sample)
 
-
+    if (c == PTypeRateContext::Samples) {
+        // PI2 * (1 / raw), reduces to below
+        return PI2 / raw; 
+    }
+    else if (c == PTypeRateContext::Seconds) {
+        // convert seconds to samples, so mult by sr
+        return PI2 / (raw * sr);
+    }    
+    else if (c == PTypeRateContext::Hertz) {
+        // we limit frequency such that it is not zero and is not beyond nyquist
+        return PI2 * frequency_limiter(raw, nq) / static_cast<SampleT>(sr);
+    }
+    else if (c == PTypeRateContext::Pitch) {
+        return PI2 * (pow(2, (raw-69) / 12.0) * 440.0) / static_cast<SampleT>(sr);
+    }        
+    else if (c == PTypeRateContext::BPM) {
+        // might pre-store sr*60 if used often
+        return PI2 * raw / (60 * sr);
+    }
+    else {
+        return 0; // error, will cause massive failures 
+    }
+}
 
 
 
@@ -427,7 +482,6 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputsSizeT is expected to store size up to long multichannel audio files. Total storage size.
     OutputsSizeT _outputs_size;
     
-    // TODO: use InputIndexType PIndexT 
     //! Number of input parameters used by this Gen. More than one Gen can reside in each slot. 
     PIndexT _input_count;
 
@@ -756,7 +810,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     virtual void set_slot_by_index(PIndexT i, SampleT v, 
 									bool update=true);
 
-    //! Return the single gen at this slot position (not a vector, like inputs).
+    //! Return the single gen at this slot position (not a vector of gens, as used for inputs).
     virtual GenPtr get_slot_gen_at_index(PIndexT i);
     
     // Remove all GenPtr attacked to all inputs: does not make sense to do this, because we always need one gen in each slot position
@@ -1220,9 +1274,14 @@ class Buffer: public Gen {
 };
 
 
+//TODO: make SampleBuffer subclass that allows setting size by samples; override a method used in _update_for_new_slot to _set_frame_size()
+
 
 
 //=============================================================================
+
+// TODO: This shoudl derive from SampleBuffer
+
 //! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
 class BreakPoints;
 typedef std::shared_ptr<BreakPoints> BreakPointsPtr;
@@ -1302,12 +1361,15 @@ typedef std::shared_ptr<Phasor> PhasorPtr;
 class Phasor: public Gen {
 
     private://-----------------------------------------------------------------
-    PIndexT _input_index_frequency;
-    PIndexT _input_index_phase;    
+    PIndexT _input_index_rate;
+    PIndexT _input_index_phase;
+    PIndexT _slot_index_rate_context;
+
     PTypeRateContext::Opt _r_context;
 	
 	// TODO: these should be Vectors of size equal to frame and filled from the input
-    SampleT _sum_frequency;
+    SampleT _rate_prev;
+    SampleT _sum_rate;
     SampleT _sum_phase;	
 	
 	// state variables used for wave calc
@@ -1337,16 +1399,17 @@ typedef std::shared_ptr<Sine> SinePtr;
 class Sine: public Gen {
 
     private://-----------------------------------------------------------------
-    PIndexT _input_index_frequency;    
+    PIndexT _input_index_rate;    
     PIndexT _input_index_phase;    
     PTypeRateContext::Opt _r_context;
 	
-    //SampleT _sum_frequency;
+    //SampleT _sum_rate;
     // SampleT _sum_phase;
     SampleT _angle_increment;
     SampleT _phase_increment;
-    SampleT _cur_phase;
-    SampleT _cur_fq;
+    SampleT _phase_cur;
+    SampleT _rate_cur;
+    SampleT _rate_prev;
     
 	// SampleT _amp_prev;
 	

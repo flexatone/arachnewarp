@@ -158,7 +158,6 @@ void print(SampleT* out, FrameSizeT size);
 //! Return the users home directory as a const char pointer. This is what is returned by low-level calls, and is thus returned here to reduce creating temporary objects.
 const char* get_fp_home();
 
-
 //! Utility function to format an exception string.
 inline std::string str_file_line(const char* file, int line) {
     std::stringstream msg;
@@ -166,15 +165,12 @@ inline std::string str_file_line(const char* file, int line) {
     return msg.str();
 }
 
-
-
 //! Frequency values might swing through zero, or exceed Nyquist. This inline function solves this problem by returning a minimum number of zero is hit.
 // note that inline functions need to be defined in the header
 inline SampleT frequency_limiter(SampleT fq, SampleT nyquist) {
-	// this is inlined
-	fq = fq == 0 ? MIN_FQ : fq;
-	fq = fq > nyquist ? nyquist : fq;
-	return fq < -nyquist ? -nyquist : fq;
+    return fq == 0 ? MIN_FQ : 
+        fq > nyquist ? nyquist : 
+        fq < -nyquist ? -nyquist : fq;
 }
 
 //! Limit a phase value between 0 and PI2 by wrapping: done in place. 
@@ -187,11 +183,10 @@ inline void phase_limiter(SampleT& phase) {
     }
 }
 
-
 inline SampleT double_limiter(SampleT src, SampleT min,
         SampleT max) {
-    src = src < min ? min : src;
-    return src > max ? max : src;
+    return src < min ? min :
+        src > max ? max : src;
 }
 
 
@@ -213,34 +208,6 @@ inline void true_min_max(
 }
 
 
-
-//! Convert midi to frequency. 	
-inline SampleT mtof(SampleT f) {
-    // midi to frequency
-    if (f <= -1500) return MIN_FQ;
-    else if (f > 1499) return mtof(1499);
-    else return pow(2, (f-69) / 12.0) * 440.0;
-}
-
-inline SampleT ftosamps(SampleT f, OutputsSizeT sr, 
-        OutputsSizeT nq) {
-    // todo: add frequency limiter here?
-    return floor((static_cast<SampleT>(sr) / 
-        frequency_limiter(f, nq)) + 0.5);
-}
-
-inline SampleT mtosamps(SampleT f, OutputsSizeT sr,
-        OutputsSizeT nq) {
-    return ftosamps(mtof(f), sr, nq);
-}
-
-inline SampleT stosamps(SampleT f, OutputsSizeT sr) {
-    return f * sr;
-}
-
-inline SampleT bpmtosamps(SampleT f, OutputsSizeT sr) {
-    return (60.0 / f) * sr;
-}
 
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------
