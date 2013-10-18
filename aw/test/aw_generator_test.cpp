@@ -506,6 +506,97 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_2) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_3) {
+	// test summing if inputs for frequency
+    
+	GenPtr g1 = Gen::make(GenID::Phasor);
+    
+	BOOST_CHECK_EQUAL(g1->get_slot_count(), 1);
+
+	// defailt is hertz
+	BOOST_CHECK_EQUAL(
+		g1->get_slot_gen_at_index(0)->outputs[0][0], 
+		PTypeRateContext::Hertz);
+
+	PTypeRateContext::BPM || g1;
+
+	BOOST_CHECK_EQUAL(
+		g1->get_slot_gen_at_index(0)->outputs[0][0], 
+		PTypeRateContext::BPM);
+
+}
+
+
+
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_4) {
+	// test auto constant creation when adding a sample type
+    
+	GenPtr phasor = Gen::make(GenID::Phasor);
+	PTypeRateContext::Opt::BPM || phasor;
+	240 >> phasor; // 240 bpm
+
+	GenPtr buf = Gen::make(GenID::Buffer);
+
+    Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
+
+	// will assign out 1 to in 0
+   	phasor % 1 >> buf;
+   	buf->render(1);
+   	//buf->illustrate_outputs();
+   	//buf->print_outputs();
+
+	BOOST_CHECK_EQUAL(buf->outputs[0][0], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][11025], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][22050], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][33075], 1);
+
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_5) {
+	// test auto constant creation when adding a sample type
+    
+	GenPtr phasor = Gen::make(GenID::Phasor);
+	PTypeRateContext::Opt::Seconds || phasor;
+	.25 >> phasor;
+	GenPtr buf = Gen::make(GenID::Buffer);
+
+    Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
+
+	// will assign out 1 to in 0
+   	phasor % 1 >> buf;
+   	buf->render(1);
+   	//buf->illustrate_outputs();
+   	//buf->print_outputs();
+
+	BOOST_CHECK_EQUAL(buf->outputs[0][0], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][11025], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][22050], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][33075], 1);
+
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_phasor_6) {
+	// test auto constant creation when adding a sample type
+    
+	GenPtr phasor = Gen::make(GenID::Phasor);
+	PTypeRateContext::Opt::Samples || phasor;
+	11025 >> phasor;
+	GenPtr buf = Gen::make(GenID::Buffer);
+
+    Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
+
+	// will assign out 1 to in 0
+   	phasor % 1 >> buf;
+   	buf->render(1);
+   	//buf->illustrate_outputs();
+   	//buf->print_outputs();
+
+	BOOST_CHECK_EQUAL(buf->outputs[0][0], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][11025], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][22050], 1);
+	BOOST_CHECK_EQUAL(buf->outputs[0][33075], 1);
+
+}
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
@@ -1878,9 +1969,107 @@ BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
     gbuf->render(1);
     //gbuf->illustrate_outputs();
     //gbuf->illustrate_network();
-	
 
 }
+
+
+
+
+BOOST_AUTO_TEST_CASE(aw_to_samp) {
+	SampleT post;
+
+	post = rate_context_to_samples(69, 
+		PTypeRateContext::Pitch, 44100, 22050);
+
+    BOOST_CHECK_EQUAL(post, 100);
+
+	post = rate_context_to_samples(60, 
+		PTypeRateContext::Pitch, 44100, 22050);
+	// # samples, not fq
+    BOOST_CHECK_EQUAL(post, 169);
+
+	post = rate_context_to_samples(2, 
+		PTypeRateContext::Hertz, 44100, 22050);
+    BOOST_CHECK_EQUAL(post, 22050);
+
+	post = rate_context_to_samples(441, 
+		PTypeRateContext::Hertz, 44100, 22050);
+    BOOST_CHECK_EQUAL(post, 100);
+
+
+	post = rate_context_to_samples(10, 
+		PTypeRateContext::Seconds, 44100, 22050);
+    BOOST_CHECK_EQUAL(post, 441000);
+
+
+	post = rate_context_to_samples(60, 
+		PTypeRateContext::BPM, 44100, 22050);
+    BOOST_CHECK_EQUAL(post, 44100);
+
+	post = rate_context_to_samples(120, 
+		PTypeRateContext::BPM, 44100, 22050);
+    BOOST_CHECK_EQUAL(post, 22050);
+
+	post = rate_context_to_samples(30, 
+		PTypeRateContext::BPM, 44100, 22050);
+    BOOST_CHECK_EQUAL(post, 88200);    
+        
+}
+
+
+BOOST_AUTO_TEST_CASE(aw_to_angle_increment) {
+	SampleT post;
+
+	// TODO: add
+	// post = rate_context_to_angle_increment(69, 
+	// 	PTypeRateContext::Pitch, 44100, 22050);
+
+ //    BOOST_CHECK_EQUAL(post, 100);
+
+	// post = rate_context_to_angle_increment(60, 
+	// 	PTypeRateContext::Pitch, 44100, 22050);
+	// // # samples, not fq
+ //    BOOST_CHECK_EQUAL(post, 169);
+
+
+	post = rate_context_to_angle_increment(2, 
+		PTypeRateContext::Hertz, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 0.0002849517146113191, 0.0000001);
+
+	post = rate_context_to_angle_increment(.5, 
+		PTypeRateContext::Hertz, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 7.1237928652829774e-05, 0.0000001);
+
+
+	post = rate_context_to_angle_increment(22050, 
+		PTypeRateContext::Samples, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 0.0002849517146113191, 0.0000001);
+
+	post = rate_context_to_angle_increment(88200, 
+		PTypeRateContext::Samples, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 7.1237928652829774e-05, 0.0000001);
+
+
+	post = rate_context_to_angle_increment(.5, 
+		PTypeRateContext::Seconds, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 0.0002849517146113191, 0.0000001);
+
+	post = rate_context_to_angle_increment(2, 
+		PTypeRateContext::Seconds, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 7.1237928652829774e-05, 0.0000001);
+
+
+	post = rate_context_to_angle_increment(120, 
+		PTypeRateContext::BPM, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 0.0002849517146113191, 0.0000001);
+
+	post = rate_context_to_angle_increment(30, 
+		PTypeRateContext::BPM, 44100, 22050);
+    BOOST_CHECK_CLOSE(post, 7.1237928652829774e-05, 0.0000001);
+
+        
+}
+
 
 
 
