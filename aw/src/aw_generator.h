@@ -749,17 +749,6 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Return the number of slots. There is only one Gen per slot. 
     PIndexT get_slot_count() {return _slot_count;};
 
-	//! Return the parameter index for a named parameter.
-    // PIndexT get_input_index_from_parameter_name(const
-    //         std::string& s);
-
-	// //! Return the parameter index for the first-encountered parameter type id; raises an exception if not found.
- //    PIndexT get_input_index_from_class_id(const
- //            PTypeID ptid);
-
-	// //! Return the parameter slot for a named parameter.
- //    PIndexT get_slot_index_from_parameter_name(const std::string& s);	
-
 
     // TODO: must check for duplicated connections and silently skip them; 
     
@@ -1364,8 +1353,6 @@ class Phasor: public Gen {
     PIndexT _input_index_rate;
     PIndexT _input_index_phase;
     PIndexT _slot_index_rate_context;
-
-    PTypeRateContext::Opt _r_context;
 	
 	// TODO: these should be Vectors of size equal to frame and filled from the input
     SampleT _rate_prev;
@@ -1400,8 +1387,8 @@ class Sine: public Gen {
 
     private://-----------------------------------------------------------------
     PIndexT _input_index_rate;    
-    PIndexT _input_index_phase;    
-    PTypeRateContext::Opt _r_context;
+    PIndexT _input_index_phase;
+    PIndexT _slot_index_rate_context;
 	
     //SampleT _sum_rate;
     // SampleT _sum_phase;
