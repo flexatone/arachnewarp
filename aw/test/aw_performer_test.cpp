@@ -41,6 +41,34 @@ BOOST_AUTO_TEST_CASE(aw_performer_test_1) {
 }
 
 
+// BOOST_AUTO_TEST_CASE(aw_performer_test_2) {
+
+// 	EnvironmentPtr e = Environment::make_with_frame_size(1024);
+// 	Environment::set_default_env(e);
+
+// 	GenPtr s1 = Gen::make(GenID::Sine);
+// 	PTypeRateContext::Opt::Pitch || s1;
+//     60 >> s1;    
+
+// 	GenPtr s2 = Gen::make(GenID::Sine);
+// 	PTypeRateContext::Opt::Pitch || s2;
+//     63 >> s2;    
+
+// 	GenPtr s3 = Gen::make(GenID::Sine);
+// 	PTypeRateContext::Opt::Pitch || s3;
+//     67 >> s3;
+
+
+//     GenPtr c1 = (s1 * .5) + (s2 * .3) + (s3 * .3);
+
+// 	GenPtr p1 = Gen::make(GenID::Panner);
+//    	Inj<GenPtr>({c1, Gen::make(.5)}) >> p1;
+
+//     PAPerformer pap(p1);
+//     pap(4);
+
+
+// }
 
 
 

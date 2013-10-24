@@ -1762,7 +1762,8 @@ void BPIntegrator :: init() {
             "Interpolatation (flat, linear)"));
     set_slot_by_index(_slot_index_interp, PTypeInterpolate::Linear, false); // setting a default
     
-	_slot_index_t_context = _register_slot_parameter_type(PType::make_with_name(PTypeID::TimeContext, 
+	_slot_index_t_context = _register_slot_parameter_type(
+            PType::make_with_name(PTypeID::TimeContext, 
             "TimeContext (samples, seconds)"));
     // update after last default
     set_slot_by_index(_slot_index_t_context, PTypeTimeContext::Seconds, true);
@@ -1864,8 +1865,6 @@ void BPIntegrator :: render(RenderCountT f) {
                 _y_dst = _slots[_slot_index_bps]->outputs[1][_point_count + 1];
                 
                 if (_t_context == PTypeTimeContext::Seconds) { // not zero
-                //if (_t_context) {
-                    // must do as seperate step to avoid truncating in assignment
                     // TODO: averaged, or floored?                
                     _samps_width = (_x_dst - _x_src) *
                             static_cast<SampleT>(_sampling_rate);
@@ -1972,7 +1971,8 @@ void Phasor :: init() {
             PTypeID::RateContext, "RateContext"));
 
     // default to hertz
-    set_slot_by_index(0, PTypeRateContext::Hertz, true); 
+    set_slot_by_index(_slot_index_rate_context, 
+            PTypeRateContext::Hertz, true); 
 
     reset();
 }
@@ -2023,7 +2023,6 @@ void Phasor :: render(RenderCountT f) {
 			_amp = _amp_prev + (1.0 / static_cast<SampleT>(
 					(_period_samples - 1)));
 			// if amp is at or above 1, set to zero
-            // TODO: need to formalize this min gap
 			if (_amp >= _amp_threshold) {
                 _amp = 0.0;
                 outputs[1][i] = 1; // set trigger           
@@ -2068,8 +2067,16 @@ void Sine :: init() {
 	
     _input_index_phase = _register_input_parameter_type(
             PType::make_with_name(PTypeID::Phase, "Phase"));	
-    
-	// register output
+    	
+    // register slots
+    _slot_index_rate_context = _register_slot_parameter_type(
+            PType::make_with_name(
+            PTypeID::RateContext, "RateContext"));
+    // default to hertz
+    set_slot_by_index(_slot_index_rate_context, 
+            PTypeRateContext::Hertz, true); 
+
+    // register output
     _register_output_parameter_type(
             PType::make_with_name(PTypeID::Value, "Output"));
     
@@ -2112,9 +2119,14 @@ void Sine :: render(RenderCountT f) {
             
             if (_summed_inputs[_input_index_rate][_i] != _rate_cur) {
                 _rate_cur = _summed_inputs[_input_index_rate][_i];
-                // could pre-callc 2 pi over sr
                 // find scalar (proportion) of how much each processing sample is of a cycle; e.g., fq 441 in 44100 sr, each proc sample is .01 of a complete osc
-                _angle_increment = PI2 * _rate_cur / _sampling_rate;
+                //_angle_increment = PI2 * _rate_cur / _sampling_rate;
+                _angle_increment = rate_context_to_angle_increment(
+                        _rate_cur, 
+                        PTypeRateContext::resolve(
+                        _slots[_slot_index_rate_context]->outputs[0][0]), 
+                        _sampling_rate, 
+                        _nyquist);
             }
             _phase_cur += _angle_increment;
             
@@ -2352,11 +2364,9 @@ void AttackDecay :: render(RenderCountT f) {
                         _summed_inputs[_input_index_exponent][_i]
                         );
             }
-            
             _last_amp = outputs[0][_i];
             // always increment; just reset when we get a trigger
             ++_progress_samps;
-            
 		}
         //std::cout << "_period_samples: " << _period_samples << std::endl;        
         _render_count += 1;
@@ -2375,11 +2385,9 @@ White :: White(EnvironmentPtr e)
 void White :: init() {
     // the init must configure the names and types of parameters
     Gen::init();
-    _clear_output_parameter_types(); // must clear the default set by Gen init
-    
+    _clear_output_parameter_types(); // must clear the default set by Gen init    
     _register_output_parameter_type(
-            PType::make_with_name(PTypeID::Value, "Output"));
-    
+            PType::make_with_name(PTypeID::Value, "Output"));    
     //set_default();
     reset();
 }
@@ -2529,7 +2537,6 @@ void Panner :: set_default() {
     // only set default on init
     //set_input_by_index(_input_index_position, 0);
 }
-
 
 void Panner :: reset() {
     Gen::reset();

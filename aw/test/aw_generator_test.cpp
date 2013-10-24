@@ -1075,6 +1075,48 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_2) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_sine_3) {
+	GenPtr sine = Gen::make(GenID::Sine);
+	PTypeRateContext::Opt::Samples || sine;
+	44100 >> sine;
+	GenPtr buf = Gen::make(GenID::Buffer);
+
+    Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
+
+	// will assign out 1 to in 0
+   	sine >> buf;
+   	buf->render(1);
+   	//buf->illustrate_outputs();
+   	//buf->print_outputs();
+
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][0]), 0);
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][11025]), 1);
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][22050]), 0);
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][33075]), -1);
+
+}
+
+BOOST_AUTO_TEST_CASE(aw_generator_sine_4) {
+	GenPtr sine = Gen::make(GenID::Sine);
+	PTypeRateContext::Opt::BPM || sine;
+	60 >> sine;
+	GenPtr buf = Gen::make(GenID::Buffer);
+
+    Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
+
+	// will assign out 1 to in 0
+   	sine >> buf;
+   	buf->render(1);
+   	//buf->illustrate_outputs();
+   	//buf->print_outputs();
+
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][0]), 0);
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][11025]), 1);
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][22050]), 0);
+	BOOST_CHECK_EQUAL(std::round(buf->outputs[0][33075]), -1);
+
+}
+
 
 BOOST_AUTO_TEST_CASE(aw_generator_map_1) {
 
