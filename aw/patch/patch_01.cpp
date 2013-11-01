@@ -18,9 +18,11 @@ using namespace aw;
 
 int main() {
 
-    EnvironmentPtr e = Environment::make_with_frame_size(128);
+    EnvironmentPtr e = Environment::make_with_frame_size(64);
     Environment::set_default_env(e);
 
+
+    // create sine chord
     GenPtr s1 = Gen::make(GenID::Sine);
     PTypeRateContext::Opt::Pitch || s1;
     60 >> s1;    
@@ -34,8 +36,8 @@ int main() {
     67 >> s3;
 
     GenPtr am1 = Gen::make(GenID::Sine);
-    PTypeRateContext::Opt::Seconds || am1;
-    1 >> am1;
+    PTypeRateContext::Opt::BPM || am1;
+    30 >> am1;
 
     GenPtr map1 = Gen::make(GenID::Map);
     Inj<GenPtr>({
@@ -49,10 +51,52 @@ int main() {
     GenPtr c1 = ((s1 * .2) + (s2 * .3) + (s3 * .5)) * map1;
 
     GenPtr p1 = Gen::make(GenID::Panner);
-    Inj<GenPtr>({c1, Gen::make(.5)}) >> p1;
+    Inj<GenPtr>({c1, Gen::make(.3)}) >> p1;
 
-    PAPerformer pap(p1);
-    pap(4);
+
+    // create noise texture
+    GenPtr env1 = Gen::make(GenID::AttackDecay);
+    GenPtr t1 = Gen::make(GenID::Phasor);
+    PTypeRateContext::Opt::BPM || t1;
+    120 >> t1;
+
+    Inj<GenPtr>({
+            t1 % 1, 
+            Gen::make(.025), 
+            Gen::make(.125)
+            }) >> env1;
+
+    GenPtr w1 = Gen::make(GenID::White);
+    GenPtr p2 = Gen::make(GenID::Panner);
+    Inj<GenPtr>({
+            w1 * env1 * .4, 
+            Gen::make(.9),
+            }) >> p2;    
+
+
+    // create noise texture
+    GenPtr env2 = Gen::make(GenID::AttackDecay);
+    GenPtr t2 = Gen::make(GenID::Phasor);
+    PTypeRateContext::Opt::BPM || t2;
+    90 >> t2;
+
+    Inj<GenPtr>({
+            t2 % 1, 
+            Gen::make(.125), 
+            Gen::make(.005)
+            }) >> env2;
+
+    GenPtr w2 = Gen::make(GenID::White);
+    GenPtr p3 = Gen::make(GenID::Panner);
+    Inj<GenPtr>({
+            w2 * env2 * .2, 
+            Gen::make(.1),
+            }) >> p3;    
+
+
+
+    PAPerformer pap(p1 + p2 + p3);
+    pap(10);
 
 
     
