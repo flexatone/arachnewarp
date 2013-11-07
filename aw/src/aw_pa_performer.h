@@ -1,13 +1,8 @@
-#ifndef _AW_PERFORMER_H_
-#define _AW_PERFORMER_H_
-
+#ifndef _AW_PA_PERFORMER_H_
+#define _AW_PA_PERFORMER_H_
 
 #include <iostream>
-
 #include "portaudiocpp/PortAudioCpp.hxx"
-// TODO: only include when on linux
-//#include "pa_linux_alsa.h"
-
 #include "aw_generator.h"
 
 
@@ -41,8 +36,6 @@ class PAPerformer {
                 const PaStreamCallbackTimeInfo* timeInfo,
                 PaStreamCallbackFlags statusFlags
                 );
-        
-    
     };
 
     typedef portaudio::MemFunCallbackStream<Callback>

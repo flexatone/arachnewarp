@@ -1,5 +1,5 @@
 
-#include "aw_performer.h"
+#include "aw_pa_performer.h"
 
 namespace aw {
 
@@ -103,9 +103,6 @@ int PAPerformer :: operator()(int dur) {
             _callback, // pass instance
             f_callback);
 
-
-        // TODO: make platform specific switch Not clear this provides a significant benefit
-        // PaAlsa_EnableRealtimeScheduling(stream.paStream(), 1);
 
         std::cout << "Stream info: " << "stream.outputLatency(): " << 
                 stream.outputLatency() << std::endl;
