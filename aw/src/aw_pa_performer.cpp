@@ -14,11 +14,20 @@ int PAPerformer :: Callback :: render_mono(
         PaStreamCallbackFlags statusFlags
         ) {
     
-    root_gen->render(render_count);
-    ++render_count;
-    
     // cast to a multi-dimensionalal array
     float** out = static_cast<float **>(outputBuffer);
+    
+    if (pre_roll_render_count < pre_roll_max) {
+        ++pre_roll_render_count;
+        for (unsigned int i=0; i < framesPerBuffer; ++i) {
+            out[0][i] = 0;
+            out[1][i] = 0;
+        }
+        return paContinue;
+    }
+    
+    root_gen->render(render_count);
+    ++render_count;
     for (unsigned int i=0; i < framesPerBuffer; ++i) {
         // need to handle reading multiple channels if defined
         out[0][i] = root_gen->outputs[0][i];
@@ -36,17 +45,25 @@ int PAPerformer :: Callback :: render_stereo(
         const PaStreamCallbackTimeInfo* timeInfo, 
         PaStreamCallbackFlags statusFlags
         ) {
+
+    // cast to a multi-dimensionalal array
+    float** out = static_cast<float **>(outputBuffer);
+    
+    if (pre_roll_render_count < pre_roll_max) {
+        ++pre_roll_render_count;
+        for (unsigned int i=0; i < framesPerBuffer; ++i) {
+            out[0][i] = 0;
+            out[1][i] = 0;
+        }
+        return paContinue;
+    }
     
     root_gen->render(render_count);
     ++render_count;
-    
-    // cast to a multi-dimensionalal array
-    float** out = static_cast<float **>(outputBuffer);
     for (unsigned int i=0; i < framesPerBuffer; ++i) {
         // need to handle reading multiple channels if defined
         out[0][i] = root_gen->outputs[0][i];
         out[1][i] = root_gen->outputs[1][i];
-
     }
     return paContinue;
 }
@@ -63,6 +80,7 @@ PAPerformer :: PAPerformer(GenPtr g) {
 int PAPerformer :: operator()(int dur) {
     // reset for each performance
     _callback.render_count = 0;
+    _callback.pre_roll_render_count = 0;
     
 	try {
 		std::cout << "setting up PortAudio..." << std::endl;
