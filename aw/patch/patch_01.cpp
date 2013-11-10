@@ -1,6 +1,9 @@
+
+// for alsa verision
 // g++-4.7 -std=c++11 patch_01.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_timer.cpp ../src/aw_illustration.cpp ../src/aw_alsa_performer.cpp -l boost_filesystem -l boost_system -l sndfile -l asound -L /usr/local/lib -Wall -O3 -o patch_01
 
-// g++-4.7 -std=c++11 patch_01.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_timer.cpp ../src/aw_illustration.cpp ../src/aw_performer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -L /usr/local/lib -Wall -O3 -o patch_01
+// for portaudio
+// g++-4.7 -std=c++11 patch_01.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_timer.cpp ../src/aw_illustration.cpp ../src/aw_pa_performer.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -L /usr/local/lib -Wall -O3 -o patch_01
 
 
 

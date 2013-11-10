@@ -17,6 +17,11 @@ class PAPerformer {
     struct Callback {
         //! Storage for callback
         GenPtr root_gen;
+        
+        // times the buffer size
+        unsigned int pre_roll_max {100};
+        
+        RenderCountT pre_roll_render_count;
         RenderCountT render_count;
         RenderCountT channels;
 
