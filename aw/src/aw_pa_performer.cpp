@@ -17,8 +17,8 @@ int PAPerformer :: Callback :: render_mono(
     // cast to a multi-dimensionalal array
     float** out = static_cast<float **>(outputBuffer);
     
-    if (pre_roll_render_count < pre_roll_max) {
-        ++pre_roll_render_count;
+    if (pre_roll_render_count < pre_roll_render_max) {
+        pre_roll_render_count += framesPerBuffer;
         for (unsigned int i=0; i < framesPerBuffer; ++i) {
             out[0][i] = 0;
             out[1][i] = 0;
@@ -49,8 +49,8 @@ int PAPerformer :: Callback :: render_stereo(
     // cast to a multi-dimensionalal array
     float** out = static_cast<float **>(outputBuffer);
     
-    if (pre_roll_render_count < pre_roll_max) {
-        ++pre_roll_render_count;
+    if (pre_roll_render_count < pre_roll_render_max) {
+        pre_roll_render_count += framesPerBuffer;
         for (unsigned int i=0; i < framesPerBuffer; ++i) {
             out[0][i] = 0;
             out[1][i] = 0;
@@ -73,7 +73,6 @@ PAPerformer :: PAPerformer(GenPtr g) {
     // pass in a generator at creation
     _callback.root_gen = g;
     _callback.channels = g->get_output_count();
-    _callback.root_gen = g;    
     _environment = g->get_environment();
 }
 
@@ -81,6 +80,8 @@ int PAPerformer :: operator()(int dur) {
     // reset for each performance
     _callback.render_count = 0;
     _callback.pre_roll_render_count = 0;
+    _callback.pre_roll_render_max = (_pre_roll_seconds *
+            _environment->get_sampling_rate());
     
 	try {
 		std::cout << "setting up PortAudio..." << std::endl;
