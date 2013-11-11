@@ -19,8 +19,7 @@ class PAPerformer {
         GenPtr root_gen;
         
         // times the buffer size
-        unsigned int pre_roll_max {100};
-        
+        RenderCountT pre_roll_render_max;
         RenderCountT pre_roll_render_count;
         RenderCountT render_count;
         RenderCountT channels;
@@ -53,7 +52,9 @@ class PAPerformer {
 
     //! We extract an environemnt from the generator apssed in at creation
     EnvironmentPtr _environment;
-    
+
+    //! This is the number of seconds of pre-roll silence before the root generator is called.
+    unsigned int _pre_roll_seconds {2};
     
     public://------------------------------------------------------------------
 
