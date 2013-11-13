@@ -1,4 +1,4 @@
-// g++-4.7 -std=c++11 -I ../src  aw_pa_performer_test.cpp ../src/aw_pa_performer.cpp ../src/aw_illustration.cpp ../src/aw_generator.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -l boost_unit_test_framework -l sndfile  -l portaudio -l portaudiocpp -L /usr/local/lib -Wall -o aw_pa_performer_test
+// g++-4.7 -std=c++11 -I ../src  aw_performer_pa_test.cpp ../src/aw_pa_performer.cpp ../src/aw_illustration.cpp ../src/aw_generator.cpp ../src/aw_common.cpp -DSTAND_ALONE -l boost_filesystem -l boost_system -l boost_unit_test_framework -l boost_unit_test_framework -l sndfile  -l portaudio -l portaudiocpp -L /usr/local/lib -Wall -o aw_performer_pa_test
 
 
 
@@ -23,7 +23,7 @@
 #include "aw_common.h"
 #include "aw_illustration.h"
 #include "aw_generator.h"
-#include "aw_performer.h"
+#include "aw_performer_pa.h"
 
 using namespace aw;
 
