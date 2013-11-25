@@ -1269,7 +1269,7 @@ class Buffer: public Gen {
 
 //=============================================================================
 
-// TODO: This shoudl derive from SampleBuffer
+// TODO: This should derive from SampleBuffer
 
 //! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
 class BreakPoints;
