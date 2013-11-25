@@ -410,18 +410,18 @@ GenPtr Gen :: make(SampleT v){
 void Gen :: doc() {
     std::vector<GenID> gen_ids {
         GenID::Add,
-        GenID::AttackDecay,        
+        GenID::AttackDecay,
         GenID::Buffer,
         GenID::BreakPoints,
         GenID::BPIntegrator,
-        GenID::Constant,          
-        GenID::Map,        
+        GenID::Constant,
+        GenID::Counter,                   
+        GenID::Map,
         GenID::Multiply,
+        GenID::Panner,        
         GenID::Phasor,
         GenID::Sine,
         GenID::White,
-        GenID::Counter,
-        GenID::Panner,        
     };
     
     int w {40}; // disable to just get tab sep
