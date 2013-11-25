@@ -24,10 +24,12 @@
 		8E5171EF16BD7BF5009114EF /* aw_illustration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5171ED16BD7BF4009114EF /* aw_illustration.cpp */; };
 		8E5171F016BD7BF5009114EF /* aw_illustration.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E5171EE16BD7BF5009114EF /* aw_illustration.h */; };
 		8E5171F216BD7C5F009114EF /* aw_illustration_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */; };
-		8E9F59E918303B67006E72B8 /* aw_pa_performer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E9F59E718303B67006E72B8 /* aw_pa_performer.cpp */; };
-		8E9F59EA18303B67006E72B8 /* aw_pa_performer.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E9F59E818303B67006E72B8 /* aw_pa_performer.h */; };
-		8E9F59EC18303B90006E72B8 /* aw_pa_performer_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E9F59EB18303B90006E72B8 /* aw_pa_performer_test.cpp */; };
 		8E9F59EF18303BA6006E72B8 /* patch_01.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E9F59EE18303BA6006E72B8 /* patch_01.cpp */; };
+		8EB03C57184300D100A52AB9 /* aw_performer_nrt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */; };
+		8EB03C58184300D100A52AB9 /* aw_performer_nrt.h in Headers */ = {isa = PBXBuildFile; fileRef = 8EB03C54184300D100A52AB9 /* aw_performer_nrt.h */; };
+		8EB03C59184300D100A52AB9 /* aw_performer_pa.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EB03C55184300D100A52AB9 /* aw_performer_pa.cpp */; };
+		8EB03C5A184300D100A52AB9 /* aw_performer_pa.h in Headers */ = {isa = PBXBuildFile; fileRef = 8EB03C56184300D100A52AB9 /* aw_performer_pa.h */; };
+		8EB03C5C1843014100A52AB9 /* aw_performer_pa_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EB03C5B1843014100A52AB9 /* aw_performer_pa_test.cpp */; };
 		8EF7D5D8174BA59500766370 /* aw_generator_rt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EF7D5D7174BA59500766370 /* aw_generator_rt.cpp */; };
 /* End PBXBuildFile section */
 
@@ -57,10 +59,12 @@
 		8E5171ED16BD7BF4009114EF /* aw_illustration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_illustration.cpp; sourceTree = "<group>"; };
 		8E5171EE16BD7BF5009114EF /* aw_illustration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_illustration.h; sourceTree = "<group>"; };
 		8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_illustration_test.cpp; sourceTree = "<group>"; };
-		8E9F59E718303B67006E72B8 /* aw_pa_performer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_pa_performer.cpp; sourceTree = "<group>"; };
-		8E9F59E818303B67006E72B8 /* aw_pa_performer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_pa_performer.h; sourceTree = "<group>"; };
-		8E9F59EB18303B90006E72B8 /* aw_pa_performer_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_pa_performer_test.cpp; sourceTree = "<group>"; };
 		8E9F59EE18303BA6006E72B8 /* patch_01.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patch_01.cpp; sourceTree = "<group>"; };
+		8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_nrt.cpp; sourceTree = "<group>"; };
+		8EB03C54184300D100A52AB9 /* aw_performer_nrt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_performer_nrt.h; sourceTree = "<group>"; };
+		8EB03C55184300D100A52AB9 /* aw_performer_pa.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_pa.cpp; sourceTree = "<group>"; };
+		8EB03C56184300D100A52AB9 /* aw_performer_pa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_performer_pa.h; sourceTree = "<group>"; };
+		8EB03C5B1843014100A52AB9 /* aw_performer_pa_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_pa_test.cpp; sourceTree = "<group>"; };
 		8EF7D5D7174BA59500766370 /* aw_generator_rt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_generator_rt.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -124,8 +128,10 @@
 		8E43EC1216ADB14200594253 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				8E9F59E818303B67006E72B8 /* aw_pa_performer.h */,
-				8E9F59E718303B67006E72B8 /* aw_pa_performer.cpp */,
+				8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */,
+				8EB03C54184300D100A52AB9 /* aw_performer_nrt.h */,
+				8EB03C55184300D100A52AB9 /* aw_performer_pa.cpp */,
+				8EB03C56184300D100A52AB9 /* aw_performer_pa.h */,
 				8E5171ED16BD7BF4009114EF /* aw_illustration.cpp */,
 				8E5171EE16BD7BF5009114EF /* aw_illustration.h */,
 				8E43EC2316ADB14200594253 /* aw_common.cpp */,
@@ -141,7 +147,7 @@
 		8E43EC1316ADB14200594253 /* test */ = {
 			isa = PBXGroup;
 			children = (
-				8E9F59EB18303B90006E72B8 /* aw_pa_performer_test.cpp */,
+				8EB03C5B1843014100A52AB9 /* aw_performer_pa_test.cpp */,
 				8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */,
 				8E43EC3D16ADB14200594253 /* aw_common_assert.cpp */,
 				8E43EC3F16ADB14200594253 /* aw_common_test.cpp */,
@@ -176,10 +182,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E43EC5A16ADB14200594253 /* aw_common.h in Headers */,
-				8E9F59EA18303B67006E72B8 /* aw_pa_performer.h in Headers */,
 				8E43EC5E16ADB14200594253 /* aw_generator.h in Headers */,
 				8E43EC6616ADB14200594253 /* aw_timer.h in Headers */,
+				8EB03C58184300D100A52AB9 /* aw_performer_nrt.h in Headers */,
 				8E5171F016BD7BF5009114EF /* aw_illustration.h in Headers */,
+				8EB03C5A184300D100A52AB9 /* aw_performer_pa.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,16 +241,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E43EC5816ADB14200594253 /* makefile in Sources */,
+				8EB03C5C1843014100A52AB9 /* aw_performer_pa_test.cpp in Sources */,
 				8E9F59EF18303BA6006E72B8 /* patch_01.cpp in Sources */,
-				8E9F59EC18303B90006E72B8 /* aw_pa_performer_test.cpp in Sources */,
 				8E43EC5916ADB14200594253 /* aw_common.cpp in Sources */,
 				8E43EC5D16ADB14200594253 /* aw_generator.cpp in Sources */,
 				8E43EC6516ADB14200594253 /* aw_timer.cpp in Sources */,
 				8E43EC6916ADB14200594253 /* aw_common_assert.cpp in Sources */,
 				8E43EC6A16ADB14200594253 /* aw_common_test.cpp in Sources */,
 				8E43EC6B16ADB14200594253 /* aw_generator_assert.cpp in Sources */,
-				8E9F59E918303B67006E72B8 /* aw_pa_performer.cpp in Sources */,
+				8EB03C57184300D100A52AB9 /* aw_performer_nrt.cpp in Sources */,
 				8E43EC6C16ADB14200594253 /* aw_generator_perf.cpp in Sources */,
+				8EB03C59184300D100A52AB9 /* aw_performer_pa.cpp in Sources */,
 				8E43EC6D16ADB14200594253 /* aw_generator_test.cpp in Sources */,
 				8E43EC6F16ADB14200594253 /* aw_test.cpp in Sources */,
 				8E43EC7016ADB14200594253 /* aw_timer_test.cpp in Sources */,
