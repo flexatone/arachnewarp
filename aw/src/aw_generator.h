@@ -23,7 +23,8 @@ enum class GenID {
     Constant,
     Add,
     Multiply,
-    Buffer,
+    SamplesBuffer,    
+    SecondsBuffer,
     BreakPoints,
     BPIntegrator,
     Phasor,
@@ -190,7 +191,7 @@ class PTypeCycle: public PType {
     explicit PTypeCycle();
 };
 
-buffer
+
 class PTypeLowerBoundary;
 typedef std::shared_ptr<PTypeLowerBoundary>
         ParameterTypeLowerBoundaryShared;
@@ -212,17 +213,17 @@ class PTypeUpperBoundary: public PType {
 
 class PTypeBreakPoints;
 typedef std::shared_ptr<PTypeBreakPoints> PTypeBreakPointsPtr;
-//! A table, or a Buffer with 2 channels of data. 
+//! A table, or a SecondsBuffer with 2 channels of data. 
 class PTypeBreakPoints: public PType {
     public://------------------------------------------------------------------
     explicit PTypeBreakPoints();
 };
-buffer
+
 
 //! A parameter (used as a slot) to select various interpoaltion types.
 class PTypeInterpolate;
 typedef std::shared_ptr<PTypeInterpolate> PTypeInterpolationPtr;
-class PTypeInterpolate: publicbuffer PType {
+class PTypeInterpolate: public PType {
     public://------------------------------------------------------------------
     explicit PTypeInterpolate();
     
@@ -256,8 +257,18 @@ class PTypeTimeContext: public PType {
     };
     inline static Opt resolve(SampleT x) {
         return x >= -0.5 && x < 0.5 ? Opt::Samples : Opt::Seconds;
-    };
-    
+    }
+  
+    //! For direct parameter validation. 
+    inline static void validate(PTypeTimeContext::Opt tc) {
+        if (tc == PTypeTimeContext::Samples || 
+            tc == PTypeTimeContext::Seconds) {
+            return;
+        }
+        else {
+            throw std::invalid_argument("invalid time context");
+        }
+    }    
 };
 
 
@@ -287,7 +298,7 @@ class PTypeRateContext: public PType {
 
 class PTypeModulus;
 typedef std::shared_ptr<PTypeModulus> PTypeModulusPtr;
-//! A table, or a Buffer with 2 channels of data. 
+//! A table, or a SecondsBuffer with 2 channels of data. 
 class PTypeModulus: public PType {
     public://------------------------------------------------------------------
     explicit PTypeModulus();
@@ -313,7 +324,7 @@ class PTypeDirection: public PType {
                 x < 1.5 ? Reverse :
                 x < 2.5 ? Cycle :
                 x < 3.5 ? RandomSelect :
-                x < 4.5 ? RandbufferomWalk :
+                x < 4.5 ? RandomWalk :
                 RandomPermutate; // if out of upper range
     };
     
@@ -452,7 +463,7 @@ inline SampleT rate_context_to_angle_increment(SampleT raw,
 
 //=============================================================================
 
-// Slots: Slots can be used to change the interpretation of input parameters. For example, a Sine generator can have a rate input that is interpreted based on slot parameter (specifying interpretating the rate as Hz, Pitch, BPM, etc.) A slot, however, should not affect the interpretation of another slot (they should be orthogonal); thus, a Buffer cannot have a slot to determine its size as well as a slot to determine the interpretation of that size. 
+// Slots: Slots can be used to change the interpretation of input parameters. For example, a Sine generator can have a rate input that is interpreted based on slot parameter (specifying interpretating the rate as Hz, Pitch, BPM, etc.) A slot, however, should not affect the interpretation of another slot (they should be orthogonal); thus, a SecondsBuffer cannot have a slot to determine its size as well as a slot to determine the interpretation of that size. 
 
 
 class Gen;
@@ -509,7 +520,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
 	OutputsSizeT _nyquist;
 		
-    //! Define if this Gen has resizable frame size. Most generators do not have have resizable frame size; only some (like a Buffer) do.
+    //! Define if this Gen has resizable frame size. Most generators do not have have resizable frame size; only some (like a SecondsBuffer) do.
     bool _frame_size_is_resizable; // TODO: make private?	
                             
     //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. RenderCountT must be the largest integer available.
@@ -722,7 +733,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Load the outputs into a passed-in vector. The vector is cleared before loading. 
     void write_outputs_to_vector(VSampleT& vst) const;
 
-    //! Write out all outpout to the provided file path. If this is a Buffer, this can be used to write an audio file.
+    //! Write out all outpout to the provided file path. If this is a SecondsBuffer, this can be used to write an audio file.
     virtual void write_output_to_fp(const std::string& fp, 
                                     PIndexT d=0) const;
 	
@@ -736,11 +747,11 @@ class Gen: public std::enable_shared_from_this<Gen> {
 								PIndexT ch, bool interleaved=true);
 
 
-    //! If we are in a Buffer class, this method loads a complete file path to an audio file into the output of this Gen. This is not implemented in the base class Gen. 
+    //! If we are in a SecondsBuffer class, this method loads a complete file path to an audio file into the output of this Gen. This is not implemented in the base class Gen. 
     virtual void set_outputs_from_fp(const std::string& fp);
 
 
-    //! Overridden, overloaded function for setting outputs. Implemented by Buffer, but defined on base so all have access. Need a Injector because otherwise we would take more parameters for channels, etc.
+    //! Overridden, overloaded function for setting outputs. Implemented by SecondsBuffer, but defined on base so all have access. Need a Injector because otherwise we would take more parameters for channels, etc.
     virtual void set_outputs(const Inj<SampleT>& bi);
 
     //! Set output swith a file path represented as a string.
@@ -997,13 +1008,13 @@ inline GenPtr operator||(const Inj<GenPtr>& lhs, GenPtr rhs) {
 
 inline GenPtr operator&&(const aw::Inj<SampleT>& lhs,
         GenPtr rhs) {
-    rhs->set_outputs(lhs); // will throw if rhs is not Buffer
+    rhs->set_outputs(lhs); // will throw if rhs is not SecondsBuffer
     return rhs;
 } 
 
 inline GenPtr operator&&(const std::string lhs, GenPtr rhs) {
     //return aw::connect_parallel(lhs, rhs, GenID::Multiply);
-    rhs->set_outputs(lhs); // will throw if rhs is not Buffer
+    rhs->set_outputs(lhs); // will throw if rhs is not SecondsBuffer
     return rhs;        
 } 
 
@@ -1236,23 +1247,27 @@ class Multiply: public _BinaryCombined {
 
 
 //=============================================================================
-//! A Buffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
-class Buffer;
-typedef std::shared_ptr<Buffer> BufferPtr;
-class Buffer: public Gen {
+
+//=============================================================================
+//! A SamplesBuffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
+class SamplesBuffer;
+typedef std::shared_ptr<SamplesBuffer> SamplesBufferPtr;
+class SamplesBuffer: public Gen {
 
     protected://---------------------------------------------------------------
-	//! Overridden to apply slot settings and reset as necessary. 
-	void _update_for_new_slot();
+    //! Overridden to apply slot settings and reset as necessary. 
+    virtual void _update_for_new_slot();
+
+    void _buffer_update_for_new_slot(PTypeTimeContext::Opt tc);
 
     public://------------------------------------------------------------------
-    explicit Buffer(EnvironmentPtr);
-	
+    explicit SamplesBuffer(EnvironmentPtr);
+    
     virtual void init();
-	
-	//! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
-    virtual void render(RenderCountT f);	
-			
+    
+    //! Render the buffer: each render cycle must completely fille the buffer, meaning that inputs will be called more often, have a higher render number. Is this a problem? 
+    virtual void render(RenderCountT f);    
+            
     //! Write to an audio file to given the ouput file path. The optional PIndexT argument can be used to specify a single _output_count of many to write. If PIndexT is 0, all outputs are written.
     virtual void write_output_to_fp(const std::string& fp, 
                                     PIndexT d=0) const;
@@ -1269,18 +1284,32 @@ class Buffer: public Gen {
 };
 
 
-//TODO: make SampleBuffer subclass that allows setting size by samples; override a method used in _update_for_new_slot to _set_frame_size()
+//=============================================================================
+
+//! A buffer designed for setting by seconds.
+class SecondsBuffer;
+typedef std::shared_ptr<SecondsBuffer> SecondsBufferPtr;
+class SecondsBuffer: public SamplesBuffer {
+
+    protected://---------------------------------------------------------------
+	//! Overridden to apply slot settings and reset as necessary. 
+	virtual void _update_for_new_slot();
+
+    public://------------------------------------------------------------------    
+    explicit SecondsBuffer(EnvironmentPtr);
+
+    virtual void init();
+
+};
 
 
 
 //=============================================================================
 
-// TODO: This should derive from SampleBuffer
-
 //! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
 class BreakPoints;
 typedef std::shared_ptr<BreakPoints> BreakPointsPtr;
-class BreakPoints: public Buffer {
+class BreakPoints: public SamplesBuffer {
 
     public://------------------------------------------------------------------
 

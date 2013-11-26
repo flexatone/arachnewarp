@@ -57,7 +57,7 @@ bool test_2() {
 bool test_3() {
 	// can create the table subclass
     
-   	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
+   	aw::GenPtr g1 = aw::Gen::make(aw::GenID::SecondsBuffer);
     // set channels to 3
     
 	aw::VSampleT v;
@@ -73,7 +73,7 @@ bool test_3() {
 }
 
 bool test_4() {
-	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::GenID::SecondsBuffer);
     // set channels to 1
     std::string s("12518-sk1Kick.aif");
     g1->set_outputs_from_fp(s);	

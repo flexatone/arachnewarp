@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(aw_illustration_test_1) {
 }
 
 BOOST_AUTO_TEST_CASE(aw_illustration_test_2) {    
-	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::GenID::SecondsBuffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	// for five second
