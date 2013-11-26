@@ -16,6 +16,8 @@ namespace aw {
 
 
 
+
+
 //! Class of Gen names for static constructors. Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators.
 enum class GenID {
     Constant,
@@ -188,7 +190,7 @@ class PTypeCycle: public PType {
     explicit PTypeCycle();
 };
 
-
+buffer
 class PTypeLowerBoundary;
 typedef std::shared_ptr<PTypeLowerBoundary>
         ParameterTypeLowerBoundaryShared;
@@ -215,12 +217,12 @@ class PTypeBreakPoints: public PType {
     public://------------------------------------------------------------------
     explicit PTypeBreakPoints();
 };
-
+buffer
 
 //! A parameter (used as a slot) to select various interpoaltion types.
 class PTypeInterpolate;
 typedef std::shared_ptr<PTypeInterpolate> PTypeInterpolationPtr;
-class PTypeInterpolate: public PType {
+class PTypeInterpolate: publicbuffer PType {
     public://------------------------------------------------------------------
     explicit PTypeInterpolate();
     
@@ -311,7 +313,7 @@ class PTypeDirection: public PType {
                 x < 1.5 ? Reverse :
                 x < 2.5 ? Cycle :
                 x < 3.5 ? RandomSelect :
-                x < 4.5 ? RandomWalk :
+                x < 4.5 ? RandbufferomWalk :
                 RandomPermutate; // if out of upper range
     };
     
@@ -449,6 +451,10 @@ inline SampleT rate_context_to_angle_increment(SampleT raw,
 
 
 //=============================================================================
+
+// Slots: Slots can be used to change the interpretation of input parameters. For example, a Sine generator can have a rate input that is interpreted based on slot parameter (specifying interpretating the rate as Hz, Pitch, BPM, etc.) A slot, however, should not affect the interpretation of another slot (they should be orthogonal); thus, a Buffer cannot have a slot to determine its size as well as a slot to determine the interpretation of that size. 
+
+
 class Gen;
 typedef std::shared_ptr<Gen> GenPtr;
 //! Gen class. Base-class of all Generators. A Gen has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Gen inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Gen is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. 
