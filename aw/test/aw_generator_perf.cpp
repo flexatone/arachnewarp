@@ -17,7 +17,7 @@ bool a() {
     // this will automatically create constant Generators
     
     //g2->print_inputs(true);
-	aw::GenPtr gbuf = aw::Gen::make(aw::GenID::Buffer);
+	aw::GenPtr gbuf = aw::Gen::make(aw::GenID::SecondsBuffer);
 	gbuf->set_slot_by_index(0, 2);
 	gbuf->set_slot_by_index(1, 60); // 60 sec
 
@@ -51,7 +51,7 @@ bool b() {
     aw::GenPtr gsine3 = aw::Gen::make(aw::GenID::Sine);
     40 >> gsine3;
     
-	aw::GenPtr gbuf = aw::Gen::make(aw::GenID::Buffer);
+	aw::GenPtr gbuf = aw::Gen::make(aw::GenID::SecondsBuffer);
 	gbuf->set_slot_by_index(0, 1);
 	gbuf->set_slot_by_index(1, 60);
         
@@ -74,7 +74,7 @@ bool b() {
 
 bool c() {
 
-	aw::GenPtr g1 = aw::Gen::make(aw::GenID::Buffer);
+	aw::GenPtr g1 = aw::Gen::make(aw::GenID::SecondsBuffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	g1->set_slot_by_index(1, 60.0);

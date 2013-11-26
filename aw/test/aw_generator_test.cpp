@@ -352,11 +352,20 @@ BOOST_AUTO_TEST_CASE(aw_generator_resize_1) {
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_generator_samplesbuffer_1) {
+	GenPtr g1 = Gen::make(GenID::SamplesBuffer);
+	// testing setting the outputs from a file path
+    Inj<SampleT>({1, 11}) || g1; // 1 ch, 11 ssamples	
+    BOOST_CHECK_EQUAL(g1->get_output_count(), 1);
+    BOOST_CHECK_EQUAL(g1->get_outputs_size(), 11);
+}
+
+
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 	// test auto constant creation when adding a sample type
     
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
     BOOST_CHECK_EQUAL(g1->get_outputs_size(), 44100);
     BOOST_CHECK_EQUAL(g1->get_frame_size(), 44100);
     BOOST_CHECK_EQUAL(g1->frame_size_is_resizable(), true);
@@ -385,7 +394,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_1) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {    
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
 	// testing setting the outputs from a file path
 	
     std::string s("../test/12518-sk1Kick.aif");
@@ -425,7 +434,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {    
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
 	// test round trip file reading and writing; this is good for valgrind testing as we have to create dyanmic vectors for temporary storage
     std::string s("../test/12518-sk1Kick.aif");
     g1->set_outputs_from_fp(s);	
@@ -435,7 +444,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_3) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_7) {
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
 	// testing setting the outputs from a file path
     VSampleT v {.2, .5, .4, .8};
 
@@ -446,8 +455,6 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_7) {
     BOOST_CHECK_CLOSE(g1->outputs[0][3], .8, .00001);
     BOOST_CHECK_EQUAL(g1->get_output_count(), 1);
     BOOST_CHECK_EQUAL(g1->get_outputs_size(), 4);
-    
-
 }
 
 BOOST_AUTO_TEST_CASE(aw_generator_phasor_1) {    
@@ -535,7 +542,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_4) {
 	PTypeRateContext::Opt::BPM || phasor;
 	240 >> phasor; // 240 bpm
 
-	GenPtr buf = Gen::make(GenID::Buffer);
+	GenPtr buf = Gen::make(GenID::SecondsBuffer);
 
     Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
 
@@ -558,7 +565,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_5) {
 	GenPtr phasor = Gen::make(GenID::Phasor);
 	PTypeRateContext::Opt::Seconds || phasor;
 	.25 >> phasor;
-	GenPtr buf = Gen::make(GenID::Buffer);
+	GenPtr buf = Gen::make(GenID::SecondsBuffer);
 
     Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
 
@@ -581,7 +588,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_6) {
 	GenPtr phasor = Gen::make(GenID::Phasor);
 	PTypeRateContext::Opt::Samples || phasor;
 	11025 >> phasor;
-	GenPtr buf = Gen::make(GenID::Buffer);
+	GenPtr buf = Gen::make(GenID::SecondsBuffer);
 
     Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
 
@@ -601,7 +608,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_phasor_6) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_4) {
 	
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
 
 	// changing the slot calls overridden _update_for_new_slot(), resizes frame size
 	g1->set_slot_by_index(1, 20.0); // 20 second buffer
@@ -633,7 +640,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_5) {
 	
 	//GenPtr g1 = Gen::make(Gen::ID_Recorder);
 
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
 	// create two channel buffer
 	g1->set_slot_by_index(0, 2);
 	// for one second
@@ -704,7 +711,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_1) {
 
     GenPtr g3a = g1 * g2;    
 
-	GenPtr gr = Gen::make(GenID::Buffer);
+	GenPtr gr = Gen::make(GenID::SecondsBuffer);
 	// create two channel buffer
 	gr->set_slot_by_index(0, 1);
 	// for one second
@@ -1028,7 +1035,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_opperators_8) {
 BOOST_AUTO_TEST_CASE(aw_generator_opperators_9) {
     // test basic multiplication
 
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
     // setting slots: channels and duratin in sec
     Inj<SampleT>({3, 1.0}) || g1;
 
@@ -1079,7 +1086,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_3) {
 	GenPtr sine = Gen::make(GenID::Sine);
 	PTypeRateContext::Opt::Samples || sine;
 	44100 >> sine;
-	GenPtr buf = Gen::make(GenID::Buffer);
+	GenPtr buf = Gen::make(GenID::SecondsBuffer);
 
     Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
 
@@ -1100,7 +1107,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_sine_4) {
 	GenPtr sine = Gen::make(GenID::Sine);
 	PTypeRateContext::Opt::BPM || sine;
 	60 >> sine;
-	GenPtr buf = Gen::make(GenID::Buffer);
+	GenPtr buf = Gen::make(GenID::SecondsBuffer);
 
     Inj<SampleT>({1, 1}) || buf; // 1 ch, 1 sec
 
@@ -1213,7 +1220,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_1) {
     
     g1->set_input_by_index(0, g2, 1); // need second output, the phasor trigger
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
 	gbuf->set_slot_by_index(0, 4); // want to set this with: {2, 1} | gbuf;
 	gbuf->set_slot_by_index(1, 1);
     
@@ -1253,7 +1260,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_2) {
     
     g1->set_input_by_index(0, g2, 1); // need second output, the phasor trigger
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
 	gbuf->set_slot_by_index(0, 4); // want to set this with: {2, 1} | gbuf;
 	gbuf->set_slot_by_index(1, 1);
     
@@ -1284,7 +1291,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_3) {
     g1->set_input_by_index(2, .125);
     g1->set_input_by_index(4, 1); // self cycle mode
         
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
 	gbuf->set_slot_by_index(0, 3);
 	gbuf->set_slot_by_index(1, 1);
     
@@ -1318,7 +1325,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_attack_decay_3) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
 
     g1->set_slot_by_index(0, 1); // must set one channel
 
@@ -1334,7 +1341,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
     
     //g1->illustrate_outputs();
     
-	GenPtr g2 = Gen::make(GenID::Buffer);
+	GenPtr g2 = Gen::make(GenID::SecondsBuffer);
     //{3, 1, 3, .5, 0} && g1;
     //g2->set_slot_by_index(0, 1); // must set one channel
     bi = Inj<SampleT>({
@@ -1364,7 +1371,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_1) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
     
     Inj<SampleT>({3,4,5,200,2000}) && g1;
     //g1->illustrate_outputs();
@@ -1398,7 +1405,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_2) {
 
 
 BOOST_AUTO_TEST_CASE(aw_generator_buffer_operators_3) {
-	GenPtr g1 = Gen::make(GenID::Buffer);
+	GenPtr g1 = Gen::make(GenID::SecondsBuffer);
     
     // using templated version
     Inj<SampleT>({3,4,5,200,2000}) && g1;
@@ -1520,7 +1527,7 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_a) {
     // trig, cycle, exponent
     Inj<SampleT>({0, 1, 1}) >> g2;
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);    
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);    
     Inj<SampleT>({2, 1}) || gbuf; // 2 ch, 1 sec
     
     g2 >> gbuf;
@@ -1585,7 +1592,7 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_b) {
     // trig, cycle, exponent
     Inj<SampleT>({0, 1, 1}) >> g2;
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
     Inj<SampleT>({1, .01}) || gbuf; // 1 ch, 441 samps
     
     g2 >> gbuf;
@@ -1632,7 +1639,7 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_c) {
     // trig, cycle, exponent
     Inj<SampleT>({0, 1, 1}) >> g2;
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
     Inj<SampleT>({1, .01}) || gbuf; // 1 ch, 441 samps
     BOOST_CHECK_EQUAL(gbuf->get_frame_size(), 441);
     
@@ -1691,7 +1698,7 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_d) {
     // set output 1 from gtrig to input 0 of bpi
     bpi->set_input_by_index(0, gtrig, 1);
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
     Inj<SampleT>({2, .01}) || gbuf; // 2 ch, 441 samps
 
     Inj<GenPtr>({gtrig, bpi}) >> gbuf;
@@ -1744,7 +1751,7 @@ BOOST_AUTO_TEST_CASE(aw_bb_integrator_e) {
     // trig, cycle, exponent
     Inj<SampleT>({0, 1, 4 }) >> g2;
     
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
     Inj<SampleT>({1, .01}) || gbuf; // 1 ch, 441 samps
     
     g2 >> gbuf;
@@ -1928,7 +1935,7 @@ BOOST_AUTO_TEST_CASE(aw_panner_a) {
     // pan value of 1 for testing
     Inj<GenPtr>({Gen::make(1), gctrl_mapped}) >> gpan;
 
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
     Inj<SampleT>({2, .01}) || gbuf; // 2 ch, 441 samps    
     
     gpan >> gbuf;
@@ -2004,7 +2011,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_counter_a) {
 
 	BOOST_CHECK_EQUAL(count->get_slot_gen_at_index(0)->outputs[0][0], 6);
 
-	GenPtr gbuf = Gen::make(GenID::Buffer);
+	GenPtr gbuf = Gen::make(GenID::SecondsBuffer);
     Inj<SampleT>({4, .01}) || gbuf; // 3 ch, 441 samps    
 
     Inj<GenPtr>({phasor % 1, reset % 1, dir_count, count}) >> gbuf;

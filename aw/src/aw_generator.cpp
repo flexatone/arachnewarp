@@ -7,7 +7,7 @@
 #include <cassert>
 #include <functional>
 
-// needed for Buffer
+// needed for SecondsBuffer
 #include <sndfile.hh>
 
 #include "aw_generator.h"
@@ -347,8 +347,11 @@ GenPtr Gen :: make_with_environment(GenID q, EnvironmentPtr e) {
     else if (q == GenID::Multiply) {
         g = MultiplyPtr(new Multiply(e));    
     }    
-    else if (q == GenID::Buffer) {
-        g = BufferPtr(new Buffer(e));    
+    else if (q == GenID::SamplesBuffer) {
+        g = SamplesBufferPtr(new SamplesBuffer(e));    
+    }    
+    else if (q == GenID::SecondsBuffer) {
+        g = SecondsBufferPtr(new SecondsBuffer(e));    
     }
     else if (q == GenID::BreakPoints) {
         g = BreakPointsPtr(new BreakPoints(e));
@@ -411,7 +414,8 @@ void Gen :: doc() {
     std::vector<GenID> gen_ids {
         GenID::Add,
         GenID::AttackDecay,
-        GenID::Buffer,
+        GenID::SamplesBuffer,        
+        GenID::SecondsBuffer,
         GenID::BreakPoints,
         GenID::BPIntegrator,
         GenID::Constant,
@@ -1008,7 +1012,7 @@ void Gen :: set_outputs_from_vector(VSampleT& vst,
 }
 
 void Gen :: set_outputs_from_fp(const std::string& fp) {
-    // vitual method overridden in Buffer (so as to localize use of libsndfile
+    // vitual method overridden in SecondsBuffer (so as to localize use of libsndfile
     std::stringstream msg;
     msg << "not implemented on base class"
             << str_file_line(__FILE__, __LINE__);
@@ -1017,7 +1021,7 @@ void Gen :: set_outputs_from_fp(const std::string& fp) {
 
 
 void Gen :: set_outputs(const Inj<SampleT>& bi) {
-    // vitual method overridden in Buffer
+    // vitual method overridden in SecondsBuffer
     std::stringstream msg;
     msg << "not implemented on base class"
             << str_file_line(__FILE__, __LINE__);
@@ -1026,7 +1030,7 @@ void Gen :: set_outputs(const Inj<SampleT>& bi) {
 
 
 void Gen :: set_outputs(const std::string& fp) {
-    // vitual method overridden in Buffer
+    // vitual method overridden in SecondsBuffer
     std::stringstream msg;
     msg << "not implemented on base class"
             << str_file_line(__FILE__, __LINE__);
@@ -1485,19 +1489,19 @@ void Multiply :: init() {
 
 
 //------------------------------------------------------------------------------
-Buffer :: Buffer(EnvironmentPtr e) 
+SamplesBuffer :: SamplesBuffer(EnvironmentPtr e) 
 	// must initialize base class with passed arg
 	: Gen(e) {
-	_class_name = "Buffer";
-    _class_id = GenID::Buffer;        
-	// this is the unique difference of the Buffer class 
+	_class_name = "SamplesBuffer";
+    _class_id = GenID::SamplesBuffer;        
+	// this is the unique difference of the SecondsBuffer class 
     _frame_size_is_resizable = true;
 }
 
 
-void Buffer :: init() {
+void SamplesBuffer :: init() {
     // the int routie must configure the names and types of parameters
-    // std::cout << *this << " Buffer::init()" << std::endl;
+    // std::cout << *this << " SecondsBuffer::init()" << std::endl;
     // call base init, allocates and resets()
     Gen::init();    
     _clear_output_parameter_types(); // must clear the default set by Gen init
@@ -1509,12 +1513,14 @@ void Buffer :: init() {
     set_slot_by_index(0, 1, false); // false so as to not update until dur is set
 	    
 	_register_slot_parameter_type(PType::make_with_name(
-        PTypeID::Duration, "Duration in seconds"));
+        PTypeID::Duration, "Duration in samples"));
     // set value; will call _update_for_new_slot    
-    set_slot_by_index(1, 1, true); // one second, update now 
+    set_slot_by_index(1, 64, true); // one second, update now 
 }
 
-void Buffer :: _update_for_new_slot() {
+void SamplesBuffer :: _buffer_update_for_new_slot(PTypeTimeContext::Opt tc) {
+    // will throw on error
+    PTypeTimeContext::validate(tc);
 	// slot 0: channels
     // this is a small int; might overflow of trying to create large number of outs
     PIndexT outs = static_cast<PIndexT>(_slots[0]->outputs[0][0]);
@@ -1544,13 +1550,24 @@ void Buffer :: _update_for_new_slot() {
 		_register_output_parameter_type(pt_o);
     }
 	assert(get_output_count() == outs);
-	assert(get_input_count() == outs);	
-	// slot 1: duration 	
-	_set_frame_size(_slots[1]->outputs[0][0] * _sampling_rate);
+	assert(get_input_count() == outs);
+
+	// slot 1: duration
+    if (tc == PTypeTimeContext::Seconds) {
+	   _set_frame_size(_slots[1]->outputs[0][0] * _sampling_rate);
+    }
+    else if (tc == PTypeTimeContext::Samples) {
+       _set_frame_size(_slots[1]->outputs[0][0]);
+    }
 }
 
 
-void Buffer :: render(RenderCountT f) {
+void SamplesBuffer :: _update_for_new_slot() {
+    _buffer_update_for_new_slot(PTypeTimeContext::Samples);
+}
+
+
+void SamplesBuffer :: render(RenderCountT f) {
 	// render count must be ignored; instead, we render until we have filled our buffer; this means that the components will have a higher counter than render; need to be reset at beginning and end
 
 	// must reset; might advance to particular render count
@@ -1586,7 +1603,7 @@ void Buffer :: render(RenderCountT f) {
 	
 }
 
-void Buffer :: write_output_to_fp(const std::string& fp, 
+void SamplesBuffer :: write_output_to_fp(const std::string& fp, 
                                     PIndexT d) const {
     // default is d is 0, which is all 
     // if want ch 2 of stereo, d is 2
@@ -1646,8 +1663,8 @@ void Buffer :: write_output_to_fp(const std::string& fp,
     
 }
 
-void Buffer :: set_outputs_from_fp(const std::string& fp) {
-    // vitual method overridden in Buffer (so as to localize use of libsndfile
+void SamplesBuffer :: set_outputs_from_fp(const std::string& fp) {
+    // vitual method overridden in SecondsBuffer (so as to localize use of libsndfile
     // an exception to call on base class
     // libsndfile nomenclature is different than used here: For a sound file with only one channel, a frame is the same as a item (ie a single sample) while for multi channel sound files, a single frame contains a single item for each channel.
 	SndfileHandle sh(fp);
@@ -1666,9 +1683,9 @@ void Buffer :: set_outputs_from_fp(const std::string& fp) {
     }
 }
 
-void Buffer :: set_outputs(const Inj<SampleT>& bi) {
-    // vitual method overridden in Buffer
-    //std::cout << "Buffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;    
+void SamplesBuffer :: set_outputs(const Inj<SampleT>& bi) {
+    // vitual method overridden in SecondsBuffer
+    //std::cout << "SecondsBuffer: set_outputs: " << bi->get_frame_size() << " channels: " << bi->get_channels() << std::endl;    
     VSampleT vst;
     bi.fill_interleaved(vst);
     PIndexT ch = bi.get_channels();
@@ -1678,23 +1695,53 @@ void Buffer :: set_outputs(const Inj<SampleT>& bi) {
     // vector will be auto destroyed here
 }
 
-void Buffer :: set_outputs(const std::string& fp) {
-    // vitual method overridden in Buffer
+void SamplesBuffer :: set_outputs(const std::string& fp) {
+    // vitual method overridden in SecondsBuffer
     set_outputs_from_fp(fp);
 }
+
+
+//------------------------------------------------------------------------------
+SecondsBuffer :: SecondsBuffer(EnvironmentPtr e) 
+    // must initialize base class with passed arg
+    : SamplesBuffer(e) {
+    _class_name = "SecondsBuffer";  // override what is set in Add
+    _class_id = GenID::SecondsBuffer;            
+}
+
+void SecondsBuffer :: init() {
+    // overridden
+    Gen::init();    
+    _clear_output_parameter_types();
+
+    _register_slot_parameter_type(PType::make_with_name(
+        PTypeID::Channels, "Channels"));
+    set_slot_by_index(0, 1, false); // false so as to not update until dur is set
+        
+    _register_slot_parameter_type(PType::make_with_name(
+        PTypeID::Duration, "Duration in seconds"));
+    // set value; will call _update_for_new_slot    
+    set_slot_by_index(1, 1, true); // one second, update now 
+}
+
+void SecondsBuffer :: _update_for_new_slot() {
+    _buffer_update_for_new_slot(PTypeTimeContext::Seconds);
+}
+
+
 
 
 
 //------------------------------------------------------------------------------
 BreakPoints :: BreakPoints(EnvironmentPtr e) 
 	// must initialize base class with passed arg
-	: Buffer(e) {
+	: SamplesBuffer(e) {
 	_class_name = "BreakPoints";  // override what is set in Add
     _class_id = GenID::BreakPoints;            
 }
 
 void BreakPoints :: init() {
-    Buffer::init(); // must call base init; calls Gen::init()
+    SamplesBuffer::init(); // must call base init; calls Gen::init()
 }
 
 
