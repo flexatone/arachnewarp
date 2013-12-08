@@ -1,19 +1,23 @@
-#ifndef _AW_PA_PERFORMER_H_
-#define _AW_PA_PERFORMER_H_
+#ifndef _AW_PAC_PERFORMER_H_
+#define _AW_PAC_PERFORMER_H_
 
 #include <iostream>
-#include "portaudiocpp/PortAudioCpp.hxx"
+#include "portaudio.h"
+
 #include "aw_generator.h"
 
 
 namespace aw {
 
-
-//! The port-audio C++ performer.
+    
+//! The port-audio C-based performer.
 class PAPerformer {
 
     public://-------------------------------------------------------------------
 
+    
+    // needs to be free struct, sep function from  data
+    
     struct Callback {
         //! Storage for callback
         GenPtr root_gen;
@@ -26,24 +30,27 @@ class PAPerformer {
 
         //! Callback routine
         int render_mono(
-                const void* inputBuffer,
-                void* outputBuffer, 
-                unsigned long framesPerBuffer, 
+                const void *inputBuffer,
+                void *outputBuffer,
+                unsigned long framesPerBuffer,
                 const PaStreamCallbackTimeInfo* timeInfo,
-                PaStreamCallbackFlags statusFlags
+                PaStreamCallbackFlags statusFlags,
+                void *userData
                 );
         
         int render_stereo(
-                const void* inputBuffer,
-                void* outputBuffer, 
-                unsigned long framesPerBuffer, 
+                const void *inputBuffer,
+                void *outputBuffer,
+                unsigned long framesPerBuffer,
                 const PaStreamCallbackTimeInfo* timeInfo,
-                PaStreamCallbackFlags statusFlags
+                PaStreamCallbackFlags statusFlags,
+                void *userData
                 );
+        
+        void stream_finished(void* userData);
+        
     };
 
-    typedef portaudio::MemFunCallbackStream<Callback>
-        PACallbackStream;
     
     private://-----------------------------------------------------------------
 
