@@ -9,38 +9,42 @@
 
 namespace aw {
 
-    
-struct PACBData {
+
+    namespace c_pa { // c tools for c port audio
+        
     //! Storage for callback
-    GenPtr root_gen;
-    // times the buffer size
-    RenderCountT pre_roll_render_max;
-    RenderCountT pre_roll_render_count;
-    RenderCountT render_count;
-    RenderCountT channels;
-};
-    
-//! Callback routines
-int pacb_render_mono(
-                   const void *inputBuffer,
-                   void *outputBuffer,
-                   unsigned long framesPerBuffer,
-                   const PaStreamCallbackTimeInfo* timeInfo,
-                   PaStreamCallbackFlags statusFlags,
-                   void* userData
-                   );
+    struct PACBData {
+        GenPtr root_gen;
+        // times the buffer size
+        RenderCountT pre_roll_render_max;
+        RenderCountT pre_roll_render_count;
+        RenderCountT render_count;
+        RenderCountT channels;
+    };
+        
+    //! Callback routines
+    int pacb_render_mono(
+                       const void *inputBuffer,
+                       void *outputBuffer,
+                       unsigned long framesPerBuffer,
+                       const PaStreamCallbackTimeInfo* timeInfo,
+                       PaStreamCallbackFlags statusFlags,
+                       void* userData
+                       );
 
-int pacb_render_stereo(
-                     const void *inputBuffer,
-                     void *outputBuffer,
-                     unsigned long framesPerBuffer,
-                     const PaStreamCallbackTimeInfo* timeInfo,
-                     PaStreamCallbackFlags statusFlags,
-                     void* userData
-                     );
+    int pacb_render_stereo(
+                         const void *inputBuffer,
+                         void *outputBuffer,
+                         unsigned long framesPerBuffer,
+                         const PaStreamCallbackTimeInfo* timeInfo,
+                         PaStreamCallbackFlags statusFlags,
+                         void* userData
+                         );
 
-void pacb_stream_finished(void* userData);
-
+    //! Completion function
+    void pacb_stream_finished(void* userData);
+        
+    } // end namespace c_pa
     
     
 //! The port-audio C-based performer.
@@ -51,7 +55,7 @@ class PAPerformer {
     private://-----------------------------------------------------------------
 
     //! The callback data instance
-    PACBData _cb_data;
+    c_pa::PACBData _cb_data;
 
     //! We extract an environemnt from the generator apssed in at creation
     EnvironmentPtr _environment;

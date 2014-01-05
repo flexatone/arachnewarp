@@ -31,7 +31,7 @@ int main() {
     EnvironmentPtr e = Environment::make_with_frame_size(64);
     Environment::set_default_env(e);
 
-
+	
     // create sine chord
     GenPtr s1 = Gen::make(GenID::Sine);
     PTypeRateContext::Opt::Pitch || s1;

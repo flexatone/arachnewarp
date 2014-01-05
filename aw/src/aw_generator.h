@@ -36,6 +36,25 @@ enum class GenID {
     Panner,
 };
 
+
+static const std::vector<GenID> GenIDs {
+    GenID::Constant,
+    GenID::Add,
+    GenID::Multiply,
+    GenID::SamplesBuffer,
+    GenID::SecondsBuffer,
+    GenID::BreakPoints,
+    GenID::BPIntegrator,
+    GenID::Phasor,
+    GenID::Sine,
+    GenID::Map,
+    GenID::AttackDecay,
+    GenID::White,
+    GenID::Counter,
+    GenID::Panner,
+};
+
+    
 //! Old-style inum for iteration. 
 enum ConnID {
     Slot,
