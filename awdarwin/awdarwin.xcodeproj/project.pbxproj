@@ -24,9 +24,8 @@
 		8E5171EF16BD7BF5009114EF /* aw_illustration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5171ED16BD7BF4009114EF /* aw_illustration.cpp */; };
 		8E5171F016BD7BF5009114EF /* aw_illustration.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E5171EE16BD7BF5009114EF /* aw_illustration.h */; };
 		8E5171F216BD7C5F009114EF /* aw_illustration_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */; };
-		8E84308618552546009C65DF /* aw_performer_pac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E84308418552546009C65DF /* aw_performer_pac.cpp */; };
-		8E84308718552546009C65DF /* aw_performer_pac.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E84308518552546009C65DF /* aw_performer_pac.h */; };
 		8E84308918552C45009C65DF /* aw_performer_pac_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E84308818552C45009C65DF /* aw_performer_pac_test.cpp */; };
+		8E84308D1879E0D6009C65DF /* awdoc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E84308C1879E0D6009C65DF /* awdoc.cpp */; };
 		8E9F59EF18303BA6006E72B8 /* patch_01.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E9F59EE18303BA6006E72B8 /* patch_01.cpp */; };
 		8EB03C57184300D100A52AB9 /* aw_performer_nrt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */; };
 		8EB03C58184300D100A52AB9 /* aw_performer_nrt.h in Headers */ = {isa = PBXBuildFile; fileRef = 8EB03C54184300D100A52AB9 /* aw_performer_nrt.h */; };
@@ -62,9 +61,8 @@
 		8E5171ED16BD7BF4009114EF /* aw_illustration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_illustration.cpp; sourceTree = "<group>"; };
 		8E5171EE16BD7BF5009114EF /* aw_illustration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_illustration.h; sourceTree = "<group>"; };
 		8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_illustration_test.cpp; sourceTree = "<group>"; };
-		8E84308418552546009C65DF /* aw_performer_pac.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_pac.cpp; sourceTree = "<group>"; };
-		8E84308518552546009C65DF /* aw_performer_pac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_performer_pac.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		8E84308818552C45009C65DF /* aw_performer_pac_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_pac_test.cpp; sourceTree = "<group>"; };
+		8E84308C1879E0D6009C65DF /* awdoc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = awdoc.cpp; sourceTree = "<group>"; };
 		8E9F59EE18303BA6006E72B8 /* patch_01.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patch_01.cpp; sourceTree = "<group>"; };
 		8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_nrt.cpp; sourceTree = "<group>"; };
 		8EB03C54184300D100A52AB9 /* aw_performer_nrt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_performer_nrt.h; sourceTree = "<group>"; };
@@ -104,6 +102,7 @@
 		8E43EC0F16ADB14200594253 /* aw */ = {
 			isa = PBXGroup;
 			children = (
+				8E84308A1879E0D6009C65DF /* apps */,
 				8E9F59ED18303BA6006E72B8 /* patch */,
 				8E43EC1016ADB14200594253 /* bin */,
 				8E43EC1116ADB14200594253 /* doc */,
@@ -134,8 +133,6 @@
 		8E43EC1216ADB14200594253 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				8E84308418552546009C65DF /* aw_performer_pac.cpp */,
-				8E84308518552546009C65DF /* aw_performer_pac.h */,
 				8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */,
 				8EB03C54184300D100A52AB9 /* aw_performer_nrt.h */,
 				8EB03C55184300D100A52AB9 /* aw_performer_pa.cpp */,
@@ -175,6 +172,22 @@
 			path = test;
 			sourceTree = "<group>";
 		};
+		8E84308A1879E0D6009C65DF /* apps */ = {
+			isa = PBXGroup;
+			children = (
+				8E84308B1879E0D6009C65DF /* awdoc */,
+			);
+			path = apps;
+			sourceTree = "<group>";
+		};
+		8E84308B1879E0D6009C65DF /* awdoc */ = {
+			isa = PBXGroup;
+			children = (
+				8E84308C1879E0D6009C65DF /* awdoc.cpp */,
+			);
+			path = awdoc;
+			sourceTree = "<group>";
+		};
 		8E9F59ED18303BA6006E72B8 /* patch */ = {
 			isa = PBXGroup;
 			children = (
@@ -193,7 +206,6 @@
 				8E43EC5A16ADB14200594253 /* aw_common.h in Headers */,
 				8E43EC5E16ADB14200594253 /* aw_generator.h in Headers */,
 				8E43EC6616ADB14200594253 /* aw_timer.h in Headers */,
-				8E84308718552546009C65DF /* aw_performer_pac.h in Headers */,
 				8EB03C58184300D100A52AB9 /* aw_performer_nrt.h in Headers */,
 				8E5171F016BD7BF5009114EF /* aw_illustration.h in Headers */,
 				8EB03C5A184300D100A52AB9 /* aw_performer_pa.h in Headers */,
@@ -266,9 +278,9 @@
 				8E43EC6D16ADB14200594253 /* aw_generator_test.cpp in Sources */,
 				8E43EC6F16ADB14200594253 /* aw_test.cpp in Sources */,
 				8E43EC7016ADB14200594253 /* aw_timer_test.cpp in Sources */,
+				8E84308D1879E0D6009C65DF /* awdoc.cpp in Sources */,
 				8E5171EF16BD7BF5009114EF /* aw_illustration.cpp in Sources */,
 				8E5171F216BD7C5F009114EF /* aw_illustration_test.cpp in Sources */,
-				8E84308618552546009C65DF /* aw_performer_pac.cpp in Sources */,
 				8EF7D5D8174BA59500766370 /* aw_generator_rt.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

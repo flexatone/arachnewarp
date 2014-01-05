@@ -411,26 +411,9 @@ GenPtr Gen :: make(SampleT v){
 
 
 void Gen :: doc() {
-    std::vector<GenID> gen_ids {
-        GenID::Add,
-        GenID::AttackDecay,
-        GenID::SamplesBuffer,        
-        GenID::SecondsBuffer,
-        GenID::BreakPoints,
-        GenID::BPIntegrator,
-        GenID::Constant,
-        GenID::Counter,                   
-        GenID::Map,
-        GenID::Multiply,
-        GenID::Panner,        
-        GenID::Phasor,
-        GenID::Sine,
-        GenID::White,
-    };
-    
     int w {40}; // disable to just get tab sep
     
-    for (auto gid : gen_ids) {
+    for (auto gid : GenIDs) {
         GenPtr g = make(gid);
         // get counts in order
         std::vector<PIndexT> counts {
@@ -450,6 +433,8 @@ void Gen :: doc() {
                     << '\t' << p->get_instance_name() << std::endl;
             }
         }
+        
+        std::cout << std::endl;
     }
 }
 

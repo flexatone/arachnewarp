@@ -124,8 +124,8 @@ const std::string COLOR_NONE {""};
 const std::string COLOR_RESET {"\033[0m"};
 const std::string COLOR_H1 {"\033[1m\033[37m"}; // bold white
 const std::string COLOR_SLOT {"\033[37m"};
-const std::string COLOR_INPUT {"\033[35m"};
-const std::string COLOR_OUTPUT {"\033[32m"};
+const std::string COLOR_INPUT {"\033[36m"}; // cyan
+const std::string COLOR_OUTPUT {"\033[32m"}; // green
 
 
 inline std::string color_embrace(std::string body, std::string color,

@@ -3,78 +3,80 @@
 
 namespace aw {
 
+    
+    namespace c_pa {
 	
-void pacb_stream_finished(void* userData) {
-    //PACBData* data = (PACBData*)userData;
-    //std::cout << "stream_finished" << std::endl;
-}
-    
-    
-int pacb_render_mono(
-       const void *inputBuffer,
-       void* outputBuffer,
-       unsigned long framesPerBuffer,
-       const PaStreamCallbackTimeInfo* timeInfo,
-       PaStreamCallbackFlags statusFlags,
-       void* userData
-        ) {
-    
-    PACBData* data = static_cast<PACBData*>(userData);
-    float* out = static_cast<float *>(outputBuffer);
-    
-    if (data->pre_roll_render_count < data->pre_roll_render_max) {
-        data->pre_roll_render_count += framesPerBuffer;
-        for (unsigned int i=0; i < framesPerBuffer; ++i) {
-            *out++ = 0;
-            *out++ = 0;
-        }
-        return paContinue;
+    void pacb_stream_finished(void* userData) {
+        //PACBData* data = (PACBData*)userData;
+        //std::cout << "stream_finished" << std::endl;
     }
-    
-    (data->root_gen)->render(data->render_count);
-    ++(data->render_count);
-    for (unsigned int i=0; i < framesPerBuffer; ++i) {
-        *out++ = (data->root_gen)->outputs[0][i];
-        *out++ = (data->root_gen)->outputs[0][i];
-
-    }
-    return paContinue;
-}
-
-
-int pacb_render_stereo(
-        const void *inputBuffer,
-        void* outputBuffer,
-        unsigned long framesPerBuffer,
-        const PaStreamCallbackTimeInfo* timeInfo,
-        PaStreamCallbackFlags statusFlags,
-        void* userData
-        ) {
-
-    PACBData* data = static_cast<PACBData*>(userData);
-    float* out = static_cast<float *>(outputBuffer);
-    
-    if (data->pre_roll_render_count < data->pre_roll_render_max) {
-        data->pre_roll_render_count += framesPerBuffer;
-        for (unsigned int i=0; i < framesPerBuffer; ++i) {
-            *out++ = 0;
-            *out++ = 0;
-        }
-        return paContinue;
-    }
-    
-    (data->root_gen)->render(data->render_count);
-    ++(data->render_count);
-    for (unsigned int i=0; i < framesPerBuffer; ++i) {
-        *out++ = (data->root_gen)->outputs[0][i];
-        *out++ = (data->root_gen)->outputs[1][i];
         
+        
+    int pacb_render_mono(
+           const void *inputBuffer,
+           void* outputBuffer,
+           unsigned long framesPerBuffer,
+           const PaStreamCallbackTimeInfo* timeInfo,
+           PaStreamCallbackFlags statusFlags,
+           void* userData
+            ) {
+        
+        PACBData* data = static_cast<PACBData*>(userData);
+        float* out = static_cast<float *>(outputBuffer);
+        
+        if (data->pre_roll_render_count < data->pre_roll_render_max) {
+            data->pre_roll_render_count += framesPerBuffer;
+            for (unsigned int i=0; i < framesPerBuffer; ++i) {
+                *out++ = 0;
+                *out++ = 0;
+            }
+            return paContinue;
+        }
+        
+        (data->root_gen)->render(data->render_count);
+        ++(data->render_count);
+        for (unsigned int i=0; i < framesPerBuffer; ++i) {
+            *out++ = (data->root_gen)->outputs[0][i];
+            *out++ = (data->root_gen)->outputs[0][i];
+
+        }
+        return paContinue;
     }
-    return paContinue;
-}
 
 
-    
+    int pacb_render_stereo(
+            const void *inputBuffer,
+            void* outputBuffer,
+            unsigned long framesPerBuffer,
+            const PaStreamCallbackTimeInfo* timeInfo,
+            PaStreamCallbackFlags statusFlags,
+            void* userData
+            ) {
+
+        PACBData* data = static_cast<PACBData*>(userData);
+        float* out = static_cast<float *>(outputBuffer);
+        
+        if (data->pre_roll_render_count < data->pre_roll_render_max) {
+            data->pre_roll_render_count += framesPerBuffer;
+            for (unsigned int i=0; i < framesPerBuffer; ++i) {
+                *out++ = 0;
+                *out++ = 0;
+            }
+            return paContinue;
+        }
+        
+        (data->root_gen)->render(data->render_count);
+        ++(data->render_count);
+        for (unsigned int i=0; i < framesPerBuffer; ++i) {
+            *out++ = (data->root_gen)->outputs[0][i];
+            *out++ = (data->root_gen)->outputs[1][i];
+            
+        }
+        return paContinue;
+    }
+
+
+    } // end namespace c_pa
     
     
     
@@ -93,10 +95,10 @@ int PAPerformer :: operator()(int dur) {
             _environment->get_sampling_rate());
     
     // create outside of scope
-    auto f_callback = &pacb_render_mono;
+    auto f_callback = &c_pa::pacb_render_mono;
     // pass function call back // pass function by reference
     if (_cb_data.channels == 2) {
-        f_callback = &pacb_render_stereo;
+        f_callback = &c_pa::pacb_render_stereo;
     }
     else {
         std::cerr << "channel count not handled" << std::endl;
@@ -131,7 +133,7 @@ int PAPerformer :: operator()(int dur) {
     
     if( err != paNoError ) goto error;
     
-    err = Pa_SetStreamFinishedCallback(stream, &pacb_stream_finished);
+    err = Pa_SetStreamFinishedCallback(stream, &c_pa::pacb_stream_finished);
     if( err != paNoError ) goto error;
     
     err = Pa_StartStream(stream);
