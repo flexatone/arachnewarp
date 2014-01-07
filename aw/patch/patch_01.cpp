@@ -1,5 +1,11 @@
-// for portaudio with installed aw shared library; not yet working
-// g++-4.7 -std=c++11 patch_01.cpp -I ../src -I /usr/local/include/boost -I /usr/local/include ../src/aw_performer_pa.cpp -l boost_filesystem -l boost_system -l sndfile -l portaudio -l portaudiocpp -l arachnewarp -L /usr/local/lib -L ../bin -Wall -O3 -o patch_01
+// for mac
+// for portaudio with installed static library archive (.a object file)
+// g++-4.7 -std=c++11 patch_01.cpp  -I ../src -I /usr/local/include/boost -I /usr/local/include -l boost_filesystem -l boost_system -l sndfile -l portaudio -l arachnewarp -L /usr/local/lib -Wall -O3 -o patch_01
+
+
+// for ubuntu, might need to add LD_LIBRARY_PATH
+// g++-4.7 -std=c++11 patch_01.cpp  -I ../src -I /usr/local/include/boost -I /usr/local/include -l boost_filesystem -l boost_system -l sndfile -l portaudio -l arachnewarp -L /usr/local/lib -Wall -O3 -o patch_01
+
 
 
 // for alsa verision
