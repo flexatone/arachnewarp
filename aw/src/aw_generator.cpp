@@ -223,16 +223,15 @@ DirectedIndex :: DirectedIndex(FrameSizeT size)
     }
     // do this after max adjustment
     _size_less_one = _size - 1;
-    //! We want anything smaller than the integer size
+
+    // We want anything smaller than the integer size
     _size_for_random_select = std::nextafter(static_cast<SampleT>(_size), 0.0); 
-    // std::cout << "_size_for_random_select" << std::setprecision(100) << _size_for_random_select << std::endl;
     reset();
 }
 
-
 void DirectedIndex :: reset() {
     if (_direction == PTypeDirection::Opt::Reverse) {
-        _last_value = 0; // make next size
+        _last_value = 0; // make next index at size - 1 
     }
     else {
         _last_value = _size; // make next zero
@@ -252,12 +251,10 @@ void DirectedIndex :: set_direction(PTypeDirection::Opt d) {
 }
 
 FrameSizeT DirectedIndex :: next() {
-    //std::cout << "DI next() _last_value " << _last_value << " _size_less_one " << _size_less_one << std::endl; 
     // handle trivial case of size of 1
     if (_size == 1) {
         return 0;
     }
-
     if (_direction == PTypeDirection::Opt::Forward) {
         if (_last_value >= _size_less_one) {
             _last_value = 0;
@@ -324,14 +321,13 @@ FrameSizeT DirectedIndex :: next() {
             std::random_shuffle(_indices.begin(), _indices.end());
             _last_value = 0;
         }
-        // we do not return _last_value; it is our index in the shuffled deck
+        // this direction type is the only place where we do not return _last_value; it is our index in the shuffled stored indices
         _temp_value = _indices[_last_value];
         ++_last_value;
         return _temp_value;
     }
     return _last_value;
 }
-
 
 
 //-----------------------------------------------------------------------------
@@ -557,16 +553,17 @@ PIndexT Gen :: _register_input_parameter_type(PTypePtr pts) {
 
     // store a vector in the position to accept inputs
     VGenPtrOutPair vInner;  
-    _inputs.push_back(vInner); // extr copy made here
+    _inputs.push_back(vInner); // extra copy made here
     	
 	VSampleT vSampleTypeInner;
 	_summed_inputs.push_back(vSampleTypeInner);
-    // must do this after pushing_back, as makes a copy
+
+    // resize after pushing_back to avoid copying large instance
     // resize to store initialzied values and use like an array
-    // could user reserve here
 	SampleT n(0);	
     _summed_inputs[_input_count].resize(get_common_frame_size(), n);
     PIndexT set_index = _input_count;
+    // increment for next call to register
     _input_count += 1;
     return set_index;
 }
@@ -588,11 +585,12 @@ PIndexT Gen :: _register_slot_parameter_type(PTypePtr pts) {
 }
 
 void Gen :: _update_for_new_slot() {
+    // specialize in derived classes
 }
 
 void Gen :: _render_inputs(RenderCountT f) {
-    // for each of the inputs, need to render up to this frame
-    // this is "pulling" lower-level values up to date
+    // for each of the inputs, need to render up to this frame (render count)
+    // this is "pulling" lower-level values up to the render count
     // passing render count seems somewhat wasteful as in most cases we just will be advancing by 1 more than the previous frame count value
     // this is inlined in the header
     PIndexT j;
