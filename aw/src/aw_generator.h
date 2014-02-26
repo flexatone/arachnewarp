@@ -1188,8 +1188,6 @@ class _BinaryCombined: public Gen {
 };
 
 
-
-
 //=============================================================================
 //! A mult sums all Generators across all dimensions at its single operand input. Derives from Add, as all operators will 
 class Add;
@@ -1213,8 +1211,6 @@ class Multiply: public _BinaryCombined {
     virtual void init();
 };
 
-
-//=============================================================================
 
 //=============================================================================
 //! A SamplesBuffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
@@ -1253,7 +1249,6 @@ class SamplesBuffer: public Gen {
 
 
 //=============================================================================
-
 //! A buffer designed for setting by seconds.
 class SecondsBuffer;
 typedef std::shared_ptr<SecondsBuffer> SecondsBufferPtr;
@@ -1271,9 +1266,7 @@ class SecondsBuffer: public SamplesBuffer {
 };
 
 
-
 //=============================================================================
-
 //! A derived buffer for storing (and validating) break point data. This is not an interpolator, but just a derived storage class. 
 class BreakPoints;
 typedef std::shared_ptr<BreakPoints> BreakPointsPtr;
@@ -1463,7 +1456,6 @@ class Map: public Gen {
 };
 
 
-
 //=============================================================================
 //! An AD envelope.
 class AttackDecay;
@@ -1571,7 +1563,6 @@ class Counter: public Gen {
     //! Perform the noise
     virtual void render(RenderCountT f);
 };
-
 
 
 //=============================================================================
