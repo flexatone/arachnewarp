@@ -12,12 +12,6 @@
 
 namespace aw {
 
-
-
-
-
-
-
 //! Class of Gen names for static constructors. Enumeration of IDs for each type of generator avaialble; used in factory methods to return configure Generators.
 enum class GenID {
     Constant,
@@ -36,7 +30,7 @@ enum class GenID {
     Panner,
 };
 
-
+//! A vector of GenIDs to permit discovery
 static const std::vector<GenID> GenIDs {
     GenID::Constant,
     GenID::Add,
@@ -54,8 +48,7 @@ static const std::vector<GenID> GenIDs {
     GenID::Panner,
 };
 
-    
-//! Old-style inum for iteration. 
+//! Connection IDs are defined as old-style enums for translation to integers. TODO: can add methods it these to permit incrementing 
 enum ConnID {
     Slot,
     Input,
@@ -66,7 +59,6 @@ static const std::vector<ConnID> ConnIDs {Slot, Input, Output};
 
 static const std::vector<std::string> ConnColor {
         COLOR_SLOT, COLOR_INPUT, COLOR_OUTPUT};
-
 
 //! Identifiers for Parameter types. 
 enum class PTypeID {
@@ -90,19 +82,15 @@ enum class PTypeID {
 };
 
 
-
-
-
 //=============================================================================
 class PType;
 
 //! Shared PType. 
 typedef std::shared_ptr<PType> PTypePtr;
 
-//! The PType, based on subclass definition, defines the meaning of an parameter, or Generator slot that can be filled by a Gen. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage of a Gen. 
+//! The PType, based on subclass definition, defines the meaning of an parameter, or a Generator slot that can be filled by a Gen. While subclass defines the meaning of the parameter, parameters can have instance names for the particular usage with a particular Gen. 
 class PType {
-    public://------------------------------------------------------------------
-
+    public: //-----------------------------------------------------------------
 
     //! Primary constructor static method for creating share Parameter types. 
     static PTypePtr make(PTypeID);
@@ -110,31 +98,27 @@ class PType {
     static PTypePtr make_with_name(PTypeID id, const std::string& s);
 
 
-    protected://---------------------------------------------------------------
+    protected: //--------------------------------------------------------------
     //! Class name set on creation. 
     std::string _class_name;
     
     //! Public parameter id, can be used for class matching.
     PTypeID _class_id;
     
-    //static const char _class_name_alt[];
-
-    //! The name of the parameter in the context of a specific generator. This should explain selection for idscrete selectors.
+    //! The name of the parameter in the context of a specific generator. This should explain selection for discrete selectors.
     std::string _instance_name;
-
-    // can also define, for a particular instance, an expected context; that is, if fq is required, this can be defined here. then, when given another generator at a different context, conversion can happen?
 	
     //! A set of GenIDs that can be used as in input when this PType is declared for an input. 
     std::set<GenID> _compatible_gen;
     
     
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PType();
 
 	//! Output stream processor.
 	friend std::ostream& operator<<(std::ostream& outputs, const PType& pt);
 
-    //! Set the name of this PType. Passed by const reference as assignment makes the necessary copy. This name is set by the Gen and may not be the same even if its the same PType subclass. 
+    //! Set the name of this PType. Passed by const reference as assignment makes the necessary copy. This name is set by the Gen and may not be the same even if it is the same PType subclass. 
     void set_instance_name(const std::string& s) {_instance_name = s;};
 
     std::string get_class_name() const {return _class_name;};
@@ -145,16 +129,18 @@ class PType {
     // Return the Parameter type id. 
     PTypeID get_class_id() const {return _class_id;};
     
-    //! Validate a GenID using _compatible_gen and return, or raise an exception.
+    //! Validate a GenID using _compatible_gen and return if compatible, otherwise raise an exception.
     void validate_gen(GenID);
-    
+
 };
 
-
+//=============================================================================
+// subclasses of PType 
+//=============================================================================
 
 class PTypeValue;
-//! Shared PTypeValue.
 typedef std::shared_ptr<PTypeValue> ParameterTypeValuePtr;
+//=============================================================================
 //! A subclass of PType that specifies a value; the value can be one of many sorts of things such as a constant or an opperand. 
 class PTypeValue: public PType {
     public://------------------------------------------------------------------
@@ -181,7 +167,7 @@ class PTypePhase;
 typedef std::shared_ptr<PTypePhase> ParameterTypePhaseShared;
 //! A subclass of PType that specifies a phase; this is assumed presently to be in floating-point values.
 class PTypePhase: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypePhase();
 };
 
@@ -190,7 +176,7 @@ class PTypeChannels;
 typedef std::shared_ptr<PTypeChannels> ParameterTypeChannelsShared;
 //! A subclass of PType that specifies a phase; this is assumed presently to be in floating-point values.
 class PTypeChannels: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeChannels();
 };
 
@@ -198,15 +184,15 @@ class PTypeTrigger;
 typedef std::shared_ptr<PTypeTrigger> PTypeTriggerPtr;
 //! An impulse or trigger, or a single sample at 1.
 class PTypeTrigger: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeTrigger();
 };
 
 class PTypeCycle;
 typedef std::shared_ptr<PTypeCycle> PTypeCyclePtr;
-//! An impulse or trigger, or a single sample at 1.
+//! A boolean describing cyclical behavior. 
 class PTypeCycle: public PType {    
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeCycle();
 };
 
@@ -216,7 +202,7 @@ typedef std::shared_ptr<PTypeLowerBoundary>
         ParameterTypeLowerBoundaryShared;
 //! A lower boundary, likely a minimum, for dynamic sizing of a generator. 
 class PTypeLowerBoundary: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeLowerBoundary();
 };
 
@@ -224,8 +210,8 @@ class PTypeUpperBoundary;
 typedef std::shared_ptr<PTypeUpperBoundary>
         ParameterTypeUpperBoundaryShared;
 //! A lower boundary, likely a maximum, for dynamic sizing of a generator. 
-class PTypeUpperBoundary: public PType {
-    public://------------------------------------------------------------------
+class PTypeUpperBoundary: //=============================================================================public PType {
+    public: //-----------------------------------------------------------------
     explicit PTypeUpperBoundary();
 };
 
@@ -234,7 +220,7 @@ class PTypeBreakPoints;
 typedef std::shared_ptr<PTypeBreakPoints> PTypeBreakPointsPtr;
 //! A table, or a SecondsBuffer with 2 channels of data. 
 class PTypeBreakPoints: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeBreakPoints();
 };
 
@@ -243,7 +229,7 @@ class PTypeBreakPoints: public PType {
 class PTypeInterpolate;
 typedef std::shared_ptr<PTypeInterpolate> PTypeInterpolationPtr;
 class PTypeInterpolate: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeInterpolate();
     
     enum Opt {
@@ -295,7 +281,7 @@ class PTypeTimeContext: public PType {
 class PTypeRateContext;
 typedef std::shared_ptr<PTypeRateContext> PTypeRateContextPtr;
 class PTypeRateContext: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeRateContext();
 
     enum Opt { 
@@ -317,9 +303,8 @@ class PTypeRateContext: public PType {
 
 class PTypeModulus;
 typedef std::shared_ptr<PTypeModulus> PTypeModulusPtr;
-//! A table, or a SecondsBuffer with 2 channels of data. 
 class PTypeModulus: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeModulus();
 };
 
@@ -327,7 +312,7 @@ class PTypeModulus: public PType {
 class PTypeDirection;
 typedef std::shared_ptr<PTypeDirection> PTypeDirectionPtr;
 class PTypeDirection: public PType {
-    public://------------------------------------------------------------------
+    public: //-----------------------------------------------------------------
     explicit PTypeDirection();
     
     enum Opt {
@@ -346,11 +331,12 @@ class PTypeDirection: public PType {
                 x < 4.5 ? RandomWalk :
                 RandomPermutate; // if out of upper range
     };
-    
 };
 
 
 
+//=============================================================================
+// utility classes
 
 //=============================================================================
 //! Utility class for managing directions of indices. Used in Counter and Sequncer generators. Size is fixed over the life of the object. If size changes, then we must create a new object. 
@@ -358,9 +344,8 @@ class DirectedIndex;
 typedef std::shared_ptr<DirectedIndex> DirectedIndexPtr;
 class DirectedIndex {
 
-    private:
-
-    //! If we permit random permutation, we have to store all indices
+    private: //----------------------------------------------------------------
+    //! If we permit random permutation, we have to store all indices. This is resized once at instance init. 
     std::vector<std::size_t> _indices;
 
     //! If size is zero, we assume max size for this type. We set size at creation and do not change it.
@@ -384,6 +369,7 @@ class DirectedIndex {
     //! If the size is greater than this value, requests for random permutation will degrade to random choice. Experiment to find optimum value. 
     const static std::size_t _max_size_for_random_permutation {1000}; 
 
+    //! Set based on evaluating size requested. 
     bool _can_use_random_permutation;
 
     bool _forward;
@@ -398,22 +384,18 @@ class DirectedIndex {
     //! Must supply a size at creation (no size is 0);
     explicit DirectedIndex(FrameSizeT size);
 
-    // if we pass in last, we can do random walk, forward, backward, random 
+    // Call to get the next value.
     FrameSizeT next();
 
     //! The reset returns the index to first postion, which is always zero.  
     void reset();
 
-    //! Must be able to set direction at any time; this does not reset.
+    //! Must be able to set direction at process time; this does not reset or reallocate storage. Random permutation, if requested and not availabel, falls to random selection. 
     void set_direction(PTypeDirection::Opt d);
-
 };
 
 
-
-
 //=============================================================================
-
 //! Convert from a rate value to samples, assuming the raw value is the rate context specified. Should retrun an integer-like value. 
 inline SampleT rate_context_to_samples(SampleT raw, 
         PTypeRateContext::Opt c,
@@ -434,7 +416,8 @@ inline SampleT rate_context_to_samples(SampleT raw,
     else if (c == PTypeRateContext::Pitch) {
         //if (raw <= -1500) return MIN_FQ;
         // round or not?
-        return floor((static_cast<SampleT>(sr) / (pow(2, (raw-69) / 12.0) * 440.0)) + 0.5);
+        return floor((static_cast<SampleT>(sr) / (
+                pow(2, (raw-69) / 12.0) * 440.0)) + 0.5);
     }        
     else if (c == PTypeRateContext::BPM) {
         return (60.0 / raw) * static_cast<SampleT>(sr);
@@ -445,7 +428,7 @@ inline SampleT rate_context_to_samples(SampleT raw,
 }
 
 
-//! Convert from a rate value to angle increment, assuming the raw value is the rate context specified. Does not need to br rounded.
+//! Convert from a rate value to angle increment, assuming the raw value is the rate context specified. Does not need to be rounded.
 inline SampleT rate_context_to_angle_increment(SampleT raw, 
         PTypeRateContext::Opt c,
         OutputsSizeT sr,
@@ -479,23 +462,22 @@ inline SampleT rate_context_to_angle_increment(SampleT raw,
 }
 
 
-
 //=============================================================================
 
-// Slots: Slots can be used to change the interpretation of input parameters. For example, a Sine generator can have a rate input that is interpreted based on slot parameter (specifying interpretating the rate as Hz, Pitch, BPM, etc.) A slot, however, should not affect the interpretation of another slot (they should be orthogonal); thus, a SecondsBuffer cannot have a slot to determine its size as well as a slot to determine the interpretation of that size. 
+// Slots: Slots can be used to change the interpretation of input parameters. For example, a Sine generator can have a rate input that is interpreted based on a slot parameter (specifying interpretating the rate as Hz, Pitch, BPM, etc.) A slot, however, should not affect the interpretation of another slot (they should be orthogonal); thus, a SecondsBuffer or SamplesBuffer cannot have a slot to determine its size as well as a slot to determine the interpretation of that size. If size was an input and not a slot this would be fine, but changing a buffer at the audio rate is a bad idea. 
 
 
 class Gen;
 typedef std::shared_ptr<Gen> GenPtr;
-//! Gen class. Base-class of all Generators. A Gen has inputs and outputs. Inputs are a vector of vectors of Generators/ out number pairs. The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Gen inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Gen is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. 
+//! Gen class. Base-class of all Generators. A Gen has inputs and outputs. Inputs are a vector of vectors of Generators/out number (for that Gen) pairs (GenPtrOutPair). The number of types, and types of inputs, are defined by the mapping _input_parameter_type; the Gen inputs are stored on the _inputs VVGenShared. Multiple inputs in the same parameter position are always summed. Rendering on the Gen is stored in the outputs, a table of one frame for each output. Clients of the generator freely read from the outputs vector. This permits rendering a Gen (and its inputs) once even if its outputs are distributed to many inputs. 
 class Gen: public std::enable_shared_from_this<Gen> {
 
-    public://--------------------------=---------------------------------------
+    public: //-----------------------------------------------------------------
     // public typedefs
 	//! A mapping of index number
     typedef std::unordered_map<PIndexT, PTypePtr> MapIndexToParameterTypePtr;
 
-    //! A vector of GenPtr instances used for slots. Slots do not yet need to define outputs number; generatlly assume that we use the first outputs?
+    //! A vector of GenPtr instances used for slots. Slots do not yet need to define output number (in the Ge); generally assume that we use the first output, or use more in an idiosyncratic manner.
     typedef std::vector<GenPtr> VGenPtr;
 		
     //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.
@@ -504,7 +486,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     typedef std::vector<VGenPtrOutPair> VVGenPtrOutPair;
     		
     protected://----------------------------------------------------------------
-    //! The name of the class. This is set during the class constructor by the derived class, and thus needs to be protected.
+    //! The name of the class. This is set during the class constructor by the derived class, and thus needs to be protected (not private).
     std::string _class_name;
 
     //! Public generator id, can be used for class matching. 
@@ -512,35 +494,36 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     private://------------------------------------------------------------------
     // Rename PIndexT as OutputIndexType
-    //! Store the number of output channels, that this Gen is currently set up with. Storage array acount.
+
+    //! Store the number of output channels that this Gen is currently set up with.
     PIndexT _output_count;
     
-	//! The _outputs_size is derived from frame _output_count times the _frame_size. OutputsSizeT is expected to store size up to long multichannel audio files. Total storage size.
+	//! The _outputs_size is derived from _output_count * _frame_size. OutputsSizeT is expected to store size up to long multichannel audio files. Total storage size per render cylce.
     OutputsSizeT _outputs_size;
     
-    //! Number of input parameters used by this Gen. More than one Gen can reside in each slot. 
+    //! Number of input parameters available for this Gen. More than one Gen can reside in each slot. 
     PIndexT _input_count;
 
 	//! Number of slots used by this Gen. One Gen can reside in each slot. 
     PIndexT _slot_count;    
 
-	//! Store the Envrionment instance. 
+	//! Store a ptr to Envrionment instance based at creation. 
     EnvironmentPtr _environment;
 
 	
     protected://---------------------------------------------------------------
 
-	//! The size of each frame for each _output_count as stored in the outputs vector. This is protected because render() methods must access.
-    FrameSizeT _frame_size; // if changed, need to rebuild outputs	
+	//! The size of each vector for each _output_count as stored in the outputs vector. This is protected because render() methods must access. If changed, need to rebuild outputs vector. This represents the number of samples (independent of output channels per render cycle)
+    FrameSizeT _frame_size; 
     
-    //! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this for efficiency; not prepared to handle if this changes. 
+    //! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this in the instance for efficiency; not prepared to handle if this changes. 
 	OutputsSizeT _sampling_rate;
 	
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
 	OutputsSizeT _nyquist;
 		
     //! Define if this Gen has resizable frame size. Most generators do not have have resizable frame size; only some (like a SecondsBuffer) do.
-    bool _frame_size_is_resizable; // TODO: make private?	
+    bool _frame_size_is_resizable;
                             
     //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. RenderCountT must be the largest integer available.
     RenderCountT _render_count;
@@ -548,49 +531,46 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! The main storage for PTypePtr instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
     std::unordered_map<PIndexT, PTypePtr> _input_parameter_type;	
 		
-    //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this function. This could be an unordered map too, but vector will have optimal performance when we know the index in advance.
+    //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this Gen. This could be an unordered map too, but vector will have optimal performance when we know the index in advance (which we always do).
     VVGenPtrOutPair _inputs;
     
-	//! For each render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of sample types. This is done to make render() methods cleaner and remove redundancy.
-	VVSampleT _summed_inputs;    
+	//! For each render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of samples. This is done to make render() methods cleaner and remove redundancy.
+	VVSampleT _summed_inputs;
     
-	//! A std::vector of GeneratorsShared that are used internall for configuration of this Gen. Unlike inputs, only one Gen can occupy a slot position, and these are protected, not public (a suggestion that these are for internal use only). Example: a buffer has a slot for duration of that buffer. It is not yet decided if generators in slots shold be rendered, but at least only once per render step. Further, which output channels of the generator slot to use is decided internally or with another parameter.
+	//! A std::vector of GeneratorsShared that are used internally for configuration of this Gen. Unlike inputs, only one Gen can occupy a slot position, and these are protected, not public (a suggestion that these are for internal use only). Example: a buffer has a slot for duration of that buffer. It is not yet decided if generators in slots shold be rendered, but at least only once per render step. Further, which output channels of the generator slot to use is decided internally or with another slot parameter.
 	VGenPtr _slots;
 	
-	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the inputs vector. Note that all slots must be filled for the generator to be used, so perhaps defaults should be provided. 
+	//! Must define slots as ParameterTypes, meaning the same can be used for both inputs and for slots. This also means slots must be Generators. These are mapped by index value, which is the same index value in the slots vector. Note that all slots must be filled for the generator to be used, so defaults are always provided. 
     std::unordered_map<PIndexT, PTypePtr> _slot_parameter_type;
-	
 	
     //! We store a PTypePtr for each defined output, telling us what it is.
     std::unordered_map<PIndexT, PTypePtr> _output_parameter_type;
 		
-
     public://------------------------------------------------------------------
         
-    //! A vector of sample vectors. This might be deemed best as private, but for performance this is public: no function call is required to read from it. 
+    //! A vector of sample vectors (one for each of _output_count). This might be deemed best as private, but for performance this is public: no function call is required to read from it. 
     VVSampleT outputs;	
-    
 
     // ========================================================================
     // methods ================================================================
 	
-    private://-----------------------------------------------------------------   		
+    private:// ----------------------------------------------------------------
     //! Resize the outputs vector. Always called when registering an output or changing frame size.
     void _resize_outputs();
 	
 
-    protected://---------------------------------------------------------------
+    protected:// --------------------------------------------------------------
 	
-    //! Validate the current contnets of the outputs data. A virtual method for overridding in derived classes (e.g., BreakPoints). Called whenever a outputs are set as a whole (aka, set by array). Will raise an exception.
+    //! Validate the current conntens of the outputs data. A virtual method for overridding in derived classes (e.g., BreakPoints). Called whenever outputs are set as a whole (aka, set by an array), such as when a buffer loads data. Returns a Validity instance.
     virtual Validity _validate_outputs();
     
     //! Called by Generators during init() to configure the input parameters found in this Gen. PTypePtr instances are stored in the Gen, the _input_count is incremented, and _inputs is given a blank vector for appending to. The order of execution matters. 
     PIndexT _register_input_parameter_type(PTypePtr pts);
 
-    //! Remove all inputs; used by slots that dynamically chagne inputs and outputs; all existing inputs will remain. 
+    //! Remove all inputs; used by slots that dynamically change inputs and outputs.
     void _clear_input_parameter_types();
 
-	//! Called by Generators during init() to configure the slot parameters found in this Gen.
+	//! Called by Generators during init() to configure a slot parameter.
     PIndexT _register_slot_parameter_type(PTypePtr pts);
 
 	//! Define an output. This calls _resize_outputs().
@@ -639,7 +619,6 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! The default constructor is deleted: we always must pass in an Envrionment. 
     Gen() = delete;
     
-    
     //! Initialize the Gen. This method is responsible for creating ParameterTypeValuePtr instances and adding them to the Gen using the _register_input_parameter_type method. This method also does the initial sizing of the Gen, and thus could raise an exception. Additional buffers that might be needed for this Gen can be stored here. As this is virtual the base-classes init is not called, and must be called explicitly in derived classes. This should only be called once in the life of a generator.
     virtual void init();
     
@@ -650,7 +629,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Set a default input and slot configuration. If other inputs or slots are configured, the will be removed. 
     virtual void set_default();
 
-    //! Return the the number of outputs dimensions
+    //! Return the the number of output dimensions
     virtual PIndexT get_output_count() const {return _output_count;};
 
     //! Return the the outputs size, or the total number of samples used for all frames at all outputs.
@@ -659,7 +638,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Get the average value of all outputs values. 
     SampleT get_outputs_average() const;
 
-    //! Get the average of single _output_count of outputs. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, and error is raised. 
+    //! Get the average of single _output_count of outputs. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, an error is raised. 
     SampleT get_output_average(PIndexT d) const;
 
     //! Return a Boolean if this Gen has resizable frame size
@@ -669,11 +648,9 @@ class Gen: public std::enable_shared_from_this<Gen> {
     OutputsSizeT get_frame_size() const {return _frame_size;};	
 
     //! Return a copy of the environment shared pointer.
-    EnvironmentPtr get_environment() const {
-        return _environment; 
-    };
+    EnvironmentPtr get_environment() const {return _environment;};
     
-	//! Return the common frame size derived from the stored shared Environment. If this Gen has resizable frames, this may not be the same as the current frame size. 
+	//! Return the common frame size derived from the stored shared Environment. If this Gen has resizable frames, this may not be the same as the current frame size.
     OutputsSizeT get_common_frame_size() const {
 			return _environment->get_common_frame_size();};	
 
@@ -690,7 +667,6 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     virtual PIndexT get_output_count_shift() {return 0;};
 
-    
 	// info strings ...........................................................    
 
 //    std::string get_label_slot(PIndexT) const;
@@ -722,8 +698,8 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
+    //! Rreturn the class id.
     GenID get_class_id() const {return _class_id;};
-
 
     //! Get a parameter type given an index and a connection type
     PTypePtr get_parameter_type(PIndexT i, ConnID conn);
@@ -739,7 +715,6 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Render the requested frame if not already rendered. This is virtual because every Gen renders in a different way. 
     virtual void render(RenderCountT f); 
 
-
     //! Plot the outputs by piping it to gnuplot using a subprocess. 
 	void illustrate_outputs();
 
@@ -753,8 +728,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     void write_outputs_to_vector(VSampleT& vst) const;
 
     //! Write out all outpout to the provided file path. If this is a SecondsBuffer, this can be used to write an audio file.
-    virtual void write_output_to_fp(const std::string& fp, 
-                                    PIndexT d=0) const;
+    virtual void write_output_to_fp(const std::string& fp, PIndexT d=0) const;
 	
         
 	//! Set the outputs from an array. This low level routine is the only way outputs are directly written from a collection. The reeturned bool is the result of _validate_outputs. 
@@ -769,13 +743,11 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! If we are in a SecondsBuffer class, this method loads a complete file path to an audio file into the output of this Gen. This is not implemented in the base class Gen. 
     virtual void set_outputs_from_fp(const std::string& fp);
 
-
     //! Overridden, overloaded function for setting outputs. Implemented by SecondsBuffer, but defined on base so all have access. Need a Injector because otherwise we would take more parameters for channels, etc.
     virtual void set_outputs(const Inj<SampleT>& bi);
 
     //! Set output swith a file path represented as a string.
     virtual void set_outputs(const std::string& fp);
-
 
 
 	// inputs and slots ......................................................    
@@ -789,7 +761,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     // TODO: must check for duplicated connections and silently skip them; 
     
 	// inputs ..............................................................        
-    //! Directly set a parameter given an index. This will remove/erase any multiple inputs for this parameter
+    //! Directly set a parameter given an index. This will remove any other (multiple) inputs for this parameter
     virtual void set_input_by_index(
             PIndexT i,
             GenPtr gs,
@@ -799,18 +771,6 @@ class Gen: public std::enable_shared_from_this<Gen> {
             PIndexT i,
             SampleT v,
             PIndexT pos=0);
-
-    ///! Set input by class id of the PType. 
-    // void set_input_by_class_id(
-    //         PTypeID ptid,
-    //         GenPtr gs,
-    //         PIndexT pos=0);
-                                        
-    // void set_input_by_class_id(
-    //         PTypeID ptid,
-    //         SampleT v, // accept numbers
-    //         PIndexT pos=0);
-
 
     //! Add a multiple input at this parameter. 
     virtual void add_input_by_index(PIndexT i, 
@@ -823,7 +783,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Get a vector of GenPtr for an input, given the input index. This should be a copy of the vector, and is thus slow. This is virtual to provide Constant to override and return an empty vector (even though it might have an input).
     virtual VGenPtrOutPair get_input_gens_by_index(PIndexT i);
 
-    //! Remove all GenPtr attacked to all inputs.
+    //! Remove all GenPtr attached to all inputs.
     void clear_inputs();
   
 	// slot ..............................................................    	
@@ -923,7 +883,6 @@ inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
 }
 
 
-
 // slot connections ..............................................
 
 //! For now, we just set lhs in position zero.
@@ -967,10 +926,6 @@ inline GenPtr connect_serial_to_slots(const Inj<GenPtr>& lhs,
     }
     return rhs;
 }
-
-
-
-
 
 
 // operator >> ...............................................................
@@ -1019,11 +974,8 @@ inline GenPtr operator||(const Inj<GenPtr>& lhs, GenPtr rhs) {
 }
 
 
-
-
 // operator &&................................................................
 // memory (outputs storage) direct settting
-
 
 inline GenPtr operator&&(const aw::Inj<SampleT>& lhs,
         GenPtr rhs) {
@@ -1123,7 +1075,7 @@ inline GenPtr operator*(SampleT lhs, GenPtr rhs) {
 
 
 //=============================================================================
-//! A GenPtr wraperr to permit default-setting not the first input when constructing signal graphs. Not a permanant object, but a temporary used. 
+//! A GenPtr wraper to permit default-setting not the first input when constructing signal graphs. Not a permanant object, but a temporary. 
 class GenProxyOutputShift;
 typedef std::shared_ptr<GenProxyOutputShift> GenProxyOutputShiftPtr;
 class GenProxyOutputShift: public Gen {
@@ -1152,7 +1104,6 @@ class GenProxyOutputShift: public Gen {
 
 // operator % .................................................................
 
-
 //! Return this Gen wrapped in a GenProxyOutputShift wrapper. 
 inline GenPtr operator%(GenPtr lhs, PIndexT shift) {
     // this wrapped obj need not delegate all methods, as 
@@ -1160,8 +1111,6 @@ inline GenPtr operator%(GenPtr lhs, PIndexT shift) {
             new GenProxyOutputShift(
             lhs->get_environment(), lhs, shift));
 }
-
-
 
 
 //=============================================================================
