@@ -210,7 +210,7 @@ class PTypeUpperBoundary;
 typedef std::shared_ptr<PTypeUpperBoundary>
         ParameterTypeUpperBoundaryShared;
 //! A lower boundary, likely a maximum, for dynamic sizing of a generator. 
-class PTypeUpperBoundary: //=============================================================================public PType {
+class PTypeUpperBoundary: public PType {
     public: //-----------------------------------------------------------------
     explicit PTypeUpperBoundary();
 };
