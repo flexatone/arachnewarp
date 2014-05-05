@@ -339,7 +339,7 @@ class PTypeDirection: public PType {
 // utility classes
 
 //=============================================================================
-//! Utility class for managing directions of indices. Used in Counter and Sequncer generators. Size is fixed over the life of the object. If size changes, then we must create a new object. 
+//! Utility class for managing directions of indices. Used in Counter and Sequencer generators. Size is fixed over the life of the object. If size changes, then we must create a new instance. 
 class DirectedIndex;
 typedef std::shared_ptr<DirectedIndex> DirectedIndexPtr;
 class DirectedIndex {

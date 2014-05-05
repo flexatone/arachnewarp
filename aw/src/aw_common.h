@@ -90,7 +90,6 @@ SampleT const MIN_FQ {.00001};
 // -120 dB, or pow(10, -120/20), or 1e-06
 SampleT const MIN_AMP {.000001};
 
-
 //! The trigger threshold, or the value above which we determine that we have a trigger.
 SampleT const TRIG_THRESH {.99999};
 
@@ -209,6 +208,28 @@ inline void true_min_max(
 
 
 
+template <typename T>
+void print_iterable(const T& iterable) {
+    std::cout << "< ";
+    for (auto x : iterable) {
+        std::cout << x << ' ';
+    }
+    std::cout << '>' << std::endl;
+}   
+
+template <typename T>
+SampleT mean_iterable(const T& iterable) {
+    SampleT sum{0};
+    PIndexT count{0};
+    for (auto x : iterable) {
+        sum += x;
+        count += 1;
+    }
+    return sum / count;
+}   
+
+
+
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------
 
@@ -290,7 +311,8 @@ inline void true_min_max(
 //{
 //    return nextpow2( n-1 );
 //}
-//
+//from RAPC.cspec.include.include201404 import include201404
+
 //
 
 
@@ -318,10 +340,9 @@ class Random {
 
     };
 
-    //! Core random engines and distributions, shared by a single static attribute. Initialized in implementation file.
+    //! Core random engines and distributions, shared by a single static attribute. Init in implementation file.
     static Core core;
 
-    
     //! A random unform distribution between 0 and 1. 
     static inline SampleT uniform() {
         return core.uniform_dist(core.re_lin_congruential);
@@ -379,7 +400,6 @@ class Environment {
     //! We store a static (class wid) default environment that is used and set. 
     static EnvironmentPtr _default_env;
 
-    
     public://-------------------------------------------------------------------
     
     explicit Environment(FrameSizeT fs);
@@ -413,10 +433,9 @@ class Environment {
 
 };
 
-    	
 
 
-//! A class used to pass list and nested list values with initializer lists.
+//! A class (Injector) used to pass list and nested list values with initializer lists.
 template <typename T>
 class Inj {
     private: //-----------------------------------------------------
@@ -473,7 +492,7 @@ class Inj {
         return _parsed.size() / _channels;
     }
 
-    //! Pass in vector of SampleTypes and fill it up a linear representation of the provided values.
+    //! Pass in vector of SampleTypes and fill up a linear representation of the provided values.
     void fill_interleaved(std::vector<T>& post) const {
     // Pass in a reference to a vector and have it cleared, sized, and filled.
         //std::cout << "fill_interleaved: " << get_frame_size() << std::endl;

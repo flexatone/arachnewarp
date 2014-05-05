@@ -213,38 +213,64 @@ BOOST_AUTO_TEST_CASE(aw_buffer_injector_c) {
 
 BOOST_AUTO_TEST_CASE(aw_random_a) {
 
-    std::list<int> col;
-    for (int x=0;x<5;++x) {
+   VSampleT col_a;
+    for (int x=0;x<200;++x) {
 //        std::cout << "Random::uniform(): " << Random::uniform() << std::endl;
-        col.push_back(Random::uniform());
+        col_a.push_back(Random::uniform());
     }
-    for (int x=0;x<5;++x) {
-        //std::cout << "Random::uniform_bi_polar(): " << Random::uniform_bi_polar() << std::endl;
-        col.push_back(Random::uniform_bi_polar());
-    }    
-    for (int x=0;x<10;++x) {
-//        std::cout << "Random::round(11.7): " << Random::round(11.7) << std::endl;
-        col.push_back(Random::round(11.7));
-        
-    }
-    for (int x=0;x<10;++x) {
-        //std::cout << "Random::round(8.1): " << Random::round(8.1) << std::endl;
-        col.push_back(Random::round(8.1));
-        
-    }
+    //print_iterable<VSampleT>(col_a);
+    auto match_a = mean_iterable<VSampleT>(col_a);
+    BOOST_CHECK_EQUAL(match_a > 0 && match_a < 1, true);
 
+    VSampleT col_b;
+    for (int x=0;x<200;++x) {
+        //std::cout << "Random::uniform_bi_polar(): " << Random::uniform_bi_polar() << std::endl;
+        col_b.push_back(Random::uniform_bi_polar());
+    }
+    auto match_b = mean_iterable<VSampleT>(col_b);    
+    BOOST_CHECK_EQUAL(match_b > -1 && match_b < 1, true);
+
+
+    VSampleT col_c;    
     for (int x=0;x<10;++x) {
-        //std::cout << "Random::uniform_switch(): " << Random::uniform_switch() << std::endl;
-        col.push_back(Random::uniform_switch());
+        col_c.push_back(Random::round(11.7));   
+    }
+    //print_iterable<VSampleT>(col_c);
+    auto match_c = mean_iterable<VSampleT>(col_c);    
+    BOOST_CHECK_EQUAL(match_c >= 11 && match_b <= 12, true);
+
+    VSampleT col_d;    
+    for (int x=0;x<10;++x) {
+        col_d.push_back(Random::round(8.1));
+    }
+    auto match_d = mean_iterable<VSampleT>(col_d);    
+    BOOST_CHECK_EQUAL(match_d >= 8 && match_d <= 9, true);
+
+    VSampleT col_e;    
+    for (int x=0;x<10;++x) {
+        col_e.push_back(Random::uniform_switch());
         
     }
+    auto match_e = mean_iterable<VSampleT>(col_e);    
+    BOOST_CHECK_EQUAL(match_e >= 0 && match_e <= 1, true);
     
+
 }
 
 
+BOOST_AUTO_TEST_CASE(aw_random_b) {
+
+   VSampleT col_a;
+    for (int x=0;x<200;++x) {
+//        std::cout << "Random::uniform(): " << Random::uniform() << std::endl;
+        col_a.push_back(Random::uniform());
+    }
+    //print_iterable<VSampleT>(col_a);
+    auto match_a = mean_iterable<VSampleT>(col_a);
+    BOOST_CHECK_EQUAL(match_a > 0 && match_a < 1, true);
 
 
-
+}
 
 
 

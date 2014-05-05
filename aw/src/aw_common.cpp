@@ -52,7 +52,7 @@ void print(SampleT* out, FrameSizeT size) {
         std::cout << out[i] << ' ';
     }
     std::cout << '>' << std::endl;
-}	
+}
 
 const char* get_fp_home() {
     // do not need anyimport to use getnev
