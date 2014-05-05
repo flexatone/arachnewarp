@@ -65,8 +65,7 @@ PTypePtr PType :: make(PTypeID q){
     }        
     else if (q == PTypeID::Direction) {
         p = PTypeDirectionPtr(new PTypeDirection);
-    }        
-    
+    }
     else {
         std::stringstream msg;
         msg << "no matching ParameterTypeID";
@@ -317,8 +316,9 @@ FrameSizeT DirectedIndex :: next() {
     // we make sure this is possible when calling set_direction()
     else if (_direction == PTypeDirection::Opt::RandomPermutate) {
         if (_last_value >= _size) {
-            // TODO: cannot use Random::core.re_lin_congruential here for some reason; can use in related context in suffle01.cpp
-            std::random_shuffle(_indices.begin(), _indices.end());
+            std::shuffle(_indices.begin(), _indices.end(), Random::core.re_lin_congruential);
+            // alternatie approach that does not use common Random gen
+            // std::random_shuffle(_indices.begin(), _indices.end());
             _last_value = 0;
         }
         // this direction type is the only place where we do not return _last_value; it is our index in the shuffled stored indices
