@@ -2615,6 +2615,11 @@ void Panner :: render(RenderCountT f) {
 // note that the dim of the slot-provided buffer can configure the outputs of the sequencer; and each tick can provide output on all of those outputs.
 
 
+// this is a continuous to discrete transform
+// a continuous to continuous transfrom would take an interpolated break point
+// continuous to discrete: have to handle rounding as a context; can be none, floor, cirleing, or probabilistic
+// have to have a wrapping condition    
+
 
 
 
