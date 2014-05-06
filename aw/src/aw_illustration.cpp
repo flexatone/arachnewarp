@@ -154,6 +154,8 @@ void TimeDomainGraph :: draw(GenPtr g) {
 
 void TimeDomainGraph :: pipe() {
     // this uses c-style file pointers to as these are what we get out of popen; must convert std::string to c string for usage by fprint
+    // note: for this to work on ubuntu, need to: sudo apt-get install gnuplot-x11
+    std::cout << "here" << std::endl;
     FILE* gp;
     gp = popen("gnuplot -persist", "w");
     if (gp == NULL) throw std::domain_error("popen failed");

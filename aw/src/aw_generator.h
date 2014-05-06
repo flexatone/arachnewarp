@@ -680,7 +680,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Get the name and address (memory start) for this Gen, as a single string.
     std::string get_name_address() const;
     
-    //! Get the name and addres for this Gen, labeling the name with "Gen" and wrapping the address in braces. This is used for a more readable presentation.
+    //! Get the name and address for this Gen, labeling the name with "Gen" and wrapping the address in braces. This is used for a more readable presentation.
     std::string get_label_address() const;
 
     //! Get the specification for this Gen, or the number of slots, ins, and outs.
@@ -886,14 +886,12 @@ inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
 // slot connections ..............................................
 
 //! For now, we just set lhs in position zero.
-inline GenPtr connect_serial_to_slots(GenPtr lhs,
-        GenPtr rhs) {
+inline GenPtr connect_serial_to_slots(GenPtr lhs, GenPtr rhs) {
     rhs->set_slot_by_index(0, lhs); // this will call 
     return rhs;
 }
 
-inline GenPtr connect_serial_to_slots(SampleT lhs,
-        GenPtr rhs) {
+inline GenPtr connect_serial_to_slots(SampleT lhs, GenPtr rhs) {
     GenPtr g_lhs = Gen::make_with_environment(
             GenID::Constant, rhs->get_environment());
     g_lhs->set_input_by_index(0, lhs); // this will call 
@@ -901,8 +899,7 @@ inline GenPtr connect_serial_to_slots(SampleT lhs,
 }
 
 //! Assign an Inj of sample values as an input to matching slot positions.
-inline GenPtr connect_serial_to_slots(const Inj<SampleT>& lhs,
-        GenPtr rhs) {
+inline GenPtr connect_serial_to_slots(const Inj<SampleT>& lhs, GenPtr rhs) {
     VSampleT inj; // create vector, fill with values;
     lhs.fill_interleaved(inj);
     PIndexT availLen = std::min(rhs->get_slot_count(),
@@ -914,8 +911,7 @@ inline GenPtr connect_serial_to_slots(const Inj<SampleT>& lhs,
 }
 
 //! Assign an Inj of Gen Ptrs.
-inline GenPtr connect_serial_to_slots(const Inj<GenPtr>& lhs,
-        GenPtr rhs) {
+inline GenPtr connect_serial_to_slots(const Inj<GenPtr>& lhs, GenPtr rhs) {
     Gen::VGenPtr inj; // create vector, fill with values;
     lhs.fill_interleaved(inj);
     PIndexT availLen = std::min(rhs->get_slot_count(),
