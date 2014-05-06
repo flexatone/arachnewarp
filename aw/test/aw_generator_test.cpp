@@ -2125,6 +2125,27 @@ BOOST_AUTO_TEST_CASE(aw_to_angle_increment) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_sequencer_a) {
+    // preliminary test for creatihng a sequencer
+
+	GenPtr phasor = Gen::make(GenID::Phasor);    
+    PTypeRateContext::Opt::Samples || phasor;
+   	10 >> phasor;
+
+
+	GenPtr count = Gen::make(GenID::Counter);
+   	Inj<GenPtr>({phasor % 1, Gen::make(0), Gen::make(0)}) >> count;
+
+
+	GenPtr gbuf = Gen::make(GenID::SamplesBuffer);
+    Inj<SampleT>({2, 100}) || gbuf; // 3 ch, 441 samps    
+
+    Inj<GenPtr>({phasor % 1, count}) >> gbuf;
+    gbuf->render(1);
+    //gbuf->illustrate_outputs();
+    //gbuf->illustrate_network();
+
+}
 
 
 

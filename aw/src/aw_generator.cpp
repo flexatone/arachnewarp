@@ -429,7 +429,6 @@ void Gen :: doc() {
                     << '\t' << p->get_instance_name() << std::endl;
             }
         }
-        
         std::cout << std::endl;
     }
 }
@@ -2603,6 +2602,17 @@ void Panner :: render(RenderCountT f) {
     }
 }
 
+
+
+
+
+
+// Sequencer:
+// Takes a Buffer as a slot;
+// could take a trigger as input; each trigger advances to the next value... but then need to expose direction, reset, and other configur parameters
+// or, could take a counter, which already is configured for handling direction selection and reset; only problem then is that range of counter is not coordinated with range if buffer.
+
+// note that the dim of the slot-provided buffer can configure the outputs of the sequencer; and each tick can provide output on all of those outputs.
 
 
 
