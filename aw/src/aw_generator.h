@@ -1594,6 +1594,40 @@ class Panner: public Gen {
 
 
 
+//=============================================================================
+//! SequencerSelector, mapping integers into a table.
+class Sequencer;
+typedef std::shared_ptr<Sequencer> SequencerPtr;
+class Sequencer: public Gen {
+
+    private://-----------------------------------------------------------------
+    OutputsSizeT _i;
+
+    PIndexT _input_index_selection;
+    // output number dynamic, based on slot-fileld BP   
+    PIndexT _output_index_left;
+    
+    // SampleT _cos_angle;
+    // SampleT _sin_angle;
+    // SampleT _angle;
+
+
+    public://------------------------------------------------------------------
+    explicit Panner(EnvironmentPtr);
+    
+    virtual void init();
+            
+    virtual void reset();
+    
+    virtual void set_default();
+
+    //! Perform the sequence.
+    virtual void render(RenderCountT f);
+};
+
+
+
+
 
 
 
