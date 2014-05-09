@@ -28,6 +28,7 @@ enum class GenID {
     White,
     Counter,
     Panner,
+    Sequencer,
 };
 
 //! A vector of GenIDs to permit discovery
@@ -46,6 +47,7 @@ static const std::vector<GenID> GenIDs {
     GenID::White,
     GenID::Counter,
     GenID::Panner,
+    GenID::Sequencer,    
 };
 
 //! Connection IDs are defined as old-style enums for translation to integers. TODO: can add methods it these to permit incrementing 
@@ -1605,7 +1607,6 @@ class Sequencer: public Gen {
 
     PIndexT _input_index_selection;
     // output number dynamic, based on slot-fileld BP   
-    PIndexT _output_index_left;
     
     // SampleT _cos_angle;
     // SampleT _sin_angle;
@@ -1613,7 +1614,7 @@ class Sequencer: public Gen {
 
 
     public://------------------------------------------------------------------
-    explicit Panner(EnvironmentPtr);
+    explicit Sequencer(EnvironmentPtr);
     
     virtual void init();
             

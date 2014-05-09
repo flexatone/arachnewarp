@@ -1126,8 +1126,7 @@ void Gen :: set_input_by_index(
 // }
 
 
-void Gen :: add_input_by_index(PIndexT i, 
-        GenPtr gs, PIndexT pos){
+void Gen :: add_input_by_index(PIndexT i, GenPtr gs, PIndexT pos){
     // pos is the output of the generator to connect into the specified input
     if (_input_count <= 0 or i >= _input_count) {
         throw std::invalid_argument("Parameter index is not available.");
@@ -1141,8 +1140,7 @@ void Gen :: add_input_by_index(PIndexT i,
     _inputs[i].push_back(gsop);    
 }
 
-void Gen :: add_input_by_index(PIndexT i, SampleT v, 
-        PIndexT pos){
+void Gen :: add_input_by_index(PIndexT i, SampleT v, PIndexT pos){
     // adding additional as a constant value
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
@@ -2619,6 +2617,87 @@ void Panner :: render(RenderCountT f) {
 // a continuous to continuous transfrom would take an interpolated break point
 // continuous to discrete: have to handle rounding as a context; can be none, floor, cirleing, or probabilistic
 // have to have a wrapping condition    
+
+
+
+
+
+//-----------------------------------------------------------------------------
+Sequencer :: Sequencer(EnvironmentPtr e) 
+    : Gen(e) {
+    _class_name = "Sequencer";
+    _class_id = GenID::Sequencer;
+}
+
+void Sequencer :: init() {
+    // the init must configure the names and types of parameters
+    Gen::init();
+    _clear_output_parameter_types(); // must clear the default set by Gen init
+
+    // inputs
+    _input_index_value = _register_input_parameter_type(
+            PType::make_with_name(PTypeID::Value, "Selection"));
+
+    //slots                 
+    _slot_index_bp = _register_slot_parameter_type(
+            PType::make_with_name(
+            PTypeID::Modulus, "Break point")); 
+
+    // register output
+    _output_index_left = _register_output_parameter_type(
+            PType::make_with_name(PTypeID::Value, "Output left"));
+    
+    set_default();
+    reset();
+}
+
+
+
+void Sequencer :: _update_for_new_slot() {
+    // this is a small int; might overflow of trying to create large number of outs
+    PIndexT outs = static_cast<PIndexT>(_slots[0]->outputs[0][0]);
+    if (outs <= 0) {
+        throw std::invalid_argument("outputs must be greater than or equal to zero");
+    }
+    _clear_output_parameter_types();    
+    
+    std::stringstream s;
+    PTypePtr pt;    
+    // set inputs; this will clear any existing connections
+    for (PIndexT i=0; i<outs; ++i) {
+        //pt = ParameterTypeValuePtr(new PTypeValue);
+        s.str(""); // clears contents; not the same as .clear()
+        s << "Output " << i+1;
+        pt = PType::make_with_name(PTypeID::Value, s.str());
+        _register_output_parameter_type(pt);            
+    }
+    assert(get_output_count() == outs);
+}
+
+void Sequencer :: set_default() {
+}
+
+void Sequencer :: reset() {
+    Gen::reset();
+}
+
+void Sequencer :: render(RenderCountT f) {
+    // old max/msp  implementaiton used !- 1 and value through sqrt~; requres two sqrt calls per sample
+    while (_render_count < f) {
+        _render_inputs(f);
+        _sum_inputs(_frame_size);        
+        for (_i=0; _i < _frame_size; ++_i) {
+            outputs[_output_index_left][_i] = (
+                _summed_inputs[_input_index_value][_i] * _pan_l);
+
+            outputs[_output_index_right][_i] = (
+                _summed_inputs[_input_index_value][_i] * _pan_r);
+        }
+        _render_count += 1;
+    }
+}
+
+
 
 
 
