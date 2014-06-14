@@ -101,36 +101,38 @@ const std::string OUT_SYMBOL {"o"};
 const std::string IN_SYMBOL {"i"};
 const std::string SLOT_SYMBOL {"-"};
 
-//const std::string RESET {"\033[0m"};
-//const std::string BLACK {"\033[30m"};
-//const std::string RED {"\033[31m"};
-//const std::string GREEN {"\033[32m"};
-//const std::string YELLOW {"\033[33m"};
-//const std::string BLUE {"\033[34m"};
-//const std::string MAGENTA {"\033[35m"};
-//const std::string CYAN {"\033[36m"};
-//const std::string WHITE[] {"\033[37m"};
-//const std::string BOLDBLACK {"\033[1m\033[30m"};
-//const std::string BOLDRED {"\033[1m\033[31m"};
-//const std::string BOLDGREEN {"\033[1m\033[32m"};
-//const std::string BOLDYELLOW {"\033[1m\033[33m"};
-//const std::string BOLDBLUE {"\033[1m\033[34m"};
-//const std::string BOLDMAGENTA {"\033[1m\033[35m"};
-//const std::string BOLDCYAN {"\033[1m\033[36m"};
-//const std::string BOLDWHITE {"\033[1m\033[37m"};
+// place in a colors names space
+namespace ansi_color {
+    const std::string RESET {"\033[0m"};
+    const std::string BLACK {"\033[30m"};
+    const std::string RED {"\033[31m"};
+    const std::string GREEN {"\033[32m"};
+    const std::string YELLOW {"\033[33m"};
+    const std::string BLUE {"\033[34m"};
+    const std::string MAGENTA {"\033[35m"};
+    const std::string CYAN {"\033[36m"};
+    const std::string WHITE {"\033[37m"};
+    const std::string BOLDBLACK {"\033[1m\033[30m"};
+    const std::string BOLDRED {"\033[1m\033[31m"};
+    const std::string BOLDGREEN {"\033[1m\033[32m"};
+    const std::string BOLDYELLOW {"\033[1m\033[33m"};
+    const std::string BOLDBLUE {"\033[1m\033[34m"};
+    const std::string BOLDMAGENTA {"\033[1m\033[35m"};
+    const std::string BOLDCYAN {"\033[1m\033[36m"};
+    const std::string BOLDWHITE {"\033[1m\033[37m"};
+}
 
-const std::string COLOR_NONE {""};
-const std::string COLOR_RESET {"\033[0m"};
-const std::string COLOR_H1 {"\033[1m\033[37m"}; // bold white
-const std::string COLOR_SLOT {"\033[37m"};
-const std::string COLOR_INPUT {"\033[36m"}; // cyan
-const std::string COLOR_OUTPUT {"\033[32m"}; // green
+
+const std::string COLOR_H1 {ansi_color::BOLDWHITE};
+const std::string COLOR_SLOT {ansi_color::WHITE};
+const std::string COLOR_INPUT {ansi_color::GREEN};
+const std::string COLOR_OUTPUT {ansi_color::YELLOW};
 
 
 inline std::string color_embrace(std::string body, std::string color,
             char left='{', char right='}') {
     std::stringstream msg;
-    msg << color << left << COLOR_RESET << body << color << right << COLOR_RESET;
+    msg << color << left << ansi_color::RESET << body << color << right << ansi_color::RESET;
     return msg.str();
 }
 
@@ -139,7 +141,7 @@ inline std::string color_symbol_embrace(std::string symbol, PIndexT n,
     std::stringstream n_str;
     n_str << n;
     std::stringstream msg;
-    msg << color << symbol << COLOR_RESET << color_embrace(n_str.str(), color);
+    msg << color << symbol << ansi_color::RESET << color_embrace(n_str.str(), color);
     return msg.str();
 }
 

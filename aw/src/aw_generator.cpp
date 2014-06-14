@@ -332,6 +332,8 @@ FrameSizeT DirectedIndex :: next() {
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+// todo: is there to make a fixed mapping in order to do this creation?
+    
 GenPtr Gen :: make_with_environment(GenID q, EnvironmentPtr e) {                        
     GenPtr g;
     if (q == GenID::Constant) {
@@ -375,6 +377,9 @@ GenPtr Gen :: make_with_environment(GenID q, EnvironmentPtr e) {
     }
     else if (q == GenID::Panner) {
         g = PannerPtr(new Panner(e));
+    }
+    else if (q == GenID::Sequencer) {
+        g = SequencerPtr(new Sequencer(e));
     }        
     else {
         std::stringstream msg;
@@ -417,8 +422,9 @@ void Gen :: doc() {
             g->get_input_count(),
             g->get_output_count()};
         
-        std::cout << COLOR_H1 << g->get_class_name() << COLOR_RESET << ' '
-            << g->get_label_specification() << std::endl;
+        std::cout << COLOR_H1 << g->get_class_name() <<
+                ansi_color::RESET << ' '
+                << g->get_label_specification() << std::endl;
         
         for (auto conn_id: ConnIDs) {
             for (PIndexT i=0; i < counts[conn_id]; ++i) {
@@ -2608,7 +2614,7 @@ void Panner :: render(RenderCountT f) {
 // Sequencer:
 // Takes a Buffer as a slot;
 // could take a trigger as input; each trigger advances to the next value... but then need to expose direction, reset, and other configur parameters
-// or, could take a counter, which already is configured for handling direction selection and reset; only problem then is that range of counter is not coordinated with range if buffer.
+// or, could take the output of a counter, which already is configured for handling direction selection and reset; only problem then is that range of counter is not coordinated with range of buffer.
 
 // note that the dim of the slot-provided buffer can configure the outputs of the sequencer; and each tick can provide output on all of those outputs.
 
@@ -2634,18 +2640,24 @@ void Sequencer :: init() {
     Gen::init();
     _clear_output_parameter_types(); // must clear the default set by Gen init
 
-    // inputs
-    _input_index_value = _register_input_parameter_type(
+    // inputs:
+    
+    // selection is a counter output used to select index position in the break point table
+    _input_index_selection = _register_input_parameter_type(
             PType::make_with_name(PTypeID::Value, "Selection"));
 
-    //slots                 
-    _slot_index_bp = _register_slot_parameter_type(
-            PType::make_with_name(
-            PTypeID::Modulus, "Break point")); 
+    // register slots
+    // should this be a BreakPoints type id to enforce
+	_slot_index_buffer = _register_slot_parameter_type(
+            PType::make_with_name(PTypeID::BreakPoints, "Breakpoints"));
+    
+    // must have a default for first usage, otherwise update for new slot will be broken; must have slot call _update_for_new_slot, as we need get points len and last amp
+	GenPtr g1 = Gen::make(GenID::BreakPoints);
+    Inj<SampleT>({{0, 0},{.25, 1},{1, 0}}) && g1;
+    
+    set_slot_by_index(_slot_index_buffer, g1, true); // will call _update_for_new_slot
 
-    // register output
-    _output_index_left = _register_output_parameter_type(
-            PType::make_with_name(PTypeID::Value, "Output left"));
+    // outputs dynamically assigned
     
     set_default();
     reset();
@@ -2654,8 +2666,15 @@ void Sequencer :: init() {
 
 
 void Sequencer :: _update_for_new_slot() {
-    // this is a small int; might overflow of trying to create large number of outs
-    PIndexT outs = static_cast<PIndexT>(_slots[0]->outputs[0][0]);
+    
+    // this is number of samples per output channel
+    OutputsSizeT fs = _slots[_slot_index_buffer]->get_frame_size();
+    std::cout << "buf frame size: " << fs << std::endl;
+
+    OutputsSizeT outs = _slots[_slot_index_buffer]->get_output_count();
+    std::cout << "buf outs: " << outs << std::endl;
+
+    
     if (outs <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
@@ -2687,11 +2706,11 @@ void Sequencer :: render(RenderCountT f) {
         _render_inputs(f);
         _sum_inputs(_frame_size);        
         for (_i=0; _i < _frame_size; ++_i) {
-            outputs[_output_index_left][_i] = (
-                _summed_inputs[_input_index_value][_i] * _pan_l);
-
-            outputs[_output_index_right][_i] = (
-                _summed_inputs[_input_index_value][_i] * _pan_r);
+//            outputs[_output_index_left][_i] = (
+//                _summed_inputs[_input_index_value][_i] * _pan_l);
+//
+//            outputs[_output_index_right][_i] = (
+//                _summed_inputs[_input_index_value][_i] * _pan_r);
         }
         _render_count += 1;
     }
