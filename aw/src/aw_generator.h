@@ -1174,7 +1174,7 @@ class _BinaryCombined: public Gen {
     char _op_switch;
 
 	//! Overridden to apply slot settings and reset as necessary. 
-	void _update_for_new_slot();
+	virtual void _update_for_new_slot();
 
     public://------------------------------------------------------------------
     explicit _BinaryCombined(EnvironmentPtr);
@@ -1546,7 +1546,11 @@ class Counter: public Gen {
     PIndexT _last_direction;    
     bool _has_first_pos; 
 
-        
+    
+    protected://---------------------------------------------------------------
+    virtual void _update_for_new_slot();
+
+    
     public://------------------------------------------------------------------
     explicit Counter(EnvironmentPtr);
     
@@ -1556,8 +1560,6 @@ class Counter: public Gen {
             
     virtual void reset();
     
-    virtual void _update_for_new_slot();
-
     //! Perform the noise
     virtual void render(RenderCountT f);
 };
@@ -1605,12 +1607,15 @@ class Sequencer: public Gen {
     private://-----------------------------------------------------------------
     OutputsSizeT _i;
 
+    // output number dynamic, based on slot-fileld BP
+
     PIndexT _input_index_selection;
-    // output number dynamic, based on slot-fileld BP   
-    
-    // SampleT _cos_angle;
-    // SampleT _sin_angle;
-    // SampleT _angle;
+    PIndexT _slot_index_buffer;
+
+
+    protected://---------------------------------------------------------------
+    //! Overridden to apply slot settings and reset as necessary.
+	void _update_for_new_slot();
 
 
     public://------------------------------------------------------------------
