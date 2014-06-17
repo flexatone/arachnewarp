@@ -2131,6 +2131,23 @@ BOOST_AUTO_TEST_CASE(aw_sequencer_a) {
 	GenPtr sq1 = Gen::make(GenID::Sequencer);
     std::cout << sq1 << std::endl;
     
+	GenPtr b1 = Gen::make(GenID::SamplesBuffer);
+    Inj<SampleT>({60, 58, 60, 60, 69, 60, 60}) && b1;
+    
+    
+    std::cout << b1 << std::endl;
+    
+    // returns a GenID: b1->get_class_id();
+    
+    //BOOST_CHECK_EQUAL(b1->get_class_id(), GenID::SamplesBuffer);
+    
+    // this does not work: why?
+    //std::cout << "get class id: " << b1->get_class_id() << std::endl;
+    
+    //b1 || sq1;
+    //sq1->set_slot_by_index(0, b1, true);
+    
+    
 }
 
 

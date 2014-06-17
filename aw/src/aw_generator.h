@@ -76,6 +76,7 @@ enum class PTypeID {
     LowerBoundary,
     UpperBoundary,
     BreakPoints, // for slot in breakpoint, wavetable
+    Buffer,
     Interpolation,
     TimeContext, // rename duration context?
     RateContext,
@@ -224,6 +225,14 @@ typedef std::shared_ptr<PTypeBreakPoints> PTypeBreakPointsPtr;
 class PTypeBreakPoints: public PType {
     public: //-----------------------------------------------------------------
     explicit PTypeBreakPoints();
+};
+
+class PTypeBuffer;
+typedef std::shared_ptr<PTypeBuffer> PTypeBufferPtr;
+//! A type of buffer
+class PTypeBuffer: public PType {
+public: //-----------------------------------------------------------------
+    explicit PTypeBuffer();
 };
 
 
@@ -700,7 +709,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Return the name as a string. 
     std::string get_class_name() const {return _class_name;};
 
-    //! Rreturn the class id.
+    //! Return the class id.
     GenID get_class_id() const {return _class_id;};
 
     //! Get a parameter type given an index and a connection type
@@ -889,14 +898,14 @@ inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
 
 //! For now, we just set lhs in position zero.
 inline GenPtr connect_serial_to_slots(GenPtr lhs, GenPtr rhs) {
-    rhs->set_slot_by_index(0, lhs); // this will call 
+    rhs->set_slot_by_index(0, lhs);
     return rhs;
 }
 
 inline GenPtr connect_serial_to_slots(SampleT lhs, GenPtr rhs) {
     GenPtr g_lhs = Gen::make_with_environment(
             GenID::Constant, rhs->get_environment());
-    g_lhs->set_input_by_index(0, lhs); // this will call 
+    g_lhs->set_input_by_index(0, lhs);
     return connect_serial_to_slots(g_lhs, rhs);
 }
 

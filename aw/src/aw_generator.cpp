@@ -51,6 +51,9 @@ PTypePtr PType :: make(PTypeID q){
     else if (q == PTypeID::BreakPoints) {
         p = PTypeBreakPointsPtr(new PTypeBreakPoints);
     }
+    else if (q == PTypeID::Buffer) {
+        p = PTypeBufferPtr(new PTypeBuffer);
+    }
     else if (q == PTypeID::Interpolation) {
         p = PTypeInterpolationPtr(new PTypeInterpolate);
     }        
@@ -169,6 +172,14 @@ PTypeBreakPoints :: PTypeBreakPoints() {
     _class_id = PTypeID::BreakPoints;
     _compatible_gen = {GenID::BreakPoints}; // note gen constraint
 }
+
+    
+PTypeBuffer :: PTypeBuffer() {
+    _class_name = "PTypeBuffer";
+    _class_id = PTypeID::Buffer;
+    _compatible_gen = {GenID::SamplesBuffer, GenID::SecondsBuffer, GenID::BreakPoints};
+}
+    
 
 
 //-----------------------------------------------------------------------------
@@ -1182,6 +1193,7 @@ void Gen :: set_slot_by_index(PIndexT i, GenPtr gs, bool update){
     if (_slot_count <= 0 or i >= _slot_count) {
         throw std::invalid_argument("Slot index is not available.");		
     }
+    
     // will raise an exception if not valid
     _slot_parameter_type[i]->validate_gen(gs->get_class_id());
     
@@ -2647,13 +2659,12 @@ void Sequencer :: init() {
             PType::make_with_name(PTypeID::Value, "Selection"));
 
     // register slots
-    // should this be a BreakPoints type id to enforce
 	_slot_index_buffer = _register_slot_parameter_type(
-            PType::make_with_name(PTypeID::BreakPoints, "Breakpoints"));
+            PType::make_with_name(PTypeID::Buffer, "Buffer"));
     
     // must have a default for first usage, otherwise update for new slot will be broken; must have slot call _update_for_new_slot, as we need get points len and last amp
-	GenPtr g1 = Gen::make(GenID::BreakPoints);
-    Inj<SampleT>({{0, 0},{.25, 1},{1, 0}}) && g1;
+	GenPtr g1 = Gen::make(GenID::SamplesBuffer);
+    Inj<SampleT>({0, -1, 0, 1}) && g1;
     
     set_slot_by_index(_slot_index_buffer, g1, true); // will call _update_for_new_slot
 

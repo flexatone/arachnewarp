@@ -1,6 +1,9 @@
 // g++ aw_generator_assert.cpp -I ../src ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp ../src/aw_timer.cpp -l boost_filesystem -l boost_system -l sndfile -Wall -O3 -o aw_generator_assert
 
 
+// g++-4.7 -std=c++11 -I ../src  aw_generator_assert.cpp ../src/aw_generator.cpp ../src/aw_common.cpp ../src/aw_illustration.cpp -DSTAND_ALONE -l boost_unit_test_framework -l boost_filesystem -l boost_system -l sndfile -Wall -g -o aw_generator_assert
+
+
 #include <cassert>
 
 
@@ -110,18 +113,47 @@ bool test_5() {
 }
 
 
+bool test_6() {
+    
+    using namespace aw;
+    
+    GenPtr sq1 = Gen::make(GenID::Sequencer);
+    std::cout << sq1 << std::endl;
+
+    GenPtr b1 = Gen::make(GenID::SamplesBuffer);
+    Inj<SampleT>({60, 58, 60, 60, 69, 60, 60}) && b1;
+    std::cout << b1 << std::endl;
+
+    assert(b1->get_class_id() == GenID::SamplesBuffer);
+
+    GenPtr b2 = Gen::make(GenID::SamplesBuffer);
+    Inj<SampleT>(
+            {{.5, 1, 60}, {0, .8, 69}, {-1, .5, 59}, {-.25, .9, 69}}
+            ) && b2;
+    std::cout << b2 << std::endl;
+
+    // returns a GenID: b1->get_class_id();
+    
+    b1 || sq1;
+    b2 || sq1;
+    
+    
+    
+    return true;
+}
+
 
 
 int main() {
 	// TODO: read command line args to support selecting test by name
 
-    assert(test_1() &&
-            test_2() &&
-            test_3() &&
-            test_4() &&
-            test_5());
+//    assert(test_1() &&
+//            test_2() &&
+//            test_3() &&
+//            test_4() &&
+//            test_5());
 	
-	// test_6();
+	test_6();
     
 }
 
