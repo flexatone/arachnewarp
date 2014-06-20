@@ -68,6 +68,9 @@ aw_timer_test: $(PATH_TO_BIN)aw_timer.o aw_timer_test.cpp
 aw_generator_test: $(PATH_TO_BIN)aw_common.o $(PATH_TO_BIN)aw_generator.o $(PATH_TO_BIN)aw_illustration.o aw_generator_test.cpp
 	$(CC) $(CFLAGS_TEST) aw_generator_test.cpp $(PATH_TO_BIN)aw_generator.o $(PATH_TO_BIN)aw_illustration.o $(PATH_TO_BIN)aw_common.o -o aw_generator_test $(CFLAGS_LIBS_TEST)
 
+aw_generator_assert: $(PATH_TO_BIN)aw_common.o $(PATH_TO_BIN)aw_generator.o $(PATH_TO_BIN)aw_illustration.o aw_generator_assert.cpp
+	$(CC) $(CFLAGS_TEST) aw_generator_assert.cpp $(PATH_TO_BIN)aw_generator.o $(PATH_TO_BIN)aw_illustration.o $(PATH_TO_BIN)aw_common.o -o aw_generator_assert $(CFLAGS_LIBS_TEST)
+
 aw_illustration_test: $(PATH_TO_BIN)aw_common.o $(PATH_TO_BIN)aw_generator.o $(PATH_TO_BIN)aw_illustration.o aw_illustration_test.cpp 
 	$(CC) $(CFLAGS_TEST) aw_illustration_test.cpp $(PATH_TO_BIN)aw_generator.o $(PATH_TO_BIN)aw_illustration.o $(PATH_TO_BIN)aw_common.o -o aw_illustration_test $(CFLAGS_LIBS_TEST)
 

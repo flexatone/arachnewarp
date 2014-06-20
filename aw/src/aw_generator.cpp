@@ -2678,15 +2678,13 @@ void Sequencer :: init() {
 
 void Sequencer :: _update_for_new_slot() {
     
-    // this is number of samples per output channel
-    OutputsSizeT fs = _slots[_slot_index_buffer]->get_frame_size();
-    std::cout << "buf frame size: " << fs << std::endl;
+    // this is number of steps in the sequencer range
+    _buffer_frame_size = _slots[_slot_index_buffer]->get_frame_size();
+    // this is the number of outputs
+    _buffer_output_count = _slots[_slot_index_buffer]->get_output_count();
+    // std::cout << "buf outs: " << outs << std::endl;
 
-    OutputsSizeT outs = _slots[_slot_index_buffer]->get_output_count();
-    std::cout << "buf outs: " << outs << std::endl;
-
-    
-    if (outs <= 0) {
+    if (_buffer_output_count <= 0) {
         throw std::invalid_argument("outputs must be greater than or equal to zero");
     }
     _clear_output_parameter_types();    
@@ -2694,34 +2692,41 @@ void Sequencer :: _update_for_new_slot() {
     std::stringstream s;
     PTypePtr pt;    
     // set inputs; this will clear any existing connections
-    for (PIndexT i=0; i<outs; ++i) {
+    for (PIndexT i=0; i<_buffer_output_count; ++i) {
         //pt = ParameterTypeValuePtr(new PTypeValue);
         s.str(""); // clears contents; not the same as .clear()
         s << "Output " << i+1;
         pt = PType::make_with_name(PTypeID::Value, s.str());
         _register_output_parameter_type(pt);            
     }
-    assert(get_output_count() == outs);
+    assert(get_output_count() == _buffer_output_count);
 }
 
 void Sequencer :: set_default() {
 }
 
 void Sequencer :: reset() {
+    _last_buffer_index = 0;
     Gen::reset();
 }
 
 void Sequencer :: render(RenderCountT f) {
-    // old max/msp  implementaiton used !- 1 and value through sqrt~; requres two sqrt calls per sample
+
     while (_render_count < f) {
         _render_inputs(f);
-        _sum_inputs(_frame_size);        
+        _sum_inputs(_frame_size);
         for (_i=0; _i < _frame_size; ++_i) {
-//            outputs[_output_index_left][_i] = (
-//                _summed_inputs[_input_index_value][_i] * _pan_l);
-//
-//            outputs[_output_index_right][_i] = (
-//                _summed_inputs[_input_index_value][_i] * _pan_r);
+            // can update on every frame, as at any sample the value might move to a new index
+            _last_buffer_index = _summed_inputs[_input_index_selection][_i];
+            
+            // TODO: this value needs to be controlled; either limited or modulo
+            // TODO: we also need a way to resolve form float to integers; not a problem for counter input, but what about when we use something else?
+            
+            // for each frame, read and fill the value
+            for (_out_pos=0; _out_pos<_buffer_output_count; ++_out_pos) {
+                outputs[_out_pos][_i] = _slots[
+                        _slot_index_buffer]->outputs[_out_pos][_last_buffer_index];
+            }
         }
         _render_count += 1;
     }
