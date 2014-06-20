@@ -345,6 +345,40 @@ class PTypeDirection: public PType {
 };
 
 
+//! Boundary context; determines what happens when a value exceeds a fixed range; either limit, or wrap (modulo)
+class PTypeBoundaryContext;
+typedef std::shared_ptr<PTypeBoundaryContext> PTypeBoundaryContextPtr;
+class PTypeBoundaryContext: public PType {
+public://------------------------------------------------------------------
+    explicit PTypeBoundaryContext();
+    
+    enum Opt {
+        Limit,
+        Wrap,
+        Reflect
+    };
+    
+    inline static Opt resolve(SampleT x) {
+        return x < 0.5 ? Limit :
+        x < 1.5 ? Wrap :
+        Reflect; // if out of upper range
+    };
+    
+    //! For direct parameter validation.
+    inline static void validate(PTypeBoundaryContext::Opt tc) {
+        if (tc == PTypeBoundaryContext::Limit ||
+            tc == PTypeBoundaryContext::Wrap) {
+            return;
+        }
+        else {
+            throw std::invalid_argument("invalid boundary context");
+        }
+    }    
+};
+
+
+    
+    
 
 //=============================================================================
 // utility classes
@@ -1481,7 +1515,7 @@ class AttackDecay: public Gen {
 
     OutputsSizeT _i;
     
-    // make these sample types because will deivide by
+    // make these sample types because will devide by
     SampleT _a_samps;
     SampleT _d_samps;
     
@@ -1533,7 +1567,7 @@ class White: public Gen {
 
 
 //=============================================================================
-//! A counter, advacning with triggers and exposing all direction types available. 
+//! A counter, advancing with triggers and exposing all direction types available. Inputs are (0) trigger, (1) reset, (2) direction; slots are (0) modulus (or the max value +1).
 class Counter;
 typedef std::shared_ptr<Counter> CounterPtr;
 class Counter: public Gen {
@@ -1615,12 +1649,14 @@ class Sequencer: public Gen {
 
     private://-----------------------------------------------------------------
     OutputsSizeT _i;
-
-    // output number dynamic, based on slot-fileld BP
-
     PIndexT _input_index_selection;
     PIndexT _slot_index_buffer;
 
+    OutputsSizeT _buffer_frame_size;
+    PIndexT _buffer_output_count;
+    
+    SampleT _last_buffer_index; // last value input; check for changes
+    PIndexT _out_pos;
 
     protected://---------------------------------------------------------------
     //! Overridden to apply slot settings and reset as necessary.

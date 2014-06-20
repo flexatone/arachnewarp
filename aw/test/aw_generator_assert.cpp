@@ -115,28 +115,46 @@ bool test_5() {
 
 bool test_6() {
     
+    // note: better to test code in this context as exceptions are not properly raised in test cases.
     using namespace aw;
     
     GenPtr sq1 = Gen::make(GenID::Sequencer);
-    std::cout << sq1 << std::endl;
 
-    GenPtr b1 = Gen::make(GenID::SamplesBuffer);
-    Inj<SampleT>({60, 58, 60, 60, 69, 60, 60}) && b1;
-    std::cout << b1 << std::endl;
-
-    assert(b1->get_class_id() == GenID::SamplesBuffer);
-
-    GenPtr b2 = Gen::make(GenID::SamplesBuffer);
+    GenPtr buf1 = Gen::make(GenID::SamplesBuffer);
     Inj<SampleT>(
             {{.5, 1, 60}, {0, .8, 69}, {-1, .5, 59}, {-.25, .9, 69}}
-            ) && b2;
-    std::cout << b2 << std::endl;
+            ) && buf1;
 
-    // returns a GenID: b1->get_class_id();
+    // set buffer to the first slow in the sequence
+    buf1 || sq1;
     
-    b1 || sq1;
-    b2 || sq1;
+    // get a phasor set to 50 sample period
+	GenPtr phasor = Gen::make(GenID::Phasor);
+	PTypeRateContext::Opt::Samples || phasor;
+   	20 >> phasor;
     
+	GenPtr idx_driver = Gen::make(GenID::Counter);
+    Inj<GenPtr>({phasor % 1, Gen::make(0), Gen::make(0)}) >> idx_driver;
+
+   	5 || idx_driver; // cycle through 0-4 positions
+    
+    idx_driver >> sq1; // set the idx diver as inpu to sq1
+    
+    // output
+	GenPtr gbuf = Gen::make(GenID::SamplesBuffer);
+    Inj<SampleT>({5, 200}) || gbuf; //
+    
+    Inj<GenPtr>({phasor % 1,
+            idx_driver,
+            sq1 % 0,
+            sq1 % 1,
+            sq1 % 2
+            }) >> gbuf;
+    gbuf->render(1);
+    gbuf->print_outputs();
+    gbuf->illustrate_outputs();
+
+
     
     
     return true;
