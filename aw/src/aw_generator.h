@@ -353,9 +353,9 @@ public://------------------------------------------------------------------
     explicit PTypeBoundaryContext();
     
     enum Opt {
-        Limit,
-        Wrap,
-        Reflect
+        Limit, // set and fix at boundary
+        Wrap, // wrap around to other sie
+        Reflect // bound back from boundary
     };
     
     inline static Opt resolve(SampleT x) {
@@ -367,7 +367,8 @@ public://------------------------------------------------------------------
     //! For direct parameter validation.
     inline static void validate(PTypeBoundaryContext::Opt tc) {
         if (tc == PTypeBoundaryContext::Limit ||
-            tc == PTypeBoundaryContext::Wrap) {
+            tc == PTypeBoundaryContext::Wrap ||
+            tc == PTypeBoundaryContext::Reflect) {
             return;
         }
         else {
@@ -506,7 +507,37 @@ inline SampleT rate_context_to_angle_increment(SampleT raw,
     }
 }
 
+// works for ints, but needs to be floored for floating point values
+// f = lambda x, l, u: math.floor(l + ((x-l) % (u-l+1)))
 
+// for floating point values, use the following, but value will never get to u
+// f = lambda x, l, u: l + ((x-l) % (u-l))
+
+//! Given a boundary context, contrain a value
+inline SampleT unbound_to_bound(SampleT raw,
+        PTypeBoundaryContext::Opt c,
+        SampleT lower,
+        SampleT upper
+        ){
+    if (c == PTypeBoundaryContext::Limit) {
+        return raw >= upper ? upper :
+        raw <= lower ? lower :
+        raw;
+    }
+    else if (c == PTypeBoundaryContext::Wrap) {
+        // TODO: this is not correct
+        return lower + fmod(raw, upper - lower);
+    }
+    else if (c == PTypeBoundaryContext::Reflect) {
+        return 0;
+    }
+    else {
+        return 0;
+    }
+}
+    
+    
+    
 //=============================================================================
 
 // Slots: Slots can be used to change the interpretation of input parameters. For example, a Sine generator can have a rate input that is interpreted based on a slot parameter (specifying interpretating the rate as Hz, Pitch, BPM, etc.) A slot, however, should not affect the interpretation of another slot (they should be orthogonal); thus, a SecondsBuffer or SamplesBuffer cannot have a slot to determine its size as well as a slot to determine the interpretation of that size. If size was an input and not a slot this would be fine, but changing a buffer at the audio rate is a bad idea. 

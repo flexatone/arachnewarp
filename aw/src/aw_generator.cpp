@@ -2142,9 +2142,6 @@ void Sine :: reset() {
     _phase_increment = 0;
 }
 
-
-// TODO: add usage of rate_context_to_angle_increment, add rate_context as a slot
-
 void Sine :: render(RenderCountT f) {
     while (_render_count < f) {
         _render_inputs(f);

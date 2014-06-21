@@ -97,9 +97,9 @@ SampleT const TRIG_THRESH {.99999};
 //! Defined for all text-based hierarchical displays. 
 std::uint8_t const INDENT_SIZE {3};
 
-const std::string OUT_SYMBOL {"o"};
-const std::string IN_SYMBOL {"i"};
-const std::string SLOT_SYMBOL {"-"};
+const std::string OUT_SYMBOL {"*"};
+const std::string IN_SYMBOL {"+"};
+const std::string SLOT_SYMBOL {"~"};
 
 // place in a colors names space
 namespace ansi_color {
@@ -151,7 +151,6 @@ inline std::string color_symbol_embrace(std::string symbol, PIndexT n,
 //! Escape one or more characters privided by a string and a single prefix. Changes are made in place to the passed in string. 
 void escape(std::string& str, const std::string& replace_targets, 
         const std::string& prefix);
-
 
 //! Print an arry of SampleT of size type FrameSizeT.
 void print(SampleT* out, FrameSizeT size);
@@ -207,8 +206,6 @@ inline void true_min_max(
         *max = upper;
     }
 }
-
-
 
 template <typename T>
 void print_iterable(const T& iterable) {
@@ -313,9 +310,6 @@ SampleT mean_iterable(const T& iterable) {
 //{
 //    return nextpow2( n-1 );
 //}
-//from RAPC.cspec.include.include201404 import include201404
-
-//
 
 
 
