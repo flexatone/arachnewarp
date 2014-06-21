@@ -1573,6 +1573,23 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_2) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_parameter_type_test_3) {
+    
+    BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(0.2),
+                      PTypeBoundaryContext::Limit);
+    BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(0.7),
+                      PTypeBoundaryContext::Wrap);
+    
+    BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(0),
+                      PTypeBoundaryContext::Limit);
+    BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(1),
+                      PTypeBoundaryContext::Wrap);
+    BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(2),
+                      PTypeBoundaryContext::Reflect);
+}
+
+
+
 BOOST_AUTO_TEST_CASE(aw_bb_integrator_b) {
 	GenPtr g1 = Gen::make(GenID::BreakPoints);
 
@@ -2066,20 +2083,8 @@ BOOST_AUTO_TEST_CASE(aw_to_samp) {
 }
 
 
-BOOST_AUTO_TEST_CASE(aw_to_angle_increment) {
+BOOST_AUTO_TEST_CASE(aw_to_angle_increment_a) {
 	SampleT post;
-
-	// TODO: add
-	// post = rate_context_to_angle_increment(69, 
-	// 	PTypeRateContext::Pitch, 44100, 22050);
-
- //    BOOST_CHECK_EQUAL(post, 100);
-
-	// post = rate_context_to_angle_increment(60, 
-	// 	PTypeRateContext::Pitch, 44100, 22050);
-	// // # samples, not fq
- //    BOOST_CHECK_EQUAL(post, 169);
-
 
 	post = rate_context_to_angle_increment(2, 
 		PTypeRateContext::Hertz, 44100, 22050);
@@ -2122,6 +2127,30 @@ BOOST_AUTO_TEST_CASE(aw_to_angle_increment) {
 
 
 
+BOOST_AUTO_TEST_CASE(aw_unbound_to_bound_a) {
+	SampleT post;
+    
+	post = unbound_to_bound(2,
+            PTypeBoundaryContext::Limit, 0, 3);
+    BOOST_CHECK_CLOSE(post, 2, 0.0000001);
+
+    post = unbound_to_bound(4,
+            PTypeBoundaryContext::Limit, 0, 3);
+    BOOST_CHECK_CLOSE(post, 3, 0.0000001);
+
+    post = unbound_to_bound(-3,
+            PTypeBoundaryContext::Limit, 1, 3);
+    BOOST_CHECK_CLOSE(post, 1, 0.0000001);
+
+    
+    for (float x=-2; x<=7; ++x) {
+        std::cout << x << " " << unbound_to_bound(x,
+                PTypeBoundaryContext::Wrap, 2, 5) << std::endl;
+    }
+    
+    
+}
+
 
 
 
@@ -2129,13 +2158,25 @@ BOOST_AUTO_TEST_CASE(aw_sequencer_a) {
     // preliminary test for creatihng a sequencer
 
 	GenPtr sq1 = Gen::make(GenID::Sequencer);
-    std::cout << sq1 << std::endl;
+    //std::cout << sq1 << std::endl;
     
 	GenPtr b1 = Gen::make(GenID::SamplesBuffer);
     Inj<SampleT>({60, 58, 60, 60, 69, 60, 60}) && b1;
     
+    b1 || sq1; // will set 1 output
     
-    std::cout << b1 << std::endl;
+    BOOST_CHECK_EQUAL(b1->get_output_count(), 1);
+
+    
+	GenPtr b2 = Gen::make(GenID::SamplesBuffer);
+    Inj<SampleT>({{0, 1}, {2, 3}}) && b2;
+    
+    b2 || sq1; // will set 1 output
+    
+    BOOST_CHECK_EQUAL(b2->get_output_count(), 2);
+    
+    
+    // std::cout << b1 << std::endl;
     
     // returns a GenID: b1->get_class_id();
     
