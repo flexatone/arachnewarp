@@ -345,7 +345,7 @@ class PTypeDirection: public PType {
 };
 
 
-//! Boundary context; determines what happens when a value exceeds a fixed range; either limit, or wrap (modulo)
+//! Boundary context; determines what happens when a value exceeds a fixed range; either limit, or WrapRange, WrapStep
 class PTypeBoundaryContext;
 typedef std::shared_ptr<PTypeBoundaryContext> PTypeBoundaryContextPtr;
 class PTypeBoundaryContext: public PType {
@@ -354,20 +354,23 @@ public://------------------------------------------------------------------
     
     enum Opt {
         Limit, // set and fix at boundary
-        Wrap, // wrap around to other sie
+        WrapRange, // wrap, where 2 to 5 returns 2.01 to 4.99 for 2.01 to 4.99
+        WrapStep, // wrap, where 2 to 5 returns 2 to 5 for 2.01 to 5.99
         Reflect // bound back from boundary
     };
     
     inline static Opt resolve(SampleT x) {
         return x < 0.5 ? Limit :
-        x < 1.5 ? Wrap :
+        x < 1.5 ? WrapRange :
+        x < 2.5 ? WrapStep :
         Reflect; // if out of upper range
     };
     
     //! For direct parameter validation.
     inline static void validate(PTypeBoundaryContext::Opt tc) {
         if (tc == PTypeBoundaryContext::Limit ||
-            tc == PTypeBoundaryContext::Wrap ||
+            tc == PTypeBoundaryContext::WrapRange ||
+            tc == PTypeBoundaryContext::WrapStep ||
             tc == PTypeBoundaryContext::Reflect) {
             return;
         }
@@ -507,11 +510,6 @@ inline SampleT rate_context_to_angle_increment(SampleT raw,
     }
 }
 
-// works for ints, but needs to be floored for floating point values
-// f = lambda x, l, u: math.floor(l + ((x-l) % (u-l+1)))
-
-// for floating point values, use the following, but value will never get to u
-// f = lambda x, l, u: l + ((x-l) % (u-l))
 
 //! Given a boundary context, contrain a value
 inline SampleT unbound_to_bound(SampleT raw,
@@ -519,20 +517,24 @@ inline SampleT unbound_to_bound(SampleT raw,
         SampleT lower,
         SampleT upper
         ){
+    
+    // ((n % M) + M) % M
     if (c == PTypeBoundaryContext::Limit) {
-        return raw >= upper ? upper :
-        raw <= lower ? lower :
-        raw;
+        return double_limiter(raw, lower, upper);
     }
-    else if (c == PTypeBoundaryContext::Wrap) {
-        // TODO: this is not correct
-        return lower + fmod(raw, upper - lower);
+    // wrap, where 2 to 5 returns 2.01 to 4.99 for 2.01 to 4.99
+    else if (c == PTypeBoundaryContext::WrapRange) {
+        return lower + bipolar_fmod(raw - lower, upper - lower);
+    }
+    // wrap, where 2 to 5 returns 2 to 5 for 2.01 to 5.99
+    else if (c == PTypeBoundaryContext::WrapStep) {
+        return floor(lower + bipolar_fmod(raw - lower, upper - lower + 1));
     }
     else if (c == PTypeBoundaryContext::Reflect) {
-        return 0;
+        return raw;
     }
     else {
-        return 0;
+        return raw;
     }
 }
     
