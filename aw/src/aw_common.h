@@ -185,10 +185,16 @@ inline void phase_limiter(SampleT& phase) {
 
 inline SampleT double_limiter(SampleT src, SampleT min,
         SampleT max) {
-    return src < min ? min :
-        src > max ? max : src;
+    return src <= min ? min :
+        src >= max ? max : src;
 }
 
+
+//! Floiting point mod that properly handles negative values (like Python).
+inline SampleT bipolar_fmod(SampleT n, SampleT m) {
+    // ((n % M) + M) % M
+    return fmod(fmod(n, m) + m, m);
+}
 
 //! Detect and assign true min / max, based on comparison. Min and max are set by passing in pointers to to the value that are set in place.
 inline void true_min_max(
@@ -206,6 +212,9 @@ inline void true_min_max(
         *max = upper;
     }
 }
+    
+    
+
 
 template <typename T>
 void print_iterable(const T& iterable) {
@@ -231,13 +240,11 @@ SampleT mean_iterable(const T& iterable) {
 
 // taken from pd/chuck; need to update types, and integerate as necessar
 //-----------------------------------------------------------------------------
-
 //
 //double trunc( double a )
 //{
 //    return (double)(long)a;
 //}
-//
 //
 //double remainder( long a, long b )
 //{
@@ -245,14 +252,12 @@ SampleT mean_iterable(const T& iterable) {
 //    return a - b*div;
 //}
 //
-//
 //double ftom( double f )
 //{   
 //    // return (f > 0 ? 17.3123405046 * log(.12231220585 * f) : -1500);
 //    // TODO: optimize
 //    return (f > 0 ? (log(f/440.0) / LOGTWO) * 12.0 + 69 : -1500);
 //}
-//
 //
 //double powtodb( double f )
 //{
@@ -264,7 +269,6 @@ SampleT mean_iterable(const T& iterable) {
 //    }
 //}
 //
-//
 //double rmstodb( double f )
 //{
 //    if( f <= 0 ) return (0);
@@ -274,7 +278,6 @@ SampleT mean_iterable(const T& iterable) {
 //        return (val < 0 ? 0 : val);
 //    }
 //}
-//
 //
 //double dbtopow( double f )
 //{

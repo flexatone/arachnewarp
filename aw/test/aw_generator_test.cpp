@@ -1578,14 +1578,14 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_3) {
     BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(0.2),
                       PTypeBoundaryContext::Limit);
     BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(0.7),
-                      PTypeBoundaryContext::Wrap);
+                      PTypeBoundaryContext::WrapRange);
     
     BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(0),
                       PTypeBoundaryContext::Limit);
     BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(1),
-                      PTypeBoundaryContext::Wrap);
+                      PTypeBoundaryContext::WrapRange);
     BOOST_CHECK_EQUAL(PTypeBoundaryContext::resolve(2),
-                      PTypeBoundaryContext::Reflect);
+                      PTypeBoundaryContext::WrapStep);
 }
 
 
@@ -2128,6 +2128,16 @@ BOOST_AUTO_TEST_CASE(aw_to_angle_increment_a) {
 
 
 BOOST_AUTO_TEST_CASE(aw_unbound_to_bound_a) {
+    
+    // ((n % M) + M) % M
+    
+//    float q;
+//    for (float z=-20; z<=20; ++z) {
+//        q = fmod(fmod(z, 3.0) + 3.0, 3.0);
+//        std::cout << "fmod(z, 3.0) " << z << " " << q << std::endl;
+//        
+//    }
+    
 	SampleT post;
     
 	post = unbound_to_bound(2,
@@ -2143,10 +2153,64 @@ BOOST_AUTO_TEST_CASE(aw_unbound_to_bound_a) {
     BOOST_CHECK_CLOSE(post, 1, 0.0000001);
 
     
-    for (float x=-2; x<=7; ++x) {
-        std::cout << x << " " << unbound_to_bound(x,
-                PTypeBoundaryContext::Wrap, 2, 5) << std::endl;
-    }
+    // wrap step upper characteristics
+    
+    post = unbound_to_bound(5,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 5, 0.0000001);
+
+    post = unbound_to_bound(5.5,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 5, 0.0000001);
+
+    post = unbound_to_bound(6,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 2, 0.0000001);
+    
+    
+    // wrap step negative values
+    
+    post = unbound_to_bound(1.5,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 5, 0.0000001);
+    
+    post = unbound_to_bound(0.5,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 4, 0.0000001);
+
+    post = unbound_to_bound(-0.5,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 3, 0.0000001);
+
+    post = unbound_to_bound(-1.5,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 2, 0.0000001);
+
+    post = unbound_to_bound(-2.5,
+            PTypeBoundaryContext::WrapStep, 2, 5);
+    BOOST_CHECK_CLOSE(post, 5, 0.0000001);
+
+    
+    
+    
+    // wrap range upper characteristics
+    
+    post = unbound_to_bound(4.5,
+            PTypeBoundaryContext::WrapRange, 2, 5);
+    BOOST_CHECK_CLOSE(post, 4.5, 0.0000001);
+    
+    post = unbound_to_bound(5.5,
+            PTypeBoundaryContext::WrapRange, 2, 5);
+    BOOST_CHECK_CLOSE(post, 2.5, 0.0000001);
+    
+    
+    
+//    float y;
+//    for (float x=-20; x<=20; ++x) {
+//        y = x * .5;
+//        std::cout << y << " " << unbound_to_bound(y,
+//                PTypeBoundaryContext::WrapRange, 2, 5) << std::endl;
+//    }
     
     
 }
