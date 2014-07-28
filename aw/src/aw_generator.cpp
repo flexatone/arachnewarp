@@ -69,6 +69,9 @@ PTypePtr PType :: make(PTypeID q){
     else if (q == PTypeID::Direction) {
         p = PTypeDirectionPtr(new PTypeDirection);
     }
+    else if (q == PTypeID::BoundaryContext) {
+        p = PTypeBoundaryContextPtr(new PTypeBoundaryContext);
+    }
     else {
         std::stringstream msg;
         msg << "no matching ParameterTypeID";
@@ -79,6 +82,8 @@ PTypePtr PType :: make(PTypeID q){
 }
 
 
+
+    
 PTypePtr PType :: make_with_name(PTypeID q, const std::string& s){
     PTypePtr p = PType::make(q);
     p->set_instance_name(s);
@@ -207,6 +212,11 @@ PTypeModulus :: PTypeModulus() {
 PTypeDirection :: PTypeDirection() {
     _class_name = "PTypeDirection";
     _class_id = PTypeID::Direction;
+}
+
+PTypeBoundaryContext :: PTypeBoundaryContext() {
+    _class_name = "PTypeBoundaryContext";
+    _class_id = PTypeID::BoundaryContext;
 }
 
 
@@ -2595,8 +2605,7 @@ void Panner :: render(RenderCountT f) {
         _sum_inputs(_frame_size);        
         for (_i=0; _i < _frame_size; ++_i) {
             // position between -1 and 1
-            _angle = (_summed_inputs[_input_index_position][_i] * 
-                    PIOVER4);
+            _angle = _summed_inputs[_input_index_position][_i] * PIOVER4;
             _cos_angle = cos(_angle);
             _sin_angle = sin(_angle);
 
@@ -2650,27 +2659,29 @@ void Sequencer :: init() {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 
     // inputs:
-    
-    // selection is a counter output used to select index position in the break point table
+    // `selection` is a counter output used to select index position in the break point table
     _input_index_selection = _register_input_parameter_type(
             PType::make_with_name(PTypeID::Value, "Selection"));
 
-    // register slots
+    // register slots; `buffer` is source of values
 	_slot_index_buffer = _register_slot_parameter_type(
             PType::make_with_name(PTypeID::Buffer, "Buffer"));
-    
-    // must have a default for first usage, otherwise update for new slot will be broken; must have slot call _update_for_new_slot, as we need get points len and last amp
+    // must have a default for first usage, otherwise update for new slot will be broken; must have slot call _update_for_new_slot
 	GenPtr g1 = Gen::make(GenID::SamplesBuffer);
     Inj<SampleT>({0, -1, 0, 1}) && g1;
-    
     set_slot_by_index(_slot_index_buffer, g1, true); // will call _update_for_new_slot
+    
+    _slot_index_boundary_context = _register_slot_parameter_type(
+            PType::make_with_name(PTypeID::BoundaryContext,
+            "BoundaryContext for selection"));
+    // default to hertz
+    set_slot_by_index(_slot_index_boundary_context,
+            PTypeBoundaryContext::WrapStep, true);
 
     // outputs dynamically assigned
-    
     set_default();
     reset();
 }
-
 
 
 void Sequencer :: _update_for_new_slot() {
@@ -2709,15 +2720,23 @@ void Sequencer :: reset() {
 
 void Sequencer :: render(RenderCountT f) {
 
+    // can only update once per render call; not assumed to be a problem
+    _boundary_context = PTypeBoundaryContext::resolve(
+            _slots[_slot_index_boundary_context]->outputs[0][0]);
+    
     while (_render_count < f) {
         _render_inputs(f);
         _sum_inputs(_frame_size);
         for (_i=0; _i < _frame_size; ++_i) {
             // can update on every frame, as at any sample the value might move to a new index
-            _last_buffer_index = _summed_inputs[_input_index_selection][_i];
-            
-            // TODO: this value needs to be controlled; either limited or modulo
-            // TODO: we also need a way to resolve form float to integers; not a problem for counter input, but what about when we use something else?
+            // this value needs to be controlled; either limited or modulo
+            // we also need a way to resolve from float to integers; not a problem for counter input, but what about when we use something else?
+            _last_buffer_index = unbound_to_bound(
+                    _summed_inputs[_input_index_selection][_i],
+                    _boundary_context,
+                    0,
+                    _buffer_frame_size - 1 // inclusive of last valid index
+                    );
             
             // for each frame, read and fill the value
             for (_out_pos=0; _out_pos<_buffer_output_count; ++_out_pos) {

@@ -2192,7 +2192,6 @@ BOOST_AUTO_TEST_CASE(aw_unbound_to_bound_a) {
 
     
     
-    
     // wrap range upper characteristics
     
     post = unbound_to_bound(4.5,
@@ -2235,7 +2234,7 @@ BOOST_AUTO_TEST_CASE(aw_sequencer_a) {
 	GenPtr b2 = Gen::make(GenID::SamplesBuffer);
     Inj<SampleT>({{0, 1}, {2, 3}}) && b2;
     
-    b2 || sq1; // will set 1 output
+    b2 || sq1; // will set output to 2
     
     BOOST_CHECK_EQUAL(b2->get_output_count(), 2);
     
