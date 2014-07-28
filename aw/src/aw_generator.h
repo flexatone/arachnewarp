@@ -81,7 +81,8 @@ enum class PTypeID {
     TimeContext, // rename duration context?
     RateContext,
     Modulus, // for counter
-    Direction // 
+    Direction, //
+    BoundaryContext,
 };
 
 
@@ -349,7 +350,7 @@ class PTypeDirection: public PType {
 class PTypeBoundaryContext;
 typedef std::shared_ptr<PTypeBoundaryContext> PTypeBoundaryContextPtr;
 class PTypeBoundaryContext: public PType {
-public://------------------------------------------------------------------
+    public://------------------------------------------------------------------
     explicit PTypeBoundaryContext();
     
     enum Opt {
@@ -522,14 +523,15 @@ inline SampleT unbound_to_bound(SampleT raw,
     if (c == PTypeBoundaryContext::Limit) {
         return double_limiter(raw, lower, upper);
     }
-    // wrap, where 2 to 5 returns 2.01 to 4.99 for 2.01 to 4.99
+    // wrap, where 2 to 5 returns 2.01 to 4.99 for input 2.01 to 4.99
     else if (c == PTypeBoundaryContext::WrapRange) {
         return lower + bipolar_fmod(raw - lower, upper - lower);
     }
-    // wrap, where 2 to 5 returns 2 to 5 for 2.01 to 5.99
+    // wrap, where 2 to 5 returns 2 to 5 for input 2.01 to 5.99
     else if (c == PTypeBoundaryContext::WrapStep) {
         return floor(lower + bipolar_fmod(raw - lower, upper - lower + 1));
     }
+    // TODO: not yet implemented
     else if (c == PTypeBoundaryContext::Reflect) {
         return raw;
     }
@@ -1684,13 +1686,14 @@ class Sequencer: public Gen {
     OutputsSizeT _i;
     PIndexT _input_index_selection;
     PIndexT _slot_index_buffer;
+    PIndexT _slot_index_boundary_context;
 
     OutputsSizeT _buffer_frame_size;
     PIndexT _buffer_output_count;
     
     SampleT _last_buffer_index; // last value input; check for changes
     PIndexT _out_pos;
-
+    PTypeBoundaryContext::Opt _boundary_context;
     protected://---------------------------------------------------------------
     //! Overridden to apply slot settings and reset as necessary.
 	void _update_for_new_slot();
