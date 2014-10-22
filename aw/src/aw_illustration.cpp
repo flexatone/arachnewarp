@@ -190,7 +190,7 @@ NetworkGraph :: ~NetworkGraph() {}
 // http://www.graphviz.org/doc/info/colors.html
 
 void NetworkGraph :: _draw_generator(GenPtr g, 
-        SharedMapStringBool memo) {
+        MapStringBoolPtr memo) {
 	if (!g) { // if we get an empty pointer
 		// could aternatively just return as a base case of recursion
 	    throw std::invalid_argument("the GeneratoreShared is empty");
@@ -299,8 +299,8 @@ size=\"8,8\"; " << std::endl;
     // add each generator recursively
     // need to store diction of encountered 
     
-    SharedMapStringBool memo = SharedMapStringBool(new MapStringBool);
-    //SharedMapStringBool memo = SharedMapStringBool();
+    MapStringBoolPtr memo = MapStringBoolPtr(new MapStringBool);
+    //MapStringBoolPtr memo = MapStringBoolPtr();
     _draw_generator(g, memo);
     // close the header
     _stream << "}" << std::endl;
