@@ -73,7 +73,7 @@ typedef std::uint64_t RenderCountT;
 typedef std::unordered_map<std::string, bool> MapStringBool;
 
 //! The shared pointer version of MapStringParameterIndexPairToBool.
-typedef std::shared_ptr<MapStringBool> SharedMapStringBool;
+typedef std::shared_ptr<MapStringBool> MapStringBoolPtr;
 
 
 SampleT const PI {3.14159265358979323846264338};
@@ -129,14 +129,19 @@ const std::string COLOR_INPUT {ansi_color::GREEN};
 const std::string COLOR_OUTPUT {ansi_color::YELLOW};
 
 
-inline std::string color_embrace(std::string body, std::string color,
-            char left='{', char right='}') {
+inline std::string color_embrace(
+        std::string body,
+        std::string color,
+        char left='{',
+        char right='}') {
     std::stringstream msg;
     msg << color << left << ansi_color::RESET << body << color << right << ansi_color::RESET;
     return msg.str();
 }
 
-inline std::string color_symbol_embrace(std::string symbol, PIndexT n,
+inline std::string color_symbol_embrace(
+        std::string symbol,
+        PIndexT n,
         std::string color) {
     std::stringstream n_str;
     n_str << n;
@@ -149,7 +154,8 @@ inline std::string color_symbol_embrace(std::string symbol, PIndexT n,
 // functions ===================================================================
 
 //! Escape one or more characters privided by a string and a single prefix. Changes are made in place to the passed in string. 
-void escape(std::string& str, const std::string& replace_targets, 
+void escape(std::string& str,
+        const std::string& replace_targets,
         const std::string& prefix);
 
 //! Print an arry of SampleT of size type FrameSizeT.

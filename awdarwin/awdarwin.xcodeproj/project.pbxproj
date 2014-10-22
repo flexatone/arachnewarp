@@ -24,7 +24,6 @@
 		8E5171EF16BD7BF5009114EF /* aw_illustration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5171ED16BD7BF4009114EF /* aw_illustration.cpp */; };
 		8E5171F016BD7BF5009114EF /* aw_illustration.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E5171EE16BD7BF5009114EF /* aw_illustration.h */; };
 		8E5171F216BD7C5F009114EF /* aw_illustration_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */; };
-		8E84308918552C45009C65DF /* aw_performer_pac_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E84308818552C45009C65DF /* aw_performer_pac_test.cpp */; };
 		8E84308D1879E0D6009C65DF /* awdoc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E84308C1879E0D6009C65DF /* awdoc.cpp */; };
 		8E9F59EF18303BA6006E72B8 /* patch_01.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8E9F59EE18303BA6006E72B8 /* patch_01.cpp */; };
 		8EB03C57184300D100A52AB9 /* aw_performer_nrt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */; };
@@ -61,7 +60,6 @@
 		8E5171ED16BD7BF4009114EF /* aw_illustration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_illustration.cpp; sourceTree = "<group>"; };
 		8E5171EE16BD7BF5009114EF /* aw_illustration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aw_illustration.h; sourceTree = "<group>"; };
 		8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_illustration_test.cpp; sourceTree = "<group>"; };
-		8E84308818552C45009C65DF /* aw_performer_pac_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_pac_test.cpp; sourceTree = "<group>"; };
 		8E84308C1879E0D6009C65DF /* awdoc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = awdoc.cpp; sourceTree = "<group>"; };
 		8E9F59EE18303BA6006E72B8 /* patch_01.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = patch_01.cpp; sourceTree = "<group>"; };
 		8EB03C53184300D100A52AB9 /* aw_performer_nrt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aw_performer_nrt.cpp; sourceTree = "<group>"; };
@@ -152,7 +150,6 @@
 		8E43EC1316ADB14200594253 /* test */ = {
 			isa = PBXGroup;
 			children = (
-				8E84308818552C45009C65DF /* aw_performer_pac_test.cpp */,
 				8EB03C5B1843014100A52AB9 /* aw_performer_pa_test.cpp */,
 				8E5171F116BD7C5F009114EF /* aw_illustration_test.cpp */,
 				8E43EC3D16ADB14200594253 /* aw_common_assert.cpp */,
@@ -267,7 +264,6 @@
 				8E9F59EF18303BA6006E72B8 /* patch_01.cpp in Sources */,
 				8E43EC5916ADB14200594253 /* aw_common.cpp in Sources */,
 				8E43EC5D16ADB14200594253 /* aw_generator.cpp in Sources */,
-				8E84308918552C45009C65DF /* aw_performer_pac_test.cpp in Sources */,
 				8E43EC6516ADB14200594253 /* aw_timer.cpp in Sources */,
 				8E43EC6916ADB14200594253 /* aw_common_assert.cpp in Sources */,
 				8E43EC6A16ADB14200594253 /* aw_common_test.cpp in Sources */,
