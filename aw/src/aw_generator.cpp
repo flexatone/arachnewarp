@@ -238,7 +238,7 @@ DirectedIndex :: DirectedIndex(FrameSizeT size)
     else {
         _can_use_random_permutation = false;
     }
-    if (_size == 0) {
+    if (_size == 0) { // cannot hae a size of 0
         _size = _max;
     }
     // do this after max adjustment
@@ -260,7 +260,7 @@ void DirectedIndex :: reset() {
 } 
 
 void DirectedIndex :: set_direction(PTypeDirection::Opt d) {
-    // override setting of random permutatio nif not permitted
+    // override setting of random permutation if not permitted
     if (d == PTypeDirection::Opt::RandomPermutate && 
             !_can_use_random_permutation) {
         _direction = PTypeDirection::Opt::RandomSelect;
@@ -337,7 +337,8 @@ FrameSizeT DirectedIndex :: next() {
     // we make sure this is possible when calling set_direction()
     else if (_direction == PTypeDirection::Opt::RandomPermutate) {
         if (_last_value >= _size) {
-            std::shuffle(_indices.begin(), _indices.end(), Random::core.re_lin_congruential);
+            std::shuffle(_indices.begin(), _indices.end(), 
+                    Random::core.re_lin_congruential);
             // alternatie approach that does not use common Random gen
             // std::random_shuffle(_indices.begin(), _indices.end());
             _last_value = 0;
@@ -2674,7 +2675,7 @@ void Sequencer :: init() {
     _slot_index_boundary_context = _register_slot_parameter_type(
             PType::make_with_name(PTypeID::BoundaryContext,
             "BoundaryContext for selection"));
-    // default to hertz
+    // default to wrap step
     set_slot_by_index(_slot_index_boundary_context,
             PTypeBoundaryContext::WrapStep, true);
 

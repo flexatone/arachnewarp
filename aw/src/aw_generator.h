@@ -1694,6 +1694,7 @@ class Sequencer: public Gen {
     SampleT _last_buffer_index; // last value input; check for changes
     PIndexT _out_pos;
     PTypeBoundaryContext::Opt _boundary_context;
+    
     protected://---------------------------------------------------------------
     //! Overridden to apply slot settings and reset as necessary.
 	void _update_for_new_slot();
