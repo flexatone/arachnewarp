@@ -1811,9 +1811,9 @@ BOOST_AUTO_TEST_CASE(aw_white_1) {
 }
 
 
-// BOOST_AUTO_TEST_CASE(aw_doc_1) {
-//     Gen::doc();    
-// }
+BOOST_AUTO_TEST_CASE(aw_doc_1) {
+    Gen::doc();    
+}
 
 
 BOOST_AUTO_TEST_CASE(aw_directed_index_a) {
