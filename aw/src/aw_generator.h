@@ -560,7 +560,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! A vector of GenPtr instances used for slots. Slots do not yet need to define output number (in the Ge); generally assume that we use the first output, or use more in an idiosyncratic manner.
     typedef std::vector<GenPtr> VGenPtr;
 		
-    //! An OutputConnection is a pair formed of GeneeratorShared and an integer representing the output/outputs number, starting from zero, to be read from in that input.
+    //! An GenPtrOutPair is a pair formed of a GenPtr and an integer representing the output number, starting from zero, to be read from. (In assigning an input,a GenPtr has n outputs, we need to declare which one is mapped to which input).
     typedef std::pair<GenPtr, PIndexT> GenPtrOutPair;
     typedef std::vector<GenPtrOutPair> VGenPtrOutPair;
     typedef std::vector<VGenPtrOutPair> VVGenPtrOutPair;
@@ -611,7 +611,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! The main storage for PTypePtr instances used as inputs. These are mapped by index value, which is the same index value in the inputs vector. This is only protected and not private so that Constant can override print_inputs.
     std::unordered_map<PIndexT, PTypePtr> _input_parameter_type;	
 		
-    //! A std::vector of vectors of GeneratorsShared / outputs id pairs that are the inputs to this Gen. This could be an unordered map too, but vector will have optimal performance when we know the index in advance (which we always do).
+    //! A std::vector of vectors of GenPtr, output id pairs that are the inputs to this Gen. This could be an unordered map too, but vector will have optimal performance when we know the index in advance (which we always do).
     VVGenPtrOutPair _inputs;
     
 	//! For each render call, we sum all inputs up to the common frame size available in the input and store that in a Vector of samples. This is done to make render() methods cleaner and remove redundancy.
