@@ -1551,8 +1551,7 @@ void SamplesBuffer :: _buffer_update_for_new_slot(PTypeTimeContext::Opt tc) {
         pt_i->set_instance_name(s.str());
         _register_input_parameter_type(pt_i);        
 		
-        PTypePtr pt_o = PType::make( 
-                PTypeID::Value);
+        PTypePtr pt_o = PType::make(PTypeID::Value);
         s.str(""); // clears contents; not the same as .clear()
         s << "Output " << i+1;
         pt_o->set_instance_name(s.str());
