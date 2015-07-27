@@ -39,6 +39,7 @@ Gen.prototype._register_output_parameter_type = function() {
 // -----------------------------------------------
 // tests
 var env1 = new Env(44100, 64);
+
 // must call this form the environment
 var env2 = Env.prototype.get_default_environment();
 console.log(env1, env1.get_nyquist());
