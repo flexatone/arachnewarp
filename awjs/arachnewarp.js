@@ -1,3 +1,10 @@
+var ConnID = Object.freeze({
+    Slot:'Slot',
+    Input:'Input',
+    Output:'Output',
+});
+
+
 // -----------------------------------------------
 var Env = function(sampling_rate, frame_size) {
     this.sampling_rate = sampling_rate;
