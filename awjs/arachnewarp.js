@@ -1,9 +1,11 @@
-var ConnID = Object.freeze({
-    Slot:'Slot',
-    Input:'Input',
-    Output:'Output',
-});
+// -----------------------------------------------
+// enumerations
 
+var ConnID = Object.freeze({
+    Slot: 'Slot',
+    Input: 'Input',
+    Output: 'Output',
+});
 
 // -----------------------------------------------
 var Env = function(sampling_rate, frame_size) {
@@ -18,7 +20,6 @@ Env.prototype.get_default_environment = function() {
 Env.prototype.get_nyquist = function() {
     return this.sampling_rate * .5;
 };
-
 
 // -----------------------------------------------
 var Gen = function(env) {
