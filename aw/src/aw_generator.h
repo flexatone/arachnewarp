@@ -653,7 +653,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	//! Called by Generators during init() to configure a slot parameter.
     PIndexT _register_slot_parameter_type(PTypePtr pts);
 
-	//! Define an output. This calls _resize_outputs().
+	//! Define an output. This calls _resize_outputs() each time called. 
     PIndexT _register_output_parameter_type(PTypePtr pts);
 
     //! Remove all outputs; used by slots that dynamically change inputs and outputs; all existing inputs will remain. 

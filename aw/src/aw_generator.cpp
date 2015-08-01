@@ -467,7 +467,7 @@ Gen :: Gen(EnvironmentPtr e)
 	// this is the only constructor for Gen; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
 	: _class_name("Gen"), 
     //gid(-1), // want this to not match any known value
-	_output_count{0}, // always init to 1; can change in init
+	_output_count{0}, // always init to 0
 	_outputs_size{0}, // will be updated after resizing
     _input_count{0},
     _slot_count{0},
@@ -490,7 +490,8 @@ void Gen :: init() {
     _sampling_rate = _environment->get_sampling_rate();
 	_nyquist = _sampling_rate / 2; // let floor
     
-    // we create one output to start
+    // we create one output to start; 
+    // TODO: this should not be necessary and would clean up coode if removed, as we are forced clear outputs with _clear_output_parameter_types
     PTypePtr pt1 = PType::make_with_name(PTypeID::Value, "Default");
     //pt1->set_instance_name("Default");
     _register_output_parameter_type(pt1);
@@ -570,6 +571,7 @@ PIndexT Gen :: _register_output_parameter_type(PTypePtr pts) {
 
 void Gen :: _clear_output_parameter_types() {
     _output_count = 0;
+    _outputs_size = 0;
     outputs.clear();
 }
 
