@@ -83,9 +83,9 @@ Gen.prototype.init = function() {
 };
 
 Gen.prototype._resize_outputs = function() {
+    var i = 0;    
     this._outputs_size = this._output_count * this._frame_size;
     this.outputs = new Array(this._output_count);
-    var i = 0;
     while (i < this._output_count) {
         this.outputs[i] = new Array(this._frame_size);
         i++;
@@ -93,8 +93,8 @@ Gen.prototype._resize_outputs = function() {
 };
 
 Gen.prototype.reset = function() {
-    var i = 0;
-    var j = 0;
+    var i = 0,
+        j = 0;
     while (i < this._output_count) {
         while (j < this._frame_size) {
             this.outputs[i][j] = 0.0;
