@@ -22,7 +22,7 @@ QUnit.test("test_env_a",
         var env1 = new Env(44100, 64);
         assert.ok(env1.get_nyquist() == 22050);
 
-        var env2 = Env.prototype.get_default_environment();
+        var env2 = Env.prototype.get_default_env();
         assert.ok(env1.get_nyquist() == 22050);
     }   
 );
