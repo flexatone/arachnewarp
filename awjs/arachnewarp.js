@@ -1,4 +1,4 @@
-// -----------------------------------------------
+// -----------------------------------------------------------------------------
 // enumerations
 
 var ConnID = Object.freeze({
@@ -28,13 +28,28 @@ var PTypeID = Object.freeze({
     BoundaryContext:'BoundaryContext',
 });
 
-// -----------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Statuc Container of random functions
+var Random = {
+    uniform = function() {
+    };
+    uniform_switch = function() {
+    };
+    uniform_bi_polar = function() {
+    };
+    round = function() {
+    };
+};
+
+
+// -----------------------------------------------------------------------------
 var Env = function(sampling_rate, frame_size) {
     this.sampling_rate = sampling_rate;
     this.frame_size = frame_size;
 };
 // constructors
-Env.prototype.get_default_environment = function() {
+Env.prototype.get_default_env = function() {
     return new Env(44100, 32);
 };
 // methods
@@ -42,7 +57,7 @@ Env.prototype.get_nyquist = function() {
     return this.sampling_rate * .5;
 };
 
-// -----------------------------------------------
+// -----------------------------------------------------------------------------
 var Gen = function(env) {
     this._env = env;
 
