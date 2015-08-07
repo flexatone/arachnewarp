@@ -30,8 +30,9 @@ var PTypeID = Object.freeze({
 
 
 // -----------------------------------------------------------------------------
-// Statuc Container of random functions
+// Statuc container of random functions
 var Random = {
+    // Math.random() returns [0, 1)
     uniform = function() {
     };
     uniform_switch = function() {
