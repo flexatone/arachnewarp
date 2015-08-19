@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(aw_common_test1) {
 BOOST_AUTO_TEST_CASE(aw_common_test2) {
 	//std::cout << "running aw_common_test 2" << std::endl;
 	
-	//EnvironmentPtr es = EnvironmentPtr(new Environment);
+	//EnvPtr es = EnvPtr(new Env);
 
-    EnvironmentPtr es = Environment::get_default_env();
+    EnvPtr es = Env::get_default_env();
     
 	std::string fp = es->get_fp_temp("test.txt");
 	std::string match("test.txt");
@@ -120,10 +120,10 @@ BOOST_AUTO_TEST_CASE(aw_test_phase_limiter_a) {
 
 BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
-//    EnvironmentPtr e1 = Environment::make();
+//    EnvPtr e1 = Env::make();
 //    BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
 
-    EnvironmentPtr e2 = Environment::make_with_frame_size(128);
+    EnvPtr e2 = Env::make_with_frame_size(128);
     BOOST_CHECK_EQUAL(e2->get_common_frame_size(), 128);
 
     
@@ -132,16 +132,16 @@ BOOST_AUTO_TEST_CASE(aw_test_environment_1) {
 
 BOOST_AUTO_TEST_CASE(aw_test_environment_2) {
     // test setting and making the default environment
-    EnvironmentPtr e1 = Environment::get_default_env();
+    EnvPtr e1 = Env::get_default_env();
     BOOST_CHECK_EQUAL(e1->get_common_frame_size(), 64);
 
-    EnvironmentPtr e2 = Environment::make_with_frame_size(128);
-    Environment::set_default_env(e2);
-    EnvironmentPtr e3 = Environment::get_default_env();
+    EnvPtr e2 = Env::make_with_frame_size(128);
+    Env::set_default_env(e2);
+    EnvPtr e3 = Env::get_default_env();
     BOOST_CHECK_EQUAL(e3->get_common_frame_size(), 128);
     
     // call with no args to clear newly set value
-    Environment::set_default_env();
+    Env::set_default_env();
 
 }	
 

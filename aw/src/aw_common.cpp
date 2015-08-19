@@ -7,7 +7,7 @@
 // Need this for getting user home directory when not set to HOME
 #include <pwd.h>
 
-// Anything that includes common will need to include -l boost_filesystem -l boost_system to run the Environment code here
+// Anything that includes common will need to include -l boost_filesystem -l boost_system to run the Env code here
 #include <boost/filesystem.hpp>
 
 
@@ -85,31 +85,31 @@ const char* get_fp_home() {
 Random::Core Random::core = Random::Core();
 
 // must initialize private static member attribute in impl file
-EnvironmentPtr Environment::_default_env = nullptr;
+EnvPtr Env::_default_env = nullptr;
 
-Environment :: Environment(FrameSizeT fs) 
+Env :: Env(FrameSizeT fs) 
 	: _sampling_rate{44100},
     _common_frame_size{fs} { // default is 64
 	// post initializers
     _load_defaults(); // file paths, not frame size
 }
 
-EnvironmentPtr Environment :: make_with_frame_size(FrameSizeT fs) {
+EnvPtr Env :: make_with_frame_size(FrameSizeT fs) {
     // static method
-    return EnvironmentPtr(new Environment(fs));
+    return EnvPtr(new Env(fs));
 }
 
-//EnvironmentPtr Environment :: make() {
+//EnvPtr Env :: make() {
 //    // static method
 //    return make_with_frame_size();
 //}
 
-void Environment :: set_default_env(EnvironmentPtr env) {
+void Env :: set_default_env(EnvPtr env) {
     // static method
     _default_env = env;
 }
 
-EnvironmentPtr Environment :: get_default_env() {
+EnvPtr Env :: get_default_env() {
     // static method
     if (_default_env == nullptr) {
         // get default configuration
@@ -119,7 +119,7 @@ EnvironmentPtr Environment :: get_default_env() {
 }
 
 
-void Environment :: _load_defaults() {
+void Env :: _load_defaults() {
     // this method is called on init
     _temp_directory = boost::filesystem::path(get_fp_home()) / ".arachne_warp";
     //std::cout << _temp_directory << std::endl;
@@ -133,7 +133,7 @@ void Environment :: _load_defaults() {
     }
 }
 
-std::string Environment :: get_fp_temp(std::string name) const {
+std::string Env :: get_fp_temp(std::string name) const {
     // this might read from a file or do other configurations
     return (_temp_directory / name).string();
 }
