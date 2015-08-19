@@ -99,11 +99,6 @@ EnvPtr Env :: make_with_frame_size(FrameSizeT fs) {
     return EnvPtr(new Env(fs));
 }
 
-//EnvPtr Env :: make() {
-//    // static method
-//    return make_with_frame_size();
-//}
-
 void Env :: set_default_env(EnvPtr env) {
     // static method
     _default_env = env;
@@ -117,7 +112,6 @@ EnvPtr Env :: get_default_env() {
     }
     return _default_env;
 }
-
 
 void Env :: _load_defaults() {
     // this method is called on init
@@ -137,11 +131,6 @@ std::string Env :: get_fp_temp(std::string name) const {
     // this might read from a file or do other configurations
     return (_temp_directory / name).string();
 }
-
-
-
-
-
 
 
 } // end namespace aw
