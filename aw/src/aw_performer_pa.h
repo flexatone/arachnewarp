@@ -58,7 +58,7 @@ class PAPerformer {
     c_pa::PACBData _cb_data;
 
     //! We extract an environemnt from the generator apssed in at creation
-    EnvironmentPtr _environment;
+    EnvPtr _environment;
 
     //! This is the number of seconds of pre-roll silence before the root generator is called.
     unsigned int _pre_roll_seconds {2};

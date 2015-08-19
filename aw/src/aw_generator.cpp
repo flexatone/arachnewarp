@@ -356,7 +356,7 @@ FrameSizeT DirectedIndex :: next() {
 //-----------------------------------------------------------------------------
 // todo: is there to make a fixed mapping in order to do this creation?
     
-GenPtr Gen :: make_with_environment(GenID q, EnvironmentPtr e) {                        
+GenPtr Gen :: make_with_environment(GenID q, EnvPtr e) {                        
     GenPtr g;
     if (q == GenID::Constant) {
         g = ConstantPtr(new Constant(e));
@@ -415,18 +415,13 @@ GenPtr Gen :: make_with_environment(GenID q, EnvironmentPtr e) {
 
 
 GenPtr Gen :: make(GenID q){
-	// just get default environment
-    //EnvironmentPtr e = EnvironmentPtr(new Environment);
-    EnvironmentPtr e = Environment::get_default_env();
+    EnvPtr e = Env::get_default_env();
     return make_with_environment(q, e);
 }
 
 
 GenPtr Gen :: make(SampleT v){
-	// just get default environment
-    // replace with get default environment call
-    //EnvironmentPtr e = EnvironmentPtr(new Environment);
-    EnvironmentPtr e = Environment::get_default_env();
+    EnvPtr e = Env::get_default_env();
     GenPtr c = make_with_environment(GenID::Constant, e);
     c->set_input_by_index(0, v);
     return c;
@@ -463,7 +458,7 @@ void Gen :: doc() {
 
 
 //.............................................................................
-Gen :: Gen(EnvironmentPtr e) 
+Gen :: Gen(EnvPtr e) 
 	// this is the only constructor for Gen; the passed-in GenertorConfigShared is stored in the object and used to set init frame frame size.
 	: _class_name("Gen"), 
     //gid(-1), // want this to not match any known value
@@ -471,7 +466,7 @@ Gen :: Gen(EnvironmentPtr e)
 	_outputs_size{0}, // will be updated after resizing
     _input_count{0},
     _slot_count{0},
-	_environment{e}, // replace with Environment
+	_environment{e}, // replace with Env
     
 	// protected ...
 	_frame_size{1}, // set in init;
@@ -1174,7 +1169,7 @@ void Gen :: add_input_by_index(PIndexT i, SampleT v, PIndexT pos){
     // adding additional as a constant value
     // note that no one else will have a handle on this constant
     // overridden method for setting a sample value: adds a constant	
-	// pass the EnvironmentPtr to inner Gen 
+	// pass the EnvPtr to inner Gen 
     GenPtr c = Gen::make_with_environment(GenID::Constant, 
             _environment);    
     c->set_input_by_index(0, v); // this will call Constant::reset()
@@ -1240,7 +1235,7 @@ GenPtr Gen :: get_slot_gen_at_index(PIndexT i) {
 
 //------------------------------------------------------------------------------
 
-GenProxyOutputShift :: GenProxyOutputShift(EnvironmentPtr e,
+GenProxyOutputShift :: GenProxyOutputShift(EnvPtr e,
         GenPtr gp, PIndexT shift) 
     : Gen(e),
     _proxied{gp}, 
@@ -1257,7 +1252,7 @@ PIndexT GenProxyOutputShift :: get_output_count() const {
 
 
 //------------------------------------------------------------------------------
-Constant :: Constant(EnvironmentPtr e) 
+Constant :: Constant(EnvPtr e) 
 	// must initialize base class with passed arg
 	: Gen(e) {
 	_class_name = "Constant"; 
@@ -1372,7 +1367,7 @@ void Constant :: add_input_by_index(PIndexT i, SampleT v, PIndexT pos){
 
 
 //------------------------------------------------------------------------------
-_BinaryCombined :: _BinaryCombined(EnvironmentPtr e) 
+_BinaryCombined :: _BinaryCombined(EnvPtr e) 
 	// must initialize base class with passed arg
 	: Gen(e), 
 	_n_opperands(0) { // end intitializer list
@@ -1464,7 +1459,7 @@ void _BinaryCombined :: render(RenderCountT f) {
 
 
 //------------------------------------------------------------------------------
-Add :: Add(EnvironmentPtr e)
+Add :: Add(EnvPtr e)
 	// must initialize base class with passed arg
 	: _BinaryCombined(e) {
 	_class_name = "Add";  // override what is set in Add
@@ -1478,7 +1473,7 @@ void Add :: init() {
 }
 
 //------------------------------------------------------------------------------
-Multiply :: Multiply(EnvironmentPtr e) 
+Multiply :: Multiply(EnvPtr e) 
 	// must initialize base class with passed arg
 	: _BinaryCombined(e) {
 	_class_name = "Multiply";  // override what is set in Add
@@ -1500,7 +1495,7 @@ void Multiply :: init() {
 
 
 //------------------------------------------------------------------------------
-SamplesBuffer :: SamplesBuffer(EnvironmentPtr e) 
+SamplesBuffer :: SamplesBuffer(EnvPtr e) 
 	// must initialize base class with passed arg
 	: Gen(e) {
 	_class_name = "SamplesBuffer";
@@ -1712,7 +1707,7 @@ void SamplesBuffer :: set_outputs(const std::string& fp) {
 
 
 //------------------------------------------------------------------------------
-SecondsBuffer :: SecondsBuffer(EnvironmentPtr e) 
+SecondsBuffer :: SecondsBuffer(EnvPtr e) 
     // must initialize base class with passed arg
     : SamplesBuffer(e) {
     _class_name = "SecondsBuffer";  // override what is set in Add
@@ -1743,7 +1738,7 @@ void SecondsBuffer :: _update_for_new_slot() {
 
 
 //------------------------------------------------------------------------------
-BreakPoints :: BreakPoints(EnvironmentPtr e) 
+BreakPoints :: BreakPoints(EnvPtr e) 
 	// must initialize base class with passed arg
 	: SamplesBuffer(e) {
 	_class_name = "BreakPoints";  // override what is set in Add
@@ -1781,7 +1776,7 @@ Validity BreakPoints :: _validate_outputs() {
 
 
 //------------------------------------------------------------------------------
-BPIntegrator :: BPIntegrator(EnvironmentPtr e) 
+BPIntegrator :: BPIntegrator(EnvPtr e) 
 	// must initialize base class with passed arg
 	: Gen(e) {
 	_class_name = "BPIntegrator";  // override what is set in Add
@@ -1988,7 +1983,7 @@ void BPIntegrator :: render(RenderCountT f) {
 
 
 //------------------------------------------------------------------------------
-Phasor :: Phasor(EnvironmentPtr e) 
+Phasor :: Phasor(EnvPtr e) 
 	// must initialize base class with passed arg
 	: Gen(e),
 		_amp(0),
@@ -2101,7 +2096,7 @@ void Phasor :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-Sine :: Sine(EnvironmentPtr e) 
+Sine :: Sine(EnvPtr e) 
 	// must initialize base class with passed arg
 	: Gen(e)
 	{
@@ -2195,7 +2190,7 @@ void Sine :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-Map :: Map(EnvironmentPtr e)
+Map :: Map(EnvPtr e)
 	// must initialize base class with passed arg
 	: Gen(e)
 	{
@@ -2286,7 +2281,7 @@ void Map :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-AttackDecay :: AttackDecay(EnvironmentPtr e)
+AttackDecay :: AttackDecay(EnvPtr e)
 	// must initialize base class with passed arg
 	: Gen(e)
 	{
@@ -2430,7 +2425,7 @@ void AttackDecay :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-White :: White(EnvironmentPtr e) 
+White :: White(EnvPtr e) 
     : Gen(e) {
     _class_name = "White";
     _class_id = GenID::White;
@@ -2462,7 +2457,7 @@ void White :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-Counter :: Counter(EnvironmentPtr e) 
+Counter :: Counter(EnvPtr e) 
     : Gen(e) {
     _class_name = "Counter";
     _class_id = GenID::Counter;
@@ -2555,7 +2550,7 @@ void Counter :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-Panner :: Panner(EnvironmentPtr e) 
+Panner :: Panner(EnvPtr e) 
     : Gen(e) {
     _class_name = "Panner";
     _class_id = GenID::Panner;
@@ -2649,7 +2644,7 @@ void Panner :: render(RenderCountT f) {
 
 
 //-----------------------------------------------------------------------------
-Sequencer :: Sequencer(EnvironmentPtr e) 
+Sequencer :: Sequencer(EnvPtr e) 
     : Gen(e) {
     _class_name = "Sequencer";
     _class_id = GenID::Sequencer;

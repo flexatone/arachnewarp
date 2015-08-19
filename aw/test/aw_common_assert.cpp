@@ -16,7 +16,7 @@ bool test_1() {
     std::string test = std::string(aw::get_fp_home());
     std::cout << test << std::endl;
 
-    aw::Environment e;
+    aw::Env e;
     
     std::cout << e.get_fp_temp("name.txt") << std::endl;
     

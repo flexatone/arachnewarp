@@ -588,7 +588,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     PIndexT _slot_count;    
 
 	//! Store a ptr to Envrionment instance based at creation. 
-    EnvironmentPtr _environment;
+    EnvPtr _environment;
 
 	
     protected://---------------------------------------------------------------
@@ -596,7 +596,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	//! The size of each vector for each _output_count as stored in the outputs vector. This is protected because render() methods must access. If changed, need to rebuild outputs vector. This represents the number of samples (independent of output channels per render cycle)
     FrameSizeT _frame_size; 
     
-    //! The sampling rate, taken from an Environment instance, and is passed through from a GeneraotrConfig. We store this in the instance for efficiency; not prepared to handle if this changes. 
+    //! The sampling rate, taken from an Env instance, and is passed through from a GeneraotrConfig. We store this in the instance for efficiency; not prepared to handle if this changes. 
 	OutputsSizeT _sampling_rate;
 	
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
@@ -676,9 +676,9 @@ class Gen: public std::enable_shared_from_this<Gen> {
     
     
     public://------------------------------------------------------------------
-    //! Factory for Generators using a provided EnvironmentPtr. 
+    //! Factory for Generators using a provided EnvPtr. 
     static GenPtr make_with_environment(GenID q, 
-            EnvironmentPtr e);
+            EnvPtr e);
 
     //! Factory for all Generators with by generator ID alone. This creates a GenPtr, and calls its init() method.     
     static GenPtr make(GenID);
@@ -694,7 +694,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
     public://------------------------------------------------------------------
 
 	//! Main constructor that takes a generator config.
-    explicit Gen(EnvironmentPtr e);
+    explicit Gen(EnvPtr e);
 
     //! The default constructor is deleted: we always must pass in an Envrionment. 
     Gen() = delete;
@@ -728,9 +728,9 @@ class Gen: public std::enable_shared_from_this<Gen> {
     OutputsSizeT get_frame_size() const {return _frame_size;};	
 
     //! Return a copy of the environment shared pointer.
-    EnvironmentPtr get_environment() const {return _environment;};
+    EnvPtr get_environment() const {return _environment;};
     
-	//! Return the common frame size derived from the stored shared Environment. If this Gen has resizable frames, this may not be the same as the current frame size.
+	//! Return the common frame size derived from the stored shared Env. If this Gen has resizable frames, this may not be the same as the current frame size.
     OutputsSizeT get_common_frame_size() const {
 			return _environment->get_common_frame_size();};	
 
@@ -1164,7 +1164,7 @@ class GenProxyOutputShift: public Gen {
 
     public://-----------------------------------------------------------------
 
-    explicit GenProxyOutputShift(EnvironmentPtr e, GenPtr gp, 
+    explicit GenProxyOutputShift(EnvPtr e, GenPtr gp, 
             PIndexT shift);
 
     //! ProxyGens can override this method to return a wrapped GenPtr. 
@@ -1202,7 +1202,7 @@ class Constant: public Gen {
 
     public://------------------------------------------------------------------
 
-	explicit Constant(EnvironmentPtr);
+	explicit Constant(EnvPtr);
     
     virtual void init();
     
@@ -1255,7 +1255,7 @@ class _BinaryCombined: public Gen {
 	virtual void _update_for_new_slot();
 
     public://------------------------------------------------------------------
-    explicit _BinaryCombined(EnvironmentPtr);
+    explicit _BinaryCombined(EnvPtr);
 
     virtual void init();    
 		
@@ -1271,7 +1271,7 @@ typedef std::shared_ptr<Add> AddPtr;
 class Add: public _BinaryCombined {
 
     public://------------------------------------------------------------------
-    explicit Add(EnvironmentPtr);
+    explicit Add(EnvPtr);
     virtual void init();
 };
 
@@ -1283,7 +1283,7 @@ typedef std::shared_ptr<Multiply> MultiplyPtr;
 class Multiply: public _BinaryCombined {
 
     public://------------------------------------------------------------------
-    explicit Multiply(EnvironmentPtr);
+    explicit Multiply(EnvPtr);
     virtual void init();
 };
 
@@ -1301,7 +1301,7 @@ class SamplesBuffer: public Gen {
     void _buffer_update_for_new_slot(PTypeTimeContext::Opt tc);
 
     public://------------------------------------------------------------------
-    explicit SamplesBuffer(EnvironmentPtr);
+    explicit SamplesBuffer(EnvPtr);
     
     virtual void init();
     
@@ -1335,7 +1335,7 @@ class SecondsBuffer: public SamplesBuffer {
 	virtual void _update_for_new_slot();
 
     public://------------------------------------------------------------------    
-    explicit SecondsBuffer(EnvironmentPtr);
+    explicit SecondsBuffer(EnvPtr);
 
     virtual void init();
 
@@ -1350,7 +1350,7 @@ class BreakPoints: public SamplesBuffer {
 
     public://------------------------------------------------------------------
 
-    explicit BreakPoints(EnvironmentPtr);
+    explicit BreakPoints(EnvPtr);
 
     virtual void init();
     
@@ -1403,7 +1403,7 @@ class BPIntegrator: public Gen {
 
     public://------------------------------------------------------------------
 
-    explicit BPIntegrator(EnvironmentPtr);
+    explicit BPIntegrator(EnvPtr);
 
     virtual void init();
 
@@ -1440,7 +1440,7 @@ class Phasor: public Gen {
 	RenderCountT _period_samples;
 
     public://------------------------------------------------------------------
-    explicit Phasor(EnvironmentPtr);
+    explicit Phasor(EnvPtr);
 	
     virtual void init();    
 
@@ -1477,7 +1477,7 @@ class Sine: public Gen {
 
     public://------------------------------------------------------------------
 
-    explicit Sine(EnvironmentPtr);
+    explicit Sine(EnvPtr);
 	
     ~Sine();
 
@@ -1519,7 +1519,7 @@ class Map: public Gen {
     
     
     public://------------------------------------------------------------------
-    explicit Map(EnvironmentPtr);
+    explicit Map(EnvPtr);
 	
     virtual void init();
     
@@ -1566,7 +1566,7 @@ class AttackDecay: public Gen {
     SampleT _amp;
     
     public://------------------------------------------------------------------
-    explicit AttackDecay(EnvironmentPtr);
+    explicit AttackDecay(EnvPtr);
 	
     virtual void init();
     
@@ -1590,7 +1590,7 @@ class White: public Gen {
     OutputsSizeT _i;
         
     public://------------------------------------------------------------------
-    explicit White(EnvironmentPtr);
+    explicit White(EnvPtr);
     
     virtual void init();
             
@@ -1630,7 +1630,7 @@ class Counter: public Gen {
 
     
     public://------------------------------------------------------------------
-    explicit Counter(EnvironmentPtr);
+    explicit Counter(EnvPtr);
     
     virtual void init();
 
@@ -1662,7 +1662,7 @@ class Panner: public Gen {
 
 
     public://------------------------------------------------------------------
-    explicit Panner(EnvironmentPtr);
+    explicit Panner(EnvPtr);
     
     virtual void init();
             
@@ -1701,7 +1701,7 @@ class Sequencer: public Gen {
 
 
     public://------------------------------------------------------------------
-    explicit Sequencer(EnvironmentPtr);
+    explicit Sequencer(EnvPtr);
     
     virtual void init();
             

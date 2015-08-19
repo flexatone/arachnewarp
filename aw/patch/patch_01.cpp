@@ -29,8 +29,8 @@ using namespace aw;
 
 int main() {
 
-    EnvironmentPtr e = Environment::make_with_frame_size(64);
-    Environment::set_default_env(e);
+    EnvPtr e = Env::make_with_frame_size(64);
+    Env::set_default_env(e);
 
 	
     // create sine chord

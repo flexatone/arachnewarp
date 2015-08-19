@@ -40,8 +40,8 @@ BOOST_AUTO_TEST_CASE(aw_performer_test_1) {
 
 // BOOST_AUTO_TEST_CASE(aw_performer_test_2) {
 
-// 	EnvironmentPtr e = Environment::make_with_frame_size(1024);
-// 	Environment::set_default_env(e);
+// 	EnvPtr e = Env::make_with_frame_size(1024);
+// 	Env::set_default_env(e);
 
 // 	GenPtr s1 = Gen::make(GenID::Sine);
 // 	PTypeRateContext::Opt::Pitch || s1;

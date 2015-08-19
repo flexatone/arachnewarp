@@ -20,7 +20,7 @@ using namespace aw;
 
 BOOST_AUTO_TEST_CASE(aw_generator_test_1) {
 
-    EnvironmentPtr e = Environment::get_default_env();
+    EnvPtr e = Env::get_default_env();
 	Gen g1 = Gen(e);
     g1.init();
 	//g1.print_outputs();
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(aw_parameter_type_test_1) {
 
 BOOST_AUTO_TEST_CASE(aw_generator_constant_test_1) {
     // basic test of constant
-    EnvironmentPtr e = Environment::get_default_env();
+    EnvPtr e = Env::get_default_env();
 	Constant g3(e);
     g3.init();
     //g3.print_inputs();

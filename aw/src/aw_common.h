@@ -383,11 +383,11 @@ class Random {
 
 
 
-class Environment;
-//! The shared Environment is always const: it cannot be changed from the outside.
-typedef std::shared_ptr<const Environment> EnvironmentPtr;
-//! A representation of the user's enviroinment. The Environment provides file-system-related access (file paths, etc) as well as audio I/O and related hardware related configuration options. 
-class Environment {
+class Env;
+//! The shared Env is always const: it cannot be changed from the outside.
+typedef std::shared_ptr<const Env> EnvPtr;
+//! A representation of the user's enviroinment. The Env provides file-system-related access (file paths, etc) as well as audio I/O and related hardware related configuration options. 
+class Env {
 
     private://-----------------------------------------------------------------
     //! We internally store the temp directory as a Boost filepath object. The temp directory is stored in the user's home directory. This can be overriden in the future with a different location.
@@ -403,25 +403,25 @@ class Environment {
     void _load_defaults();
     
     //! We store a static (class wid) default environment that is used and set. 
-    static EnvironmentPtr _default_env;
+    static EnvPtr _default_env;
 
     public://-------------------------------------------------------------------
     
-    explicit Environment(FrameSizeT fs);
+    explicit Env(FrameSizeT fs);
 
-    Environment() = delete;
+    Env() = delete;
 	
     // REDO to require setting frame size and sampling rate. 
-//    static EnvironmentPtr make();    
+//    static EnvPtr make();    
 
     //! Factory method that provides frame size defaults. Could by 'make from'. 
-    static EnvironmentPtr make_with_frame_size(FrameSizeT fs=64);
+    static EnvPtr make_with_frame_size(FrameSizeT fs=64);
     
     //! Set a default environment. If called with no args, will reset the default to nullptr, forcing new creation of a default on text run. 
-    static void set_default_env(EnvironmentPtr env=nullptr);
+    static void set_default_env(EnvPtr env=nullptr);
     
     //! Get the last set default environment, or a default created on demand.
-    static EnvironmentPtr get_default_env();
+    static EnvPtr get_default_env();
     
     
     //! Return the sampling rate

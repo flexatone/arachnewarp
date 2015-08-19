@@ -57,7 +57,7 @@ aw_generator_test.o: $(PATH_TO_BIN)aw_common.o $(PATH_TO_BIN)aw_generator.o $(PA
 
 
 # compiling all tests
-# must make object files the dependency, as this will check other dependnecies
+# must make object files the dependency, as this will check other dependencies
 
 aw_common_test: $(PATH_TO_BIN)aw_common.o aw_common_test.cpp
 	$(CC) $(CFLAGS_TEST) aw_common_test.cpp $(PATH_TO_BIN)aw_common.o -o aw_common_test $(CFLAGS_LIBS_TEST)
