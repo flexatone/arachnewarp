@@ -523,7 +523,7 @@ void Gen :: _resize_outputs() {
     // add output vectors if necessary
     if (outputs.size() < _output_count) {
         // if size is 2, need 4, iter 2, 3 to get 4
-        for (i=outputs.size(); i< _output_count; ++i) {
+        for (i=outputs.size(); i < _output_count; ++i) {
             VSampleT vs;
             outputs.push_back(vs);
         }
@@ -538,7 +538,7 @@ void Gen :: _resize_outputs() {
     SampleT n(0);
     // reserve each component; set value to 0
 	// must be sure all have the same _frame_size
-    for (j=outputs.begin(); j!=outputs.end(); ++j) {
+    for (j=outputs.begin(); j != outputs.end(); ++j) {
 		// this will also set all values to 0.0
 		(*j).resize(_frame_size, n);
     }
@@ -577,7 +577,7 @@ PIndexT Gen :: _register_input_parameter_type(PTypePtr pts) {
 
     // store a vector in the position to accept inputs
     VGenPtrOutPair vInner;  
-    _inputs.push_back(vInner); // extra copy made here
+    _inputs.push_back(vInner); // extra copy made here, but still optimal
     	
 	VSampleT vSampleTypeInner;
 	_summed_inputs.push_back(vSampleTypeInner);
@@ -619,10 +619,10 @@ void Gen :: _render_inputs(RenderCountT f) {
     // this is inlined in the header
     PIndexT j;
     PIndexT gen_count_at_input(0);
-    for (PIndexT i = 0; i<_input_count; ++i) {
+    for (PIndexT i = 0; i < _input_count; ++i) {
         // inputs are a vector of Generators
         gen_count_at_input = _inputs[i].size();        
-        for (j=0; j<gen_count_at_input; ++j) {
+        for (j=0; j < gen_count_at_input; ++j) {
             // this is a pair of shared generator, outputs index
             _inputs[i][j].first->render(f);
         }
@@ -632,9 +632,9 @@ void Gen :: _render_inputs(RenderCountT f) {
 void Gen :: _reset_inputs() {
     // NOTE: this is not called on reset(), and thus this is not yet recurssive
     VGenPtrOutPair :: const_iterator j; // vector of generators    
-    for (PIndexT i = 0; i<_input_count; ++i) {
+    for (PIndexT i = 0; i < _input_count; ++i) {
         // inputs are a vector of Generators
-        for (j=_inputs[i].begin(); j!=_inputs[i].end(); ++j) {
+        for (j=_inputs[i].begin(); j != _inputs[i].end(); ++j) {
             // this is a shared generator
             (*j).first->reset();
         }
