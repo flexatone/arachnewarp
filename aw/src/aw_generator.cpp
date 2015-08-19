@@ -652,27 +652,25 @@ void Gen :: _sum_inputs(FrameSizeT fs) {
 	SampleT sum;
     
 	// iterate over each input parameter type
-    for (i=0; i<_input_count; ++i) {
+    for (i=0; i < _input_count; ++i) {
         // do not need to _summed_inputs[i].clear(), as we are repalcing with a new SampleTyple sum; _summed_inputs[i].capacity() == frameSize due to reserving in _register_input_parameter_type
         gen_count_at_input = _inputs[i].size();        
 		// for each frame, read across all input
 		for (k=0; k < fs; ++k) {
             // optimize for simple case of 1 gen
             if (gen_count_at_input == 1) {
+                // pairs of Gen, output index in that Gen to read
                 _summed_inputs[i][k] = _inputs[i][0].first->outputs[
-                            _inputs[i][0].second // the output to read
+                        _inputs[i][0].second
                         ][k];
             }
-            else {
-                // otherwise iterate
+            else { // otherwise iterate over each gen in this input
     			sum = 0;
-    			// now iterate over each gen in this input
-    			for (j=0; j<gen_count_at_input; ++j) {
+    			for (j=0; j < gen_count_at_input; ++j) {
     				sum += _inputs[i][j].first->outputs[
-                                _inputs[i][j].second // the output to read
+                            _inputs[i][j].second
                             ][k];
-    			}
-    			// sum of all gens at this sample frame
+    			} // sum of all gens at this sample frame
                 _summed_inputs[i][k] = sum;
             }
 		}
