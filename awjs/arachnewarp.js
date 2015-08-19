@@ -33,21 +33,21 @@ var PTypeID = Object.freeze({
 // Statuc container of random functions
 var Random = {
     // Math.random() returns [0, 1)
-    uniform = function() {
-    };
-    uniform_switch = function() {
-    };
-    uniform_bi_polar = function() {
-    };
-    round = function() {
-    };
+    uniform : function() {
+    },
+    uniform_switch : function() {
+    },
+    uniform_bi_polar : function() {
+    },
+    round : function() {
+    },
 };
 
 
 // -----------------------------------------------------------------------------
-var Env = function(sampling_rate, frame_size) {
+var Env = function(sampling_rate, common_frame_size) {
     this.sampling_rate = sampling_rate;
-    this.frame_size = frame_size;
+    this.common_frame_size = common_frame_size;
 };
 // constructors
 Env.prototype.get_default_env = function() {
@@ -92,7 +92,7 @@ var Gen = function(env) {
 // methods
 Gen.prototype.init = function() {
     // base prototype init transfers frame zie
-    this._frame_size = this._env.frame_size;
+    this._frame_size = this._env.common_frame_size;
     this._sampling_rate = this._env.sampling_rate;
     this._nyquist = this._sampling_rate / 2;
 

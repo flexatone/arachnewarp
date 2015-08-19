@@ -602,7 +602,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 	//! The nyquist frequency, .5 * SamplingRate; this is stored to optimize calculations that need this value.
 	OutputsSizeT _nyquist;
 		
-    //! Define if this Gen has resizable frame size. Most generators do not have have resizable frame size; only some (like a SecondsBuffer) do.
+    //! Define if this Gen has resizable frame size. Most generators do not have resizable frame size; only some (like a SecondsBuffer) do.
     bool _frame_size_is_resizable;
                             
     //! The number of renderings that have passed since the last reset. Protected because render() and reset() routines need to alter this. RenderCountT must be the largest integer available.
@@ -1286,7 +1286,7 @@ class Multiply: public _BinaryCombined {
 
 
 //=============================================================================
-//! A SamplesBuffer has the ability to load its outputs array to and from the file system. Further, the buffer generally has a larger frame size, permitting storing extended time periods in outputs. 
+//! A SamplesBuffer has the ability to load its outputs array to and from the file system. Further, the buffer has a dyanmic frame size, permitting storing extended time periods in outputs. 
 class SamplesBuffer;
 typedef std::shared_ptr<SamplesBuffer> SamplesBufferPtr;
 class SamplesBuffer: public Gen {
@@ -1306,8 +1306,7 @@ class SamplesBuffer: public Gen {
     virtual void render(RenderCountT f);    
             
     //! Write to an audio file to given the ouput file path. The optional PIndexT argument can be used to specify a single _output_count of many to write. If PIndexT is 0, all outputs are written.
-    virtual void write_output_to_fp(const std::string& fp, 
-                                    PIndexT d=0) const;
+    virtual void write_output_to_fp(const std::string& fp, PIndexT d=0) const;
         
     //! Set the outputs of this Gen to the content of an audio file provided as an audio path. This overridden method makes the usage of libsndfile to read in a file.
     virtual void set_outputs_from_fp(const std::string& fp);
