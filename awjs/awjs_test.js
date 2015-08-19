@@ -52,8 +52,8 @@ QUnit.test("test_gen_register_output_parameter_type_a",
         assert.equal(g1.outputs.length, 2);
         g1.reset();
 
-        assert.equal(g1.outputs[0].length, env.frame_size);
-        assert.equal(g1.outputs[1].length, env.frame_size);
+        assert.equal(g1.outputs[0].length, env.common_frame_size);
+        assert.equal(g1.outputs[1].length, env.common_frame_size);
 
         //window.alert(5 + 6);
     }   

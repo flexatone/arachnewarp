@@ -80,9 +80,6 @@ PTypePtr PType :: make(PTypeID q){
     }
     return p;
 }
-
-
-
     
 PTypePtr PType :: make_with_name(PTypeID q, const std::string& s){
     PTypePtr p = PType::make(q);
@@ -1197,7 +1194,7 @@ void Gen :: set_slot_by_index(PIndexT i, GenPtr gs, bool update){
     _slots[i] = gs; // direct assignment; replaces default if not there
     // store in advance the outputs size of the input 
 	if (update) {
-        // update should be called for each change, but when making bulk changes, and defer this update until the last
+        // should be called for each change, but defer when making many changes
 		_update_for_new_slot();
 	}
 }
@@ -1489,14 +1486,13 @@ SamplesBuffer :: SamplesBuffer(EnvPtr e)
 	: Gen(e) {
 	_class_name = "SamplesBuffer";
     _class_id = GenID::SamplesBuffer;        
-	// this is the unique difference of the SecondsBuffer class 
+	// buffers must be resizable
     _frame_size_is_resizable = true;
 }
 
 
 void SamplesBuffer :: init() {
-    // the int routie must configure the names and types of parameters
-    // std::cout << *this << " SecondsBuffer::init()" << std::endl;
+    // the init routine must configure the names and types of parameters
     // call base init, allocates and resets()
     Gen::init();    
     _clear_output_parameter_types(); // must clear the default set by Gen init
@@ -1504,16 +1500,17 @@ void SamplesBuffer :: init() {
     // register some slots: 
     // register slots
 	_register_slot_parameter_type(PType::make_with_name(
-        PTypeID::Channels, "Channels"));
+            PTypeID::Channels, "Channels"));
     set_slot_by_index(0, 1, false); // false so as to not update until dur is set
 	    
 	_register_slot_parameter_type(PType::make_with_name(
-        PTypeID::Duration, "Duration in samples"));
+            PTypeID::Duration, "Duration in samples"));
     // set value; will call _update_for_new_slot    
     set_slot_by_index(1, 64, true); // one second, update now 
 }
 
 void SamplesBuffer :: _buffer_update_for_new_slot(PTypeTimeContext::Opt tc) {
+    // by providing different PTypeTimeContext we can swith between interpreting 
     // will throw on error
     PTypeTimeContext::validate(tc);
 	// slot 0: channels
@@ -1527,20 +1524,19 @@ void SamplesBuffer :: _buffer_update_for_new_slot(PTypeTimeContext::Opt tc) {
     _clear_output_parameter_types(); // must clear the default set by Gen init
 	
     std::stringstream s;
-    ParameterTypeValuePtr pt_i;
-    ParameterTypeValuePtr pt_o;    	
+    PTypePtr pt_i;
+    PTypePtr pt_o;
+
     // set inputs; this will clear any existing connections
-    for (PIndexT i=0; i<outs; ++i) {        
-        PTypePtr pt_i = PType::make(PTypeID::Value);        
+    for (PIndexT i=0; i < outs; ++i) {
         s.str(""); // clears contents; not the same as .clear()
         s << "Input " << i+1;
-        pt_i->set_instance_name(s.str());
+        pt_i = PType::make_with_name(PTypeID::Value, s.str());
         _register_input_parameter_type(pt_i);        
 		
-        PTypePtr pt_o = PType::make(PTypeID::Value);
-        s.str(""); // clears contents; not the same as .clear()
+        s.str("");
         s << "Output " << i+1;
-        pt_o->set_instance_name(s.str());
+        pt_o = PType::make_with_name(PTypeID::Value, s.str());
 		_register_output_parameter_type(pt_o);
     }
 	assert(get_output_count() == outs);
@@ -1555,11 +1551,9 @@ void SamplesBuffer :: _buffer_update_for_new_slot(PTypeTimeContext::Opt tc) {
     }
 }
 
-
 void SamplesBuffer :: _update_for_new_slot() {
     _buffer_update_for_new_slot(PTypeTimeContext::Samples);
 }
-
 
 void SamplesBuffer :: render(RenderCountT f) {
 	// render count must be ignored; instead, we render until we have filled our buffer; this means that the components will have a higher counter than render; need to be reset at beginning and end
@@ -1592,7 +1586,7 @@ void SamplesBuffer :: render(RenderCountT f) {
         if (pos >= fs) break; // we end when we are full        
 		rc++;
     }
-	// we reset after to retrun components to starting state in case someone else uses this later. 	
+	// we reset after to return inputs to starting state
 	_reset_inputs(); 
 	
 }
