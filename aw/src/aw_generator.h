@@ -715,11 +715,8 @@ class Gen: public std::enable_shared_from_this<Gen> {
     //! Return the the outputs size, or the total number of samples used for all frames at all outputs.
     FrameSizeT get_outputs_size() const {return _outputs_size;};
     
-    //! Get the average value of all outputs values. 
-    SampleT get_outputs_average() const;
-
-    //! Get the average of single _output_count of outputs. If d is 0, all dimensions are averaged. If d is greater than the number of dimensions, an error is raised. 
-    SampleT get_output_average(PIndexT d) const;
+    //! Get the average of a single output frame. If d is 0, all dimensions are averaged, otherwise 1 references the first output, 2 the second, etc. If d is greater than the number of dimensions, an error is raised. (Generally only used in test.)
+    SampleT get_output_average(PIndexT d, bool absolute=false) const;
 
     //! Return a Boolean if this Gen has resizable frame size
     bool frame_size_is_resizable() const {return _frame_size_is_resizable;};
@@ -790,7 +787,7 @@ class Gen: public std::enable_shared_from_this<Gen> {
 
     //! Print the the hierarchical list of all input values. This is virtual because Constant must print inputs in as different way. No other generator should need to specialize. 
     virtual void print_inputs(bool recursive=false, 
-        UINT8 recurse_level=0, std::string prefix="");
+            UINT8 recurse_level=0, std::string prefix="");
 
     //! Render the requested frame if not already rendered. This is virtual because every Gen renders in a different way. 
     virtual void render(RenderCountT f); 
@@ -1213,7 +1210,7 @@ class Constant: public Gen {
 	
 	//! This derived function is necessary to handle displaying internal input components.
 	virtual void print_inputs(bool recursive=false, 
-        UINT8 recurse_level=0, std::string prefix="");
+            UINT8 recurse_level=0, std::string prefix="");
 
 	//! As Constant does not compose any Generators even though it has an input defined, this overridden method must return an empty vector.     
     virtual VGenPtrOutPair get_input_gens_by_index(PIndexT i);

@@ -685,19 +685,7 @@ void Gen :: render(RenderCountT f) {
     _render_count = f;
 }
 
-//..............................................................................
-SampleT Gen :: get_outputs_average() const {
-    SampleT sum(0);
-    for (PIndexT i=0; i<_output_count; ++i) {
-        for (FrameSizeT j=0; j < _frame_size; ++j) {
-            sum += fabs(outputs[i][j]);
-        }
-    }
-    return sum / _outputs_size;
-}
-
-SampleT Gen :: get_output_average(PIndexT d) const {
-    // this does single output and whole outputs averaging.
+SampleT Gen :: get_output_average(PIndexT d, bool absolute) const {
     // if d is zero, get all frames/channels, otherwise, just get rquested dimension (i.e., 2d gets vector pos 1
 	if (d > _output_count) {
         std::stringstream msg;
@@ -708,18 +696,16 @@ SampleT Gen :: get_output_average(PIndexT d) const {
     OutputsSizeT count(0); 
     PIndexT p;
     
-	if (d == 0) {
-        // get all
-        for (p=0; p<_output_count; ++p) {
+	if (d == 0) { // get all outputs
+        for (p=0; p < _output_count; ++p) {
             dims.push_back(p);
         }
         count = _outputs_size; // will be complete size
     }
     else {
-        // need to request from 1 less than submitted positio, as dim 0 is the first dimension; we know tha td is greater tn zero
+        // need to request from 1 less than submitted position, as dim 0 is the first dimension; we know that d is greater thann zero
         PIndexT dPos = d - 1;
-        if (dPos >= _output_count) {
-            // this should not happend due to check above
+        if (dPos >= _output_count) { // unexpected due to check above
             std::stringstream msg;
             msg << "requested dimension is greater than that supported"
                     << str_file_line(__FILE__, __LINE__);
@@ -734,7 +720,12 @@ SampleT Gen :: get_output_average(PIndexT d) const {
     for (VPIndexT::const_iterator i=dims.begin(); i!=dims.end(); ++i) {
         // from start of dim to 1 less than frame plus start
         for (FrameSizeT j=0; j < _frame_size; ++j) {
-            sum += outputs[*i][j];
+            if (absolute) {
+                sum += fabs(outputs[*i][j]);                
+            }
+            else {
+                sum += outputs[*i][j];
+            }
         }
     }
     return sum / count; // cast count to 
