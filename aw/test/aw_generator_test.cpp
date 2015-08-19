@@ -404,7 +404,7 @@ BOOST_AUTO_TEST_CASE(aw_generator_buffer_2) {
     
     //g1->illustrate_outputs();
 	
-    BOOST_CHECK_CLOSE(g1->get_outputs_average(), 0.16651, .001);
+    BOOST_CHECK_CLOSE(g1->get_output_average(0, true), 0.16651, .001);
     
     std::string s2("../test/testStereo1.aif");
     g1->set_outputs_from_fp(s2);
