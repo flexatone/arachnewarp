@@ -960,7 +960,7 @@ inline GenPtr connect_serial_to_inputs(const Inj<GenPtr>& lhs, GenPtr rhs) {
 }
 
 
-// slot connections ..............................................
+// slot connections ............................................................
 
 //! For now, we just set lhs in position zero.
 inline GenPtr connect_serial_to_slots(GenPtr lhs, GenPtr rhs) {
